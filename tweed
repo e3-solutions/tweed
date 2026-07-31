@@ -1,0 +1,290 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.10"
+# dependencies = ["openai-codex==0.144.4"]
+# ///
+
+from __future__ import annotations
+
+import hashlib
+import os
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+from openai_codex import Codex, CodexConfig, Sandbox
+from openai_codex.types import TurnStatus
+
+
+def find_codex() -> str:
+    explicit = os.environ.get("CODEX_BIN")
+    if explicit:
+        resolved = shutil.which(explicit)
+        if resolved:
+            return resolved
+        raise RuntimeError(f"Codex CLI not found: {explicit}")
+
+    candidates = [
+        shutil.which("codex"),
+        str(Path.home() / ".vite-plus/bin/codex"),
+        "/Applications/ChatGPT.app/Contents/Resources/codex",
+    ]
+    for candidate in filter(None, candidates):
+        try:
+            subprocess.run(
+                [candidate, "--version"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                check=True,
+                timeout=5,
+            )
+            return candidate
+        except (OSError, subprocess.SubprocessError):
+            continue
+    raise RuntimeError("no working Codex CLI found")
+
+
+def load_workflow(name: str) -> str:
+    path = Path(__file__).resolve().parent / f"workflows/{name}.md"
+    return path.read_text()
+
+
+def run_phase(
+    codex: Codex,
+    workflow: str,
+    title: str,
+    prompt: str,
+    sandbox: Sandbox = Sandbox.read_only,
+) -> str:
+    thread = codex.thread_start(
+        cwd=os.getcwd(),
+        developer_instructions=load_workflow(workflow),
+        sandbox=sandbox,
+    )
+    thread.set_name(title)
+    print(f"{title} in Codex thread {thread.id}…", file=sys.stderr)
+    result = thread.run(prompt)
+    if result.status != TurnStatus.completed:
+        raise RuntimeError(f"{title.lower()} ended with status {result.status.value}")
+    if not result.final_response:
+        raise RuntimeError(f"{title.lower()} failed: {result.error or result.status}")
+    return result.final_response
+
+
+def report_status(report: str) -> str | None:
+    first_line = next((line.strip() for line in report.splitlines() if line.strip()), "")
+    prefix = "Status: "
+    return first_line[len(prefix) :].strip() if first_line.startswith(prefix) else None
+
+
+def workspace_fingerprint() -> str | None:
+    try:
+        root = Path(
+            subprocess.run(
+                ["git", "rev-parse", "--show-toplevel"],
+                capture_output=True,
+                check=True,
+                text=True,
+            ).stdout.strip()
+        )
+        head = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=root, capture_output=True
+        ).stdout or b"<unborn>"
+        ref = subprocess.run(
+            ["git", "symbolic-ref", "-q", "HEAD"], cwd=root, capture_output=True
+        ).stdout or b"<detached>"
+        paths = subprocess.run(
+            ["git", "ls-files", "-co", "--exclude-standard", "-z"],
+            cwd=root,
+            capture_output=True,
+            check=True,
+        ).stdout.split(b"\0")
+        status = subprocess.run(
+            ["git", "status", "--porcelain=v1", "-z", "--untracked-files=all"],
+            cwd=root,
+            capture_output=True,
+            check=True,
+        ).stdout
+        index = subprocess.run(
+            ["git", "diff", "--cached", "--binary"],
+            cwd=root,
+            capture_output=True,
+            check=True,
+        ).stdout
+    except (OSError, subprocess.SubprocessError):
+        return None
+
+    digest = hashlib.sha256(os.fsencode(root) + b"\0" + head + ref + status + index)
+    for raw_path in sorted(path for path in paths if path):
+        path = root / os.fsdecode(raw_path)
+        digest.update(raw_path + b"\0")
+        try:
+            if path.is_symlink():
+                digest.update(os.fsencode(os.readlink(path)))
+            else:
+                with path.open("rb") as file:
+                    for chunk in iter(lambda: file.read(1024 * 1024), b""):
+                        digest.update(chunk)
+        except OSError:
+            digest.update(b"<missing>")
+    return digest.hexdigest()
+
+
+def read_report(args: list[str], command: str, label: str) -> str:
+    if len(args) > 1:
+        raise RuntimeError(f"{command} accepts one {label} file, or reads it from stdin")
+    if args:
+        return Path(args[0]).read_text().strip()
+    if sys.stdin.isatty():
+        print(f"Paste the {label}, then press Ctrl-D:", file=sys.stderr)
+    return sys.stdin.read().strip()
+
+
+def read_request(args: list[str], question: str) -> str:
+    if args:
+        return " ".join(args).strip()
+    if sys.stdin.isatty():
+        return input(f"{question}\n> ").strip()
+    return sys.stdin.read().strip()
+
+
+def read_review(args: list[str]) -> tuple[str, str]:
+    if len(args) != 2:
+        raise RuntimeError("review requires a scoped report and an implementation report")
+    return Path(args[0]).read_text().strip(), Path(args[1]).read_text().strip()
+
+
+def main() -> int:
+    if any(arg in {"-h", "--help"} for arg in sys.argv[1:]):
+        print(
+            "Usage: tweed root-cause [problem]\n"
+            "       tweed scope [rca-report]\n"
+            "       tweed feature [request]\n"
+            "       tweed implement [scope-report]\n"
+            "       tweed review [scope-report] [implementation-report]"
+        )
+        return 0
+
+    args = sys.argv[1:]
+    commands = {"root-cause", "scope", "feature", "implement", "review"}
+    write_commands = {"implement", "review"}
+    if args and args[0] not in commands:
+        print(f"tweed: unknown command: {args[0]}", file=sys.stderr)
+        return 2
+    command = args.pop(0) if args else "root-cause"
+    sandbox = Sandbox.read_only
+    if command == "scope":
+        prompt = read_report(args, "scope", "established RCA")
+        if not prompt:
+            print("tweed: an RCA report is required", file=sys.stderr)
+            return 2
+        if report_status(prompt) != "established":
+            print("tweed: scope requires an established RCA", file=sys.stderr)
+            return 3
+        workflow = "scope-solution"
+        title = "Tweed solution scope"
+    elif command == "implement":
+        prompt = read_report(args, "implement", "scoped report")
+        if not prompt:
+            print("tweed: a scoped report is required", file=sys.stderr)
+            return 2
+        if report_status(prompt) != "scoped":
+            print("tweed: implement requires a scoped report", file=sys.stderr)
+            return 4
+        workflow = "implementation"
+        title = "Tweed implementation"
+        sandbox = Sandbox.workspace_write
+    elif command == "review":
+        scope, implementation = read_review(args)
+        if not scope or not implementation:
+            print("tweed: scope and implementation reports are required", file=sys.stderr)
+            return 2
+        if report_status(scope) != "scoped":
+            print("tweed: review requires a scoped report", file=sys.stderr)
+            return 4
+        if report_status(implementation) != "implemented":
+            print("tweed: review requires a completed implementation report", file=sys.stderr)
+            return 4
+        prompt = f"Approved scope:\n{scope}\n\nCompleted implementation report:\n{implementation}"
+        workflow = "review"
+        title = "Tweed implementation review"
+        sandbox = Sandbox.workspace_write
+    elif command == "feature":
+        prompt = read_request(args, "What feature should Tweed scope?")
+        if not prompt:
+            print("tweed: a feature request is required", file=sys.stderr)
+            return 2
+        workflow = "feature"
+        title = f"Tweed feature: {' '.join(prompt.split())[:76]}"
+    else:
+        prompt = read_request(args, "What problem should Tweed investigate?")
+        if not prompt:
+            print("tweed: a problem is required", file=sys.stderr)
+            return 2
+        workflow = "root-cause"
+        title = f"Tweed RCA: {' '.join(prompt.split())[:80]}"
+
+    baseline = workspace_fingerprint() if command in write_commands else None
+    if command in write_commands and baseline is None:
+        print(f"tweed: {command} requires a Git repository for workspace safety", file=sys.stderr)
+        return 2
+
+    config = CodexConfig(
+        codex_bin=find_codex(),
+        cwd=os.getcwd(),
+        client_name="tweed",
+        client_title="Tweed",
+        client_version="0.1.0",
+        experimental_api=False,
+    )
+
+    try:
+        with Codex(config) as codex:
+            report = run_phase(codex, workflow, title, prompt, sandbox)
+    except Exception:
+        if command in write_commands:
+            print(f"tweed: {command} failed; workspace changes may remain", file=sys.stderr)
+        raise
+
+    status = report_status(report)
+    expected = {
+        "root-cause": {"established", "not-established"},
+        "scope": {"scoped", "blocked"},
+        "feature": {"scoped", "blocked"},
+        "implement": {"implemented", "blocked", "partial"},
+        "review": {"reviewed", "blocked", "partial"},
+    }[command]
+    if status not in expected:
+        if command in write_commands:
+            print(f"tweed: {command} returned no valid status; workspace changes may remain", file=sys.stderr)
+        raise RuntimeError(f"{command} returned an invalid status")
+    if command in write_commands and status == "blocked":
+        final = workspace_fingerprint()
+        if baseline is not None and final != baseline:
+            status = "partial"
+            report = report.replace("Status: blocked", "Status: partial", 1)
+            report += f"\n\nRunner note: workspace changes were detected after the blocked {command} report."
+    print(report)
+    if status == "not-established":
+        return 3
+    if status == "blocked":
+        return 5 if command in write_commands else 4
+    if status == "partial":
+        return 6
+
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        raise SystemExit(main())
+    except KeyboardInterrupt:
+        print(
+            "tweed: interrupted; workspace changes, if any, were preserved—inspect git status and git diff",
+            file=sys.stderr,
+        )
+        raise SystemExit(130) from None
+    except Exception as error:
+        print(f"tweed: {error}", file=sys.stderr)
+        raise SystemExit(1) from None
