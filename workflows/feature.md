@@ -1,6 +1,6 @@
 # Tweed Feature Scope
 
-Turn a feature request into the smallest coherent feature scope and an ordered implementation plan. Do not modify code, implement the feature, or perform external writes.
+Turn a feature request into the smallest coherent feature scope and an ordered implementation plan. Do not modify code, implement the feature, or perform external writes. Linear is a completed-scope handoff, never a scoping scratchpad.
 
 ## Rules
 
@@ -9,7 +9,8 @@ Turn a feature request into the smallest coherent feature scope and an ordered i
 - Keep verified repository facts, requested behavior, assumptions, and proposals distinct.
 - Reuse existing product behavior, architecture, libraries, and conventions where appropriate.
 - Include a dependency, abstraction, configuration surface, migration, or rollout mechanism only when a concrete requirement or repository constraint needs it.
-- When an irreducible product, safety, compatibility, or architecture decision blocks a valid scope, return `Status: blocked` with the exact question. Otherwise state the assumption explicitly.
+- Inspect the repository before asking the user. When an irreducible product, safety, compatibility, or architecture decision blocks a valid scope, return `Status: needs-input` with one exact question, concrete options and consequences, and an evidence-backed recommendation when possible. Otherwise state reversible assumptions explicitly.
+- After receiving a clarification answer, normalize it as a decision, reconcile it with repository evidence, and continue the same scope. Do not repeat an answered question.
 
 ## Workflow
 
@@ -22,7 +23,7 @@ Turn a feature request into the smallest coherent feature scope and an ordered i
 3. Synthesize a provisional feature scope and ordered implementation approach grounded in repository evidence.
 4. As the baseline adversarial check, give the provisional scope, not raw transcripts, back to all four agents. Require each to falsify it against its objective and return only material objections and the minimum correction needed.
 5. Add an independent specialist only for a material open question involving performance, security or privacy, permissions, accessibility, data integrity, concurrency, migration, rollout, observability, or testability.
-6. Reconcile supported objections. Continue targeted debate while a concrete agent task or repository check can resolve a material gap or contradiction.
+6. Reconcile supported objections. Continue targeted debate while a concrete agent task or repository check can resolve a material gap or contradiction. Ask the user only when investigation cannot resolve a material decision.
 7. Re-read cited files and conventions, confirm that `HEAD`, relevant worktree state, and evidence-file fingerprints have not changed, then verify the final scope and implementation steps against the completion gate. If relevant state changed, return `Status: blocked` instead of reporting a stale plan.
 
 After the baseline challenge, do not add an agent or round without a specific unresolved question. A smaller scope must still produce a coherent user outcome; a more robust scope must address a realistic risk in this system.
@@ -42,7 +43,33 @@ Call the feature scoped only when:
 - implementation steps are ordered, independently verifiable, and sufficient to deliver the scope; and
 - no material evidence-backed objection remains unresolved.
 
-If the gate fails, return `Status: blocked`, name the narrow blocker or user decision needed, and do not fill the gap with invented requirements.
+If the gate fails because a user decision can resolve it, return `Status: needs-input`. Return `Status: blocked` for a stale repository, inaccessible evidence, or another blocker that clarification cannot resolve. Do not fill gaps with invented requirements.
+
+## Clarification output
+
+When user input is required, return only:
+
+```markdown
+Status: needs-input
+
+# Clarification needed
+
+## Question
+
+[One material question.]
+
+## Why this matters
+
+[How the answer changes the feature contract.]
+
+## Options
+
+- [Option and its consequence]
+
+## Recommendation
+
+[Evidence-backed recommendation, or "None yet."]
+```
 
 ## Output
 
@@ -129,3 +156,7 @@ Feature request
 ```
 
 Include every agent actually used once in the map. Do not include transcripts, tool logs, patches, implementation work, or unrelated follow-ups.
+
+## Linear sync
+
+Do not use Linear tools during scoping, clarification, adversarial challenge, or final verification. After a `scoped` report, the runner may send a separate message beginning exactly with `TWEED_LINEAR_SYNC`. Only on that later turn may you create the requested issue through the configured Linear MCP. Never write intermediate questions, answers, drafts, or agent activity to Linear.

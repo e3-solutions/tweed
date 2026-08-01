@@ -1,13 +1,13 @@
 # Tweed Requirements Specification
 
-Status: Draft v0.2
+Status: Draft v0.3
 Last updated: 2026-07-31
 
 ## 1. Purpose
 
-Tweed is a personal, Linear-native system for delivering software changes through aggressive, adversarial use of agents.
+Tweed is a small, Linear-backed system for delivering software changes through aggressive, adversarial use of agents.
 
-Every requested change maps to one canonical Linear ticket. Agents may be numerous, short-lived, replaced, or run in parallel. The ticket, decisions, commits, artifacts, findings, and verification evidence are durable.
+Every completed RCA or directly scoped feature maps to one canonical Linear ticket. Investigation, clarification, and adversarial work remain inside Tweed until the current phase is complete. Agents may be numerous, short-lived, replaced, or run in parallel; completed phase handoffs are durable in Linear.
 
 The required lifecycle is:
 
@@ -59,7 +59,7 @@ The initial system does not need to define or provide:
 
 ### 4.1 One request, one canonical ticket
 
-Every independently deliverable change has one canonical Linear ticket. Related, independently shippable work may use linked child tickets, but decisions and scope must not be duplicated inconsistently.
+Every independently deliverable change gets one canonical Linear ticket after its RCA is established or its feature scope is complete. No ticket is created for an incomplete investigation. Related, independently shippable work may use linked child tickets, but decisions and scope must not be duplicated inconsistently.
 
 ### 4.2 Linear contains decision-relevant context
 
@@ -114,7 +114,7 @@ Agents must not silently reinterpret or expand the ticket. Material changes to b
 
 ## 5. Linear Lifecycle
 
-The system uses the following logical states. These may map to native Linear states, labels, or another configuration, but their meanings are fixed.
+The system uses the following logical states. Discovery and Needs You remain local to Tweed until a completed RCA or feature scope creates the Linear issue. Later states may map to native Linear states, labels, or another configuration.
 
 | State | Meaning |
 |---|---|
@@ -134,9 +134,9 @@ Code complete, merged, and deployed are distinct milestones. Each ticket declare
 
 ## 6. Phase 1: Request Intake
 
-### 6.1 Initial ticket
+### 6.1 Local intake
 
-When a change is requested, the system creates or identifies one Linear ticket and records:
+When a change is requested, Tweed records locally:
 
 - The original request without reinterpretation.
 - Intended outcome, if known.
@@ -145,6 +145,8 @@ When a change is requested, the system creates or identifies one Linear ticket a
 - Initial assumptions.
 - Discovery status.
 - Any immediately blocking question.
+
+Tweed does not create or update a Linear issue during intake, investigation, or clarification. It creates the issue only after an RCA is fully established, or after a feature that does not require RCA is fully scoped.
 
 ### 6.2 Frozen discovery input
 
@@ -378,7 +380,7 @@ A ticket may enter Ready only when all are true:
 - The ticket remains readable.
 - A fresh implementation agent can start without discovery history.
 
-Readiness is Boolean, not a confidence score. Any failed requirement keeps the ticket in Discovery or Needs You.
+Readiness is Boolean, not a confidence score. Any failed requirement keeps the Tweed task in Discovery or Needs You.
 
 ## 10. Phase 3: Implementation Preflight
 
@@ -458,7 +460,7 @@ The default maximum is three concurrent writers. Read-only agents may be used mo
 
 ### 11.3 Implementation questions
 
-Questions are durable ticket-scoped objects. A question must include:
+Implementation questions remain inside the active Tweed task until the phase completes. A question must include:
 
 - Question identifier.
 - Work packet.
@@ -682,22 +684,19 @@ The persistent project context contains only stable information:
 
 Parents receive structured child results. Prompts, tool calls, command logs, intermediate messages, rejected exploration, and private reasoning remain audit-only.
 
-## 16. Audit and Linear Update Policy
+## 16. Linear Update Policy
 
-The canonical issue description is the current normalized contract. Comments form a concise append-only milestone log.
+The canonical issue description is the current normalized contract. Tweed does not use Linear as an activity log and does not write intermediate questions, answers, agent activity, drafts, failures, or partial phase results.
 
-The coordinator writes comments only for meaningful events such as:
+The coordinator updates the issue description once after a successful phase gate:
 
-- Discovery completed and contract frozen.
-- Implementation started.
-- A material decision changed the contract.
-- Implementation integrated.
-- Review round completed.
-- Repair round completed.
-- Final verification completed.
-- Execution failed, became stale, or needs user input.
+- Established RCA: create the issue with the complete RCA.
+- Completed feature scope without RCA: create the issue with the complete scope.
+- Completed solution scope: update the same issue while preserving the RCA.
+- Completed implementation: update the same issue while preserving RCA and scope.
+- Completed review: update the same issue with the final conclusion.
 
-Fine-grained agent activity remains outside Linear.
+For v1, Tweed creates no milestone comments. Fine-grained activity remains outside Linear.
 
 Every stage receipt must reference the relevant contract revision, repository revision, artifacts, and evidence.
 
@@ -779,7 +778,8 @@ questions:
 
 linear:
   coordinator_only_writes: true
-  comments_at_stage_gates_only: true
+  comments_at_stage_gates_only: false
+  description_updates_at_completed_phase_gates_only: true
   raw_transcripts_excluded: true
 ```
 

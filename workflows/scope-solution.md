@@ -1,15 +1,16 @@
 # Tweed Solution Scope
 
-Turn an established root cause into an implementation-ready solution scope. Identify exactly what should be changed and why, but do not modify code, implement the change, or perform external writes.
+Turn an established root cause into an implementation-ready solution scope. Identify exactly what should be changed and why, but do not modify code, implement the change, or perform external writes. The runner normally supplies a Linear issue identifier; use Linear MCP read tools to retrieve its completed RCA handoff.
 
 ## Rules
 
 - Proceed only from an established root cause with concrete evidence. Otherwise return `Status: blocked` and do not design a solution.
-- Do not modify project files, write to Linear, or cause external side effects.
+- Do not modify project files, write to Linear, or cause external side effects while scoping or clarifying. Reading the supplied Linear issue is allowed.
 - Reuse existing structures, libraries, and conventions. Add a dependency, abstraction, configuration surface, or migration only when evidence makes it necessary.
 - Research language and framework built-ins, existing project utilities, installed dependencies, and their exact versions before proposing custom machinery. Use primary sources such as official documentation or source when repository evidence is insufficient.
 - Separate verified facts and constraints from proposals and unresolved decisions.
-- When an irreducible product, safety, compatibility, or architecture choice blocks a valid scope, return `Status: blocked` with the exact decision needed.
+- Inspect the repository and completed RCA before asking the user. When an irreducible product, safety, compatibility, or architecture choice blocks a valid scope, return `Status: needs-input` with one exact question, its consequences, concrete options, and an evidence-backed recommendation when possible.
+- After receiving a clarification answer, normalize it as a decision, reconcile it with repository evidence, and continue the same scope. Do not repeat an answered question.
 
 ## Workflow
 
@@ -22,7 +23,7 @@ Turn an established root cause into an implementation-ready solution scope. Iden
 3. Synthesize the smallest candidate that breaks the verified causal chain at the responsible boundary.
 4. As the baseline adversarial check, give that candidate, not raw transcripts, back to the four axis agents. Require each to try to falsify it against its objective and return only evidence-backed objections and the minimum correction needed.
 5. Add an independent specialist only for a material open question in feasibility, testability, integration or compatibility, security or privacy, data integrity, concurrency, migration, or operations.
-6. Reconcile supported objections. Continue targeted debate while a concrete agent task or repository check can resolve a material gap or contradiction.
+6. Reconcile supported objections. Continue targeted debate while a concrete agent task or repository check can resolve a material gap or contradiction. Ask the user only when investigation cannot resolve a material decision.
 7. Re-read cited files and conventions, confirm that `HEAD`, relevant worktree state, and evidence-file fingerprints have not changed, then verify the final scope against the completion gate. If relevant state changed, return `Status: blocked` instead of reporting a stale plan.
 
 After the baseline challenge, do not add an agent or round without a specific unresolved question. Do not prefer a proposal merely because it changes fewer lines, and do not add safeguards for hypothetical risks unsupported by this system.
@@ -41,7 +42,33 @@ Call the solution scoped only when:
 - implementation steps are ordered, independently verifiable, and sufficient to deliver the scope; and
 - no material evidence-backed objection remains unresolved.
 
-If the gate fails, return `Status: blocked`, name the narrow blocker, and do not fill the gap with speculative architecture.
+If the gate fails because a user decision can resolve it, return `Status: needs-input`. Return `Status: blocked` for a stale or invalid RCA, an inaccessible Linear handoff, or another blocker that clarification cannot resolve. Do not fill gaps with speculative architecture.
+
+## Clarification output
+
+When user input is required, return only:
+
+```markdown
+Status: needs-input
+
+# Clarification needed
+
+## Question
+
+[One material question.]
+
+## Why this matters
+
+[How the answer changes the solution contract.]
+
+## Options
+
+- [Option and its consequence]
+
+## Recommendation
+
+[Evidence-backed recommendation, or "None yet."]
+```
 
 ## Output
 
@@ -119,3 +146,7 @@ Verified RCA
 ```
 
 Include every agent actually used once in the map. Do not include transcripts, tool logs, patches, implementation work, or unrelated follow-ups.
+
+## Linear sync
+
+Do not use Linear write tools during scoping, clarification, adversarial challenge, or final verification. After a `scoped` report, the runner may send a separate message beginning exactly with `TWEED_LINEAR_SYNC`. Only on that later turn may you update the supplied issue through the configured Linear MCP, and only as requested. Never write intermediate questions, answers, drafts, or agent activity to Linear.

@@ -1,100 +1,122 @@
 # Tweed
 
-Codex-native adversarial workflows for turning software problems into verified
-understanding and implementation contracts.
+Tweed is a small Codex workflow runner for evidence-backed root-cause analysis,
+solution scoping, implementation, and review with parallel subagents. Linear is
+the durable handoff between completed phases.
 
-## Workflows
+## How it works
 
-Tweed has five separate workflows. `root-cause` identifies the
-problem and establishes its cause. `scope` takes that completed RCA and
-identifies the smallest complete solution scope. `feature` turns a new feature
-request into a constrained scope and ordered implementation plan. These three
-are read-only. `implement` and `review` are the two write-capable phases:
-implementation executes an approved scope, while review independently audits
-the result and applies bounded corrections until no validated material findings
-remain.
+Tweed keeps investigation, clarification, and agent activity inside the active
+Codex thread. It writes to Linear only after a phase passes its completion gate:
 
-Independent Codex subagents challenge the evidence and proposal from distinct
-axes. The final reports include compact maps of the agents used and how each
-conclusion affected the result. The workflow prompts belong to Tweed; they are
-not installed as Codex skills.
+```text
+problem → RCA and clarification → create Linear issue
+Linear RCA → solution scope and clarification → update the issue
+Linear scope → implementation → update the issue
+Linear implementation → independent review → update the issue
+```
 
-Feature and solution scoping include a dedicated reuse-research agent that
-checks project utilities, language/framework built-ins, installed libraries,
-exact versions, and primary documentation before proposing custom code.
+Each phase starts a fresh Codex thread. Downstream phases read the complete
+handoff from Linear through the configured Linear MCP server, so another person
+can continue the task without the earlier conversation.
+
+## Prerequisites
+
+- Python 3.10 or newer
+- `uv`
+- Codex or the ChatGPT desktop app
+- The Linear MCP server connected to Codex with OAuth
+
+Configure Linear MCP if needed:
+
+```sh
+codex mcp add linear --url https://mcp.linear.app/mcp
+codex mcp login linear
+```
 
 ## Install
 
-Tweed uses the official Python Codex SDK to start the installed Codex App
-Server in the background. It creates a persistent Codex thread for the current
-project and sends the investigation directly to that thread; it does not open
-or automate the Codex terminal UI. `uv` manages the single SDK dependency.
+For local development:
 
 ```sh
 mkdir -p ~/.local/bin
-ln -s /Users/aryagm/code/tweed/tweed ~/.local/bin/tweed
+ln -s "$(pwd)/tweed" ~/.local/bin/tweed
 ```
 
-Ensure `~/.local/bin` is on `PATH`. Then, from any project, run:
+Ensure `~/.local/bin` is on `PATH`.
+
+## Configure a folder
+
+From a repository, set the Linear project that new Tweed issues should use:
+
+```sh
+tweed project set "Customer Experience"
+```
+
+Tweed stores this preference in `~/.config/tweed/config.json`, keyed by the
+repository root. Running Tweed from a subdirectory uses the same setting.
+
+Show or clear it with:
+
+```sh
+tweed project
+tweed project clear
+```
+
+`TWEED_CONFIG` may point to a different config file.
+
+## Root-cause workflow
 
 ```sh
 cd /path/to/project
-tweed root-cause
-```
-
-Tweed asks for the problem, then sends it to a new Codex thread in the
-background. You can also provide it directly:
-
-```sh
 tweed root-cause "The merged export sometimes contains duplicate customers"
 ```
 
-Save an established RCA, review it, and pass it into the separate scoping step:
+Tweed investigates with independent subagents. If a material fact cannot be
+discovered from the repository, it asks one question in the terminal and
+continues in the same Codex thread. No Linear issue is created unless the RCA
+is fully established. After the completion gate passes, Tweed creates exactly
+one issue in the configured project.
+
+## Scope the solution
+
+Pass the Linear issue identifier created by the RCA phase:
 
 ```sh
-tweed root-cause "The merged export sometimes contains duplicate customers" > /tmp/rca.md
-tweed scope /tmp/rca.md > /tmp/scope.md
+tweed scope ENG-123
 ```
 
-`scope` also accepts the RCA on standard input. It refuses to start unless the
-report begins with `Status: established`. Each step gets a fresh Codex thread,
-and none changes project files, writes to Linear, or implements anything.
+Tweed reads the completed RCA from Linear. It may ask material product or
+architecture questions locally, then updates the same issue once after the
+scope is complete. The issue description preserves the RCA and adds the final
+scope, non-goals, acceptance criteria, implementation plan, risks, and
+validation.
 
-For a new feature:
+## Scope a new feature
 
 ```sh
-tweed feature "Let users export the filtered customer list as CSV" > /tmp/scope.md
+tweed feature "Let users export the filtered customer list as CSV"
 ```
 
-The feature report captures the user outcome, proposed solution, change
-surface, ordered implementation steps, non-goals, acceptance criteria, risks,
-validation, alternatives, assumptions, and the conclusions of every agent
-used. It scopes the work but does not execute it.
+Feature scoping uses the same clarification behavior and creates a Linear issue
+only after the final scope passes its completion gate.
 
-After reviewing either kind of scoped report, implement it separately:
+## Implement and review
+
+Both phases use the Linear issue as their complete input:
 
 ```sh
-tweed implement /tmp/scope.md > /tmp/implementation.md
+tweed implement ENG-123
+tweed review ENG-123
 ```
 
-`implement` refuses anything that does not begin with `Status: scoped`. It
-preflights repository state, assigns disjoint write surfaces to bounded
-subagents, independently reviews the integrated diff, and runs the relevant
-checks. A Git repository is required so Tweed can detect partial or unexpected
-workspace changes. It may edit project files, but it does not commit, push,
-open a PR, write to Linear, deploy, or broaden the approved scope.
+Implementation may edit the local repository but does not commit, push, open a
+PR, or deploy. Review independently audits the integrated changes and may apply
+bounded in-scope corrections. Each phase updates Linear once, only after its
+completion gate passes.
 
-Run the independent review-and-fix loop against the same approved scope:
+## Non-interactive use
 
-```sh
-tweed review /tmp/scope.md /tmp/implementation.md
-```
-
-`review` uses independent simplicity/reuse, robustness, compatibility,
-performance, and verification agents. They actively seek code to delete,
-simplify, replace with verified existing capabilities, or make measurably more
-efficient. Reviewers do not edit; bounded fixers address validated findings,
-affected surfaces are re-reviewed, and a final whole-diff clean pass must
-report zero material findings. Like implementation, review may edit local files
-but performs no delivery or external writes. Reports are shown under `/tmp` so
-shell redirection does not itself alter the project under review.
+When standard input is not a terminal, Tweed cannot collect a clarification
+answer. It returns the `Status: needs-input` question and exits with status 7.
+Run the command interactively to answer and continue.

@@ -1,12 +1,12 @@
 # Tweed Implementation
 
-Implement an approved `Status: scoped` report using bounded Codex subagents. Modify only the local project and stop after verified implementation. Do not redesign the solution or perform external delivery actions.
+Implement an approved `Status: scoped` report using bounded Codex subagents. The runner normally supplies a Linear issue identifier; use Linear MCP read tools to retrieve its completed RCA and scope handoff. Modify only the local project and stop after verified implementation. Do not redesign the solution or perform external delivery actions.
 
 ## Rules
 
 - Treat the supplied scope, non-goals, acceptance criteria, implementation steps, and repository snapshot as the approved contract.
 - Honor the scope's reuse research. Prefer existing project utilities, language or framework built-ins, and installed dependencies over new custom code when their verified behavior satisfies the contract.
-- Permit repository edits and local validation only. Preserve the Git index exactly; do not stage or unstage. Do not commit, branch, stash, reset, clean, push, open a PR, update Linear, deploy, publish, mutate remote services or data, or run an irreversible migration.
+- Permit repository edits, local validation, and reading the supplied Linear issue only. Preserve the Git index exactly; do not stage or unstage. Do not commit, branch, stash, reset, clean, push, open a PR, update Linear during implementation, deploy, publish, mutate remote services or data, or run an irreversible migration.
 - Preserve pre-existing user changes. Never overwrite, revert, or attribute them to this run.
 - Add dependencies, lockfile changes, schemas, migrations, public interfaces, generated assets, or configuration only when the approved scope explicitly requires them.
 - Do not broaden behavior, perform unrelated cleanup, or invent a missing product or architecture decision.
@@ -112,3 +112,7 @@ Approved scope
 ```
 
 Include every agent actually used once in the map. Do not include transcripts or tool logs.
+
+## Linear sync
+
+Do not use Linear write tools during preflight, implementation, review, repair, or validation. After an `implemented` report, the runner may send a separate message beginning exactly with `TWEED_LINEAR_SYNC`. Only on that later turn may you update the supplied issue through the configured Linear MCP, and only as requested. Never write partial implementation state, agent activity, or failed checks to Linear.
