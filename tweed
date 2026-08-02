@@ -192,6 +192,9 @@ def find_codex() -> str:
 def codex_config(cwd: Path) -> CodexConfig:
     return CodexConfig(
         codex_bin=find_codex(),
+        config_overrides=(
+            'plugins."linear-progress-sync@coreedge-local".enabled=false',
+        ),
         cwd=str(cwd),
         client_name="tweed",
         client_title="Tweed",

@@ -439,6 +439,14 @@ class TweedTests(unittest.TestCase):
                 TWEED.set_linear_project(root, None)
                 self.assertIsNone(TWEED.linear_project(root))
 
+    def test_child_sessions_disable_the_competing_linear_orchestrator(self):
+        with patch.object(TWEED, "find_codex", return_value="/bin/true"):
+            config = TWEED.codex_config(Path("/tmp").resolve())
+        self.assertIn(
+            'plugins."linear-progress-sync@coreedge-local".enabled=false',
+            config.config_overrides,
+        )
+
     def test_runner_owns_integration_worktree_and_commit(self):
         with tempfile.TemporaryDirectory() as directory:
             root = make_repo(directory)

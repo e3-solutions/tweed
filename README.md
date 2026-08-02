@@ -71,6 +71,9 @@ applies only bounded in-scope repairs, commits any passing corrections, and
 advances the issue to `ready-to-merge`.
 
 Tweed does not push, open a pull request, merge, deploy, or delete its worktree.
+Its child sessions disable the local `linear-progress-sync` orchestrator because
+that plugin owns the same branch, Linear, and PR boundaries; only one runner may
+own those writes.
 
 ## Clarification
 
