@@ -80,6 +80,15 @@ class SlowThread:
         return self.handle
 
 
+class ReadThread:
+    def __init__(self, turns: list[SimpleNamespace]):
+        self.turns = turns
+
+    def read(self, *, include_turns: bool = False):
+        assert include_turns
+        return SimpleNamespace(thread=SimpleNamespace(turns=self.turns))
+
+
 class TweedTests(unittest.TestCase):
     def test_problem_and_feature_start_at_their_only_legal_stage(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -212,6 +221,105 @@ class TweedTests(unittest.TestCase):
         with self.assertRaisesRegex(TimeoutError, "exceeded 1 seconds"):
             TWEED.completed_json_turn(thread, "work", {}, timeout_seconds=1)
         self.assertTrue(thread.handle.interrupted)
+
+    def test_resume_prompt_distinguishes_clarification_from_interruption(self):
+        clarification = TWEED.resume_prompt("awaiting-input", "Use option A")
+        interrupted = TWEED.resume_prompt("running", "")
+
+        self.assertIn("Clarification answer", clarification)
+        self.assertIn("runner process was interrupted", interrupted)
+        with self.assertRaisesRegex(RuntimeError, "requires an answer"):
+            TWEED.resume_prompt("awaiting-input", "")
+        with self.assertRaisesRegex(RuntimeError, "without a clarification answer"):
+            TWEED.resume_prompt("failed", "unexpected answer")
+
+    def test_run_execution_lock_rejects_a_duplicate_runner(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with patch.dict(os.environ, {"TWEED_STATE_HOME": directory}):
+                with TWEED.run_execution_lock("tw_0123456789abcdef"):
+                    with self.assertRaisesRegex(RuntimeError, "already active"):
+                        with TWEED.run_execution_lock("tw_0123456789abcdef"):
+                            pass
+
+    def test_duplicate_resume_does_not_fail_the_live_run_or_prompt(self):
+        with tempfile.TemporaryDirectory() as directory:
+            run_id = "tw_0123456789abcdef"
+            state = {
+                "run_id": run_id,
+                "state": "running",
+                "phase": "scope",
+                "repository": directory,
+                "worktree": directory,
+                "branch": None,
+            }
+            with patch.dict(os.environ, {"TWEED_STATE_HOME": directory}):
+                TWEED.save_run(state)
+                TWEED.LAST_RUN_ID = None
+                with TWEED.run_execution_lock(run_id):
+                    with patch.object(
+                        TWEED,
+                        "read_request",
+                        side_effect=AssertionError("must not prompt"),
+                    ):
+                        with self.assertRaisesRegex(RuntimeError, "already active"):
+                            TWEED.resume_command(
+                                SimpleNamespace(run_id=run_id, answer=[], agent=True)
+                            )
+                self.assertEqual(TWEED.load_run(run_id)["state"], "running")
+                self.assertIsNone(TWEED.LAST_RUN_ID)
+
+    def test_completed_recorded_turn_is_recovered_without_a_new_turn(self):
+        response = json.dumps(
+            {
+                "status": "scoped",
+                "summary": "Scoped",
+                "question": None,
+                "report_markdown": "Status: scoped",
+            }
+        )
+        turn = SimpleNamespace(
+            id="turn-1",
+            status=TurnStatus.completed,
+            items=[
+                SimpleNamespace(
+                    type="agentMessage",
+                    phase=SimpleNamespace(value="final_answer"),
+                    text=response,
+                )
+            ],
+        )
+
+        result = TWEED.recover_recorded_result(
+            ReadThread([turn]), {"turn_id": "turn-1"}, TWEED.PHASES["scope"]
+        )
+
+        self.assertEqual(result["status"], "scoped")
+
+    def test_active_or_missing_recorded_turn_cannot_be_duplicated(self):
+        active = SimpleNamespace(id="turn-1", status=TurnStatus.in_progress, items=[])
+        with self.assertRaisesRegex(RuntimeError, "still active"):
+            TWEED.recover_recorded_result(
+                ReadThread([active]),
+                {"turn_id": "turn-1"},
+                TWEED.PHASES["scope"],
+            )
+        with self.assertRaisesRegex(RuntimeError, "no recorded"):
+            TWEED.recover_recorded_result(ReadThread([]), {}, TWEED.PHASES["scope"])
+
+    def test_resume_rejects_a_moved_or_changed_worktree(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = make_repo(directory)
+            metadata = {"planning_base": git(root, "rev-parse", "HEAD")}
+            TWEED.validate_resume_worktree(
+                root, root, None, TWEED.PHASES["scope"], metadata
+            )
+            (root / "README.md").write_text("changed\n")
+            git(root, "add", "README.md")
+            git(root, "commit", "-m", "move head")
+            with self.assertRaisesRegex(RuntimeError, "HEAD changed"):
+                TWEED.validate_resume_worktree(
+                    root, root, None, TWEED.PHASES["scope"], metadata
+                )
 
     def test_run_state_round_trip_is_private_and_atomic(self):
         with tempfile.TemporaryDirectory() as directory:

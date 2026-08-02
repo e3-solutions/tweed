@@ -574,6 +574,19 @@ def run_phase_turn(thread: Any, prompt: str, phase: Phase) -> dict[str, Any]:
     result = completed_json_turn(
         thread, prompt, phase_schema(phase.command), phase.sandbox, timeout
     )
+    return validate_phase_result(result, phase)
+
+
+def validate_phase_result(result: dict[str, Any], phase: Phase) -> dict[str, Any]:
+    required = {"status", "summary", "question", "report_markdown"}
+    if set(result) != required:
+        raise RuntimeError("phase structured output has invalid fields")
+    if result["status"] not in ALLOWED_STATUSES[phase.command]:
+        raise RuntimeError("phase returned an unsupported status")
+    if not isinstance(result["summary"], str) or not isinstance(
+        result["report_markdown"], str
+    ):
+        raise RuntimeError("phase returned invalid text fields")
     if result["status"] == NEEDS_INPUT and not result.get("question"):
         raise RuntimeError("phase requested input without a structured question")
     if result["status"] != NEEDS_INPUT and result.get("question") is not None:
@@ -589,6 +602,54 @@ def run_phase_turn(thread: Any, prompt: str, phase: Phase) -> dict[str, Any]:
     if first_line != f"Status: {result['status']}":
         raise RuntimeError("phase report status does not match its structured status")
     return result
+
+
+def phase_result_from_response(response: str, phase: Phase) -> dict[str, Any]:
+    try:
+        result = json.loads(response)
+    except json.JSONDecodeError as error:
+        raise RuntimeError(
+            "completed Codex turn has invalid structured output"
+        ) from error
+    if not isinstance(result, dict):
+        raise RuntimeError("completed Codex turn output was not an object")
+    return validate_phase_result(result, phase)
+
+
+def final_response_from_turn(turn: Any) -> str:
+    fallback: str | None = None
+    for raw_item in reversed(turn.items):
+        item = getattr(raw_item, "root", raw_item)
+        if getattr(item, "type", None) != "agentMessage":
+            continue
+        phase = getattr(item, "phase", None)
+        phase_value = getattr(phase, "value", phase)
+        if phase_value == "final_answer":
+            return item.text
+        if phase is None and fallback is None:
+            fallback = item.text
+    if fallback is None:
+        raise RuntimeError("completed Codex turn has no final response")
+    return fallback
+
+
+def recover_recorded_result(
+    thread: Any, state: dict[str, Any], phase: Phase
+) -> dict[str, Any] | None:
+    turn_id = state.get("turn_id")
+    if not turn_id:
+        raise RuntimeError("interrupted run has no recorded Codex turn")
+    turns = thread.read(include_turns=True).thread.turns
+    recorded = next((turn for turn in turns if turn.id == turn_id), None)
+    if recorded is None:
+        raise RuntimeError("recorded Codex turn is missing from its thread")
+    if recorded.status == TurnStatus.in_progress:
+        raise RuntimeError("recorded Codex turn is still active; retry resume later")
+    if recorded.status == TurnStatus.completed:
+        return phase_result_from_response(final_response_from_turn(recorded), phase)
+    if recorded.status in {TurnStatus.interrupted, TurnStatus.failed}:
+        return None
+    raise RuntimeError(f"recorded Codex turn has unsupported status {recorded.status}")
 
 
 def start_phase_thread(
@@ -611,6 +672,31 @@ def continuation_prompt(answer: str) -> str:
     )
 
 
+def interrupted_continuation_prompt() -> str:
+    return (
+        "The runner process was interrupted before this phase returned its final structured "
+        "result. Continue the same phase from the frozen issue snapshot and preserved "
+        "workspace. Reuse completed investigation and partial implementation where valid, "
+        "revalidate the current repository state, and return the complete phase result. Do "
+        "not repeat external writes or ask for input unless a material decision is still "
+        "required."
+    )
+
+
+def resume_prompt(state_name: str, answer: str) -> str:
+    if state_name == "awaiting-input":
+        if not answer:
+            raise RuntimeError("resume requires an answer for an awaiting-input run")
+        return continuation_prompt(answer)
+    if state_name in {"running", "failed", "canceled"}:
+        if answer:
+            raise RuntimeError(
+                "an interrupted run resumes without a clarification answer"
+            )
+        return interrupted_continuation_prompt()
+    raise RuntimeError(f"run is not resumable from state {state_name!r}")
+
+
 def sanitize_issue(issue: str) -> str:
     value = issue.strip().lower()
     if not re.fullmatch(r"[a-z][a-z0-9]*-\d+", value):
@@ -631,6 +717,35 @@ def branch_worktree(root: Path, branch: str) -> Path | None:
         elif line == f"branch refs/heads/{branch}" and current:
             return current
     return None
+
+
+def validate_resume_worktree(
+    root: Path,
+    worktree: Path,
+    branch: str | None,
+    phase: Phase,
+    metadata: dict[str, Any],
+) -> None:
+    if not worktree.is_dir():
+        raise RuntimeError(f"saved Tweed worktree is missing: {worktree}")
+    if phase.writes_repository:
+        if not branch or branch_worktree(root, branch) != worktree:
+            raise RuntimeError(
+                "saved Tweed worktree no longer owns its recorded branch"
+            )
+        expected_head = (
+            metadata.get("planning_base")
+            if phase.command == "implement"
+            else metadata.get("integration_commit")
+        )
+    else:
+        if worktree != root:
+            raise RuntimeError("saved read-only Tweed run has the wrong worktree")
+        expected_head = metadata.get("planning_base")
+    if not expected_head or git(worktree, "rev-parse", "HEAD") != expected_head:
+        raise RuntimeError(
+            "saved Tweed worktree HEAD changed while the phase was paused"
+        )
 
 
 def prepare_implementation_worktree(
@@ -706,6 +821,20 @@ def repository_write_lock(root: Path, enabled: bool) -> Iterator[None]:
             raise RuntimeError(
                 "another Tweed writer is active for this repository"
             ) from error
+        yield
+
+
+@contextlib.contextmanager
+def run_execution_lock(run_id: str) -> Iterator[None]:
+    lock_path = state_path(run_id).parent / "execution.lock"
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    lock_path.touch(mode=0o600, exist_ok=True)
+    lock_path.chmod(0o600)
+    with lock_path.open("w") as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as error:
+            raise RuntimeError(f"run {run_id} is already active") from error
         yield
 
 
@@ -1053,7 +1182,7 @@ def phase_command(args: argparse.Namespace) -> int:
     args.issue = sanitize_issue(args.issue).upper()
     caller_root = repository_root(args.repo)
     run_id = new_run_id()
-    with active_run(run_id):
+    with active_run(run_id), run_execution_lock(run_id):
         with repository_write_lock(caller_root, phase.writes_repository):
             with Codex(codex_config(caller_root)) as codex:
                 issue = read_linear_issue(codex, caller_root, args.issue)
@@ -1141,79 +1270,93 @@ def phase_command(args: argparse.Namespace) -> int:
 
 
 def resume_command(args: argparse.Namespace) -> int:
+    global LAST_RUN_ID
     state = load_run(args.run_id)
-    if state.get("state") != "awaiting-input":
-        raise RuntimeError(f"run {args.run_id} is not awaiting input")
-    answer = read_request(args.answer, "Answer the Tweed clarification")
-    if not answer:
-        raise RuntimeError("resume requires an answer")
+    state_name = str(state.get("state"))
+    answer = (
+        read_request(args.answer, "Answer the Tweed clarification")
+        if state_name == "awaiting-input"
+        else " ".join(args.answer).strip()
+    )
+    prompt = resume_prompt(state_name, answer)
     phase = PHASES[state["phase"]]
     root = Path(state["repository"]).resolve()
     worktree = Path(state["worktree"]).resolve()
     branch = state.get("branch")
-    with repository_write_lock(root, phase.writes_repository):
-        with active_run(args.run_id):
-            with Codex(codex_config(worktree)) as codex:
-                current_issue = read_linear_issue(
-                    codex, root, state["issue"]["identifier"]
+    with run_execution_lock(args.run_id):
+        with repository_write_lock(root, phase.writes_repository):
+            with active_run(args.run_id):
+                validate_resume_worktree(
+                    root, worktree, branch, phase, state["metadata"]
                 )
-                if digest(current_issue["description"]) != state["issue_digest"]:
-                    raise RuntimeError(
-                        "Linear issue changed while the phase awaited input"
+                with Codex(codex_config(worktree)) as codex:
+                    current_issue = read_linear_issue(
+                        codex, root, state["issue"]["identifier"]
                     )
-                thread = codex.thread_resume(
-                    state["thread_id"],
-                    cwd=str(worktree),
-                    developer_instructions=state["workflow_text"],
-                    sandbox=phase.sandbox,
-                )
-                result = run_phase_turn(thread, continuation_prompt(answer), phase)
-                if result["status"] == NEEDS_INPUT:
-                    save_awaiting_run(
-                        args.run_id,
-                        phase,
-                        current_issue,
-                        state["metadata"],
+                    if digest(current_issue["description"]) != state["issue_digest"]:
+                        raise RuntimeError(
+                            "Linear issue changed while the phase was paused"
+                        )
+                    thread = codex.thread_resume(
+                        state["thread_id"],
+                        cwd=str(worktree),
+                        developer_instructions=state["workflow_text"],
+                        sandbox=phase.sandbox,
+                    )
+                    recovered = (
+                        recover_recorded_result(thread, state, phase)
+                        if state_name in {"running", "failed", "canceled"}
+                        else None
+                    )
+                    LAST_RUN_ID = args.run_id
+                    state["state"] = "running"
+                    state.pop("error", None)
+                    save_run(state)
+                    result = recovered or run_phase_turn(thread, prompt, phase)
+                    if result["status"] == NEEDS_INPUT:
+                        save_awaiting_run(
+                            args.run_id,
+                            phase,
+                            current_issue,
+                            state["metadata"],
+                            root,
+                            worktree,
+                            branch,
+                            thread,
+                            result,
+                            state["workflow_text"],
+                        )
+                        emit(
+                            receipt(
+                                run_id=args.run_id,
+                                state="awaiting-input",
+                                issue=current_issue["identifier"],
+                                url=current_issue["url"],
+                                phase=phase.command,
+                                status=NEEDS_INPUT,
+                                previous_stage=state["metadata"]["stage"],
+                                next_stage=state["metadata"]["stage"],
+                                summary=result["summary"],
+                                thread_id=thread.id,
+                                question=result["question"],
+                                branch=branch,
+                            ),
+                            args.agent,
+                        )
+                        return 7
+                    return finish_phase(
+                        codex,
                         root,
                         worktree,
                         branch,
-                        thread,
+                        current_issue,
+                        state["metadata"],
+                        phase,
+                        args.run_id,
+                        thread.id,
                         result,
-                        state["workflow_text"],
-                    )
-                    emit(
-                        receipt(
-                            run_id=args.run_id,
-                            state="awaiting-input",
-                            issue=current_issue["identifier"],
-                            url=current_issue["url"],
-                            phase=phase.command,
-                            status=NEEDS_INPUT,
-                            previous_stage=state["metadata"]["stage"],
-                            next_stage=state["metadata"]["stage"],
-                            summary=result["summary"],
-                            thread_id=thread.id,
-                            question=result["question"],
-                            branch=branch,
-                        ),
                         args.agent,
                     )
-                    return 7
-                state["state"] = "resumed"
-                save_run(state)
-                return finish_phase(
-                    codex,
-                    root,
-                    worktree,
-                    branch,
-                    current_issue,
-                    state["metadata"],
-                    phase,
-                    args.run_id,
-                    thread.id,
-                    result,
-                    args.agent,
-                )
 
 
 def retry_sync_command(args: argparse.Namespace) -> int:

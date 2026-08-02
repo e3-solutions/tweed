@@ -80,6 +80,8 @@ question with exit status 7. Resume that exact task with:
 
 ```sh
 tweed resume tw_0123456789abcdef "Use the existing export permission model"
+# If a runner was interrupted, resume it without an answer:
+tweed resume tw_0123456789abcdef
 ```
 
 Full reports and workflow snapshots are stored privately under
