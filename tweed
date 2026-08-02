@@ -417,6 +417,15 @@ def section_body(description: str, name: str) -> str | None:
     return match.group("body").strip() if match else None
 
 
+def normalized_linear_markdown(value: str | None) -> str | None:
+    if value is None:
+        return None
+    return "\n".join(
+        re.sub(r"^(\s*)[+*] ", r"\1- ", line.rstrip())
+        for line in value.strip().splitlines()
+    )
+
+
 def phase_sync_already_landed(state: dict[str, Any], issue: dict[str, Any]) -> bool:
     try:
         current_metadata = parse_metadata(issue["description"])
@@ -428,8 +437,12 @@ def phase_sync_already_landed(state: dict[str, Any], issue: dict[str, Any]) -> b
         current_metadata == desired_metadata
         and current_metadata.get("last_run") == state["run_id"]
         and current_metadata.get("stage") == phase.next_stage
-        and section_body(issue["description"], phase.section)
-        == section_body(state["new_description"], phase.section)
+        and normalized_linear_markdown(
+            section_body(issue["description"], phase.section)
+        )
+        == normalized_linear_markdown(
+            section_body(state["new_description"], phase.section)
+        )
     )
 
 

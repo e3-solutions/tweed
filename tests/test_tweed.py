@@ -162,7 +162,7 @@ class TweedTests(unittest.TestCase):
                 "status": "scoped",
                 "summary": "Scoped",
                 "question": None,
-                "report_markdown": "Status: scoped\n\n# Solution scope\n\nDo it.",
+                "report_markdown": "Status: scoped\n\n# Solution scope\n\n- Do it.",
             }
             run_id = "tw_1111111111111111"
             desired = TWEED.advanced_description(
@@ -183,7 +183,16 @@ class TweedTests(unittest.TestCase):
 
             self.assertTrue(
                 TWEED.phase_sync_already_landed(
-                    state, {**issue, "description": desired + "\n\n"}
+                    state,
+                    {
+                        **issue,
+                        "description": TWEED.replace_section(
+                            desired,
+                            "scope",
+                            result["report_markdown"].replace("- Do", "* Do"),
+                        )
+                        + "\n\n",
+                    },
                 )
             )
             changed = TWEED.replace_section(desired, "scope", "Status: scoped\n\nWrong")
