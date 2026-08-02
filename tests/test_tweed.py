@@ -272,6 +272,27 @@ class TweedTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "does not match"):
             TWEED.run_phase_turn(thread, "scope it", TWEED.PHASES["scope"])
 
+    def test_scope_evidence_is_verified_from_repository_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = make_repo(directory)
+            readme_hash = TWEED.hashlib.sha256(
+                (root / "README.md").read_bytes()
+            ).hexdigest()
+            report = (
+                "Status: scoped\n\n## Repository state\n\n"
+                f"- `README.md` → {readme_hash}\n"
+                "- `new-file.ts` → ABSENT\n\n## Implementation steps\n"
+            )
+            TWEED.validate_scope_evidence(root, report)
+
+            malformed = report.replace(readme_hash, readme_hash[:-1])
+            with self.assertRaisesRegex(RuntimeError, "invalid SHA-256"):
+                TWEED.validate_scope_evidence(root, malformed)
+
+            wrong = report.replace(readme_hash, "0" * 64)
+            with self.assertRaisesRegex(RuntimeError, "does not match"):
+                TWEED.validate_scope_evidence(root, wrong)
+
     def test_turn_timeout_interrupts_the_active_turn(self):
         thread = SlowThread()
         with self.assertRaisesRegex(TimeoutError, "exceeded 1 seconds"):

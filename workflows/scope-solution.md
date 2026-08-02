@@ -11,6 +11,8 @@ Turn the supplied frozen Linear issue snapshot into an implementation-ready solu
 - Separate verified facts and constraints from proposals and unresolved decisions.
 - Inspect the repository and completed RCA before asking the user. When an irreducible product, safety, compatibility, or architecture choice blocks a valid scope, return `Status: needs-input` with one exact question, its consequences, concrete options, and an evidence-backed recommendation when possible.
 - After receiving a clarification answer, normalize it as a decision, reconcile it with repository evidence, and continue the same scope. Do not repeat an answered question.
+- Every implementation step must be executable through repository edits and local validation inside the future runner-owned worktree. Put deployments, credential creation, remote configuration, live migrations, production/staging exercises, and other external actions in an explicitly non-blocking post-merge follow-up; never make them an implementation dependency or completion criterion.
+- Compute every evidence SHA-256 from the final file bytes, preserve all 64 lowercase hexadecimal characters, and verify the completed snapshot before returning. Never transcribe or abbreviate a digest manually.
 
 ## Workflow
 
@@ -39,6 +41,8 @@ Call the solution scoped only when:
 - changed surfaces and interface effects are explicit;
 - acceptance criteria and verification distinguish the real fix from the original failure; and
 - implementation steps are ordered, independently verifiable, and sufficient to deliver the scope; and
+- implementation steps require only repository edits and local checks, with external rollout or runtime validation clearly separated as post-merge follow-up; and
+- every evidence snapshot digest is a verified 64-character SHA-256 of the cited final file bytes, or `ABSENT` for a path that is confirmed absent; and
 - no material evidence-backed objection remains unresolved.
 
 If the gate fails because a user decision can resolve it, return `Status: needs-input`. Return `Status: blocked` for a stale or invalid RCA, an inaccessible Linear handoff, or another blocker that clarification cannot resolve. Do not fill gaps with speculative architecture.
@@ -125,6 +129,10 @@ Status: [scoped | blocked]
 ## Validation
 
 - [Test or diagnostic that distinguishes fixed from broken]
+
+## Post-merge follow-up
+
+- [External rollout, provisioning, or live validation action that is not part of implementation, or "None"]
 
 ## Alternatives considered
 

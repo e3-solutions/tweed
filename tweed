@@ -643,6 +643,47 @@ def validate_phase_result(result: dict[str, Any], phase: Phase) -> dict[str, Any
     return result
 
 
+def validate_scope_evidence(root: Path, report: str) -> None:
+    canonical_root = root.resolve()
+    state_match = re.search(
+        r"^## Repository state\s*$\n(?P<body>.*?)(?=^## |\Z)",
+        report,
+        re.MULTILINE | re.DOTALL,
+    )
+    if not state_match:
+        raise RuntimeError("scoped report is missing its repository state")
+    entries: list[tuple[str, str]] = []
+    for line in state_match.group("body").splitlines():
+        if "→" not in line:
+            continue
+        match = re.fullmatch(r"\s*[-*]\s+`?(.*?)`?\s+→\s+(ABSENT|[a-f0-9]+)\s*", line)
+        if not match:
+            raise RuntimeError(f"invalid scope evidence entry: {line.strip()}")
+        entries.append((match.group(1), match.group(2)))
+    if not entries:
+        raise RuntimeError("scoped report has no evidence snapshot entries")
+    for relative, expected in entries:
+        path = Path(relative)
+        if path.is_absolute() or ".." in path.parts:
+            raise RuntimeError(f"unsafe scope evidence path: {relative}")
+        target = (canonical_root / path).resolve()
+        if not target.is_relative_to(canonical_root):
+            raise RuntimeError(f"scope evidence escapes the repository: {relative}")
+        if expected == "ABSENT":
+            if target.exists():
+                raise RuntimeError(
+                    f"scope evidence expected an absent path: {relative}"
+                )
+            continue
+        if not re.fullmatch(r"[a-f0-9]{64}", expected):
+            raise RuntimeError(f"scope evidence has an invalid SHA-256: {relative}")
+        if not target.is_file():
+            raise RuntimeError(f"scope evidence file is missing: {relative}")
+        actual = hashlib.sha256(target.read_bytes()).hexdigest()
+        if actual != expected:
+            raise RuntimeError(f"scope evidence hash does not match: {relative}")
+
+
 def phase_result_from_response(response: str, phase: Phase) -> dict[str, Any]:
     try:
         result = json.loads(response)
@@ -1130,6 +1171,9 @@ def finish_phase(
             result["report_markdown"],
         )
         return {"not-established": 3, "blocked": 4, "partial": 6}.get(status, 1)
+
+    if phase.command == "scope":
+        validate_scope_evidence(worktree, result["report_markdown"])
 
     commit = (
         commit_phase(worktree, issue["identifier"], phase)
