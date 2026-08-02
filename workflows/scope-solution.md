@@ -1,11 +1,11 @@
-# Tweed Solution Scope
+# Tweed Scope
 
-Turn an established root cause into an implementation-ready solution scope. Identify exactly what should be changed and why, but do not modify code, implement the change, or perform external writes. The runner normally supplies a Linear issue identifier; use Linear MCP read tools to retrieve its completed RCA handoff.
+Turn the supplied frozen Linear issue snapshot into an implementation-ready solution scope. For a `problem`, scope from its established RCA. For a `feature`, scope directly from its original request. Identify exactly what should change and why, but do not modify code, implement the change, or perform external writes.
 
 ## Rules
 
-- Proceed only from an established root cause with concrete evidence. Otherwise return `Status: blocked` and do not design a solution.
-- Do not modify project files, write to Linear, or cause external side effects while scoping or clarifying. Reading the supplied Linear issue is allowed.
+- Verify the issue is at stage `needs-scope`. For a `problem`, proceed only from an established root cause with concrete evidence. For a `feature`, proceed from the recorded request and verified repository behavior. Otherwise return `Status: blocked` and do not design a solution.
+- Do not modify project files, use Linear tools, or cause external side effects while scoping or clarifying.
 - Reuse existing structures, libraries, and conventions. Add a dependency, abstraction, configuration surface, or migration only when evidence makes it necessary.
 - Research language and framework built-ins, existing project utilities, installed dependencies, and their exact versions before proposing custom machinery. Use primary sources such as official documentation or source when repository evidence is insufficient.
 - Separate verified facts and constraints from proposals and unresolved decisions.
@@ -14,7 +14,7 @@ Turn an established root cause into an implementation-ready solution scope. Iden
 
 ## Workflow
 
-1. Freeze the verified root cause, repository path, Git `HEAD`, worktree state, evidence snapshot, constraints, and supporting evidence. Verify that the reported repository state still matches the current state. If relevant state changed, return `Status: blocked` instead of scoping a stale diagnosis.
+1. Freeze the supplied request and, for a problem, its verified root cause. Record the repository path, Git `HEAD`, worktree state, evidence snapshot, constraints, and supporting evidence. Verify that the reported repository state still matches the current state. If relevant state changed, return `Status: blocked` instead of scoping stale input.
 2. Start with independent agents on four axes:
    - **Repository and reuse research:** Inventory internal utilities, language and framework built-ins, and installed libraries that could break the verified causal chain. Verify exact-version behavior from repository evidence, official documentation, or source, and identify the narrow gap custom code must fill.
    - **Simplicity:** Find the smallest causal change and challenge new abstractions, dependencies, configuration, and unrelated cleanup.
@@ -147,6 +147,6 @@ Verified RCA
 
 Include every agent actually used once in the map. Do not include transcripts, tool logs, patches, implementation work, or unrelated follow-ups.
 
-## Linear sync
+## Structured return
 
-Do not use Linear write tools during scoping, clarification, adversarial challenge, or final verification. After a `scoped` report, the runner may send a separate message beginning exactly with `TWEED_LINEAR_SYNC`. Only on that later turn may you update the supplied issue through the configured Linear MCP, and only as requested. Never write intermediate questions, answers, drafts, or agent activity to Linear.
+Return the result through the runner-provided JSON schema with `status`, a bounded `summary`, optional structured `question`, and the complete report in `report_markdown`. The report must begin with the matching `Status:` line. Never use Linear tools; the runner alone persists a completed phase.

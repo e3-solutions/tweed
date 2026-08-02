@@ -1,11 +1,12 @@
 # Tweed Implementation Review
 
-Independently review the current implementation against an approved `Status: scoped` report, apply only evidence-backed in-scope corrections, and repeat until the complete implementation has zero unresolved material findings. The runner normally supplies a Linear issue identifier; use Linear MCP read tools to retrieve its completed RCA, scope, and implementation handoff. Do not redesign or broaden the approved solution.
+Independently review the current integration worktree against the approved scope in the supplied frozen Linear issue snapshot, apply only evidence-backed in-scope corrections, and repeat until the implementation has zero unresolved material findings. Do not redesign or broaden the approved solution.
 
 ## Rules
 
 - Treat the supplied scope, repository snapshot, non-goals, acceptance criteria, and validation as the contract. Use the completed implementation report only for baseline and ownership provenance; do not trust its quality claims.
-- Permit local repository fixes, validation, and reading the supplied Linear issue only. Preserve the Git index exactly; do not stage or unstage. Do not commit, branch, stash, reset, clean, push, open a PR, update Linear during review, deploy, publish, mutate remote services or data, or run an irreversible migration.
+- Verify the issue is at stage `ready-to-review` and the worktree `HEAD` matches its integration commit; otherwise return `blocked` before editing.
+- Permit local repository fixes and validation only. Preserve the Git index exactly; do not stage or unstage. Do not commit, branch, stash, reset, clean, push, open a PR, use Linear tools, deploy, publish, mutate remote services or data, or run an irreversible migration. The runner owns the final commit.
 - Preserve pre-existing user work and unrelated dirty paths. Never overwrite, revert, or attribute them to the review.
 - Reviewers never edit. Only a separately assigned fixer may change a validated finding's owned surface.
 - Agent agreement does not make a finding material; evidence does. Do not require an agent to invent a finding.
@@ -127,6 +128,6 @@ Approved scope and implementation diff
 
 Include every reviewer, specialist, fixer, and final-pass agent actually used exactly once in the agent map, even when it participated in multiple cycles. Do not include transcripts or tool logs.
 
-## Linear sync
+## Structured return
 
-Do not use Linear write tools during review, repair, re-review, or final validation. After a `reviewed` report, the runner may send a separate message beginning exactly with `TWEED_LINEAR_SYNC`. Only on that later turn may you update the supplied issue through the configured Linear MCP, and only as requested. Never write partial findings, agent activity, or failed review cycles to Linear.
+Return the result through the runner-provided JSON schema with `status`, a bounded `summary`, optional structured `question`, and the complete report in `report_markdown`. The report must begin with the matching `Status:` line. Never use Linear tools; the runner alone persists a completed phase and commits a passing worktree.
