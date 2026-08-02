@@ -13,6 +13,7 @@ import hashlib
 import json
 import os
 import re
+import signal
 import shutil
 import subprocess
 import sys
@@ -30,6 +31,7 @@ SCHEMA_VERSION = 1
 PROTOCOL = "dev.tweed.receipt.v1"
 NEEDS_INPUT = "needs-input"
 LAST_RUN_ID: str | None = None
+LAST_TURN_ID: str | None = None
 META_START = "<!-- tweed:metadata:start -->"
 META_END = "<!-- tweed:metadata:end -->"
 SECTION_RE = re.compile(
@@ -325,6 +327,34 @@ def new_run_id() -> str:
     return LAST_RUN_ID
 
 
+def record_active_turn(turn_id: str) -> None:
+    if not LAST_RUN_ID:
+        return
+    path = state_path(LAST_RUN_ID)
+    if not path.exists():
+        return
+    state = json.loads(path.read_text())
+    if state.get("state") == "running":
+        state["turn_id"] = turn_id
+        atomic_json_write(path, state)
+
+
+def mark_run_terminal(run_id: str | None, state_name: str, error: str) -> None:
+    if not run_id:
+        return
+    path = state_path(run_id)
+    if not path.exists():
+        return
+    state = json.loads(path.read_text())
+    if state.get("state") != "running":
+        return
+    state["state"] = state_name
+    state["error"] = error
+    if LAST_TURN_ID:
+        state["turn_id"] = LAST_TURN_ID
+    save_run(state)
+
+
 def digest(text: str) -> str:
     return hashlib.sha256(text.encode()).hexdigest()
 
@@ -402,12 +432,37 @@ def intake_description(
 
 
 def completed_json_turn(
-    thread: Any, prompt: str, schema: dict[str, Any], sandbox: Sandbox | None = None
+    thread: Any,
+    prompt: str,
+    schema: dict[str, Any],
+    sandbox: Sandbox | None = None,
+    timeout_seconds: int = 180,
 ) -> dict[str, Any]:
+    global LAST_TURN_ID
     options: dict[str, Any] = {"output_schema": schema}
     if sandbox is not None:
         options["sandbox"] = sandbox
-    result = thread.run(prompt, **options)
+    if hasattr(thread, "turn"):
+        handle = thread.turn(prompt, **options)
+        LAST_TURN_ID = handle.id
+        record_active_turn(handle.id)
+
+        def timed_out(_signum: int, _frame: Any) -> None:
+            raise TimeoutError(f"Codex turn exceeded {timeout_seconds} seconds")
+
+        previous_handler = signal.signal(signal.SIGALRM, timed_out)
+        signal.setitimer(signal.ITIMER_REAL, timeout_seconds)
+        try:
+            result = handle.run()
+        except BaseException:
+            with contextlib.suppress(Exception):
+                handle.interrupt()
+            raise
+        finally:
+            signal.setitimer(signal.ITIMER_REAL, 0)
+            signal.signal(signal.SIGALRM, previous_handler)
+    else:
+        result = thread.run(prompt, **options)
     if result.status != TurnStatus.completed:
         detail = f": {result.error}" if result.error else ""
         raise RuntimeError(
@@ -515,8 +570,9 @@ def phase_prompt(issue: dict[str, Any], phase: Phase) -> str:
 
 
 def run_phase_turn(thread: Any, prompt: str, phase: Phase) -> dict[str, Any]:
+    timeout = int(os.environ.get("TWEED_PHASE_TIMEOUT", "1200"))
     result = completed_json_turn(
-        thread, prompt, phase_schema(phase.command), phase.sandbox
+        thread, prompt, phase_schema(phase.command), phase.sandbox, timeout
     )
     if result["status"] == NEEDS_INPUT and not result.get("question"):
         raise RuntimeError("phase requested input without a structured question")
@@ -1318,6 +1374,7 @@ if __name__ == "__main__":
     try:
         raise SystemExit(main())
     except KeyboardInterrupt:
+        mark_run_terminal(LAST_RUN_ID, "canceled", "interrupted")
         if agent_mode:
             emit(
                 receipt(
@@ -1333,6 +1390,7 @@ if __name__ == "__main__":
             )
         raise SystemExit(130) from None
     except Exception as error:
+        mark_run_terminal(LAST_RUN_ID, "failed", str(error))
         if agent_mode:
             emit(
                 receipt(

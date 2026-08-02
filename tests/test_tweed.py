@@ -7,6 +7,7 @@ import os
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
@@ -56,6 +57,27 @@ class FakeThread:
             final_response=json.dumps(self.response),
             error=None,
         )
+
+
+class SlowHandle:
+    id = "turn-1"
+
+    def __init__(self):
+        self.interrupted = False
+
+    def run(self):
+        time.sleep(2)
+
+    def interrupt(self):
+        self.interrupted = True
+
+
+class SlowThread:
+    def __init__(self):
+        self.handle = SlowHandle()
+
+    def turn(self, _prompt: str, **_options):
+        return self.handle
 
 
 class TweedTests(unittest.TestCase):
@@ -184,6 +206,12 @@ class TweedTests(unittest.TestCase):
         )
         with self.assertRaisesRegex(RuntimeError, "does not match"):
             TWEED.run_phase_turn(thread, "scope it", TWEED.PHASES["scope"])
+
+    def test_turn_timeout_interrupts_the_active_turn(self):
+        thread = SlowThread()
+        with self.assertRaisesRegex(TimeoutError, "exceeded 1 seconds"):
+            TWEED.completed_json_turn(thread, "work", {}, timeout_seconds=1)
+        self.assertTrue(thread.handle.interrupted)
 
     def test_run_state_round_trip_is_private_and_atomic(self):
         with tempfile.TemporaryDirectory() as directory:

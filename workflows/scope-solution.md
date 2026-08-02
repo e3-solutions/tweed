@@ -15,24 +15,23 @@ Turn the supplied frozen Linear issue snapshot into an implementation-ready solu
 ## Workflow
 
 1. Freeze the supplied request and, for a problem, its verified root cause. Record the repository path, Git `HEAD`, worktree state, evidence snapshot, constraints, and supporting evidence. Verify that the reported repository state still matches the current state. If relevant state changed, return `Status: blocked` instead of scoping stale input.
-2. Start with independent agents on four axes:
-   - **Repository and reuse research:** Inventory internal utilities, language and framework built-ins, and installed libraries that could break the verified causal chain. Verify exact-version behavior from repository evidence, official documentation, or source, and identify the narrow gap custom code must fill.
-   - **Simplicity:** Find the smallest causal change and challenge new abstractions, dependencies, configuration, and unrelated cleanup.
-   - **Robustness and stability:** Find realistic failure modes, edge cases, compatibility hazards, partial failures, and rollback needs. Challenge a patch that fixes only the example.
-   - **Performance:** Inspect hot paths, latency, resource use, scaling behavior, and the overhead of proposed safeguards.
-3. Synthesize the smallest candidate that breaks the verified causal chain at the responsible boundary.
-4. As the baseline adversarial check, give that candidate, not raw transcripts, back to the four axis agents. Require each to try to falsify it against its objective and return only evidence-backed objections and the minimum correction needed.
-5. Add an independent specialist only for a material open question in feasibility, testability, integration or compatibility, security or privacy, data integrity, concurrency, migration, or operations.
-6. Reconcile supported objections. Continue targeted debate while a concrete agent task or repository check can resolve a material gap or contradiction. Ask the user only when investigation cannot resolve a material decision.
-7. Re-read cited files and conventions, confirm that `HEAD`, relevant worktree state, and evidence-file fingerprints have not changed, then verify the final scope against the completion gate. If relevant state changed, return `Status: blocked` instead of reporting a stale plan.
+2. Start exactly three independent agents:
+   - **Repository and reuse:** Inventory internal utilities, language and framework built-ins, installed libraries, integration points, and exact-version behavior needed by the request.
+   - **Product and simplicity:** Define the smallest coherent user-visible outcome and challenge new abstractions, dependencies, configuration, variants, and unrelated cleanup.
+   - **Robustness and verification:** Find realistic failure, compatibility, security, data, concurrency, performance, and operational risks; turn them into bounded safeguards and proving checks.
+3. If an initial agent is interrupted or fails, replace it once with the same frozen input. If the replacement fails, return `Status: blocked` rather than waiting indefinitely.
+4. Synthesize the smallest complete candidate from their bounded packets.
+5. Give only that candidate and its evidence to one fresh adversarial reviewer. Require material objections and the minimum correction needed; do not start a second general critique round.
+6. Add one specialist only when a named unresolved risk cannot be adjudicated from repository evidence or the three baseline packets.
+7. Reconcile supported objections, ask the user only when investigation cannot resolve a material decision, then re-read cited evidence and confirm `HEAD`, relevant worktree state, and evidence-file fingerprints have not changed.
 
-After the baseline challenge, do not add an agent or round without a specific unresolved question. Do not prefer a proposal merely because it changes fewer lines, and do not add safeguards for hypothetical risks unsupported by this system.
+Do not add an agent or round without a specific unresolved question. Do not prefer a proposal merely because it changes fewer lines, and do not add safeguards for hypothetical risks unsupported by this system.
 
 ## Completion gate
 
 Call the solution scoped only when:
 
-- it addresses the verified mechanism at the responsible boundary;
+- it addresses the requested outcome and, for a problem, the verified mechanism at the responsible boundary;
 - every included change is necessary and every non-goal is safely unnecessary;
 - realistic failure modes, compatibility constraints, and performance effects are covered;
 - existing code and dependencies are reused where appropriate;
