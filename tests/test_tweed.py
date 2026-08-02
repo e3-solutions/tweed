@@ -146,6 +146,53 @@ class TweedTests(unittest.TestCase):
         self.assertNotIn("\nnew\n", twice)
         self.assertEqual(twice.count("tweed:scope:start"), 1)
 
+    def test_sync_reconciliation_accepts_only_matching_transition_and_section(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = make_repo(directory)
+            description = TWEED.intake_description(
+                "feature", "CSV export", root, "CX", "tw_0123456789abcdef"
+            )
+            issue = {
+                "identifier": "ENG-1",
+                "url": "https://linear.example/ENG-1",
+                "title": "CSV export",
+                "description": description,
+            }
+            result = {
+                "status": "scoped",
+                "summary": "Scoped",
+                "question": None,
+                "report_markdown": "Status: scoped\n\n# Solution scope\n\nDo it.",
+            }
+            run_id = "tw_1111111111111111"
+            desired = TWEED.advanced_description(
+                issue,
+                TWEED.parse_metadata(description),
+                TWEED.PHASES["scope"],
+                result,
+                run_id,
+                root,
+                None,
+                None,
+            )
+            state = {
+                "run_id": run_id,
+                "phase": "scope",
+                "new_description": desired,
+            }
+
+            self.assertTrue(
+                TWEED.phase_sync_already_landed(
+                    state, {**issue, "description": desired + "\n\n"}
+                )
+            )
+            changed = TWEED.replace_section(desired, "scope", "Status: scoped\n\nWrong")
+            self.assertFalse(
+                TWEED.phase_sync_already_landed(
+                    state, {**issue, "description": changed}
+                )
+            )
+
     def test_wrong_stage_is_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
             root = make_repo(directory)

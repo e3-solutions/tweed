@@ -407,6 +407,32 @@ def replace_section(description: str, name: str, body: str) -> str:
     raise RuntimeError(f"Linear issue has malformed Tweed {name} section")
 
 
+def section_body(description: str, name: str) -> str | None:
+    pattern = re.compile(
+        rf"<!-- tweed:{re.escape(name)}:start -->\n(?P<body>.*?)\n"
+        rf"<!-- tweed:{re.escape(name)}:end -->",
+        re.DOTALL,
+    )
+    match = pattern.search(description)
+    return match.group("body").strip() if match else None
+
+
+def phase_sync_already_landed(state: dict[str, Any], issue: dict[str, Any]) -> bool:
+    try:
+        current_metadata = parse_metadata(issue["description"])
+        desired_metadata = parse_metadata(state["new_description"])
+    except (KeyError, RuntimeError, json.JSONDecodeError):
+        return False
+    phase = PHASES[state["phase"]]
+    return (
+        current_metadata == desired_metadata
+        and current_metadata.get("last_run") == state["run_id"]
+        and current_metadata.get("stage") == phase.next_stage
+        and section_body(issue["description"], phase.section)
+        == section_body(state["new_description"], phase.section)
+    )
+
+
 def intake_description(
     kind: str, request: str, root: Path, project: str, run_id: str
 ) -> str:
@@ -1393,6 +1419,18 @@ def retry_sync_command(args: argparse.Namespace) -> int:
             next_stage = PHASES[phase].next_stage
         else:
             raise RuntimeError("run has an unsupported synchronization operation")
+    if synced["status"] != "synced" and state.get("operation") == "phase":
+        with Codex(codex_config(root)) as reader:
+            current_issue = read_linear_issue(
+                reader, root, state["issue"]["identifier"]
+            )
+        if phase_sync_already_landed(state, current_issue):
+            synced = {
+                "status": "synced",
+                "identifier": current_issue["identifier"],
+                "url": current_issue["url"],
+                "reason": None,
+            }
     if synced["status"] != "synced":
         state["state"] = "sync-blocked"
         state["sync_error"] = (
