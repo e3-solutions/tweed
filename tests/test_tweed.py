@@ -293,6 +293,19 @@ class TweedTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "does not match"):
                 TWEED.validate_scope_evidence(root, wrong)
 
+            description = TWEED.intake_description(
+                "feature", "CSV export", root, "CX", "tw_0123456789abcdef"
+            )
+            snapshot = {
+                "description": description + "\n" + TWEED.section_block("scope", report)
+            }
+            TWEED.validate_linear_snapshot(root, snapshot)
+            snapshot["description"] = snapshot["description"].replace(
+                readme_hash, readme_hash[:-1]
+            )
+            with self.assertRaisesRegex(RuntimeError, "invalid SHA-256"):
+                TWEED.validate_linear_snapshot(root, snapshot)
+
     def test_turn_timeout_interrupts_the_active_turn(self):
         thread = SlowThread()
         with self.assertRaisesRegex(TimeoutError, "exceeded 1 seconds"):

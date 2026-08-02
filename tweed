@@ -157,7 +157,7 @@ def phase_schema(command: str) -> dict[str, Any]:
                     },
                 ]
             },
-            "report_markdown": {"type": "string"},
+            "report_markdown": {"type": "string", "maxLength": 16000},
         },
     }
 
@@ -528,24 +528,36 @@ def start_narrow_thread(codex: Codex, root: Path, title: str, instructions: str)
 
 def read_linear_issue(codex: Codex, root: Path, issue: str) -> dict[str, Any]:
     expected = sanitize_issue(issue).upper()
-    thread = start_narrow_thread(
-        codex,
-        root,
-        f"Tweed read {issue}",
-        "Read exactly one Linear issue through the configured Linear MCP. Do not write, "
-        "comment, create, or modify anything. Return the issue fields exactly as stored.",
-    )
-    value = completed_json_turn(
-        thread,
-        f"Retrieve Linear issue {issue}. Return its canonical identifier, URL, exact title, "
-        "and complete exact Markdown description. Do not summarize or repair the description.",
-        ISSUE_SCHEMA,
-    )
-    if value["identifier"].upper() != expected:
-        raise RuntimeError(
-            f"Linear returned {value['identifier']} while reading the requested issue {expected}"
+    last_error: Exception | None = None
+    for attempt in range(1, 4):
+        thread = start_narrow_thread(
+            codex,
+            root,
+            f"Tweed read {issue} ({attempt}/3)",
+            "Read exactly one Linear issue through the configured Linear MCP. Do not write, "
+            "comment, create, or modify anything. Return the issue fields exactly as stored. "
+            "Preserve every character of SHA-256 digests and Markdown; never abbreviate.",
         )
-    return value
+        value = completed_json_turn(
+            thread,
+            f"Retrieve Linear issue {issue}. Return its canonical identifier, URL, exact title, "
+            "and complete exact Markdown description. Do not summarize or repair the description. "
+            f"This is bounded copy attempt {attempt} of 3.",
+            ISSUE_SCHEMA,
+        )
+        try:
+            if value["identifier"].upper() != expected:
+                raise RuntimeError(
+                    f"Linear returned {value['identifier']} while reading the requested issue "
+                    f"{expected}"
+                )
+            validate_linear_snapshot(root, value)
+            return value
+        except (KeyError, RuntimeError, json.JSONDecodeError) as error:
+            last_error = error
+    raise RuntimeError(
+        f"Linear issue could not be copied without corruption after 3 attempts: {last_error}"
+    )
 
 
 def create_linear_issue(
@@ -682,6 +694,13 @@ def validate_scope_evidence(root: Path, report: str) -> None:
         actual = hashlib.sha256(target.read_bytes()).hexdigest()
         if actual != expected:
             raise RuntimeError(f"scope evidence hash does not match: {relative}")
+
+
+def validate_linear_snapshot(root: Path, issue: dict[str, Any]) -> None:
+    parse_metadata(issue["description"])
+    scope = section_body(issue["description"], "scope")
+    if scope is not None:
+        validate_scope_evidence(root, scope)
 
 
 def phase_result_from_response(response: str, phase: Phase) -> dict[str, Any]:
