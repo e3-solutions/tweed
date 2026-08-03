@@ -210,11 +210,17 @@ class LinearAdapterTests(unittest.TestCase):
             graph(
                 {
                     "projects": {
+                        "pageInfo": {"hasNextPage": False},
                         "nodes": [
                             {
                                 "id": "project-1",
                                 "name": "Tweed",
-                                "teams": {"nodes": [{"id": "team-1", "key": "TST"}]},
+                                "teams": {
+                                    "pageInfo": {"hasNextPage": False},
+                                    "nodes": [
+                                        {"id": "team-1", "key": "TST", "name": "Core"}
+                                    ]
+                                },
                             }
                         ]
                     },
@@ -228,6 +234,7 @@ class LinearAdapterTests(unittest.TestCase):
             self.client(script),
             {
                 "issue_id": issue_id,
+                "team": "Core",
                 "project": "Tweed",
                 "title": "Test",
                 "description": description,
@@ -237,17 +244,18 @@ class LinearAdapterTests(unittest.TestCase):
         self.assertEqual(found["id"], issue_id)
         self.assertEqual(len(script.requests), 5)
 
-    def test_create_requires_unique_project_and_one_team(self):
+    def test_create_requires_unique_team_project_pair(self):
         issue_id = "12345678-1234-4123-8123-123456789abc"
         script = ScriptedConnections(
             graph({"issues": {"nodes": []}}),
-            graph({"projects": {"nodes": []}}),
+            graph({"projects": {"nodes": [], "pageInfo": {"hasNextPage": False}}}),
         )
         with self.assertRaisesRegex(adapter.AdapterError, "project"):
             adapter.create_or_recover(
                 self.client(script),
                 {
                     "issue_id": issue_id,
+                    "team": "Core",
                     "project": "Tweed",
                     "title": "Test",
                     "description": "Human request",
@@ -269,11 +277,21 @@ class LinearAdapterTests(unittest.TestCase):
             graph(
                 {
                     "projects": {
+                        "pageInfo": {"hasNextPage": False},
                         "nodes": [
                             {
                                 "id": "project-1",
                                 "name": "Tweed",
-                                "teams": {"nodes": [{"id": "project-team"}]},
+                                "teams": {
+                                    "pageInfo": {"hasNextPage": False},
+                                    "nodes": [
+                                        {
+                                            "id": "project-team",
+                                            "key": "TST",
+                                            "name": "Core",
+                                        }
+                                    ]
+                                },
                             }
                         ]
                     }
@@ -287,6 +305,7 @@ class LinearAdapterTests(unittest.TestCase):
             self.client(script),
             {
                 "issue_id": issue_id,
+                "team": "Core",
                 "project": "Tweed",
                 "title": "Test",
                 "description": description,
@@ -294,6 +313,140 @@ class LinearAdapterTests(unittest.TestCase):
         )
         mutation = json.loads(script.requests[2][1]["body"])
         self.assertEqual(mutation["variables"]["input"]["teamId"], "project-team")
+
+    def test_create_disambiguates_duplicate_project_names_by_saved_team(self):
+        issue_id = "12345678-1234-4123-8123-123456789abc"
+        description = tweed_journal.build_genesis_description(
+            {
+                "schema_version": 1,
+                "kind": "feature",
+                "repository": "/repo",
+                "planning_base": "a" * 40,
+            },
+            "Human request",
+        )
+        created = issue_page()
+        created["id"] = issue_id
+        created["team"] = {"id": "team-b", "key": "B"}
+        created["project"] = {"id": "project-b", "name": "Shared"}
+        created["description"] = description
+        script = ScriptedConnections(
+            graph({"issues": {"nodes": []}}),
+            graph(
+                {
+                    "projects": {
+                        "pageInfo": {"hasNextPage": False},
+                        "nodes": [
+                            {
+                                "id": "project-a",
+                                "name": "Shared",
+                                "teams": {
+                                    "pageInfo": {"hasNextPage": False},
+                                    "nodes": [
+                                        {"id": "team-a", "key": "A", "name": "Alpha"}
+                                    ]
+                                },
+                            },
+                            {
+                                "id": "project-b",
+                                "name": "Shared",
+                                "teams": {
+                                    "pageInfo": {"hasNextPage": False},
+                                    "nodes": [
+                                        {"id": "team-b", "key": "B", "name": "Beta"}
+                                    ]
+                                },
+                            },
+                        ]
+                    }
+                }
+            ),
+            graph({"issueCreate": {"success": True, "issue": {"id": issue_id}}}),
+            graph({"issues": {"nodes": [{"id": issue_id, "identifier": "B-1"}]}}),
+            graph({"issue": created}),
+        )
+        adapter.create_or_recover(
+            self.client(script),
+            {
+                "issue_id": issue_id,
+                "team": "Beta",
+                "project": "Shared",
+                "title": "Test",
+                "description": description,
+            },
+        )
+        mutation = json.loads(script.requests[2][1]["body"])
+        self.assertEqual(mutation["variables"]["input"]["teamId"], "team-b")
+        self.assertEqual(mutation["variables"]["input"]["projectId"], "project-b")
+
+    def test_create_fails_closed_when_resolution_is_paginated(self):
+        issue_id = "12345678-1234-4123-8123-123456789abc"
+        for projects in (
+            {
+                "nodes": [],
+                "pageInfo": {"hasNextPage": True},
+            },
+            {
+                "nodes": [
+                    {
+                        "id": "project-1",
+                        "name": "Tweed",
+                        "teams": {
+                            "nodes": [],
+                            "pageInfo": {"hasNextPage": True},
+                        },
+                    }
+                ],
+                "pageInfo": {"hasNextPage": False},
+            },
+        ):
+            with self.subTest(projects=projects):
+                script = ScriptedConnections(
+                    graph({"issues": {"nodes": []}}),
+                    graph({"projects": projects}),
+                )
+                with self.assertRaisesRegex(adapter.AdapterError, "incomplete"):
+                    adapter.create_or_recover(
+                        self.client(script),
+                        {
+                            "issue_id": issue_id,
+                            "team": "Core",
+                            "project": "Tweed",
+                            "title": "Test",
+                            "description": "Human request",
+                        },
+                    )
+
+    def test_existing_legacy_create_run_recovers_without_frozen_team(self):
+        issue_id = "12345678-1234-4123-8123-123456789abc"
+        description = tweed_journal.build_genesis_description(
+            {
+                "schema_version": 1,
+                "kind": "feature",
+                "repository": "/repo",
+                "planning_base": "a" * 40,
+            },
+            "Human request",
+        )
+        existing = issue_page()
+        existing["id"] = issue_id
+        existing["description"] = description
+        script = ScriptedConnections(
+            graph({"issues": {"nodes": [{"id": issue_id, "identifier": "TST-1"}]}}),
+            graph({"issue": existing}),
+        )
+        status, found = adapter.create_or_recover(
+            self.client(script),
+            {
+                "issue_id": issue_id,
+                "project": "Tweed",
+                "title": "Test",
+                "description": description,
+            },
+        )
+        self.assertEqual(status, "recovered")
+        self.assertEqual(found["id"], issue_id)
+        self.assertEqual(len(script.requests), 2)
 
     def test_append_rejects_stale_snapshot_without_mutation(self):
         page = issue_page()

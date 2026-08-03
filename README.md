@@ -35,16 +35,29 @@ ln -s "$(pwd)/tweed" ~/.local/bin/tweed
 
 ## Configure a repository
 
-Set the Linear project used for intake issues:
+Tweed reads the team/project binding owned by the installed
+`linear-progress-sync` extension from `~/.codex/linear-sync/repos.json` (or
+`$LINEAR_SYNC_CONFIG_DIR/repos.json`). Inspect the effective read-only binding:
 
 ```sh
-tweed project set "Customer Experience"
 tweed project
-tweed project clear
 ```
 
-The setting is stored per canonical Git root in
-`~/.config/tweed/config.json`. `TWEED_CONFIG` may select another file.
+Tweed never writes the shared file; `linear-progress-sync` remains its owner.
+
+Repository keys match the extension: normalized GitHub `owner/repository` from
+`origin`, with the canonical Git root used only when no origin exists. A saved
+`{"disabled":true,"reason":"..."}` is an explicit opt-out. For a one-off
+fork/test override, provide exact names:
+
+```sh
+tweed create --team "Coreedgesolution" --project "Codex Plugins" feature \
+  "Add a bounded export"
+```
+
+The old `~/.config/tweed/config.json` mapping remains a deprecated fallback.
+`tweed project set --team NAME --project NAME` writes only that fallback; shared
+extension configuration always takes precedence.
 
 ## Connect Linear
 
@@ -76,6 +89,8 @@ tweed create feature "Let users export the filtered customer list as CSV"
 ```
 
 A problem starts at `needs-rca`; a feature starts at `needs-scope`.
+Creation receipts include the frozen team, project, binding source, and binding
+digest. Retry-sync reuses those exact values even if shared configuration changes.
 
 ## Advance one explicit phase
 

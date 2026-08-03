@@ -45,6 +45,8 @@ ARTIFACT_MANIFEST_VERSION = 1
 CACHE_SCHEMA_VERSION = 1
 PROTOCOL = "dev.tweed.receipt.v1"
 LINEAR_PROTOCOL = "dev.tweed.linear.v2"
+LINEAR_SYNC_CONFIG_DIR_ENV = "LINEAR_SYNC_CONFIG_DIR"
+MAX_BINDING_CONFIG_BYTES = 1_048_576
 NEEDS_INPUT = "needs-input"
 CODEX_MODEL = "gpt-5.6-sol"
 CODEX_REASONING_EFFORT = "medium"
@@ -376,7 +378,35 @@ def git(root: Path, *args: str, check: bool = True) -> str:
 
 
 def sha256_file(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    value = hashlib.sha256()
+    with path.open("rb") as source:
+        while chunk := source.read(1024 * 1024):
+            value.update(chunk)
+    return value.hexdigest()
+
+
+def git_stdout_sha256(root: Path, *args: str) -> str:
+    value = hashlib.sha256()
+    with tempfile.TemporaryFile() as error_file:
+        try:
+            process = subprocess.Popen(
+                ["git", *args],
+                cwd=root,
+                stdout=subprocess.PIPE,
+                stderr=error_file,
+            )
+        except OSError as error:
+            raise RuntimeError(f"git {' '.join(args)} could not start") from error
+        assert process.stdout is not None
+        with process.stdout:
+            while chunk := process.stdout.read(1024 * 1024):
+                value.update(chunk)
+        returncode = process.wait()
+        if returncode:
+            error_file.seek(0)
+            detail = error_file.read(4096).decode("utf-8", errors="replace").strip()
+            raise RuntimeError(detail or f"git {' '.join(args)} failed")
+    return value.hexdigest()
 
 
 def cached_input_digest(root: Path, path: Path) -> str:
@@ -427,17 +457,11 @@ def repository_cache_identity(root: Path) -> dict[str, Any]:
             if not path.is_relative_to(root.resolve()) or not path.is_file():
                 raise RuntimeError("uncertain untracked repository state; evidence is not cacheable")
             untracked[relative] = sha256_file(path)
-    diff = subprocess.run(
-        ["git", "diff", "--binary", "HEAD"],
-        cwd=root,
-        capture_output=True,
-        check=True,
-    ).stdout
     return {
         "head": git(root, "rev-parse", "HEAD"),
         "index_tree": git(root, "write-tree"),
         "status_sha256": hashlib.sha256(status_bytes).hexdigest(),
-        "worktree_diff_sha256": hashlib.sha256(diff).hexdigest(),
+        "worktree_diff_sha256": git_stdout_sha256(root, "diff", "--binary", "HEAD"),
         "untracked": untracked,
     }
 
@@ -706,6 +730,167 @@ def save_config(config: dict[str, Any]) -> None:
     atomic_json_write(config_path(), config)
 
 
+def normalize_github_origin(remote: str) -> str:
+    value = remote.strip()
+    patterns = (
+        r"https://github\.com/(?P<owner>[A-Za-z0-9_.-]+)/(?P<repo>[A-Za-z0-9_.-]+?)(?:\.git)?",
+        r"git@github\.com:(?P<owner>[A-Za-z0-9_.-]+)/(?P<repo>[A-Za-z0-9_.-]+?)(?:\.git)?",
+        r"ssh://git@github\.com(?::22)?/(?P<owner>[A-Za-z0-9_.-]+)/(?P<repo>[A-Za-z0-9_.-]+?)(?:\.git)?",
+    )
+    for pattern in patterns:
+        match = re.fullmatch(pattern, value, re.IGNORECASE)
+        if match:
+            return f"{match.group('owner')}/{match.group('repo')}"
+    raise RuntimeError(
+        "origin must be a standard HTTPS or SSH GitHub owner/repository remote"
+    )
+
+
+def linear_binding_repository(root: Path) -> dict[str, str]:
+    names = subprocess.run(
+        ["git", "remote"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if names.returncode:
+        raise RuntimeError("Git remotes could not be read for Linear binding")
+    if "origin" not in names.stdout.split():
+        return {"identity": str(root.resolve()), "identity_source": "canonical-root"}
+    result = subprocess.run(
+        ["git", "remote", "get-url", "--all", "origin"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    remotes = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+    if result.returncode or not remotes:
+        raise RuntimeError("origin could not be read for Linear binding")
+    normalized = {normalize_github_origin(remote) for remote in remotes}
+    if len(normalized) != 1:
+        raise RuntimeError("origin has ambiguous GitHub repository identities")
+    return {"identity": normalized.pop(), "identity_source": "origin"}
+
+
+def linear_sync_config_path() -> Path:
+    override = os.environ.get(LINEAR_SYNC_CONFIG_DIR_ENV, "")
+    directory = Path(override).expanduser() if override else Path.home() / ".codex/linear-sync"
+    return directory.resolve() / "repos.json"
+
+
+def _strict_json_object(raw: bytes, label: str) -> dict[str, Any]:
+    def unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError(f"duplicate key: {key}")
+            result[key] = value
+        return result
+
+    try:
+        value = json.loads(raw.decode("utf-8"), object_pairs_hook=unique_object)
+    except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as error:
+        raise RuntimeError(f"{label} is malformed") from error
+    if not isinstance(value, dict):
+        raise RuntimeError(f"{label} must contain a JSON object")
+    return value
+
+
+def _binding_name(value: object, label: str) -> str:
+    if (
+        not isinstance(value, str)
+        or not value
+        or value != value.strip()
+        or len(value.encode("utf-8")) > 512
+        or any(ord(character) < 0x20 for character in value)
+    ):
+        raise RuntimeError(f"Linear binding {label} must be an exact non-empty name")
+    return value
+
+
+def linear_binding_digest(binding: dict[str, Any]) -> str:
+    protected = {
+        key: binding.get(key)
+        for key in (
+            "repository",
+            "identity_source",
+            "team",
+            "project",
+            "source",
+            "disabled",
+            "reason",
+        )
+    }
+    encoded = json.dumps(
+        protected, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _validate_shared_binding(repo: str, value: object) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise RuntimeError(f"Linear sync binding for {repo} must be an object")
+    if value.get("disabled") is True:
+        if set(value) - {"disabled", "reason"}:
+            raise RuntimeError(f"disabled Linear sync binding for {repo} is malformed")
+        reason = value.get("reason", "")
+        if not isinstance(reason, str):
+            raise RuntimeError(f"disabled Linear sync binding reason for {repo} is invalid")
+        return {"disabled": True, "reason": reason.strip()}
+    if set(value) - {"team", "project", "disabled"} or value.get("disabled") not in {
+        None,
+        False,
+    }:
+        raise RuntimeError(f"Linear sync binding for {repo} is malformed")
+    return {
+        "disabled": False,
+        "team": _binding_name(value.get("team"), "team"),
+        "project": _binding_name(value.get("project"), "project"),
+    }
+
+
+def shared_linear_binding(root: Path) -> dict[str, Any] | None:
+    path = linear_sync_config_path()
+    try:
+        raw = path.read_bytes()
+    except FileNotFoundError:
+        return None
+    except OSError as error:
+        raise RuntimeError(f"Linear sync bindings could not be read: {path}") from error
+    if len(raw) > MAX_BINDING_CONFIG_BYTES:
+        raise RuntimeError("Linear sync bindings exceed the byte limit")
+    document = _strict_json_object(raw, "Linear sync bindings")
+    repos = document.get("repos")
+    if not isinstance(repos, dict):
+        raise RuntimeError("Linear sync bindings must contain a repos object")
+    folded_github_repos: set[str] = set()
+    for repo, value in repos.items():
+        if not isinstance(repo, str) or not repo or repo != repo.strip():
+            raise RuntimeError("Linear sync bindings contain an invalid repository key")
+        if re.fullmatch(r"[^/]+/[^/]+", repo):
+            folded = repo.casefold()
+            if folded in folded_github_repos:
+                raise RuntimeError("Linear sync bindings contain ambiguous repository keys")
+            folded_github_repos.add(folded)
+        _validate_shared_binding(repo, value)
+    repository = linear_binding_repository(root)
+    value = repos.get(repository["identity"])
+    if value is None:
+        return None
+    binding = {
+        **repository,
+        **_validate_shared_binding(repository["identity"], value),
+        "repository": repository["identity"],
+        "source": "linear-progress-sync",
+        "config_path": str(path),
+        "config_digest": hashlib.sha256(raw).hexdigest(),
+    }
+    binding["binding_digest"] = linear_binding_digest(binding)
+    return binding
+
+
 def linear_project(root: Path) -> str | None:
     entry = load_config()["folders"].get(str(root), {})
     value = entry.get("linear_project") if isinstance(entry, dict) else None
@@ -719,6 +904,82 @@ def set_linear_project(root: Path, project: str | None) -> None:
     else:
         config["folders"].pop(str(root), None)
     save_config(config)
+
+
+def legacy_linear_binding(root: Path) -> dict[str, Any] | None:
+    entry = load_config()["folders"].get(str(root), {})
+    if not isinstance(entry, dict):
+        return None
+    project = entry.get("linear_project")
+    if not isinstance(project, str) or not project.strip():
+        return None
+    repository = linear_binding_repository(root)
+    team = entry.get("linear_team")
+    binding = {
+        **repository,
+        "repository": repository["identity"],
+        "source": "legacy-tweed",
+        "config_path": str(config_path()),
+        "disabled": False,
+        "team": team.strip() if isinstance(team, str) and team.strip() else None,
+        "project": project.strip(),
+    }
+    binding["binding_digest"] = linear_binding_digest(binding)
+    return binding
+
+
+def set_legacy_linear_binding(root: Path, team: str | None, project: str | None) -> None:
+    config = load_config()
+    if team is not None or project is not None:
+        config["folders"][str(root)] = {
+            "linear_team": _binding_name(team, "team"),
+            "linear_project": _binding_name(project, "project"),
+        }
+    else:
+        config["folders"].pop(str(root), None)
+    save_config(config)
+
+
+def resolve_linear_binding(
+    root: Path,
+    *,
+    team_override: str | None = None,
+    project_override: str | None = None,
+    required: bool = True,
+) -> dict[str, Any] | None:
+    repository = linear_binding_repository(root)
+    if team_override is not None or project_override is not None:
+        if team_override is None or project_override is None:
+            raise RuntimeError("explicit Linear override requires both --team and --project")
+        binding = {
+            **repository,
+            "repository": repository["identity"],
+            "source": "command",
+            "config_path": None,
+            "disabled": False,
+            "team": _binding_name(team_override, "team"),
+            "project": _binding_name(project_override, "project"),
+        }
+        binding["binding_digest"] = linear_binding_digest(binding)
+        return binding
+    shared = shared_linear_binding(root)
+    if shared is not None:
+        return shared
+    legacy = legacy_linear_binding(root)
+    if legacy is not None:
+        if legacy.get("team"):
+            return legacy
+        legacy["invalid_reason"] = (
+            "legacy Tweed binding lacks a Linear team; configure linear-progress-sync "
+            "or use explicit --team and --project"
+        )
+        return legacy
+    if required:
+        raise RuntimeError(
+            "no Linear team/project binding; configure linear-progress-sync for this "
+            "repository or use explicit --team and --project"
+        )
+    return None
 
 
 def state_root() -> Path:
@@ -876,7 +1137,16 @@ def section_body(description: str, name: str) -> str | None:
 
 
 def intake_description(
-    kind: str, request: str, root: Path, project: str, run_id: str
+    kind: str,
+    request: str,
+    root: Path,
+    project: str,
+    run_id: str,
+    *,
+    team: str | None = None,
+    binding_source: str | None = None,
+    binding_digest: str | None = None,
+    binding_repository: str | None = None,
 ) -> str:
     stage = "needs-rca" if kind == "problem" else "needs-scope"
     metadata = {
@@ -891,6 +1161,15 @@ def intake_description(
         "linear_project": project,
         "last_run": run_id,
     }
+    if team is not None:
+        metadata.update(
+            {
+                "linear_team": team,
+                "linear_binding_source": binding_source,
+                "linear_binding_digest": binding_digest,
+                "linear_binding_repository": binding_repository,
+            }
+        )
     return journal.build_genesis_description(
         metadata,
         f"# Request\n\n{request}",
@@ -1366,19 +1645,26 @@ def verify_linear_issue(issue: dict[str, Any]) -> None:
 
 
 def create_linear_issue(
-    root: Path, project: str, title: str, description: str, run_id: str
+    root: Path,
+    project: str,
+    title: str,
+    description: str,
+    run_id: str,
+    *,
+    team: str | None = None,
 ) -> dict[str, Any]:
-    response = call_linear_adapter(
-        {
-            "operation": "create-or-recover",
-            "issue_id": journal.deterministic_comment_id(
-                f"{LINEAR_PROTOCOL}\0issue\0{run_id}"
-            ),
-            "project": project,
-            "title": title,
-            "description": description,
-        }
-    )
+    request = {
+        "operation": "create-or-recover",
+        "issue_id": journal.deterministic_comment_id(
+            f"{LINEAR_PROTOCOL}\0issue\0{run_id}"
+        ),
+        "project": project,
+        "title": title,
+        "description": description,
+    }
+    if team is not None:
+        request["team"] = team
+    response = call_linear_adapter(request)
     if response.get("status") not in {"created", "recovered"}:
         return {"status": "blocked", "identifier": None, "url": None, "reason": response.get("reason")}
     issue = validate_adapter_issue(root, response.get("issue", {}))
@@ -1868,6 +2154,10 @@ def receipt(
     branch: str | None = None,
     commit: str | None = None,
     error: str | None = None,
+    team: str | None = None,
+    project: str | None = None,
+    binding_source: str | None = None,
+    binding_digest: str | None = None,
 ) -> dict[str, Any]:
     return {
         "schema": PROTOCOL,
@@ -1885,12 +2175,16 @@ def receipt(
         "branch": branch[:300] if branch else None,
         "commit": commit[:128] if commit else None,
         "error": safe_error(error) if error is not None else None,
+        "linear_team": team[:512] if team else None,
+        "linear_project": project[:512] if project else None,
+        "linear_binding_source": binding_source[:64] if binding_source else None,
+        "linear_binding_digest": binding_digest[:64] if binding_digest else None,
     }
 
 
 def emit(value: dict[str, Any], agent: bool, report: str | None = None) -> None:
     if agent:
-        output = json.dumps(value, separators=(",", ":"))
+        output = json.dumps(value, separators=(",", ":"), ensure_ascii=False)
         if len(output.encode()) > 4096:
             raise RuntimeError("agent receipt exceeded the 4 KiB protocol limit")
         print(output)
@@ -2011,11 +2305,21 @@ def evidence_command(args: argparse.Namespace) -> int:
 
 def create_command(args: argparse.Namespace) -> int:
     root = repository_root(args.repo)
-    project = linear_project(root)
-    if not project:
+    binding = resolve_linear_binding(
+        root,
+        team_override=getattr(args, "team", None),
+        project_override=getattr(args, "project", None),
+    )
+    assert binding is not None
+    if binding.get("disabled"):
+        reason = binding.get("reason") or "no reason recorded"
         raise RuntimeError(
-            f"no Linear project configured for {root}; run tweed project set <project>"
+            f"Linear sync is explicitly disabled for {binding['repository']}: {reason}"
         )
+    if binding.get("invalid_reason"):
+        raise RuntimeError(binding["invalid_reason"])
+    team = binding["team"]
+    project = binding["project"]
     request = read_request(
         args.request, "What should the issue deliver or investigate?"
     )
@@ -2023,7 +2327,17 @@ def create_command(args: argparse.Namespace) -> int:
         raise RuntimeError("create requires a request")
     run_id = new_run_id()
     title = " ".join(request.split())[:80]
-    description = intake_description(args.kind, request, root, project, run_id)
+    description = intake_description(
+        args.kind,
+        request,
+        root,
+        project,
+        run_id,
+        team=team,
+        binding_source=binding["source"],
+        binding_digest=binding["binding_digest"],
+        binding_repository=binding["repository"],
+    )
     manifest = load_artifact_manifest(run_id)
     put_artifact(run_id, "request", request, manifest=manifest)
     put_artifact(run_id, "linear-intake-description", description, manifest=manifest)
@@ -2033,7 +2347,11 @@ def create_command(args: argparse.Namespace) -> int:
         "state": "sync-pending",
         "operation": "create",
         "repository": str(root),
+        "team": team,
         "project": project,
+        "binding_source": binding["source"],
+        "binding_digest": binding["binding_digest"],
+        "binding_repository": binding["repository"],
         "title": title,
         "desired_digest": digest(description),
         "kind": args.kind,
@@ -2041,7 +2359,9 @@ def create_command(args: argparse.Namespace) -> int:
     save_run(state)
     try:
         with active_run(run_id):
-            synced = create_linear_issue(root, project, title, description, run_id)
+            synced = create_linear_issue(
+                root, project, title, description, run_id, team=team
+            )
     except Exception as error:
         synced = {
             "status": "blocked",
@@ -2063,6 +2383,10 @@ def create_command(args: argparse.Namespace) -> int:
                 next_stage=("needs-rca" if args.kind == "problem" else "needs-scope"),
                 summary="Intake is preserved and awaiting Linear synchronization.",
                 error=state["sync_error"],
+                team=team,
+                project=project,
+                binding_source=binding["source"],
+                binding_digest=binding["binding_digest"],
             ),
             args.agent,
         )
@@ -2086,7 +2410,14 @@ def create_command(args: argparse.Namespace) -> int:
             url=synced["url"],
             status="created",
             next_stage=stage,
-            summary=f"Created {args.kind} intake issue ready for {stage}.",
+            summary=(
+                f"Created {args.kind} intake issue in {team} / {project} "
+                f"from {binding['source']}, ready for {stage}."
+            ),
+            team=team,
+            project=project,
+            binding_source=binding["source"],
+            binding_digest=binding["binding_digest"],
         ),
         args.agent,
     )
@@ -2624,6 +2955,7 @@ def _retry_sync_command(args: argparse.Namespace) -> int:
                     state["title"],
                     intake,
                     args.run_id,
+                    team=state.get("team"),
                 )
             elif state.get("operation") == "phase":
                 if state.get("legacy_description_sync"):
@@ -2667,6 +2999,10 @@ def _retry_sync_command(args: argparse.Namespace) -> int:
                 branch=state.get("branch"),
                 commit=state.get("commit"),
                 error=state["sync_error"],
+                team=state.get("team"),
+                project=state.get("project"),
+                binding_source=state.get("binding_source"),
+                binding_digest=state.get("binding_digest"),
             ),
             args.agent,
         )
@@ -2695,6 +3031,10 @@ def _retry_sync_command(args: argparse.Namespace) -> int:
             thread_id=state.get("thread_id"),
             branch=state.get("branch"),
             commit=state.get("commit"),
+            team=state.get("team"),
+            project=state.get("project"),
+            binding_source=state.get("binding_source"),
+            binding_digest=state.get("binding_digest"),
         ),
         args.agent,
     )
@@ -2704,20 +3044,59 @@ def _retry_sync_command(args: argparse.Namespace) -> int:
 def project_command(args: argparse.Namespace) -> int:
     root = repository_root(args.repo)
     if args.action == "set":
-        project = " ".join(args.value).strip()
-        if not project:
-            raise RuntimeError("project set requires a Linear project name or ID")
-        set_linear_project(root, project)
-        print(f"Linear project for {root}: {project}")
+        if args.value:
+            raise RuntimeError(
+                "positional project values are deprecated; use --team NAME --project NAME"
+            )
+        if not args.team or not args.project_name:
+            raise RuntimeError("project set requires exact --team and --project names")
+        set_legacy_linear_binding(root, args.team, args.project_name)
+        print(
+            "Saved deprecated Tweed fallback binding. linear-progress-sync repos.json "
+            "takes precedence."
+        )
         return 0
     if args.action == "clear":
-        set_linear_project(root, None)
-        print(f"Cleared Linear project for {root}")
+        set_legacy_linear_binding(root, None, None)
+        print(f"Cleared legacy Tweed Linear binding for {root}")
         return 0
-    project = linear_project(root)
-    if not project:
-        raise RuntimeError(f"no Linear project configured for {root}")
-    print(project)
+    binding = resolve_linear_binding(root, required=False)
+    repository = linear_binding_repository(root)
+    if binding is None:
+        value = {
+            **repository,
+            "repository": repository["identity"],
+            "source": None,
+            "disabled": False,
+            "team": None,
+            "project": None,
+            "configured": False,
+            "instruction": (
+                "configure linear-progress-sync for this repository or use "
+                "tweed create --team NAME --project NAME"
+            ),
+        }
+    else:
+        value = {
+            "repository": binding["repository"],
+            "identity_source": binding["identity_source"],
+            "source": binding["source"],
+            "disabled": bool(binding.get("disabled")),
+            "reason": binding.get("reason"),
+            "team": binding.get("team"),
+            "project": binding.get("project"),
+            "configured": bool(
+                not binding.get("disabled")
+                and binding.get("team")
+                and binding.get("project")
+            ),
+            "binding_digest": binding.get("binding_digest"),
+            "config_path": binding.get("config_path"),
+        }
+        if binding.get("invalid_reason"):
+            value["configured"] = False
+            value["reason"] = binding["invalid_reason"]
+    print(json.dumps(value, ensure_ascii=False, sort_keys=True))
     return 0
 
 
@@ -2773,6 +3152,8 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     create = subparsers.add_parser("create")
+    create.add_argument("--team", help="exact Linear team name override")
+    create.add_argument("--project", help="exact Linear project name override")
     create.add_argument("kind", choices=["problem", "feature"])
     create.add_argument("request", nargs="*")
 
@@ -2803,6 +3184,10 @@ def build_parser() -> argparse.ArgumentParser:
     project = subparsers.add_parser("project")
     project.add_argument("action", nargs="?", choices=["set", "clear"])
     project.add_argument("value", nargs="*")
+    project.add_argument("--team", help="exact Linear team name for legacy fallback")
+    project.add_argument(
+        "--project", dest="project_name", help="exact Linear project name for legacy fallback"
+    )
 
     auth = subparsers.add_parser("auth")
     auth_subparsers = auth.add_subparsers(dest="auth_action", required=True)

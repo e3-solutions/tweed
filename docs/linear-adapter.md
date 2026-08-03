@@ -50,6 +50,13 @@ and output using `"protocol":"dev.tweed.linear.v2"`. Operations are `fetch`,
 may override the bundled executable for hermetic testing or a compatible
 installation; it is not required in production.
 
+Intake requests carry exact frozen team and project names resolved from the
+read-only `linear-progress-sync` repository binding. The adapter selects the
+unique matching team/project pair, so duplicate project names in different teams
+are safe. New issue creation never infers a team from project membership. A
+legacy retry that already has a deterministic issue may recover without the newer
+team field, but it cannot create a new issue.
+
 The hosted Linear MCP tool surface is not a journal transport fallback. Its
 current creates have no caller-assigned IDs or idempotency keys, and comment
 reads omit archived-inclusive edit/archive state. Those gaps would weaken exact

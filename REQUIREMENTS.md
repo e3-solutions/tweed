@@ -165,7 +165,9 @@ or transcripts to Linear.
 - Original request.
 - Canonical Git repository path.
 - Current `HEAD` as the planning base.
-- Configured Linear project.
+- Effective Linear team/project, repository identity, binding source, and binding
+  digest. The read-only `linear-progress-sync` binding takes precedence over the
+  deprecated Tweed fallback; explicit per-command names take precedence over both.
 - Unique Tweed run ID.
 
 The create writer searches for the run ID before creating an issue. Retrying the
@@ -281,12 +283,14 @@ Reviewer reasoning and targeted re-review are never cacheable substitutes.
 
 If synchronization fails or its acknowledgement is lost, `retry-sync` retries
 only the idempotent Linear operation. It never reruns the phase or creates a new
-implementation commit.
+implementation commit. A legacy intake created before team provenance was
+recorded can recover an already-created deterministic issue, but fails closed
+instead of creating a new issue because its target team cannot be proven.
 
 Agent mode emits exactly one versioned JSON receipt, including failures. It is
-limited to 4 KiB and contains only run, issue, phase, stage, summary, question,
-thread, branch, commit, and error fields. It never includes a complete report or
-raw task output.
+limited to 4 KiB and contains only run, issue, Linear binding provenance, phase,
+stage, summary, question, thread, branch, commit, and error fields. It never
+includes a complete report or raw task output.
 
 ## 13. Ready-to-merge boundary
 

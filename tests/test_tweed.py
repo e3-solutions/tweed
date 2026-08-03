@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.machinery
 import importlib.util
 import contextlib
+import hashlib
 import io
 import json
 import os
@@ -407,6 +408,190 @@ class TweedTests(unittest.TestCase):
                 TWEED.set_linear_project(root, None)
                 self.assertIsNone(TWEED.linear_project(root))
 
+    def test_linear_sync_repository_identity_matches_standard_github_remotes(self):
+        expected = "e3-solutions/tweed"
+        for remote in (
+            "https://github.com/e3-solutions/tweed.git",
+            "git@github.com:e3-solutions/tweed.git",
+            "ssh://git@github.com/e3-solutions/tweed.git",
+            "ssh://git@github.com:22/e3-solutions/tweed.git",
+        ):
+            with self.subTest(remote=remote):
+                self.assertEqual(TWEED.normalize_github_origin(remote), expected)
+        for remote in (
+            "https://example.com/e3-solutions/tweed.git",
+            "git@github.com:e3-solutions",
+            "https://github.com/e3-solutions/tweed/extra",
+        ):
+            with self.subTest(remote=remote):
+                with self.assertRaisesRegex(RuntimeError, "GitHub"):
+                    TWEED.normalize_github_origin(remote)
+
+    def test_linear_sync_repository_identity_falls_back_to_canonical_root(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = make_repo(directory)
+            self.assertEqual(
+                TWEED.linear_binding_repository(root),
+                {"identity": str(root), "identity_source": "canonical-root"},
+            )
+
+    def test_shared_binding_honors_env_override_and_beats_legacy(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = make_repo(directory)
+            git(root, "remote", "add", "origin", "git@github.com:e3-solutions/sample.git")
+            sync_dir = Path(directory) / "shared"
+            sync_dir.mkdir()
+            (sync_dir / "repos.json").write_text(
+                json.dumps(
+                    {
+                        "repos": {
+                            "e3-solutions/sample": {
+                                "team": "Shared Team",
+                                "project": "Shared Project",
+                            }
+                        }
+                    }
+                )
+            )
+            legacy = Path(directory) / "legacy.json"
+            with patch.dict(
+                os.environ,
+                {
+                    "LINEAR_SYNC_CONFIG_DIR": str(sync_dir),
+                    "TWEED_CONFIG": str(legacy),
+                },
+            ):
+                TWEED.set_legacy_linear_binding(root, "Legacy Team", "Legacy Project")
+                binding = TWEED.resolve_linear_binding(root)
+            self.assertEqual(binding["team"], "Shared Team")
+            self.assertEqual(binding["project"], "Shared Project")
+            self.assertEqual(binding["source"], "linear-progress-sync")
+            self.assertEqual(binding["repository"], "e3-solutions/sample")
+            self.assertRegex(binding["binding_digest"], r"^[a-f0-9]{64}$")
+
+    def test_legacy_team_project_binding_remains_compatibility_fallback(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = make_repo(directory)
+            sync_dir = Path(directory) / "shared"
+            sync_dir.mkdir()
+            with patch.dict(
+                os.environ,
+                {
+                    "LINEAR_SYNC_CONFIG_DIR": str(sync_dir),
+                    "TWEED_CONFIG": str(Path(directory) / "legacy.json"),
+                },
+            ):
+                TWEED.set_legacy_linear_binding(root, "Legacy Team", "Legacy Project")
+                binding = TWEED.resolve_linear_binding(root)
+            self.assertEqual(binding["source"], "legacy-tweed")
+            self.assertEqual(binding["team"], "Legacy Team")
+            self.assertEqual(binding["project"], "Legacy Project")
+
+    def test_shared_opt_out_precedes_legacy_without_fallback(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = make_repo(directory)
+            sync_dir = Path(directory) / "shared"
+            sync_dir.mkdir()
+            (sync_dir / "repos.json").write_text(
+                json.dumps(
+                    {
+                        "repos": {
+                            str(root): {"disabled": True, "reason": "Not tracked"}
+                        }
+                    }
+                )
+            )
+            with patch.dict(
+                os.environ,
+                {
+                    "LINEAR_SYNC_CONFIG_DIR": str(sync_dir),
+                    "TWEED_CONFIG": str(Path(directory) / "legacy.json"),
+                },
+            ):
+                TWEED.set_legacy_linear_binding(root, "Legacy", "Fallback")
+                binding = TWEED.resolve_linear_binding(root)
+            self.assertTrue(binding["disabled"])
+            self.assertEqual(binding["reason"], "Not tracked")
+            self.assertEqual(binding["source"], "linear-progress-sync")
+            with patch.dict(
+                os.environ, {"LINEAR_SYNC_CONFIG_DIR": str(sync_dir)}
+            ):
+                explicit = TWEED.resolve_linear_binding(
+                    root,
+                    team_override="Explicit Team",
+                    project_override="Explicit Project",
+                )
+            self.assertFalse(explicit["disabled"])
+            self.assertEqual(explicit["source"], "command")
+
+    def test_shared_binding_malformed_json_schema_and_duplicates_fail_closed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = make_repo(directory)
+            sync_dir = Path(directory) / "shared"
+            sync_dir.mkdir()
+            path = sync_dir / "repos.json"
+            with patch.dict(os.environ, {"LINEAR_SYNC_CONFIG_DIR": str(sync_dir)}):
+                for raw in (
+                    b"{",
+                    b'{"repos":[]}',
+                    (
+                        '{"repos":{"%s":{"team":"A","project":"P",'
+                        '"disabled":true}}}' % root
+                    ).encode(),
+                    b'{"repos":{},"repos":{}}',
+                    b'{"repos":{"Owner/Repo":{"team":"A","project":"P"},'
+                    b'"owner/repo":{"team":"B","project":"Q"}}}',
+                ):
+                    with self.subTest(raw=raw):
+                        path.write_bytes(raw)
+                        with self.assertRaisesRegex(
+                            RuntimeError, "malformed|repos|ambiguous"
+                        ):
+                            TWEED.resolve_linear_binding(root)
+
+    def test_shared_binding_keeps_case_distinct_canonical_paths(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = make_repo(directory)
+            sync_dir = Path(directory) / "shared"
+            sync_dir.mkdir()
+            (sync_dir / "repos.json").write_text(
+                json.dumps(
+                    {
+                        "repos": {
+                            str(root): {"team": "A", "project": "P"},
+                            str(root).swapcase(): {"team": "B", "project": "Q"},
+                        }
+                    }
+                )
+            )
+            with patch.dict(os.environ, {"LINEAR_SYNC_CONFIG_DIR": str(sync_dir)}):
+                binding = TWEED.resolve_linear_binding(root)
+            self.assertEqual(binding["team"], "A")
+
+    def test_project_command_reports_effective_disabled_binding(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = make_repo(directory)
+            sync_dir = Path(directory) / "shared"
+            sync_dir.mkdir()
+            (sync_dir / "repos.json").write_text(
+                json.dumps(
+                    {"repos": {str(root): {"disabled": True, "reason": "Local only"}}}
+                )
+            )
+            args = SimpleNamespace(
+                repo=str(root), action=None, value=[], team=None, project_name=None
+            )
+            with (
+                patch.dict(os.environ, {"LINEAR_SYNC_CONFIG_DIR": str(sync_dir)}),
+                contextlib.redirect_stdout(io.StringIO()) as output,
+            ):
+                self.assertEqual(TWEED.project_command(args), 0)
+            value = json.loads(output.getvalue())
+            self.assertTrue(value["disabled"])
+            self.assertEqual(value["source"], "linear-progress-sync")
+            self.assertEqual(value["reason"], "Local only")
+            self.assertFalse(value["configured"])
+
     def test_auth_cli_is_interactive_bounded_and_never_prints_tokens(self):
         args = SimpleNamespace(
             agent=False,
@@ -737,7 +922,19 @@ class TweedTests(unittest.TestCase):
             with (
                 patch.dict(os.environ, {"TWEED_STATE_HOME": directory}),
                 patch.object(TWEED, "repository_root", return_value=root),
-                patch.object(TWEED, "linear_project", return_value="CX"),
+                patch.object(
+                    TWEED,
+                    "resolve_linear_binding",
+                    return_value={
+                        "repository": str(root),
+                        "identity_source": "canonical-root",
+                        "team": "Core",
+                        "project": "CX",
+                        "source": "linear-progress-sync",
+                        "binding_digest": "b" * 64,
+                        "disabled": False,
+                    },
+                ),
                 patch.object(
                     TWEED, "create_linear_issue", side_effect=RuntimeError("offline")
                 ),
@@ -749,13 +946,108 @@ class TweedTests(unittest.TestCase):
                         request=["Create", "CSV"],
                         kind="feature",
                         agent=True,
+                        team=None,
+                        project=None,
                     )
                 )
                 receipt = json.loads(output.getvalue())
                 saved = TWEED.load_run(receipt["run_id"])
             self.assertEqual(result, 8)
             self.assertEqual(receipt["state"], "sync-blocked")
+            self.assertEqual(receipt["linear_team"], "Core")
+            self.assertEqual(receipt["linear_project"], "CX")
+            self.assertEqual(receipt["linear_binding_source"], "linear-progress-sync")
+            self.assertEqual(receipt["linear_binding_digest"], "b" * 64)
             self.assertEqual(saved["state"], "sync-blocked")
+            self.assertEqual(saved["team"], "Core")
+            self.assertEqual(saved["project"], "CX")
+            self.assertEqual(saved["binding_source"], "linear-progress-sync")
+            with patch.dict(os.environ, {"TWEED_STATE_HOME": directory}):
+                metadata = TWEED.parse_metadata(
+                    TWEED.read_artifact(
+                        receipt["run_id"], "linear-intake-description"
+                    ).decode()
+                )
+            self.assertEqual(metadata["linear_team"], "Core")
+            self.assertEqual(metadata["linear_binding_digest"], "b" * 64)
+
+    def test_retry_sync_uses_frozen_binding_after_shared_config_changes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = make_repo(directory)
+            git(root, "remote", "add", "origin", "https://github.com/e3-solutions/sample.git")
+            sync_dir = Path(directory) / "shared"
+            sync_dir.mkdir()
+            config_path = sync_dir / "repos.json"
+
+            def write_binding(team: str, project: str) -> None:
+                config_path.write_text(
+                    json.dumps(
+                        {
+                            "repos": {
+                                "e3-solutions/sample": {
+                                    "team": team,
+                                    "project": project,
+                                }
+                            }
+                        }
+                    )
+                )
+
+            write_binding("Frozen Team", "Frozen Project")
+            environment = {
+                "TWEED_STATE_HOME": str(Path(directory) / "state"),
+                "LINEAR_SYNC_CONFIG_DIR": str(sync_dir),
+                "TWEED_CONFIG": str(Path(directory) / "legacy.json"),
+            }
+            with (
+                patch.dict(os.environ, environment),
+                patch.object(TWEED, "repository_root", return_value=root),
+                patch.object(
+                    TWEED, "create_linear_issue", side_effect=RuntimeError("offline")
+                ),
+                contextlib.redirect_stdout(io.StringIO()) as output,
+            ):
+                self.assertEqual(
+                    TWEED.create_command(
+                        SimpleNamespace(
+                            repo=str(root),
+                            request=["Create", "CSV"],
+                            kind="feature",
+                            agent=True,
+                            team=None,
+                            project=None,
+                        )
+                    ),
+                    8,
+                )
+            run_id = json.loads(output.getvalue())["run_id"]
+            with patch.dict(os.environ, environment):
+                frozen = TWEED.load_run(run_id)
+            write_binding("Changed Team", "Changed Project")
+            captured: dict[str, object] = {}
+
+            def recover(_root, project, _title, _description, _run_id, *, team=None):
+                captured.update({"team": team, "project": project})
+                return {
+                    "status": "synced",
+                    "identifier": "TST-1",
+                    "url": "https://linear.test/TST-1",
+                }
+
+            with (
+                patch.dict(os.environ, environment),
+                patch.object(TWEED, "create_linear_issue", side_effect=recover),
+                contextlib.redirect_stdout(io.StringIO()),
+            ):
+                self.assertEqual(
+                    TWEED._retry_sync_command(
+                        SimpleNamespace(run_id=run_id, agent=True)
+                    ),
+                    0,
+                )
+            self.assertEqual(captured, {"team": "Frozen Team", "project": "Frozen Project"})
+            self.assertEqual(frozen["binding_source"], "linear-progress-sync")
+            self.assertRegex(frozen["binding_digest"], r"^[a-f0-9]{64}$")
 
     def test_completed_phase_transport_failure_preserves_reasoning_for_retry(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -1332,6 +1624,34 @@ class TweedTests(unittest.TestCase):
                     second = TWEED.cached_input_digest(root, lock)
             self.assertEqual(first, second)
 
+    def test_repository_identity_streams_untracked_files_and_binary_diff(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = make_repo(directory)
+            untracked = root / "large.bin"
+            untracked.write_bytes(bytes(range(256)) * 8192)
+            tracked = root / "tracked.bin"
+            tracked.write_bytes(b"before")
+            git(root, "add", "tracked.bin")
+            git(root, "commit", "-m", "binary")
+            tracked.write_bytes(bytes(reversed(range(256))) * 8192)
+            expected_untracked = hashlib.sha256(untracked.read_bytes()).hexdigest()
+            expected_diff = hashlib.sha256(
+                subprocess.run(
+                    ["git", "diff", "--binary", "HEAD"],
+                    cwd=root,
+                    capture_output=True,
+                    check=True,
+                ).stdout
+            ).hexdigest()
+            with patch.object(
+                Path,
+                "read_bytes",
+                side_effect=AssertionError("repository hashing must stream files"),
+            ):
+                identity = TWEED.repository_cache_identity(root)
+            self.assertEqual(identity["untracked"]["large.bin"], expected_untracked)
+            self.assertEqual(identity["worktree_diff_sha256"], expected_diff)
+
     def test_legacy_run_migration_preserves_backup_and_imports_artifacts(self):
         with tempfile.TemporaryDirectory() as directory:
             run_id = "tw_0123456789abcdef"
@@ -1457,6 +1777,21 @@ class TweedTests(unittest.TestCase):
         output = json.dumps(value, separators=(",", ":")).encode()
         self.assertLessEqual(len(value["summary"]), 400)
         self.assertLess(len(output), 4096)
+
+    def test_agent_receipt_uses_bounded_utf8_for_binding_names(self):
+        name = "\U0001f680" * 128
+        value = TWEED.receipt(
+            run_id="tw_0123456789abcdef",
+            state="completed",
+            summary=f"Created {name} / {name}",
+            team=name,
+            project=name,
+        )
+        with contextlib.redirect_stdout(io.StringIO()) as output:
+            TWEED.emit(value, True)
+        encoded = output.getvalue().encode("utf-8")
+        self.assertLessEqual(len(encoded), 4096)
+        self.assertIn(name, output.getvalue())
 
 
 if __name__ == "__main__":

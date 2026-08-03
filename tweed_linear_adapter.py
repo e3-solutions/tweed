@@ -182,10 +182,14 @@ query TweedCommentById($id: ID!) {
 
 CREATE_CONTEXT_QUERY = """
 query TweedCreateContext($project: String!) {
-  projects(first: 2, filter: { name: { eq: $project } }, includeArchived: false) {
+  projects(first: 50, filter: { name: { eq: $project } }, includeArchived: false) {
+    pageInfo { hasNextPage }
     nodes {
       id name
-      teams(first: 2, includeArchived: false) { nodes { id key } }
+      teams(first: 50, includeArchived: false) {
+        pageInfo { hasNextPage }
+        nodes { id key name }
+      }
     }
   }
 }
@@ -361,7 +365,10 @@ def _same_issue(candidate: dict[str, Any], request: dict[str, Any]) -> bool:
         and candidate.get("title") == request["title"]
         and candidate_genesis == desired_genesis
         and project.get("name") == request["project"]
-        and team.get("id") == request["team_id"]
+        and (
+            request.get("team_id") is None
+            or team.get("id") == request["team_id"]
+        )
     )
 
 
@@ -370,12 +377,18 @@ def create_or_recover(client: LinearClient, request: dict[str, Any]) -> tuple[st
     title = _text(request.get("title"), "title", 1024)
     description = _text(request.get("description"), "description")
     project_name = _text(request.get("project"), "project", 1024)
+    team_value = request.get("team")
+    team_name = (
+        _text(team_value, "team", 1024) if team_value is not None else None
+    )
     checked = {
         **request,
         "issue_id": issue_id,
         "title": title,
         "description": description,
         "project": project_name,
+        "team": team_name,
+        "team_id": None,
     }
     existing_identity = _fetch_issue_by_id(client, issue_id)
     existing = (
@@ -383,16 +396,44 @@ def create_or_recover(client: LinearClient, request: dict[str, Any]) -> tuple[st
         if existing_identity is not None
         else None
     )
+    if team_name is None:
+        if existing is not None and _same_issue(existing, checked):
+            return "recovered", existing
+        raise AdapterError(
+            "legacy intake lacks a frozen Linear team and cannot create a new issue"
+        )
     context = client.graphql(CREATE_CONTEXT_QUERY, {"project": project_name})
-    projects = ((context.get("projects") or {}).get("nodes") or [])
-    if len(projects) != 1 or projects[0].get("name") != project_name:
-        raise AdapterError("configured Linear project is not uniquely resolvable")
-    teams = ((projects[0].get("teams") or {}).get("nodes") or [])
-    if len(teams) != 1:
-        raise AdapterError("configured Linear project must belong to exactly one active team")
-    checked["team_id"] = teams[0].get("id")
-    if not checked["team_id"]:
-        raise AdapterError("configured Linear project returned an invalid team")
+    project_connection = context.get("projects") or {}
+    projects = project_connection.get("nodes") or []
+    if not isinstance(projects, list) or len(projects) > 50:
+        raise AdapterError("Linear returned invalid project resolution results")
+    project_page = project_connection.get("pageInfo") or {}
+    if project_page.get("hasNextPage") is not False:
+        raise AdapterError("Linear project resolution is incomplete")
+    matches: list[tuple[dict[str, Any], dict[str, Any]]] = []
+    for project in projects:
+        if not isinstance(project, dict) or project.get("name") != project_name:
+            raise AdapterError("Linear returned invalid project resolution results")
+        team_connection = project.get("teams") or {}
+        teams = team_connection.get("nodes") or []
+        if not isinstance(teams, list) or len(teams) > 50:
+            raise AdapterError("Linear returned invalid team resolution results")
+        team_page = team_connection.get("pageInfo") or {}
+        if team_page.get("hasNextPage") is not False:
+            raise AdapterError("Linear team resolution is incomplete")
+        for team in teams:
+            if not isinstance(team, dict):
+                raise AdapterError("Linear returned invalid team resolution results")
+            if team.get("name") == team_name:
+                matches.append((project, team))
+    if len(matches) != 1:
+        raise AdapterError(
+            "configured Linear team/project pair is not uniquely resolvable"
+        )
+    project, team = matches[0]
+    checked["team_id"] = team.get("id")
+    if not checked["team_id"] or not project.get("id"):
+        raise AdapterError("configured Linear team/project returned an invalid identity")
     if existing is not None:
         if not _same_issue(existing, checked):
             raise AdapterError("deterministic issue ID already has conflicting content")
@@ -404,8 +445,8 @@ def create_or_recover(client: LinearClient, request: dict[str, Any]) -> tuple[st
             {
                 "input": {
                     "id": issue_id,
-                    "teamId": teams[0]["id"],
-                    "projectId": projects[0]["id"],
+                    "teamId": team["id"],
+                    "projectId": project["id"],
                     "title": title,
                     "description": description,
                 }
