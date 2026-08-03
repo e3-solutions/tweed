@@ -675,7 +675,10 @@ def validate_scope_evidence(root: Path, report: str) -> None:
     for line in state_match.group("body").splitlines():
         if "→" not in line:
             continue
-        match = re.fullmatch(r"\s*[-*]\s+`?(.*?)`?\s+→\s+(ABSENT|[a-f0-9]+)\s*", line)
+        match = re.fullmatch(
+            r"\s*[-*]\s+`?([^`]+?)`?\s+→\s+`?(ABSENT|[a-f0-9]+)`?\s*",
+            line,
+        )
         if not match:
             raise RuntimeError(f"invalid scope evidence entry: {line.strip()}")
         entries.append((match.group(1), match.group(2)))

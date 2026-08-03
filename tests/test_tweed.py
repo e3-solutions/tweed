@@ -280,8 +280,8 @@ class TweedTests(unittest.TestCase):
             ).hexdigest()
             report = (
                 "Status: scoped\n\n## Repository state\n\n"
-                f"- `README.md` → {readme_hash}\n"
-                "- `new-file.ts` → ABSENT\n\n## Implementation steps\n"
+                f"- `README.md` → `{readme_hash}`\n"
+                "- `new-file.ts` → `ABSENT`\n\n## Implementation steps\n"
             )
             TWEED.validate_scope_evidence(root, report)
 
