@@ -197,11 +197,6 @@ def codex_config(cwd: Path) -> CodexConfig:
         config_overrides=(
             f'model="{CODEX_MODEL}"',
             f'model_reasoning_effort="{CODEX_REASONING_EFFORT}"',
-            f'agents.default_subagent_model="{CODEX_MODEL}"',
-            (
-                "agents.default_subagent_reasoning_effort="
-                f'"{CODEX_REASONING_EFFORT}"'
-            ),
             'plugins."linear-progress-sync@coreedge-local".enabled=false',
         ),
         cwd=str(cwd),
