@@ -427,10 +427,13 @@ def section_body(description: str, name: str) -> str | None:
 def normalized_linear_markdown(value: str | None) -> str | None:
     if value is None:
         return None
-    return "\n".join(
-        re.sub(r"^(\s*)[+*] ", r"\1- ", line.rstrip())
-        for line in value.strip().splitlines()
-    )
+    lines: list[str] = []
+    for raw_line in value.strip().splitlines():
+        line = re.sub(r"^(\s*)[+*] ", r"\1- ", raw_line.rstrip())
+        line = re.sub(r"\]\(<([^>\n]+)>\)", r"](\1)", line)
+        if line.strip():
+            lines.append(line)
+    return "\n".join(lines)
 
 
 def phase_sync_already_landed(state: dict[str, Any], issue: dict[str, Any]) -> bool:

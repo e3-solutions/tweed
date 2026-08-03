@@ -162,7 +162,10 @@ class TweedTests(unittest.TestCase):
                 "status": "scoped",
                 "summary": "Scoped",
                 "question": None,
-                "report_markdown": "Status: scoped\n\n# Solution scope\n\n- Do it.",
+                "report_markdown": (
+                    "Status: scoped\n\n# Solution scope\n\n"
+                    "- [Docs](https://example.com/docs)\n\n1. One\n\n2. Two"
+                ),
             }
             run_id = "tw_1111111111111111"
             desired = TWEED.advanced_description(
@@ -189,7 +192,13 @@ class TweedTests(unittest.TestCase):
                         "description": TWEED.replace_section(
                             desired,
                             "scope",
-                            result["report_markdown"].replace("- Do", "* Do"),
+                            result["report_markdown"]
+                            .replace("- [Docs]", "* [Docs]")
+                            .replace(
+                                "](https://example.com/docs)",
+                                "](<https://example.com/docs>)",
+                            )
+                            .replace("\n\n2. Two", "\n2. Two"),
                         )
                         + "\n\n",
                     },
