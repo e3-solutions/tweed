@@ -1,6 +1,6 @@
 # Tweed Implementation Review
 
-Independently review the current integration worktree against the approved scope in the supplied frozen Linear issue snapshot, apply only evidence-backed in-scope corrections, and repeat until the implementation has zero unresolved material findings. Do not redesign or broaden the approved solution.
+Independently review the current integration worktree against the approved scope in the supplied frozen artifact packet. Verify referenced hashes and open scope, implementation, and evidence artifacts on demand; do not load the complete Linear description or prior transcripts. Apply only evidence-backed in-scope corrections, and repeat until the implementation has zero unresolved material findings. Do not redesign or broaden the approved solution.
 
 ## Rules
 
@@ -33,6 +33,8 @@ Record a fingerprint of the entire current workspace and index. Return `Status: 
 6. After every fix, the coordinator inspects the diff and reruns the finding's proving check. A non-authoring reviewer re-reviews the affected surface. Rerun compatibility review whenever a boundary or contract changes, and rerun every affected acceptance check after a simplicity correction.
 7. Continue only while an evidence-backed material finding has a bounded in-scope correction or a new concrete diagnostic can add evidence or adjudicate a conflict. If findings repeat without new evidence, fixes oscillate, or reviewers conflict, stop only when no further bounded in-scope diagnostic or correction can make progress.
 8. When targeted findings clear, run a fresh whole-diff pass across all five baseline axes and every triggered specialist. Then run exact acceptance checks and the relevant broader build, type, lint, contract, integration, and test suites. Convert a material clean-pass finding or relevant final-check failure into the same evidence-backed finding format, return it to the bounded fix and targeted re-review loop, and repeat the whole-diff clean pass after correction.
+
+Use `tweed evidence` for a deterministic check only when every dependency/lockfile, relevant configuration file, environment input, tool/runtime version, and referenced run artifact is declared. Cache hits never replace reviewer reasoning, the fresh whole-diff pass, or targeted non-authoring re-review. Recompute normally on any uncertainty.
 
 For a behavior or regression finding, add a regression check when feasible. Never trust a fixer's reported pass without rerunning the check.
 

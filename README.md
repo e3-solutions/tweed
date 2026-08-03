@@ -24,7 +24,8 @@ issue.
 - Python 3.10 or newer
 - `uv`
 - Codex or the ChatGPT desktop app
-- Linear MCP connected to Codex with OAuth
+- An officially authenticated, atomic Linear adapter configured with
+  `TWEED_LINEAR_ADAPTER`
 
 For local development, make the script available on `PATH`:
 
@@ -92,8 +93,32 @@ tweed resume tw_0123456789abcdef "Use the existing export permission model"
 tweed resume tw_0123456789abcdef
 ```
 
-Full reports and workflow snapshots are stored privately under
-`~/.local/state/tweed/runs/`.
+Full reports, frozen Linear snapshots, workflows, and evidence are stored as
+private content-addressed artifacts under `~/.local/state/tweed/runs/`.
+
+## Linear transport
+
+Tweed never starts a model session to read, copy, compare, format, create, or
+update Linear data. `TWEED_LINEAR_ADAPTER` names an executable implementing the
+`dev.tweed.linear.v1` JSON protocol on standard input/output. Authentication is
+owned by that explicitly configured adapter; Tweed does not inspect Codex MCP
+storage, export OAuth credentials, or accept a read-then-write emulation.
+
+The adapter must provide an atomic compare-and-swap over the exact UTF-8 issue
+description, conditioned on both its opaque authoritative revision and its
+SHA-256 digest. If no officially authenticated adapter with that guarantee is
+configured, Tweed fails closed before starting phase reasoning. See
+[`docs/linear-adapter.md`](docs/linear-adapter.md) for the narrow protocol.
+Any stale or formatting-altered authoritative description remains
+`sync-blocked`; retrying synchronization never reruns completed reasoning.
+
+## Deterministic evidence reuse
+
+Phase coordinators may run `tweed evidence` with exact command arguments and
+declared dependency/lockfile, configuration, environment, tool-version, and
+run-artifact inputs. Every empty input class requires an explicit `--no-*`
+assertion. Tweed reuses only a complete identical key and recomputes on any
+change or uncertainty; reviewer reasoning is never cached.
 
 ## Codex adapter mode
 

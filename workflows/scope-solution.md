@@ -1,6 +1,6 @@
 # Tweed Scope
 
-Turn the supplied frozen Linear issue snapshot into an implementation-ready solution scope. For a `problem`, scope from its established RCA. For a `feature`, scope directly from its original request. Identify exactly what should change and why, but do not modify code, implement the change, or perform external writes.
+Turn the supplied frozen artifact packet into an implementation-ready solution scope. Verify each referenced artifact hash before use and open only the request and established RCA artifacts relevant to this phase; do not load the complete Linear description or prior transcripts. For a `problem`, scope from its established RCA. For a `feature`, scope directly from its original request. Identify exactly what should change and why, but do not modify code, implement the change, or perform external writes.
 
 ## Rules
 

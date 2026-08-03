@@ -1,6 +1,6 @@
 # Tweed Implementation
 
-Implement the approved scope from the supplied frozen Linear issue snapshot using bounded Codex subagents. Modify only the runner-owned integration worktree and stop after verified implementation. Do not redesign the solution or perform external delivery actions.
+Implement the approved scope from the supplied frozen artifact packet using bounded Codex subagents. Verify referenced hashes and open scope/evidence artifacts on demand; do not load the complete Linear description or prior transcripts. Modify only the runner-owned integration worktree and stop after verified implementation. Do not redesign the solution or perform external delivery actions.
 
 ## Rules
 
@@ -26,6 +26,8 @@ Implement the approved scope from the supplied frozen Linear issue snapshot usin
    Add a security, data, concurrency, migration, accessibility, operations, or other specialist only for a concrete material risk.
 7. **Resolve findings.** Route each evidence-backed finding to the owning writer as a bounded follow-up. Re-review only affected surfaces. Continue while a concrete fix or check can resolve a material finding; do not add arbitrary agents or rounds.
 8. **Validate and report.** Run the smallest checks proving each acceptance criterion, then the relevant broader build, type, lint, and test checks supported by the project. Reinspect the final diff and repository state before applying the completion gate.
+
+Use `tweed evidence` for a deterministic check only when you can declare every dependency/lockfile, relevant configuration file, environment input, tool/runtime version, and referenced run artifact. Treat a cache hit as evidence for the identical key, never as a substitute for independent reviewer reasoning. If any input is uncertain, run the check normally and do not claim reuse.
 
 If implementation exposes a required product decision, new component or interface, dependency, schema, migration, rollout need, or contradiction in the approved design, do not rescope it here. Stop affected work and identify the exact change that must return to the scoping phase.
 

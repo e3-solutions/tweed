@@ -1,7 +1,7 @@
 # Tweed Requirements Specification
 
-Status: Draft v0.4
-Last updated: 2026-08-01
+Status: Draft v0.5
+Last updated: 2026-08-03
 
 ## 1. Purpose
 
@@ -126,18 +126,29 @@ Each phase uses three capability boundaries:
 narrow Linear reader → phase coordinator → narrow Linear writer
 ```
 
+The reader and writer are deterministic operations of an explicitly configured
+`dev.tweed.linear.v1` adapter, never Codex/model sessions. The adapter owns an
+officially supported Linear authentication path and must implement atomic
+conditional writes; Tweed never extracts connector credentials. An unavailable
+or non-atomic adapter is a configuration error and fails before reasoning.
+
 The reader retrieves one exact issue snapshot and performs no writes. The
 coordinator receives the frozen snapshot and performs no Linear writes. After a
 completion gate passes, the writer:
 
-1. Re-reads exactly the expected issue.
+1. Checks the authoritative opaque revision and exact UTF-8 description digest.
 2. Accepts an already-applied identical description as an idempotent success.
-3. Otherwise verifies the old description digest.
+3. Otherwise atomically verifies the expected revision, digest, and bytes with
+   the write.
 4. Replaces the description exactly once.
-5. Reads the issue back and verifies the result.
+5. Returns the authoritative result snapshot for exact verification.
 
 A digest mismatch blocks synchronization. It never overwrites concurrent user
 or Tweed changes.
+
+Each phase fetches and persists one complete authoritative snapshot. All phase
+work uses that frozen artifact. Resume performs only a cheap revision/digest
+verification; advancement uses the same values as its atomic CAS precondition.
 
 V1 creates no milestone comments and writes no drafts, questions, failures,
 partial results, agent activity, or transcripts to Linear.
@@ -242,6 +253,20 @@ normalized into the completed phase report, not copied as conversation.
 Run state and full reports live privately under the XDG state directory with
 atomic writes and owner-only permissions. A completed report is persisted before
 Linear synchronization.
+
+Request, RCA, scope, implementation, review, and evidence bodies are separate
+content-addressed artifacts. A versioned manifest records each path, SHA-256,
+byte length, and media type. Phase prompts carry only bounded phase-specific
+artifact references; agents verify and open a referenced artifact on demand.
+The runner deterministically reconstructs the complete human-readable Linear
+description from those artifacts. Existing v1 run state is migrated lazily with
+an immutable backup and fails closed when required revision provenance is absent.
+
+Deterministic evidence may be reused only when the complete cache key matches:
+repository commit/index/worktree identity, exact command arguments, dependency
+and lockfile digests, relevant configuration, declared environment inputs,
+tool/runtime versions, and referenced artifact hashes. Uncertainty recomputes.
+Reviewer reasoning and targeted re-review are never cacheable substitutes.
 
 If synchronization fails or its acknowledgement is lost, `retry-sync` retries
 only the idempotent Linear operation. It never reruns the phase or creates a new
