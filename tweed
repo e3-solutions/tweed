@@ -2738,10 +2738,10 @@ def auth_command(args: argparse.Namespace) -> int:
     if args.auth_action == "status":
         value = linear_oauth.status()
         if not value["configured"]:
-            print("Linear OAuth is not configured; run tweed auth login --client-id <id>")
+            print("Linear OAuth is unavailable in this build")
             return 1
         if not value["logged_in"]:
-            print("Linear OAuth client is configured but not logged in")
+            print("Linear OAuth is not logged in; run tweed auth login")
             return 1
         state = "refresh required" if value["refresh_required"] else "connected"
         viewer = value.get("viewer") or {}
@@ -2807,7 +2807,13 @@ def build_parser() -> argparse.ArgumentParser:
     auth = subparsers.add_parser("auth")
     auth_subparsers = auth.add_subparsers(dest="auth_action", required=True)
     auth_login = auth_subparsers.add_parser("login")
-    auth_login.add_argument("--client-id")
+    auth_login.add_argument(
+        "--client-id",
+        help=(
+            "public OAuth client ID override for forks/tests "
+            f"(default: {linear_oauth.DEFAULT_CLIENT_ID})"
+        ),
+    )
     auth_login.add_argument("--manual", action="store_true")
     auth_login.add_argument("--timeout", type=int, default=300)
     auth_subparsers.add_parser("status")

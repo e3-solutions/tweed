@@ -38,6 +38,7 @@ REDIRECT_PORT = 43817
 REDIRECT_PATH = "/oauth/callback"
 REDIRECT_URI = f"http://{REDIRECT_HOST}:{REDIRECT_PORT}{REDIRECT_PATH}"
 SCOPES = ("read", "issues:create", "comments:create")
+DEFAULT_CLIENT_ID = "6e807fb3d574eb3e13bee2dc0bf3337e"
 STORE_SCHEMA = 1
 TIMEOUT_SECONDS = 30
 CALLBACK_TIMEOUT_SECONDS = 300
@@ -354,7 +355,7 @@ def clear_tokens(path: Path, credentials: dict[str, Any]) -> None:
 
 def _client_id(value: object) -> str:
     if not isinstance(value, str) or not value or len(value.encode()) > 512:
-        raise OAuthError("Linear OAuth client ID is not configured")
+        raise OAuthError("Linear OAuth client identity is missing; run tweed auth login")
     if any(ord(character) < 0x21 or ord(character) > 0x7E for character in value):
         raise OAuthError("Linear OAuth client ID is invalid")
     return value
@@ -792,7 +793,12 @@ def login(
     with login_lock() as store:
         with credential_lock(store):
             existing = load_credentials(store)
-        selected = _client_id(client_id or existing.get("client_id"))
+        selected_source = (
+            client_id
+            if client_id is not None
+            else existing.get("client_id") or DEFAULT_CLIENT_ID
+        )
+        selected = _client_id(selected_source)
         state_value = secrets.token_urlsafe(32)
         verifier = secrets.token_urlsafe(64)
         _pkce_verifier(verifier)
@@ -845,7 +851,7 @@ def status(
 ) -> dict[str, Any]:
     with credential_lock(path) as store:
         credentials = load_credentials(store)
-    configured = bool(credentials.get("client_id"))
+    configured = bool(credentials.get("client_id") or DEFAULT_CLIENT_ID)
     logged_in = bool(credentials.get("access_token") and credentials.get("refresh_token"))
     if not configured or not logged_in:
         return {

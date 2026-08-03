@@ -432,6 +432,42 @@ class TweedTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "interactive"):
             TWEED.auth_command(SimpleNamespace(agent=True, auth_action="status"))
 
+    def test_auth_cli_defaults_to_official_app_without_requesting_client_id(self):
+        parser = TWEED.build_parser()
+        login = parser.parse_args(["auth", "login"])
+        self.assertIsNone(login.client_id)
+        help_text = parser._subparsers._group_actions[0].choices["auth"].format_help()
+        login_help = (
+            parser._subparsers._group_actions[0]
+            .choices["auth"]
+            ._subparsers._group_actions[0]
+            .choices["login"]
+            .format_help()
+        )
+        self.assertIn(TWEED.linear_oauth.DEFAULT_CLIENT_ID, login_help)
+        self.assertNotIn("client ID is still required", help_text + login_help)
+        args = SimpleNamespace(agent=False, auth_action="status")
+        with (
+            patch.object(
+                TWEED.linear_oauth,
+                "status",
+                return_value={
+                    "configured": True,
+                    "logged_in": False,
+                    "refresh_required": False,
+                    "expires_at": None,
+                    "scopes": [],
+                    "viewer": None,
+                },
+            ),
+            contextlib.redirect_stdout(io.StringIO()) as output,
+        ):
+            self.assertEqual(TWEED.auth_command(args), 1)
+        self.assertEqual(
+            output.getvalue().strip(),
+            "Linear OAuth is not logged in; run tweed auth login",
+        )
+
     def test_child_sessions_disable_the_competing_linear_orchestrator(self):
         with (
             patch.object(TWEED, "find_codex", return_value="/bin/true"),

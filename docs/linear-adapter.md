@@ -5,14 +5,16 @@ Tweed bundles `tweed_linear_adapter.py`, a standard-library client for the fixed
 first-party OAuth2 authorization-code flow with PKCE S256.
 
 ```sh
-tweed auth login --client-id YOUR_LINEAR_OAUTH_CLIENT_ID
+tweed auth login
 ```
 
-Provision the application once from Linear settings using
-[`linear-oauth-app.json`](../linear-oauth-app.json). The registered callback must
-be exactly `http://localhost:43817/oauth/callback`; no client secret is used or
-stored. Login uses independent random state and verifier values, PKCE S256, an
-exact loopback callback, bounded waits, and the least-privilege
+The official private Tweed application public client ID is built in; it is public
+configuration, not a credential. [`linear-oauth-app.json`](../linear-oauth-app.json)
+documents its registered shape. Forks and tests may use `--client-id ID`, and a
+successful override login persists that identity with its token pair. The
+registered callback is exactly `http://localhost:43817/oauth/callback`; no client
+secret is used or stored. Login uses independent random state and verifier values,
+PKCE S256, an exact loopback callback, bounded waits, and the least-privilege
 `read,issues:create,comments:create` scopes. `--manual` supports environments
 where the browser cannot complete the loopback redirect.
 

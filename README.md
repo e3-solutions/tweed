@@ -24,7 +24,7 @@ issue.
 - Python 3.10 or newer
 - `uv`
 - Codex or the ChatGPT desktop app
-- A Linear OAuth application client ID authorized once with `tweed auth login`
+- One-time authorization of the built-in official Tweed Linear OAuth app
 
 For local development, make the script available on `PATH`:
 
@@ -48,16 +48,20 @@ The setting is stored per canonical Git root in
 
 ## Connect Linear
 
-Create a private OAuth application from Linear's
-[application settings](https://linear.app/settings/api/applications/new) using
-the checked-in [`linear-oauth-app.json`](linear-oauth-app.json) values. The
-redirect URI must be exactly `http://localhost:43817/oauth/callback`. Copy the
-public client ID; no client secret is needed for Tweed's PKCE flow. Then run:
+Tweed includes the public client ID for its official private Linear OAuth app.
+The registered redirect URI is exactly
+`http://localhost:43817/oauth/callback`; no client secret is used. Authorize it
+once with:
 
 ```sh
-tweed auth login --client-id YOUR_CLIENT_ID
+tweed auth login
 tweed auth status
 ```
+
+The checked-in [`linear-oauth-app.json`](linear-oauth-app.json) documents the
+registered application shape. Forks and hermetic tests may select another public
+app identity with `tweed auth login --client-id ID`; a successful login safely
+persists that selected identity with its token pair.
 
 If a browser cannot return to localhost, use `tweed auth login --manual` and
 paste the complete redirected URL. `tweed auth logout` attempts to revoke both

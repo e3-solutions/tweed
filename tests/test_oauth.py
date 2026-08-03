@@ -4,6 +4,7 @@ import json
 import http.client
 import os
 from pathlib import Path
+import socket
 import stat
 import subprocess
 import sys
@@ -19,6 +20,7 @@ import tweed_linear_oauth as oauth
 
 
 CLIENT_ID = "tweed-client-id"
+OFFICIAL_CLIENT_ID = "6e807fb3d574eb3e13bee2dc0bf3337e"
 
 
 def token_payload(access: str = "access-new", refresh: str = "refresh-new") -> dict:
@@ -97,6 +99,9 @@ class ScriptedConnections:
 
 
 class OAuthTests(unittest.TestCase):
+    def test_official_public_client_id_is_the_builtin_default(self):
+        self.assertEqual(oauth.DEFAULT_CLIENT_ID, OFFICIAL_CLIENT_ID)
+
     def test_oauth_http_is_fixed_bounded_and_upstream_errors_are_redacted(self):
         secret = "refresh-secret-that-must-not-leak"
         connections = ScriptedConnections(Response(400, {"error_description": secret}))
@@ -613,6 +618,48 @@ class OAuthTests(unittest.TestCase):
             self.assertNotIn("secret-code", path.read_text())
             self.assertNotIn("v" * 64, path.read_text())
             self.assertNotIn("pending_refresh", stored)
+            self.assertEqual(stored["client_id"], CLIENT_ID)
+
+    def test_login_without_override_uses_and_persists_official_client_id(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "linear.json"
+            http = FakeHTTP((200, token_payload()))
+            redirected = f"{oauth.REDIRECT_URI}?code=code&state=fixed-state"
+            with (
+                mock.patch.dict(os.environ, {"TWEED_LINEAR_OAUTH_FILE": str(path)}),
+                mock.patch.object(
+                    oauth.secrets,
+                    "token_urlsafe",
+                    side_effect=["fixed-state", "v" * 64],
+                ),
+                mock.patch("builtins.print"),
+            ):
+                oauth.login(
+                    None,
+                    manual=True,
+                    http=http,
+                    clock=lambda: 1_000,
+                    input_fn=lambda _prompt: redirected,
+                )
+            self.assertEqual(http.calls[0][1]["client_id"], OFFICIAL_CLIENT_ID)
+            self.assertEqual(oauth.load_credentials(path)["client_id"], OFFICIAL_CLIENT_ID)
+
+    def test_explicit_empty_client_id_override_fails_closed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "linear.json"
+            with mock.patch.dict(
+                os.environ, {"TWEED_LINEAR_OAUTH_FILE": str(path)}
+            ):
+                with self.assertRaisesRegex(oauth.OAuthError, "identity is missing"):
+                    oauth.login("", manual=True, input_fn=lambda _prompt: "unused")
+            self.assertFalse(path.exists())
+
+    def test_status_is_ready_for_login_without_stored_client_identity(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "linear.json"
+            value = oauth.status(path=path)
+            self.assertTrue(value["configured"])
+            self.assertFalse(value["logged_in"])
 
     def test_manual_login_rejects_platform_without_bounded_input(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -628,45 +675,55 @@ class OAuthTests(unittest.TestCase):
     def test_loopback_ignores_invalid_request_then_accepts_valid_callback(self):
         result: dict[str, object] = {}
 
+        with socket.socket() as probe:
+            probe.bind(("127.0.0.1", 0))
+            port = probe.getsockname()[1]
+
         def listen() -> None:
             try:
                 result["code"] = oauth._loopback_callback("expected", 3)
             except BaseException as error:  # noqa: BLE001 - asserted by test
                 result["error"] = error
 
-        thread = threading.Thread(target=listen)
-        thread.start()
-        for _ in range(50):
-            try:
-                connection = http.client.HTTPConnection("127.0.0.1", oauth.REDIRECT_PORT)
-                connection.request(
-                    "GET",
-                    "/wrong?code=bad&state=expected",
-                    headers={"Host": f"{oauth.REDIRECT_HOST}:{oauth.REDIRECT_PORT}"},
-                )
-                self.assertEqual(connection.getresponse().status, 400)
-                connection.close()
-                break
-            except OSError:
-                time.sleep(0.02)
-        for _ in range(50):
-            try:
-                connection = http.client.HTTPConnection(
-                    "127.0.0.1", oauth.REDIRECT_PORT
-                )
-                connection.request(
-                    "GET",
-                    f"{oauth.REDIRECT_PATH}?code=good&state=expected",
-                    headers={"Host": f"{oauth.REDIRECT_HOST}:{oauth.REDIRECT_PORT}"},
-                )
-                self.assertEqual(connection.getresponse().status, 200)
-                connection.close()
-                break
-            except OSError:
-                time.sleep(0.02)
-        else:
-            self.fail(f"loopback server stopped before valid callback: {result!r}")
-        thread.join(timeout=5)
+        with (
+            mock.patch.object(oauth, "REDIRECT_PORT", port),
+            mock.patch.object(
+                oauth,
+                "REDIRECT_URI",
+                f"http://{oauth.REDIRECT_HOST}:{port}{oauth.REDIRECT_PATH}",
+            ),
+        ):
+            thread = threading.Thread(target=listen)
+            thread.start()
+            for _ in range(50):
+                try:
+                    connection = http.client.HTTPConnection("127.0.0.1", port)
+                    connection.request(
+                        "GET",
+                        "/wrong?code=bad&state=expected",
+                        headers={"Host": f"{oauth.REDIRECT_HOST}:{port}"},
+                    )
+                    self.assertEqual(connection.getresponse().status, 400)
+                    connection.close()
+                    break
+                except OSError:
+                    time.sleep(0.02)
+            for _ in range(50):
+                try:
+                    connection = http.client.HTTPConnection("127.0.0.1", port)
+                    connection.request(
+                        "GET",
+                        f"{oauth.REDIRECT_PATH}?code=good&state=expected",
+                        headers={"Host": f"{oauth.REDIRECT_HOST}:{port}"},
+                    )
+                    self.assertEqual(connection.getresponse().status, 200)
+                    connection.close()
+                    break
+                except OSError:
+                    time.sleep(0.02)
+            else:
+                self.fail(f"loopback server stopped before valid callback: {result!r}")
+            thread.join(timeout=5)
         self.assertFalse(thread.is_alive())
         self.assertNotIn("error", result)
         self.assertEqual(result.get("code"), "good")

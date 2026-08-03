@@ -119,8 +119,10 @@ narrow Linear reader → phase coordinator → narrow Linear writer
 The reader and writer are deterministic operations of the bundled
 `dev.tweed.linear.v2` adapter, never Codex/model sessions. It uses the officially
 supported Linear OAuth2 authorization-code flow with PKCE S256 and rotating
-refresh tokens. The normal path requires no client secret or personal API key.
-Personal API keys are an explicit headless fallback only. Tweed never discovers
+refresh tokens. The official private app's public client ID is built in, while
+forks and tests may persist a validated explicit override. The normal path
+requires no client secret or personal API key. Personal API keys are an explicit
+headless fallback only. Tweed never discovers
 or extracts connector credentials. An optional unauthenticated adapter override
 is retained for hermetic tests and compatible installations. The runner disables
 the configured Linear MCP capability and blanks known Linear authentication and

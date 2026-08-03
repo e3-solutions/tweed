@@ -33,10 +33,10 @@ Holding all 23 reasoning/reviewer tasks fixed and replacing only transport
 projects 2,930.512 seconds wall time, a 36.1% reduction. Total model task count
 falls from 38 to 23 (39.5%); model-powered Linear transport tasks fall from 15
 to zero. The bundled production adapter's live Linear latency is not measured
-because a Tweed OAuth app client ID has not yet been provisioned and authorized
-for a disposable canary. No connector credential was extracted and no live result
-is fabricated. Hermetic journal/adapter and OAuth operations are covered by the
-complete local suite and committed fixture replay.
+because this background task intentionally did not start interactive OAuth or
+mutate a disposable issue. No connector credential was extracted and no live
+result is fabricated. Hermetic journal/adapter and OAuth operations are covered
+by the complete local suite and committed fixture replay.
 
 ## Snapshot replay
 
