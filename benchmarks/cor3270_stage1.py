@@ -174,7 +174,19 @@ def main() -> int:
     )
     args = parser.parse_args()
     fixture = json.loads(args.fixture.read_text(encoding="utf-8"))
-    with tempfile.TemporaryDirectory(prefix="tweed-stage1-", dir="/tmp") as directory:
+    temporary_base = Path("/tmp").resolve()
+    # tempfile contributes an eight-character random suffix. Pad the prefix so
+    # absolute artifact references have the same byte length on macOS (where
+    # /tmp resolves through /private) and Linux CI.
+    target_length = 64
+    prefix_length = target_length - len(str(temporary_base)) - 1 - 8
+    if prefix_length < 1:
+        raise RuntimeError("temporary benchmark base path is unexpectedly long")
+    with tempfile.TemporaryDirectory(
+        prefix="t" * prefix_length, dir=temporary_base
+    ) as directory:
+        if len(str(Path(directory).resolve())) != target_length:
+            raise RuntimeError("temporary benchmark path length is unstable")
         os.environ["TWEED_STATE_HOME"] = directory
         tweed = load_tweed(args.tweed.resolve())
         replay = packet_metrics(tweed, fixture)
