@@ -71,9 +71,10 @@ applies only bounded in-scope repairs, commits any passing corrections, and
 advances the issue to `ready-to-merge`.
 
 Tweed does not push, open a pull request, merge, deploy, or delete its worktree.
-Its child sessions disable the local `linear-progress-sync` orchestrator because
-that plugin owns the same branch, Linear, and PR boundaries; only one runner may
-own those writes.
+Its child sessions disable lifecycle hooks and the local `linear-progress-sync`
+orchestrator because those hooks own the same branch, Linear, and PR boundaries;
+only the Tweed runner may own those writes. Global hooks remain enabled outside
+Tweed-created sessions.
 
 Every child Codex session is pinned to `gpt-5.6-sol` with medium reasoning.
 Spawned implementation and review agents inherit that same model and effort,

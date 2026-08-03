@@ -197,6 +197,7 @@ def codex_config(cwd: Path) -> CodexConfig:
         config_overrides=(
             f'model="{CODEX_MODEL}"',
             f'model_reasoning_effort="{CODEX_REASONING_EFFORT}"',
+            "features.hooks=false",
             'plugins."linear-progress-sync@coreedge-local".enabled=false',
         ),
         cwd=str(cwd),

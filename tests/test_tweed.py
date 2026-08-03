@@ -451,6 +451,7 @@ class TweedTests(unittest.TestCase):
     def test_child_sessions_disable_the_competing_linear_orchestrator(self):
         with patch.object(TWEED, "find_codex", return_value="/bin/true"):
             config = TWEED.codex_config(Path("/tmp").resolve())
+        self.assertIn("features.hooks=false", config.config_overrides)
         self.assertIn(
             'plugins."linear-progress-sync@coreedge-local".enabled=false',
             config.config_overrides,
