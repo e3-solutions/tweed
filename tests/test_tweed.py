@@ -321,6 +321,16 @@ class TweedTests(unittest.TestCase):
             TWEED.completed_json_turn(thread, "work", {}, timeout_seconds=1)
         self.assertTrue(thread.handle.interrupted)
 
+    def test_linear_turn_timeout_is_bounded_and_configurable(self):
+        with patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("TWEED_LINEAR_TIMEOUT", None)
+            self.assertEqual(TWEED.linear_turn_timeout(), 300)
+        with patch.dict(os.environ, {"TWEED_LINEAR_TIMEOUT": "45"}):
+            self.assertEqual(TWEED.linear_turn_timeout(), 45)
+        with patch.dict(os.environ, {"TWEED_LINEAR_TIMEOUT": "0"}):
+            with self.assertRaisesRegex(RuntimeError, "positive integer"):
+                TWEED.linear_turn_timeout()
+
     def test_resume_prompt_distinguishes_clarification_from_interruption(self):
         clarification = TWEED.resume_prompt("awaiting-input", "Use option A")
         interrupted = TWEED.resume_prompt("running", "")

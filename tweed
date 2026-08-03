@@ -537,6 +537,13 @@ def start_narrow_thread(codex: Codex, root: Path, title: str, instructions: str)
     return thread
 
 
+def linear_turn_timeout() -> int:
+    value = int(os.environ.get("TWEED_LINEAR_TIMEOUT", "300"))
+    if value <= 0:
+        raise RuntimeError("TWEED_LINEAR_TIMEOUT must be a positive integer")
+    return value
+
+
 def read_linear_issue(codex: Codex, root: Path, issue: str) -> dict[str, Any]:
     expected = sanitize_issue(issue).upper()
     last_error: Exception | None = None
@@ -555,6 +562,7 @@ def read_linear_issue(codex: Codex, root: Path, issue: str) -> dict[str, Any]:
             "and complete exact Markdown description. Do not summarize or repair the description. "
             f"This is bounded copy attempt {attempt} of 3.",
             ISSUE_SCHEMA,
+            timeout_seconds=linear_turn_timeout(),
         )
         try:
             if value["identifier"].upper() != expected:
@@ -589,7 +597,9 @@ def create_linear_issue(
         f"project. Use this exact title:\n{title}\n\nUse this exact description:\n{description}\n\n"
         "Return synced only after reading the resulting issue and verifying the run ID."
     )
-    return completed_json_turn(thread, prompt, SYNC_SCHEMA)
+    return completed_json_turn(
+        thread, prompt, SYNC_SCHEMA, timeout_seconds=linear_turn_timeout()
+    )
 
 
 def update_linear_issue(
@@ -616,7 +626,9 @@ def update_linear_issue(
         "Read the issue back and verify the complete description before returning synced.\n\n"
         f"Exact new description:\n{description}"
     )
-    return completed_json_turn(thread, prompt, SYNC_SCHEMA)
+    return completed_json_turn(
+        thread, prompt, SYNC_SCHEMA, timeout_seconds=linear_turn_timeout()
+    )
 
 
 def phase_prompt(issue: dict[str, Any], phase: Phase) -> str:
