@@ -30,5 +30,5 @@ Handle the receipt by `state`:
 - `blocked`, `partial`, or `not-established`: Return the summary and unchanged stage. Do not advance automatically.
 - `failed` or `canceled`: Return the bounded error and run ID. If the user asks to continue an interrupted phase, invoke `resume` once without an answer.
 
-Never use Linear tools directly. Tweed owns its configured deterministic Linear
-adapter, issue CAS, phase coordinator, worktree, commit, and readiness gates.
+Never use Linear tools directly. Tweed owns its deterministic Linear journal
+adapter, phase coordinator, worktree, commit, and readiness gates.

@@ -19,6 +19,8 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
+import time
 import uuid
 from dataclasses import dataclass
 from pathlib import Path
@@ -27,12 +29,15 @@ from typing import Any, Iterator
 from openai_codex import Codex, CodexConfig, Sandbox
 from openai_codex.types import TurnStatus
 
+import tweed_journal as journal
+
 
 SCHEMA_VERSION = 1
-RUN_SCHEMA_VERSION = 2
+RUN_SCHEMA_VERSION = 3
 ARTIFACT_MANIFEST_VERSION = 1
 CACHE_SCHEMA_VERSION = 1
 PROTOCOL = "dev.tweed.receipt.v1"
+LINEAR_PROTOCOL = "dev.tweed.linear.v2"
 NEEDS_INPUT = "needs-input"
 CODEX_MODEL = "gpt-5.6-sol"
 CODEX_REASONING_EFFORT = "medium"
@@ -40,13 +45,6 @@ LAST_RUN_ID: str | None = None
 LAST_TURN_ID: str | None = None
 META_START = "<!-- tweed:metadata:start -->"
 META_END = "<!-- tweed:metadata:end -->"
-SECTION_RE = re.compile(
-    r"^[ \t]*<!-- tweed:(?P<name>[a-z-]+):start -->\r?\n.*?\r?\n"
-    r"^[ \t]*<!-- tweed:(?P=name):end -->",
-    re.DOTALL | re.MULTILINE,
-)
-
-
 @dataclass(frozen=True)
 class Phase:
     command: str
@@ -188,11 +186,116 @@ def codex_config(cwd: Path) -> CodexConfig:
             'plugins."linear-progress-sync@coreedge-local".enabled=false',
         ),
         cwd=str(cwd),
+        env={"LINEAR_API_KEY": "", "TWEED_LINEAR_ADAPTER": ""},
         client_name="tweed",
         client_title="Tweed",
         client_version="0.2.0",
         experimental_api=False,
     )
+
+
+class OutputLimitExceeded(RuntimeError):
+    pass
+
+
+def run_bounded_process(
+    command: list[str],
+    *,
+    input_bytes: bytes | None = None,
+    cwd: Path | None = None,
+    timeout: float,
+    stdout_limit: int,
+    stderr_limit: int,
+) -> subprocess.CompletedProcess[bytes]:
+    """Run a child while retaining at most each declared stream limit."""
+    stdin_file = tempfile.TemporaryFile()
+    if input_bytes is not None:
+        stdin_file.write(input_bytes)
+    stdin_file.seek(0)
+    process = subprocess.Popen(
+        command,
+        cwd=cwd,
+        stdin=stdin_file,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        start_new_session=True,
+    )
+    captured: dict[str, bytearray] = {
+        "stdout": bytearray(),
+        "stderr": bytearray(),
+    }
+    exceeded: list[str] = []
+    guard = threading.Lock()
+
+    def kill_group() -> None:
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+
+    def drain(name: str, stream: Any, limit: int) -> None:
+        while True:
+            chunk = stream.read(min(65536, limit + 1))
+            if not chunk:
+                return
+            with guard:
+                remaining = max(0, limit + 1 - len(captured[name]))
+                captured[name].extend(chunk[:remaining])
+                too_large = len(captured[name]) > limit
+                if too_large and name not in exceeded:
+                    exceeded.append(name)
+            if too_large:
+                kill_group()
+                return
+
+    threads = [
+        threading.Thread(
+            target=drain,
+            args=("stdout", process.stdout, stdout_limit),
+            daemon=True,
+        ),
+        threading.Thread(
+            target=drain,
+            args=("stderr", process.stderr, stderr_limit),
+            daemon=True,
+        ),
+    ]
+    for thread in threads:
+        thread.start()
+    timed_out = False
+    deadline = time.monotonic() + timeout
+    try:
+        process.wait(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        timed_out = True
+        kill_group()
+        process.wait()
+    finally:
+        for thread in threads:
+            thread.join(timeout=max(0.0, min(0.1, deadline - time.monotonic())))
+        if any(thread.is_alive() for thread in threads):
+            # The immediate child exited while descendants retained its pipes.
+            kill_group()
+            for thread in threads:
+                thread.join(timeout=1)
+        if process.stdout is not None:
+            process.stdout.close()
+        if process.stderr is not None:
+            process.stderr.close()
+        for thread in threads:
+            thread.join(timeout=0.1)
+        stdin_file.close()
+        if any(thread.is_alive() for thread in threads):
+            raise RuntimeError("child output streams did not close after termination")
+    stdout = bytes(captured["stdout"][:stdout_limit])
+    stderr = bytes(captured["stderr"][:stderr_limit])
+    if exceeded:
+        raise OutputLimitExceeded(
+            f"child {', '.join(sorted(exceeded))} exceeded its byte limit"
+        )
+    if timed_out:
+        raise subprocess.TimeoutExpired(command, timeout, output=stdout, stderr=stderr)
+    return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
 
 
 def load_workflow(name: str) -> str:
@@ -299,6 +402,7 @@ def evidence_cache_key(
     declared_environment: list[str],
     tool_versions: dict[str, str],
     artifact_hashes: list[str],
+    execution_controls: dict[str, Any] | None = None,
 ) -> tuple[str, dict[str, Any]]:
     if not argv or not all(isinstance(part, str) for part in argv):
         raise RuntimeError("evidence cache requires exact command arguments")
@@ -327,6 +431,7 @@ def evidence_cache_key(
         "declared_environment": environment,
         "tool_versions": dict(sorted(tool_versions.items())),
         "artifact_hashes": sorted(artifact_hashes),
+        "execution_controls": execution_controls or {},
     }
     encoded = json.dumps(
         document, sort_keys=True, separators=(",", ":"), ensure_ascii=False
@@ -604,9 +709,10 @@ def load_run(run_id: str) -> dict[str, Any]:
         ):
             restore_manifest_snapshot(run_id, state)
         return state
-    if state.get("run_schema_version") not in {None, 1}:
+    previous_schema = state.get("run_schema_version")
+    if previous_schema not in {None, 1, 2}:
         raise RuntimeError(f"run {run_id} uses an unsupported state schema")
-    backup = path.parent / "run.v1.json"
+    backup = path.parent / f"run.v{previous_schema or 1}.json"
     if not backup.exists():
         atomic_bytes_write(backup, path.read_bytes())
     manifest = load_artifact_manifest(run_id)
@@ -632,6 +738,10 @@ def load_run(run_id: str) -> dict[str, Any]:
             state["workflow_text"],
             manifest=manifest,
         )
+    if previous_schema == 2 and state.get("operation") == "phase" and state.get(
+        "state"
+    ) in {"sync-pending", "sync-blocked"}:
+        state["legacy_description_sync"] = True
     state["run_schema_version"] = RUN_SCHEMA_VERSION
     save_run(state)
     return state
@@ -665,7 +775,7 @@ def mark_run_terminal(run_id: str | None, state_name: str, error: str) -> None:
     if state.get("state") != "running":
         return
     state["state"] = state_name
-    state["error"] = error
+    state["error"] = safe_error(error)
     if LAST_TURN_ID:
         state["turn_id"] = LAST_TURN_ID
     save_run(state)
@@ -690,7 +800,12 @@ def parse_metadata(description: str) -> dict[str, Any]:
     start = description.find(META_START)
     end = description.find(META_END)
     if start < 0 or end < start:
-        raise RuntimeError("Linear issue is not a Tweed issue: metadata is missing")
+        try:
+            return journal.parse_genesis(description).metadata
+        except journal.JournalError as error:
+            raise RuntimeError(
+                "Linear issue is not a Tweed issue: metadata is missing"
+            ) from error
     block = description[start + len(META_START) : end]
     match = re.search(r"```json\s*(\{.*\})\s*```", block, re.DOTALL)
     if not match:
@@ -701,28 +816,6 @@ def parse_metadata(description: str) -> dict[str, Any]:
     return metadata
 
 
-def replace_metadata(description: str, metadata: dict[str, Any]) -> str:
-    start = description.find(META_START)
-    end = description.find(META_END)
-    if start < 0 or end < start:
-        raise RuntimeError("cannot update issue without Tweed metadata")
-    end += len(META_END)
-    return description[:start] + metadata_block(metadata) + description[end:]
-
-
-def replace_section(description: str, name: str, body: str) -> str:
-    replacement = section_block(name, body)
-    marker = f"<!-- tweed:{name}:start -->"
-    if marker not in description:
-        return description.rstrip() + "\n\n" + replacement + "\n"
-    for match in SECTION_RE.finditer(description):
-        if match.group("name") == name:
-            return (
-                description[: match.start()] + replacement + description[match.end() :]
-            )
-    raise RuntimeError(f"Linear issue has malformed Tweed {name} section")
-
-
 def section_body(description: str, name: str) -> str | None:
     pattern = re.compile(
         rf"^[ \t]*<!-- tweed:{re.escape(name)}:start -->\r?\n(?P<body>.*?)\r?\n"
@@ -731,25 +824,6 @@ def section_body(description: str, name: str) -> str | None:
     )
     match = pattern.search(description)
     return match.group("body").strip() if match else None
-
-
-def phase_sync_already_landed(state: dict[str, Any], issue: dict[str, Any]) -> bool:
-    try:
-        desired_description = desired_description_from_state(state)
-    except (KeyError, RuntimeError, json.JSONDecodeError):
-        return False
-    return (
-        issue.get("digest") == digest(desired_description)
-        and issue.get("description") == desired_description
-    )
-
-
-def desired_description_from_state(state: dict[str, Any]) -> str:
-    if isinstance(state.get("new_description"), str):
-        return state["new_description"]
-    return read_artifact(state["run_id"], "linear-desired-description").decode(
-        "utf-8"
-    )
 
 
 def intake_description(
@@ -768,11 +842,13 @@ def intake_description(
         "linear_project": project,
         "last_run": run_id,
     }
-    return (
-        metadata_block(metadata)
-        + "\n\n"
-        + section_block("request", f"# Request\n\n{request}")
-        + "\n"
+    return journal.build_genesis_description(
+        metadata,
+        f"# Request\n\n{request}",
+    ) + (
+        "\nTweed keeps this request stable. Complete RCA, scope, implementation, "
+        "and review handoffs are appended below as human-readable Linear comments; "
+        "the current stage is derived from their validated hash chain.\n"
     )
 
 
@@ -794,7 +870,18 @@ def freeze_linear_snapshot(
     put_artifact(run_id, "linear-description", issue["description"], manifest=manifest)
     snapshot_metadata = {
         key: issue[key]
-        for key in ("identifier", "url", "title", "revision", "digest")
+        for key in (
+            "identifier",
+            "url",
+            "title",
+            "revision",
+            "digest",
+            "issue_id",
+            "snapshot_digest",
+            "content_digest",
+            "genesis_digest",
+        )
+        if key in issue
     }
     put_artifact(
         run_id,
@@ -808,6 +895,19 @@ def freeze_linear_snapshot(
         media_type="application/json; charset=utf-8",
         manifest=manifest,
     )
+    if isinstance(issue.get("transport_snapshot"), dict):
+        put_artifact(
+            run_id,
+            "linear-transport-snapshot",
+            json.dumps(
+                issue["transport_snapshot"],
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=False,
+            ),
+            media_type="application/json; charset=utf-8",
+            manifest=manifest,
+        )
     for name in ("request", "rca", "scope", "implementation", "review"):
         body = section_body(issue["description"], name)
         if body is not None:
@@ -904,7 +1004,18 @@ def load_frozen_issue(state: dict[str, Any]) -> dict[str, Any]:
 def compact_issue(issue: dict[str, Any]) -> dict[str, Any]:
     return {
         key: issue[key]
-        for key in ("identifier", "url", "title", "revision", "digest")
+        for key in (
+            "identifier",
+            "url",
+            "title",
+            "revision",
+            "digest",
+            "issue_id",
+            "snapshot_digest",
+            "content_digest",
+            "genesis_digest",
+        )
+        if key in issue
     }
 
 
@@ -986,11 +1097,17 @@ def linear_turn_timeout() -> int:
 def linear_adapter_command() -> list[str]:
     configured = os.environ.get("TWEED_LINEAR_ADAPTER", "").strip()
     if not configured:
-        raise RuntimeError(
-            "model-free Linear transport is not configured; set TWEED_LINEAR_ADAPTER "
-            "to an officially authenticated adapter that implements atomic Tweed CAS v1"
-        )
-    command = shlex.split(configured)
+        if not os.environ.get("LINEAR_API_KEY"):
+            raise RuntimeError(
+                "Linear transport requires LINEAR_API_KEY; create a personal API key "
+                "in Linear Security & access settings and export it at runtime"
+            )
+        command = [
+            sys.executable,
+            str(Path(__file__).resolve().with_name("tweed_linear_adapter.py")),
+        ]
+    else:
+        command = shlex.split(configured)
     if not command:
         raise RuntimeError("TWEED_LINEAR_ADAPTER is empty")
     executable = shutil.which(command[0])
@@ -1001,55 +1118,145 @@ def linear_adapter_command() -> list[str]:
 
 
 def call_linear_adapter(request: dict[str, Any]) -> dict[str, Any]:
-    envelope = {"protocol": "dev.tweed.linear.v1", **request}
+    envelope = {"protocol": LINEAR_PROTOCOL, **request}
     try:
-        completed = subprocess.run(
+        completed = run_bounded_process(
             linear_adapter_command(),
-            input=json.dumps(
+            input_bytes=json.dumps(
                 envelope, sort_keys=True, separators=(",", ":"), ensure_ascii=False
             ).encode("utf-8"),
-            capture_output=True,
             timeout=linear_turn_timeout(),
-            check=False,
+            stdout_limit=1024 * 1024,
+            stderr_limit=512 * 1024,
         )
     except subprocess.TimeoutExpired as error:
         raise RuntimeError("Linear adapter timed out") from error
+    except OutputLimitExceeded as error:
+        raise RuntimeError("Linear adapter output exceeded its byte limit") from error
     if completed.returncode:
-        detail = completed.stderr.decode("utf-8", errors="replace").strip()
-        raise RuntimeError(
-            f"Linear adapter failed with exit {completed.returncode}"
-            + (f": {detail[:500]}" if detail else "")
-        )
-    if len(completed.stdout) > 1024 * 1024:
-        raise RuntimeError("Linear adapter response exceeded 1 MiB")
+        raise RuntimeError(f"Linear adapter failed with exit {completed.returncode}")
     try:
         value = json.loads(completed.stdout.decode("utf-8"))
     except (UnicodeDecodeError, json.JSONDecodeError) as error:
         raise RuntimeError("Linear adapter returned invalid UTF-8 JSON") from error
-    if not isinstance(value, dict) or value.get("protocol") != "dev.tweed.linear.v1":
+    if not isinstance(value, dict) or value.get("protocol") != LINEAR_PROTOCOL:
         raise RuntimeError("Linear adapter returned an invalid protocol envelope")
     return value
+
+
+def transport_content_digest(
+    issue: dict[str, Any], *, excluding_comment: str | None = None
+) -> str:
+    stable = {
+        "id": issue.get("id"),
+        "identifier": issue.get("identifier"),
+        "title": issue.get("title"),
+        "description": issue.get("description") or "",
+        "comments": [
+            {
+                "id": item.get("id"),
+                "body": item.get("body"),
+                "archivedAt": item.get("archivedAt"),
+            }
+            for item in issue.get("comments", [])
+            if item.get("id") != excluding_comment
+        ],
+    }
+    return digest(
+        json.dumps(
+            stable, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+        )
+    )
+
+
+def transport_snapshot_digest(issue: dict[str, Any]) -> str:
+    stable = {
+        "id": issue.get("id"),
+        "identifier": issue.get("identifier"),
+        "title": issue.get("title"),
+        "description": issue.get("description") or "",
+        "updatedAt": issue.get("updatedAt"),
+        "comments": [
+            {
+                key: comment.get(key)
+                for key in (
+                    "id",
+                    "body",
+                    "createdAt",
+                    "updatedAt",
+                    "editedAt",
+                    "archivedAt",
+                )
+            }
+            for comment in issue.get("comments", [])
+        ],
+    }
+    return digest(
+        json.dumps(
+            stable, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+        )
+    )
 
 
 def validate_adapter_issue(
     root: Path, value: dict[str, Any], expected_identifier: str | None = None
 ) -> dict[str, Any]:
-    required = {"identifier", "url", "title", "description", "revision", "digest"}
+    required = {
+        "id",
+        "identifier",
+        "url",
+        "title",
+        "description",
+        "comments",
+        "snapshot_digest",
+        "content_digest",
+    }
     if not required.issubset(value) or not all(
-        isinstance(value[key], str) for key in required
+        isinstance(value[key], str) for key in required - {"comments"}
     ):
         raise RuntimeError("Linear adapter returned an incomplete issue snapshot")
+    if not isinstance(value["comments"], list) or any(
+        not isinstance(item, dict)
+        or not isinstance(item.get("id"), str)
+        or not isinstance(item.get("body"), str)
+        for item in value["comments"]
+    ):
+        raise RuntimeError("Linear adapter returned invalid issue comments")
     if expected_identifier and value["identifier"].upper() != expected_identifier.upper():
         raise RuntimeError(
             f"Linear returned {value['identifier']} while reading {expected_identifier}"
         )
-    if not value["revision"]:
-        raise RuntimeError("Linear adapter returned an empty issue revision")
-    actual = digest(value["description"])
-    if value["digest"] != actual:
-        raise RuntimeError("Linear adapter returned a corrupt description digest")
-    validate_linear_snapshot(root, value)
-    return value
+    if value["snapshot_digest"] != transport_snapshot_digest(value):
+        raise RuntimeError("Linear adapter returned a corrupt snapshot digest")
+    if value["content_digest"] != transport_content_digest(value):
+        raise RuntimeError("Linear adapter returned a corrupt content digest")
+    try:
+        snapshot = journal.validate_snapshot(
+            description=value["description"],
+            comments=[item["body"] for item in value["comments"]],
+            issue_identifier=value["identifier"],
+            expected_repository=str(root),
+        )
+        materialized = journal.materialize_snapshot(snapshot)
+    except journal.JournalError as error:
+        raise RuntimeError(f"Linear journal is invalid: {error}") from error
+    description = materialized["description"]
+    head = snapshot.records[-1].digest if snapshot.records else snapshot.genesis.digest
+    issue = {
+        "issue_id": value["id"],
+        "identifier": value["identifier"],
+        "url": value["url"],
+        "title": value["title"],
+        "description": description,
+        "revision": head,
+        "digest": digest(description),
+        "snapshot_digest": value["snapshot_digest"],
+        "content_digest": value["content_digest"],
+        "genesis_digest": snapshot.genesis.digest,
+        "transport_snapshot": value,
+    }
+    validate_linear_snapshot(root, issue)
+    return issue
 
 
 def read_linear_issue(root: Path, issue: str) -> dict[str, Any]:
@@ -1061,12 +1268,19 @@ def read_linear_issue(root: Path, issue: str) -> dict[str, Any]:
 
 
 def verify_linear_issue(issue: dict[str, Any]) -> None:
+    if not issue.get("snapshot_digest"):
+        current = read_linear_issue(
+            Path(parse_metadata(issue["description"])["repository"]),
+            issue["identifier"],
+        )
+        if current["digest"] != issue["digest"]:
+            raise RuntimeError("Linear issue changed during the phase")
+        return
     response = call_linear_adapter(
         {
             "operation": "verify",
             "identifier": issue["identifier"],
-            "expected_revision": issue["revision"],
-            "expected_digest": issue["digest"],
+            "expected_snapshot_digest": issue["snapshot_digest"],
         }
     )
     if response.get("status") != "unchanged":
@@ -1079,53 +1293,67 @@ def create_linear_issue(
     response = call_linear_adapter(
         {
             "operation": "create-or-recover",
+            "issue_id": journal.deterministic_comment_id(
+                f"{LINEAR_PROTOCOL}\0issue\0{run_id}"
+            ),
             "project": project,
-            "run_id": run_id,
             "title": title,
             "description": description,
-            "description_digest": digest(description),
         }
     )
     if response.get("status") not in {"created", "recovered"}:
         return {"status": "blocked", "identifier": None, "url": None, "reason": response.get("reason")}
     issue = validate_adapter_issue(root, response.get("issue", {}))
-    if issue["digest"] != digest(description):
+    recovered_genesis = journal.parse_genesis(
+        issue["transport_snapshot"]["description"]
+    )
+    if recovered_genesis.digest != journal.parse_genesis(description).digest:
         raise RuntimeError("recovered Linear issue does not match the intake description")
-    return {"status": "synced", "identifier": issue["identifier"], "url": issue["url"], "reason": None}
+    return {
+        "status": "synced",
+        "identifier": issue["identifier"],
+        "url": issue["url"],
+        "reason": None,
+        "issue": issue,
+    }
 
 
-def update_linear_issue(
+def append_linear_record(
     root: Path,
-    issue: str,
-    expected_revision: str,
-    expected_digest: str,
-    expected_description: str,
-    description: str,
+    issue: dict[str, Any],
+    record: journal.Record,
 ) -> dict[str, Any]:
-    if digest(expected_description) != expected_digest:
-        raise RuntimeError("persisted Linear CAS preimage is corrupt")
     response = call_linear_adapter(
         {
-            "operation": "compare-and-swap",
-            "identifier": issue,
-            "expected_revision": expected_revision,
-            "expected_digest": expected_digest,
-            "expected_description": expected_description,
-            "desired_description": description,
-            "desired_digest": digest(description),
+            "operation": "append-or-recover",
+            "identifier": issue["identifier"],
+            "comment_id": record.metadata["comment_id"],
+            "body": record.comment,
+            "expected_snapshot_digest": issue["snapshot_digest"],
+            "expected_content_digest": issue["content_digest"],
+            "expected_head_digest": issue["revision"],
+            "desired_head_digest": record.digest,
+            "repository": str(root),
         }
     )
-    if response.get("status") in {"applied", "already-applied"}:
-        updated = validate_adapter_issue(root, response.get("issue", {}), issue)
-        if updated["digest"] != digest(description):
-            raise RuntimeError("Linear adapter acknowledged the wrong desired bytes")
-        return {"status": "synced", "identifier": updated["identifier"], "url": updated["url"], "reason": None}
+    if response.get("status") in {"appended", "recovered"}:
+        updated = validate_adapter_issue(
+            root, response.get("issue", {}), issue["identifier"]
+        )
+        if updated["revision"] != record.digest:
+            raise RuntimeError("Linear adapter acknowledged the wrong journal head")
+        return {
+            "status": "synced",
+            "identifier": updated["identifier"],
+            "url": updated["url"],
+            "reason": None,
+            "issue": updated,
+        }
     return {
         "status": "blocked",
         "identifier": None,
         "url": None,
-        "reason": response.get("reason") or "Linear CAS precondition was stale",
-        "current_issue": response.get("issue"),
+        "reason": response.get("reason") or "Linear journal append was blocked",
     }
 
 
@@ -1457,6 +1685,24 @@ def repository_write_lock(root: Path, enabled: bool) -> Iterator[None]:
 
 
 @contextlib.contextmanager
+def issue_execution_lock(root: Path, issue: str) -> Iterator[None]:
+    common = git(root, "rev-parse", "--git-common-dir")
+    common_path = (
+        (root / common).resolve() if not Path(common).is_absolute() else Path(common)
+    )
+    lock_name = digest(f"{root.resolve()}\0{issue.upper()}")[:24]
+    lock_path = common_path / f"tweed-issue-{lock_name}.lock"
+    with lock_path.open("w") as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as error:
+            raise RuntimeError(
+                f"another Tweed run is active for {issue.upper()}"
+            ) from error
+        yield
+
+
+@contextlib.contextmanager
 def run_execution_lock(run_id: str) -> Iterator[None]:
     lock_path = state_path(run_id).parent / "execution.lock"
     lock_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1502,30 +1748,29 @@ def validate_issue_for_phase(
     return metadata, stored_root
 
 
-def advanced_description(
-    issue: dict[str, Any],
-    metadata: dict[str, Any],
-    phase: Phase,
-    result: dict[str, Any],
-    run_id: str,
-    root: Path,
-    branch: str | None,
-    commit: str | None,
-) -> str:
-    updated = dict(metadata)
-    updated["stage"] = phase.next_stage
-    updated["contract_revision"] = int(metadata.get("contract_revision", 0)) + 1
-    updated["last_run"] = run_id
-    if phase.command == "scope":
-        updated["planning_base"] = git(root, "rev-parse", "HEAD")
-    if branch:
-        updated["integration_branch"] = branch
-    if commit:
-        updated["integration_commit"] = commit
-    description = replace_section(
-        issue["description"], phase.section, result["report_markdown"]
-    )
-    return replace_metadata(description, updated)
+def safe_error(value: object, maximum: int = 400) -> str:
+    text = str(value).replace("\r", " ").replace("\n", " ")
+    secret = os.environ.get("LINEAR_API_KEY")
+    if secret:
+        text = text.replace(secret, "[REDACTED]")
+    text = re.sub(r"\blin_api_[A-Za-z0-9_-]+", "[REDACTED]", text)
+    return " ".join(text.split())[:maximum]
+
+
+def bounded_question(value: dict[str, Any] | None) -> dict[str, Any] | None:
+    if not isinstance(value, dict):
+        return None
+    options = value.get("options") if isinstance(value.get("options"), list) else []
+    return {
+        "prompt": str(value.get("prompt", ""))[:400],
+        "why": str(value.get("why", ""))[:300],
+        "options": [str(item)[:200] for item in options[:3]],
+        "recommendation": (
+            str(value["recommendation"])[:200]
+            if value.get("recommendation") is not None
+            else None
+        ),
+    }
 
 
 def receipt(
@@ -1549,18 +1794,18 @@ def receipt(
         "schema": PROTOCOL,
         "run_id": run_id,
         "state": state,
-        "issue": issue,
-        "linear_url": url,
-        "phase": phase,
-        "status": status,
-        "previous_stage": previous_stage,
-        "next_stage": next_stage,
+        "issue": issue[:100] if issue else None,
+        "linear_url": url[:512] if url else None,
+        "phase": phase[:64] if phase else None,
+        "status": status[:64] if status else None,
+        "previous_stage": previous_stage[:64] if previous_stage else None,
+        "next_stage": next_stage[:64] if next_stage else None,
         "summary": summary[:400],
-        "thread_id": thread_id,
-        "question": question,
-        "branch": branch,
-        "commit": commit,
-        "error": error,
+        "thread_id": thread_id[:128] if thread_id else None,
+        "question": bounded_question(question),
+        "branch": branch[:300] if branch else None,
+        "commit": commit[:128] if commit else None,
+        "error": safe_error(error) if error is not None else None,
     }
 
 
@@ -1635,24 +1880,21 @@ def evidence_command(args: argparse.Namespace) -> int:
         declared_environment=args.declared_env,
         tool_versions=versions,
         artifact_hashes=artifact_hashes,
+        execution_controls={"timeout_seconds": args.timeout},
     )
     cached = load_cached_evidence(key, document)
     if cached is not None:
         print(json.dumps({**cached, "cache_hit": True}, ensure_ascii=False))
         return int(cached["exit_code"])
     try:
-        completed = subprocess.run(
+        completed = run_bounded_process(
             command,
             cwd=root,
-            capture_output=True,
             timeout=args.timeout,
-            check=False,
+            stdout_limit=524288,
+            stderr_limit=524288,
         )
-        cacheable = (
-            completed.returncode == 0
-            and len(completed.stdout) <= 524288
-            and len(completed.stderr) <= 524288
-        )
+        cacheable = completed.returncode == 0
         result = {
             "schema": "dev.tweed.evidence.v1",
             "cache_key": key,
@@ -1670,6 +1912,16 @@ def evidence_command(args: argparse.Namespace) -> int:
             "exit_code": 124,
             "stdout": (error.stdout or b"").decode("utf-8", errors="replace")[-524288:],
             "stderr": (error.stderr or b"").decode("utf-8", errors="replace")[-524288:],
+            "cacheable": False,
+        }
+    except OutputLimitExceeded as error:
+        result = {
+            "schema": "dev.tweed.evidence.v1",
+            "cache_key": key,
+            "cache_hit": False,
+            "exit_code": 125,
+            "stdout": "",
+            "stderr": safe_error(error),
             "cacheable": False,
         }
     if result["cacheable"]:
@@ -1695,7 +1947,7 @@ def create_command(args: argparse.Namespace) -> int:
     description = intake_description(args.kind, request, root, project, run_id)
     manifest = load_artifact_manifest(run_id)
     put_artifact(run_id, "request", request, manifest=manifest)
-    put_artifact(run_id, "linear-desired-description", description, manifest=manifest)
+    put_artifact(run_id, "linear-intake-description", description, manifest=manifest)
     state = {
         "schema_version": SCHEMA_VERSION,
         "run_id": run_id,
@@ -1720,7 +1972,7 @@ def create_command(args: argparse.Namespace) -> int:
         }
     if synced["status"] != "synced":
         state["state"] = "sync-blocked"
-        state["sync_error"] = (
+        state["sync_error"] = safe_error(
             synced.get("reason") or "Linear issue creation was blocked"
         )
         save_run(state)
@@ -1805,6 +2057,9 @@ def finish_phase(
     thread_id: str,
     result: dict[str, Any],
     agent: bool,
+    *,
+    resume_finalization: bool = False,
+    recovered_commit: str | None = None,
 ) -> int:
     status = result["status"]
     record_phase_artifacts(run_id, phase, result)
@@ -1846,19 +2101,57 @@ def finish_phase(
     if phase.command == "scope":
         validate_scope_evidence(worktree, result["report_markdown"])
 
-    commit = (
-        commit_phase(worktree, issue["identifier"], phase)
-        if phase.writes_repository
-        else None
+    if phase.writes_repository and not resume_finalization:
+        changes = git(worktree, "status", "--porcelain")
+        if not changes and phase.command == "implement":
+            raise RuntimeError("implementation completed without repository changes")
+        git(worktree, "add", "-A")
+        expected_commit_tree = git(worktree, "write-tree")
+        save_run(
+            {
+                "schema_version": SCHEMA_VERSION,
+                "run_id": run_id,
+                "state": "finalizing",
+                "operation": "phase",
+                "phase": phase.command,
+                "issue": compact_issue(issue),
+                "metadata": metadata,
+                "repository": str(root),
+                "worktree": str(worktree),
+                "branch": branch,
+                "pre_commit_head": git(worktree, "rev-parse", "HEAD"),
+                "expected_commit_tree": expected_commit_tree,
+                "thread_id": thread_id,
+                "summary": result["summary"],
+                "status": status,
+            }
+        )
+    commit = None
+    if phase.writes_repository:
+        commit = recovered_commit or commit_phase(
+            worktree, issue["identifier"], phase
+        )
+    report = read_artifact(run_id, phase.section).decode("utf-8")
+    base_commit = (
+        git(root, "rev-parse", "HEAD")
+        if phase.command == "scope"
+        else metadata["planning_base"]
     )
-    persisted_result = {
-        **result,
-        "report_markdown": read_artifact(run_id, phase.section).decode("utf-8"),
-    }
-    new_description = advanced_description(
-        issue, metadata, phase, persisted_result, run_id, root, branch, commit
+    record = journal.build_record(
+        issue_identifier=issue["identifier"],
+        run_id=run_id,
+        phase=phase.command,
+        status=status,
+        artifact_digest=digest(report),
+        predecessor_digest=issue["revision"],
+        genesis_digest=issue["genesis_digest"],
+        repository=str(root),
+        base_commit=base_commit,
+        branch=branch if phase.writes_repository else None,
+        commit=commit if phase.writes_repository else None,
+        report=report,
     )
-    put_artifact(run_id, "linear-desired-description", new_description)
+    put_artifact(run_id, "linear-journal-record", record.comment)
     pending = {
         "schema_version": SCHEMA_VERSION,
         "run_id": run_id,
@@ -1874,20 +2167,15 @@ def finish_phase(
         "thread_id": thread_id,
         "summary": result["summary"],
         "status": status,
-        "expected_revision": issue["revision"],
-        "expected_digest": issue["digest"],
-        "desired_digest": digest(new_description),
+        "expected_head_digest": issue["revision"],
+        "expected_snapshot_digest": issue["snapshot_digest"],
+        "expected_content_digest": issue["content_digest"],
+        "desired_head_digest": record.digest,
+        "comment_id": record.metadata["comment_id"],
     }
     save_run(pending)
     try:
-        synced = update_linear_issue(
-            root,
-            issue["identifier"],
-            issue["revision"],
-            issue["digest"],
-            issue["description"],
-            new_description,
-        )
+        synced = append_linear_record(root, issue, record)
     except Exception as error:
         synced = {
             "status": "blocked",
@@ -1895,22 +2183,9 @@ def finish_phase(
             "url": None,
             "reason": str(error),
         }
-    current = synced.get("current_issue")
-    if synced["status"] != "synced" and isinstance(current, dict):
-        try:
-            current = validate_adapter_issue(root, current, issue["identifier"])
-        except RuntimeError:
-            current = None
-        if current and phase_sync_already_landed(pending, current):
-            synced = {
-                "status": "synced",
-                "identifier": current["identifier"],
-                "url": current["url"],
-                "reason": None,
-            }
     if synced["status"] != "synced":
         pending["state"] = "sync-blocked"
-        pending["sync_error"] = (
+        pending["sync_error"] = safe_error(
             synced.get("reason") or "Linear synchronization was blocked"
         )
         save_run(pending)
@@ -1968,107 +2243,190 @@ def phase_command(args: argparse.Namespace) -> int:
     caller_root = repository_root(args.repo)
     run_id = new_run_id()
     with active_run(run_id), run_execution_lock(run_id):
-        with repository_write_lock(caller_root, phase.writes_repository):
-            issue = read_linear_issue(caller_root, args.issue)
-            metadata, root = validate_issue_for_phase(issue, phase, caller_root)
-            branch: str | None = None
-            worktree = root
-            if phase.command == "implement":
-                worktree, branch = prepare_implementation_worktree(
-                    root, issue["identifier"], metadata["planning_base"]
-                )
-            elif phase.command == "review":
-                worktree, branch = review_worktree(root, metadata)
-            with Codex(codex_config(caller_root)) as codex:
-                thread, workflow, prompt = start_phase_thread(
-                    codex, worktree, issue, phase, run_id
-                )
-                save_run(
-                    {
-                        "schema_version": SCHEMA_VERSION,
-                        "run_id": run_id,
-                        "state": "running",
-                        "operation": "phase",
-                        "phase": phase.command,
-                        "issue": compact_issue(issue),
-                        "issue_digest": issue["digest"],
-                        "metadata": metadata,
-                        "repository": str(root),
-                        "worktree": str(worktree),
-                        "branch": branch,
-                        "thread_id": thread.id,
-                    }
-                )
-                result = run_phase_turn(thread, prompt, phase)
-                while result["status"] == NEEDS_INPUT and sys.stdin.isatty():
-                    question = result["question"]
-                    print(f"\n{question['prompt']}\n", file=sys.stderr)
-                    answer = input("Your answer\n> ").strip()
-                    if not answer:
-                        continue
-                    result = run_phase_turn(thread, continuation_prompt(answer), phase)
-                if result["status"] == NEEDS_INPUT:
-                    save_awaiting_run(
-                        run_id,
-                        phase,
-                        issue,
-                        metadata,
+        with issue_execution_lock(caller_root, args.issue):
+            with repository_write_lock(caller_root, phase.writes_repository):
+                issue = read_linear_issue(caller_root, args.issue)
+                metadata, root = validate_issue_for_phase(issue, phase, caller_root)
+                branch: str | None = None
+                worktree = root
+                if phase.command == "implement":
+                    worktree, branch = prepare_implementation_worktree(
+                        root, issue["identifier"], metadata["planning_base"]
+                    )
+                elif phase.command == "review":
+                    worktree, branch = review_worktree(root, metadata)
+                with Codex(codex_config(caller_root)) as codex:
+                    thread, workflow, prompt = start_phase_thread(
+                        codex, worktree, issue, phase, run_id
+                    )
+                    save_run(
+                        {
+                            "schema_version": SCHEMA_VERSION,
+                            "run_id": run_id,
+                            "state": "running",
+                            "operation": "phase",
+                            "phase": phase.command,
+                            "issue": compact_issue(issue),
+                            "issue_digest": issue["digest"],
+                            "metadata": metadata,
+                            "repository": str(root),
+                            "worktree": str(worktree),
+                            "branch": branch,
+                            "thread_id": thread.id,
+                        }
+                    )
+                    result = run_phase_turn(thread, prompt, phase)
+                    while result["status"] == NEEDS_INPUT and sys.stdin.isatty():
+                        question = result["question"]
+                        print(f"\n{question['prompt']}\n", file=sys.stderr)
+                        answer = input("Your answer\n> ").strip()
+                        if not answer:
+                            continue
+                        result = run_phase_turn(thread, continuation_prompt(answer), phase)
+                    if result["status"] == NEEDS_INPUT:
+                        save_awaiting_run(
+                            run_id,
+                            phase,
+                            issue,
+                            metadata,
+                            root,
+                            worktree,
+                            branch,
+                            thread,
+                            result,
+                            workflow,
+                        )
+                        emit(
+                            receipt(
+                                run_id=run_id,
+                                state="awaiting-input",
+                                issue=issue["identifier"],
+                                url=issue["url"],
+                                phase=phase.command,
+                                status=NEEDS_INPUT,
+                                previous_stage=metadata["stage"],
+                                next_stage=metadata["stage"],
+                                summary=result["summary"],
+                                thread_id=thread.id,
+                                question=result["question"],
+                                branch=branch,
+                            ),
+                            args.agent,
+                        )
+                        return 7
+                    return finish_phase(
                         root,
                         worktree,
                         branch,
-                        thread,
+                        issue,
+                        metadata,
+                        phase,
+                        run_id,
+                        thread.id,
                         result,
-                        workflow,
-                    )
-                    emit(
-                        receipt(
-                            run_id=run_id,
-                            state="awaiting-input",
-                            issue=issue["identifier"],
-                            url=issue["url"],
-                            phase=phase.command,
-                            status=NEEDS_INPUT,
-                            previous_stage=metadata["stage"],
-                            next_stage=metadata["stage"],
-                            summary=result["summary"],
-                            thread_id=thread.id,
-                            question=result["question"],
-                            branch=branch,
-                        ),
                         args.agent,
                     )
-                    return 7
-                return finish_phase(
-                    root,
-                    worktree,
-                    branch,
-                    issue,
-                    metadata,
-                    phase,
-                    run_id,
-                    thread.id,
-                    result,
-                    args.agent,
-                )
+
+
+def recover_finalizing_commit(
+    state: dict[str, Any], phase: Phase, worktree: Path
+) -> str | None:
+    """Adopt only the exact commit Tweed may have made after its durable checkpoint."""
+    if not phase.writes_repository:
+        raise RuntimeError("only repository-writing phases may be finalizing")
+    pre_commit = state.get("pre_commit_head")
+    if not isinstance(pre_commit, str) or not re.fullmatch(r"[a-f0-9]{40,64}", pre_commit):
+        raise RuntimeError("finalizing run lacks valid pre-commit provenance")
+    expected_tree = state.get("expected_commit_tree")
+    if not isinstance(expected_tree, str) or not re.fullmatch(r"[a-f0-9]{40,64}", expected_tree):
+        raise RuntimeError("finalizing run lacks valid tree provenance")
+    head = git(worktree, "rev-parse", "HEAD")
+    if head == pre_commit:
+        git(worktree, "add", "-A")
+        if git(worktree, "write-tree") != expected_tree:
+            raise RuntimeError("finalizing worktree no longer matches the checkpoint tree")
+        return None
+    if git(worktree, "status", "--porcelain"):
+        raise RuntimeError("finalizing worktree changed after the phase commit")
+    parents = git(worktree, "show", "-s", "--format=%P", head).split()
+    if parents != [pre_commit]:
+        raise RuntimeError("finalizing HEAD is not the expected single-child commit")
+    if git(worktree, "show", "-s", "--format=%T", head) != expected_tree:
+        raise RuntimeError("finalizing HEAD has an unexpected repository tree")
+    expected_subject = f"{phase.command.capitalize()} {state['issue']['identifier']}"
+    if git(worktree, "show", "-s", "--format=%s", head) != expected_subject:
+        raise RuntimeError("finalizing HEAD has an unexpected commit subject")
+    return head
+
+
+def resume_finalizing_run(
+    args: argparse.Namespace,
+    state: dict[str, Any],
+    phase: Phase,
+    root: Path,
+    worktree: Path,
+    branch: str | None,
+) -> int:
+    if not worktree.is_dir() or not branch or branch_worktree(root, branch) != worktree:
+        raise RuntimeError("saved finalizing worktree no longer owns its branch")
+    expected_pre_commit = (
+        state["metadata"].get("planning_base")
+        if phase.command == "implement"
+        else state["metadata"].get("integration_commit")
+    )
+    if state.get("pre_commit_head") != expected_pre_commit:
+        raise RuntimeError("finalizing checkpoint does not match phase provenance")
+    recovered_commit = recover_finalizing_commit(state, phase, worktree)
+    issue = load_frozen_issue(state)
+    verify_linear_issue(issue)
+    report = read_artifact(args.run_id, phase.section).decode("utf-8")
+    result = {
+        "status": state["status"],
+        "summary": state["summary"],
+        "question": None,
+        "report_markdown": report,
+    }
+    return finish_phase(
+        root,
+        worktree,
+        branch,
+        issue,
+        state["metadata"],
+        phase,
+        args.run_id,
+        state["thread_id"],
+        result,
+        args.agent,
+        resume_finalization=True,
+        recovered_commit=recovered_commit,
+    )
 
 
 def resume_command(args: argparse.Namespace) -> int:
     global LAST_RUN_ID
     state = load_run(args.run_id)
     state_name = str(state.get("state"))
-    answer = (
-        read_request(args.answer, "Answer the Tweed clarification")
-        if state_name == "awaiting-input"
-        else " ".join(args.answer).strip()
-    )
-    prompt = resume_prompt(state_name, answer)
     phase = PHASES[state["phase"]]
     root = Path(state["repository"]).resolve()
     worktree = Path(state["worktree"]).resolve()
     branch = state.get("branch")
-    with run_execution_lock(args.run_id):
+    with run_execution_lock(args.run_id), issue_execution_lock(
+        root, state["issue"]["identifier"]
+    ):
         with repository_write_lock(root, phase.writes_repository):
             with active_run(args.run_id):
+                if state_name == "finalizing":
+                    if args.answer:
+                        raise RuntimeError(
+                            "a finalizing run resumes without a clarification answer"
+                        )
+                    return resume_finalizing_run(args, state, phase, root, worktree, branch)
+                answer = (
+                    read_request(args.answer, "Answer the Tweed clarification")
+                    if state_name == "awaiting-input"
+                    else " ".join(args.answer).strip()
+                )
+                prompt = resume_prompt(state_name, answer)
                 validate_resume_worktree(
                     root, worktree, branch, phase, state["metadata"]
                 )
@@ -2141,6 +2499,17 @@ def resume_command(args: argparse.Namespace) -> int:
 
 def retry_sync_command(args: argparse.Namespace) -> int:
     state = load_run(args.run_id)
+    issue = state.get("issue", {}).get("identifier")
+    root = Path(state["repository"]).resolve()
+    issue_lock = (
+        issue_execution_lock(root, issue) if issue else contextlib.nullcontext()
+    )
+    with run_execution_lock(args.run_id), issue_lock:
+        return _retry_sync_command(args)
+
+
+def _retry_sync_command(args: argparse.Namespace) -> int:
+    state = load_run(args.run_id)
     if state.get("state") not in {"sync-pending", "sync-blocked"}:
         raise RuntimeError(f"run {args.run_id} has no pending Linear synchronization")
     root = Path(state["repository"]).resolve()
@@ -2161,8 +2530,14 @@ def retry_sync_command(args: argparse.Namespace) -> int:
     try:
         with active_run(args.run_id):
             if state.get("operation") == "create":
+                intake_name = (
+                    "linear-intake-description"
+                    if "linear-intake-description"
+                    in load_artifact_manifest(args.run_id)["artifacts"]
+                    else "linear-desired-description"
+                )
                 intake = state.get("description") or read_artifact(
-                    args.run_id, "linear-desired-description"
+                    args.run_id, intake_name
                 ).decode("utf-8")
                 synced = create_linear_issue(
                     root,
@@ -2172,16 +2547,19 @@ def retry_sync_command(args: argparse.Namespace) -> int:
                     args.run_id,
                 )
             elif state.get("operation") == "phase":
+                if state.get("legacy_description_sync"):
+                    raise RuntimeError(
+                        "legacy description-CAS synchronization cannot be translated "
+                        "safely; reasoning and artifacts are preserved in this run"
+                    )
                 frozen_issue = load_frozen_issue(state)
-                desired_description = desired_description_from_state(state)
-                synced = update_linear_issue(
-                    root,
-                    state["issue"]["identifier"],
-                    state.get("expected_revision") or frozen_issue["revision"],
-                    state["expected_digest"],
-                    frozen_issue["description"],
-                    desired_description,
-                )
+                raw_record = read_artifact(
+                    args.run_id, "linear-journal-record"
+                ).decode("utf-8")
+                record = journal.parse_comment(raw_record)
+                if record is None:
+                    raise RuntimeError("persisted Linear journal record is invalid")
+                synced = append_linear_record(root, frozen_issue, record)
             else:
                 raise RuntimeError("run has an unsupported synchronization operation")
     except Exception as error:
@@ -2191,25 +2569,9 @@ def retry_sync_command(args: argparse.Namespace) -> int:
             "url": None,
             "reason": str(error),
         }
-    if synced["status"] != "synced" and state.get("operation") == "phase":
-        current_issue = synced.get("current_issue")
-        if isinstance(current_issue, dict):
-            try:
-                current_issue = validate_adapter_issue(
-                    root, current_issue, state["issue"]["identifier"]
-                )
-            except RuntimeError:
-                current_issue = None
-        if current_issue and phase_sync_already_landed(state, current_issue):
-            synced = {
-                "status": "synced",
-                "identifier": current_issue["identifier"],
-                "url": current_issue["url"],
-                "reason": None,
-            }
     if synced["status"] != "synced":
         state["state"] = "sync-blocked"
-        state["sync_error"] = (
+        state["sync_error"] = safe_error(
             synced.get("reason") or "Linear synchronization was blocked"
         )
         save_run(state)

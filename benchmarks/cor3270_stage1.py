@@ -22,6 +22,9 @@ FIXTURE = Path(__file__).parent / "fixtures/cor3270.json"
 
 
 def load_tweed(path: Path):
+    root = str(path.parent)
+    if root not in sys.path:
+        sys.path.insert(0, root)
     loader = importlib.machinery.SourceFileLoader("benchmark_tweed", str(path))
     spec = importlib.util.spec_from_loader(loader.name, loader)
     assert spec is not None
@@ -66,13 +69,39 @@ def fixture_issue(tweed, spec: dict, index: int) -> dict:
     description += "\n"
     description = padded(description, spec["snapshot_bytes"])
     issue = {
+        "issue_id": "12345678-1234-4123-8123-123456789abc",
         "identifier": "COR-3270",
         "url": padded("https://linear.example/COR-3270", spec["url_bytes"]),
         "title": padded("Sanitized COR-3270 title", spec["title_bytes"]),
         "description": description,
-        "revision": f"fixture-{index}",
     }
+    snapshot = tweed.journal.validate_snapshot(
+        description=description,
+        comments=[],
+        issue_identifier=issue["identifier"],
+        expected_repository=metadata["repository"],
+    )
+    issue["revision"] = (
+        snapshot.records[-1].digest if snapshot.records else snapshot.genesis.digest
+    )
+    issue["genesis_digest"] = snapshot.genesis.digest
     issue["digest"] = tweed.digest(description)
+    transport = {
+        "id": issue["issue_id"],
+        "identifier": issue["identifier"],
+        "url": issue["url"],
+        "title": issue["title"],
+        "description": description,
+        "updatedAt": f"sanitized-{index}",
+        "team": {"id": "team-fixture", "key": "COR"},
+        "project": {"id": "project-fixture", "name": "Negotiation"},
+        "comments": [],
+    }
+    transport["content_digest"] = tweed.transport_content_digest(transport)
+    transport["snapshot_digest"] = tweed.transport_snapshot_digest(transport)
+    issue["content_digest"] = transport["content_digest"]
+    issue["snapshot_digest"] = transport["snapshot_digest"]
+    issue["transport_snapshot"] = transport
     return issue
 
 
@@ -156,6 +185,18 @@ def main() -> int:
         "run_ids": {row["phase"]: row["run_id"] for row in fixture["runs"]},
         "baseline": fixture["baseline"],
         "replay": replay,
+        "actual_hermetic_measurement": {
+            "wall_ms": replay["transform_wall_ms"],
+            "child_task_count": 0,
+            "model_powered_linear_transport_task_count": 0,
+            "prompt_bytes": replay["totals"]["new_prompt_bytes"],
+            "referenced_artifact_bytes": replay["totals"][
+                "referenced_artifact_bytes"
+            ],
+            "artifact_store_bytes": replay["totals"]["artifact_store_bytes"],
+            "live_linear_requests": 0,
+            "live_linear_reason": "LINEAR_API_KEY not configured",
+        },
         "stable_replay_matches_fixture": matches,
         "exact_aggregate_model_tokens": None,
     }

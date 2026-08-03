@@ -31,26 +31,41 @@ attributed reliably, so this report does not estimate it.
 Holding all 23 reasoning/reviewer tasks fixed and replacing only transport
 projects 2,930.512 seconds wall time, a 36.1% reduction. Total model task count
 falls from 38 to 23 (39.5%); model-powered Linear transport tasks fall from 15
-to zero. The configured deterministic adapter's production latency is not
-measured because no officially authenticated atomic adapter is installed.
+to zero. The bundled production adapter's live Linear latency is not measured
+because `LINEAR_API_KEY` was not configured. No connector credential was
+extracted and no live result is fabricated. Hermetic journal/adapter operations
+are covered by the complete local suite and committed fixture replay.
 
 ## Snapshot replay
 
-The recorded replay of snapshot/artifact/packet construction took 15.712 ms for
-all three phases; this local transform timing naturally varies by machine.
+The replay constructs production-shaped adapter snapshots (including issue,
+team/project, content and snapshot digests) alongside the preserved materialized
+phase descriptions. It measures the packet/artifact boundary, not a live adapter
+round trip. Local transform timing is emitted by the command and varies by machine.
 
-| Phase | Frozen snapshot | Old initial prompt | New initial prompt | Referenced artifact bodies | Artifact store |
+| Phase | Frozen snapshot | Old initial prompt | New initial prompt | Referenced artifact bodies | Unique artifact bodies |
 |---|---:|---:|---:|---:|---:|
-| Scope | 1,210 B | 1,848 B | 2,292 B | 708 B | 11,208 B |
-| Implement | 17,384 B | 18,026 B | 2,656 B | 18,307 B | 46,810 B |
-| Review | 25,324 B | 25,963 B | 3,052 B | 26,128 B | 64,515 B |
-| Total | 43,918 B | 45,837 B | 8,000 B | 45,143 B | 122,533 B |
+| Scope | 1,210 B | 1,848 B | 2,347 B | 708 B | 13,445 B |
+| Implement | 17,384 B | 18,026 B | 2,711 B | 18,307 B | 65,233 B |
+| Review | 25,324 B | 25,963 B | 3,107 B | 26,128 B | 90,891 B |
+| Total | 43,918 B | 45,837 B | 8,165 B | 45,143 B | 169,569 B |
 
-Initial phase prompts shrink 82.5% overall and never repeat the complete issue
+Initial phase prompts shrink 82.2% overall and never repeat the complete issue
 or report payload. Referenced bodies remain available by path/hash and are read
-only when needed. The artifact-store total includes the exact frozen
-description, workflow, manifest packet, separate handoff bodies, and evidence;
-it is private local disk I/O, not model prompt input.
+only when needed. `artifact_store_bytes` is the sum of unique content-addressed
+artifact body bytes, including frozen descriptions/transport snapshots,
+workflows, handoffs, and evidence. It excludes manifest JSON, immutable manifest
+snapshots, phase-packet bytes, and filesystem overhead; it is not model prompt
+input.
+
+The current hermetic replay is an actual local measurement, not a projected
+workflow run: 0 child/model tasks, 0 model-powered Linear transport tasks, 0
+live Linear requests, 8,165 prompt bytes, 45,143 referenced-artifact bytes, and
+169,569 unique content-addressed artifact body bytes. Its latest transform wall time is emitted by the
+command because machine timing varies. A full lifecycle wall time and child-task
+count remain explicitly projected from the preserved baseline until an
+authenticated disposable canary can run. Exact attributable token accounting
+is unavailable and remains `null`, not estimated.
 
 ## Cache behavior
 
@@ -58,7 +73,7 @@ The hermetic evidence-runner test records a miss on first execution, a hit only
 for an identical complete key, and recomputation after a dependency digest
 change. Independent tests invalidate the key on repository identity, argv,
 dependency/lockfile bytes, configuration bytes, declared environment values,
-tool/runtime versions, and artifact hashes. Missing or uncertain inputs fail
+tool/runtime versions, execution timeout, and artifact hashes. Missing or uncertain inputs fail
 closed. Reviewer reasoning and post-repair targeted re-review are not cached.
 
 ## Assurance parity

@@ -24,8 +24,8 @@ issue.
 - Python 3.10 or newer
 - `uv`
 - Codex or the ChatGPT desktop app
-- An officially authenticated, atomic Linear adapter configured with
-  `TWEED_LINEAR_ADAPTER`
+- `LINEAR_API_KEY`, created through Linear's Security & access settings for this
+  personal local tool
 
 For local development, make the script available on `PATH`:
 
@@ -80,6 +80,9 @@ Tweed-created sessions.
 Every child Codex session is pinned to `gpt-5.6-sol` with medium reasoning.
 Spawned implementation and review agents inherit that same model and effort,
 so all phases use one reproducible execution profile.
+Linear credentials and adapter overrides are blanked in every model child
+environment; only the parent runner's deterministic adapter receives runtime
+Linear authentication.
 
 ## Clarification
 
@@ -99,24 +102,33 @@ private content-addressed artifacts under `~/.local/state/tweed/runs/`.
 ## Linear transport
 
 Tweed never starts a model session to read, copy, compare, format, create, or
-update Linear data. `TWEED_LINEAR_ADAPTER` names an executable implementing the
-`dev.tweed.linear.v1` JSON protocol on standard input/output. Authentication is
-owned by that explicitly configured adapter; Tweed does not inspect Codex MCP
-storage, export OAuth credentials, or accept a read-then-write emulation.
+update Linear data. The bundled standard-library adapter reads `LINEAR_API_KEY`
+only at runtime and talks directly to Linear's fixed GraphQL endpoint. Tweed
+does not inspect connector storage, export OAuth credentials, put secrets in
+arguments, or print server response bodies. `TWEED_LINEAR_ADAPTER` remains an
+optional protocol override for hermetic tests and compatible installations.
 
-The adapter must provide an atomic compare-and-swap over the exact UTF-8 issue
-description, conditioned on both its opaque authoritative revision and its
-SHA-256 digest. If no officially authenticated adapter with that guarantee is
-configured, Tweed fails closed before starting phase reasoning. See
-[`docs/linear-adapter.md`](docs/linear-adapter.md) for the narrow protocol.
-Any stale or formatting-altered authoritative description remains
-`sync-blocked`; retrying synchronization never reruns completed reasoning.
+The issue description remains the stable original request and workflow index.
+Every successful RCA, scope, implementation, and review is one append-only,
+human-readable Linear comment containing the complete handoff plus a strict
+hash-chain envelope. Tweed derives the legal stage from the unique validated
+chain, uses deterministic issue/comment IDs to recover ambiguous writes, and
+blocks on stale snapshots, malformed records, conflicting duplicates, or
+forks. It never overwrites human prose. See [`docs/linear-adapter.md`](docs/linear-adapter.md).
+
+Linear's public comment mutation has no documented predecessor precondition, so
+Tweed does not claim server-side atomic CAS. A cross-host concurrent append can
+briefly create a fork; mandatory post-write and next-phase validation detects
+it and fails closed. Linear comments are user-editable/deletable: Tweed detects
+edits, archives, forks, missing interior records, and deletion relative to a
+persisted frozen head, but a fresh client cannot prove that a now-deleted tail
+once existed. Retry synchronization never reruns completed reasoning.
 
 ## Deterministic evidence reuse
 
 Phase coordinators may run `tweed evidence` with exact command arguments and
-declared dependency/lockfile, configuration, environment, tool-version, and
-run-artifact inputs. Every empty input class requires an explicit `--no-*`
+declared dependency/lockfile, configuration, environment, tool-version,
+execution-timeout, and run-artifact inputs. Every empty input class requires an explicit `--no-*`
 assertion. Tweed reuses only a complete identical key and recomputes on any
 change or uncertainty; reviewer reasoning is never cached.
 

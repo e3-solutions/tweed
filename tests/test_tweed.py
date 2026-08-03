@@ -16,6 +16,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from openai_codex.types import TurnStatus
+import tweed_journal
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -43,23 +44,48 @@ def make_repo(directory: str) -> Path:
     (root / "README.md").write_text("baseline\n")
     git(root, "add", "README.md")
     git(root, "commit", "-m", "baseline")
-    return root
+    return root.resolve()
 
 
-def make_issue(identifier: str, description: str, *, revision: str = "1") -> dict:
-    return {
+def make_issue(identifier: str, description: str) -> dict:
+    raw = {
+        "id": "12345678-1234-4123-8123-123456789abc",
         "identifier": identifier,
         "url": f"https://linear.test/{identifier}",
         "title": "Fixture issue",
         "description": description,
-        "revision": revision,
+        "updatedAt": "1",
+        "comments": [],
+    }
+    raw["content_digest"] = TWEED.transport_content_digest(raw)
+    raw["snapshot_digest"] = TWEED.transport_snapshot_digest(raw)
+    genesis = TWEED.journal.parse_genesis(description)
+    return {
+        "issue_id": raw["id"],
+        "identifier": identifier,
+        "url": raw["url"],
+        "title": raw["title"],
+        "description": description,
+        "revision": genesis.digest,
         "digest": TWEED.digest(description),
+        "snapshot_digest": raw["snapshot_digest"],
+        "content_digest": raw["content_digest"],
+        "genesis_digest": genesis.digest,
+        "transport_snapshot": raw,
     }
 
 
 def write_fake_linear(path: Path, issue: dict) -> None:
     path.write_text(
-        json.dumps({"issues": {issue["identifier"]: issue}, "next": 2, "writes": 0})
+        json.dumps(
+            {
+                "issues": {
+                    issue["identifier"]: issue.get("transport_snapshot", issue)
+                },
+                "next": 2,
+                "writes": 0,
+            }
+        )
     )
 
 
@@ -123,116 +149,9 @@ class TweedTests(unittest.TestCase):
         self.assertEqual(TWEED.parse_metadata(problem)["stage"], "needs-rca")
         self.assertEqual(TWEED.parse_metadata(feature)["stage"], "needs-scope")
 
-    def test_completed_phase_replaces_one_section_and_advances_once(self):
-        with tempfile.TemporaryDirectory() as directory:
-            root = make_repo(directory)
-            description = TWEED.intake_description(
-                "problem", "Duplicate export", root, "CX", "tw_0123456789abcdef"
-            )
-            issue = {
-                "identifier": "ENG-1",
-                "url": "https://linear.example/ENG-1",
-                "title": "Duplicate export",
-                "description": description,
-            }
-            metadata = TWEED.parse_metadata(description)
-            result = {
-                "status": "established",
-                "summary": "Found the cause",
-                "question": None,
-                "report_markdown": "Status: established\n\n# Root cause\n\nCause.",
-            }
-            updated = TWEED.advanced_description(
-                issue,
-                metadata,
-                TWEED.PHASES["root-cause"],
-                result,
-                "tw_1111111111111111",
-                root,
-                None,
-                None,
-            )
-
-        parsed = TWEED.parse_metadata(updated)
-        self.assertEqual(parsed["stage"], "needs-scope")
-        self.assertEqual(parsed["contract_revision"], 1)
-        self.assertEqual(updated.count("<!-- tweed:rca:start -->"), 1)
-
-    def test_replacing_a_phase_is_deterministic(self):
-        value = TWEED.section_block("scope", "old")
-        once = TWEED.replace_section(value, "scope", "new")
-        twice = TWEED.replace_section(once, "scope", "newer")
-        self.assertNotIn("old", twice)
-        self.assertNotIn("\nnew\n", twice)
-        self.assertEqual(twice.count("tweed:scope:start"), 1)
-
     def test_section_parser_accepts_linear_indented_end_marker(self):
         value = "<!-- tweed:scope:start -->\nStatus: scoped\n  <!-- tweed:scope:end -->"
         self.assertEqual(TWEED.section_body(value, "scope"), "Status: scoped")
-        replaced = TWEED.replace_section(value, "scope", "Status: updated")
-        self.assertEqual(TWEED.section_body(replaced, "scope"), "Status: updated")
-
-    def test_sync_reconciliation_requires_complete_exact_description(self):
-        with tempfile.TemporaryDirectory() as directory:
-            root = make_repo(directory)
-            description = TWEED.intake_description(
-                "feature", "CSV export", root, "CX", "tw_0123456789abcdef"
-            )
-            issue = {
-                "identifier": "ENG-1",
-                "url": "https://linear.example/ENG-1",
-                "title": "CSV export",
-                "description": description,
-            }
-            result = {
-                "status": "scoped",
-                "summary": "Scoped",
-                "question": None,
-                "report_markdown": (
-                    "Status: scoped\n\n# Solution scope\n\n"
-                    "- [Docs](https://example.com/docs)\n\n1. One\n\n2. Two"
-                ),
-            }
-            run_id = "tw_1111111111111111"
-            desired = TWEED.advanced_description(
-                issue,
-                TWEED.parse_metadata(description),
-                TWEED.PHASES["scope"],
-                result,
-                run_id,
-                root,
-                None,
-                None,
-            )
-            state = {
-                "run_id": run_id,
-                "phase": "scope",
-                "new_description": desired,
-            }
-
-            self.assertTrue(
-                TWEED.phase_sync_already_landed(
-                    state,
-                    {
-                        **issue,
-                        "description": desired,
-                        "digest": TWEED.digest(desired),
-                    },
-                )
-            )
-            changed = TWEED.replace_section(
-                desired, "request", "# Request\n\nConcurrent user edit"
-            )
-            self.assertFalse(
-                TWEED.phase_sync_already_landed(
-                    state,
-                    {
-                        **issue,
-                        "description": changed,
-                        "digest": TWEED.digest(changed),
-                    },
-                )
-            )
 
     def test_wrong_stage_is_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -257,7 +176,14 @@ class TweedTests(unittest.TestCase):
             )
             metadata = TWEED.parse_metadata(description)
             metadata["stage"] = "needs-rca"
-            description = TWEED.replace_metadata(description, metadata)
+            description = tweed_journal.build_genesis_description(
+                {
+                    key: value
+                    for key, value in metadata.items()
+                    if key != "request_digest"
+                },
+                "CSV export",
+            )
             issue = {
                 "identifier": "ENG-2",
                 "url": "https://linear.example/ENG-2",
@@ -468,7 +394,7 @@ class TweedTests(unittest.TestCase):
                 self.assertEqual(loaded["state"], "awaiting-input")
                 self.assertEqual(path.stat().st_mode & 0o777, 0o600)
                 self.assertFalse((path.parent / "report.md").exists())
-                self.assertEqual(loaded["run_schema_version"], 2)
+            self.assertEqual(loaded["run_schema_version"], 3)
 
     def test_project_configuration_is_keyed_by_canonical_root(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -488,6 +414,8 @@ class TweedTests(unittest.TestCase):
             'plugins."linear-progress-sync@coreedge-local".enabled=false',
             config.config_overrides,
         )
+        self.assertEqual(config.env["LINEAR_API_KEY"], "")
+        self.assertEqual(config.env["TWEED_LINEAR_ADAPTER"], "")
 
     def test_all_child_sessions_use_sol_medium(self):
         with patch.object(TWEED, "find_codex", return_value="/bin/true"):
@@ -515,7 +443,7 @@ class TweedTests(unittest.TestCase):
             commit = TWEED.commit_phase(root, "ENG-9", TWEED.PHASES["review"])
             self.assertEqual(commit, git(root, "rev-parse", "HEAD"))
 
-    def test_model_free_linear_adapter_uses_exact_utf8_cas_and_fails_stale(self):
+    def test_model_free_linear_adapter_appends_exact_utf8_and_fails_stale(self):
         with tempfile.TemporaryDirectory() as directory:
             root = make_repo(directory)
             description = TWEED.intake_description(
@@ -530,34 +458,143 @@ class TweedTests(unittest.TestCase):
             }
             with patch.dict(os.environ, env):
                 frozen = TWEED.read_linear_issue(root, "TST-1")
-                desired = description + "\nUnicode: naïve\n"
-                synced = TWEED.update_linear_issue(
-                    root,
-                    "TST-1",
-                    frozen["revision"],
-                    frozen["digest"],
-                    frozen["description"],
-                    desired,
+                report = (
+                    "Status: scoped\n\nUnicode: naïve 🚚\n\n"
+                    "## Repository state\n\n"
+                    f"- `README.md` → `{TWEED.sha256_file(root / 'README.md')}`"
                 )
-                stale = TWEED.update_linear_issue(
-                    root,
-                    "TST-1",
-                    frozen["revision"],
-                    frozen["digest"],
-                    frozen["description"],
-                    desired + "stale",
+                record = TWEED.journal.build_record(
+                    issue_identifier="TST-1",
+                    run_id="tw_1123456789abcdef",
+                    phase="scope",
+                    status="scoped",
+                    artifact_digest=TWEED.digest(report),
+                    predecessor_digest=frozen["revision"],
+                    genesis_digest=frozen["genesis_digest"],
+                    repository=str(root),
+                    base_commit=git(root, "rev-parse", "HEAD"),
+                    branch=None,
+                    commit=None,
+                    report=report,
                 )
+                synced = TWEED.append_linear_record(root, frozen, record)
+                stale_record = TWEED.journal.build_record(
+                    issue_identifier="TST-1",
+                    run_id="tw_2123456789abcdef",
+                    phase="scope",
+                    status="scoped",
+                    artifact_digest=TWEED.digest(report + " stale"),
+                    predecessor_digest=frozen["revision"],
+                    genesis_digest=frozen["genesis_digest"],
+                    repository=str(root),
+                    base_commit=git(root, "rev-parse", "HEAD"),
+                    branch=None,
+                    commit=None,
+                    report=report + " stale",
+                )
+                stale = TWEED.append_linear_record(root, frozen, stale_record)
             state = json.loads(store.read_text())
             self.assertEqual(synced["status"], "synced")
             self.assertEqual(stale["status"], "blocked")
             self.assertEqual(state["writes"], 1)
-            self.assertEqual(state["issues"]["TST-1"]["description"], desired)
+            self.assertEqual(state["issues"]["TST-1"]["description"], description)
+            self.assertEqual(state["issues"]["TST-1"]["comments"][0]["body"], record.comment)
 
     def test_missing_linear_adapter_fails_with_narrow_configuration_requirement(self):
         with patch.dict(os.environ, {}, clear=False):
             os.environ.pop("TWEED_LINEAR_ADAPTER", None)
-            with self.assertRaisesRegex(RuntimeError, "officially authenticated adapter"):
+            os.environ.pop("LINEAR_API_KEY", None)
+            with self.assertRaisesRegex(RuntimeError, "LINEAR_API_KEY"):
                 TWEED.linear_adapter_command()
+
+    def test_bundled_linear_adapter_is_default_with_runtime_api_key(self):
+        with patch.dict(os.environ, {"LINEAR_API_KEY": "configured"}):
+            os.environ.pop("TWEED_LINEAR_ADAPTER", None)
+            command = TWEED.linear_adapter_command()
+        self.assertEqual(command[0], sys.executable)
+        self.assertEqual(Path(command[1]).name, "tweed_linear_adapter.py")
+        self.assertNotIn("configured", command)
+
+    def test_create_accepts_normalized_visible_markdown_with_exact_genesis_token(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = make_repo(directory)
+            run_id = "tw_0123456789abcdef"
+            description = TWEED.intake_description(
+                "feature", "CSV export", root, "CX", run_id
+            )
+            normalized = description.replace("# Request\n\nCSV export", "Request: CSV export")
+            raw = {
+                "id": "12345678-1234-4123-8123-123456789abc",
+                "identifier": "TST-1",
+                "url": "https://linear.test/TST-1",
+                "title": "CSV export",
+                "description": normalized,
+                "updatedAt": "1",
+                "comments": [],
+            }
+            raw["content_digest"] = TWEED.transport_content_digest(raw)
+            raw["snapshot_digest"] = TWEED.transport_snapshot_digest(raw)
+            with patch.object(
+                TWEED,
+                "call_linear_adapter",
+                return_value={
+                    "protocol": TWEED.LINEAR_PROTOCOL,
+                    "status": "recovered",
+                    "issue": raw,
+                },
+            ):
+                result = TWEED.create_linear_issue(
+                    root, "CX", "CSV export", description, run_id
+                )
+            self.assertEqual(result["status"], "synced")
+            self.assertEqual(
+                tweed_journal.parse_genesis(normalized).digest,
+                tweed_journal.parse_genesis(description).digest,
+            )
+
+    def test_external_adapter_stderr_cannot_reach_errors_or_receipts(self):
+        secret = "lin_api_do_not_leak_123"
+        with tempfile.TemporaryDirectory() as directory:
+            adapter = Path(directory) / "adapter"
+            adapter.write_text(
+                "#!/bin/sh\necho 'lin_api_do_not_leak_123 server body' >&2\nexit 9\n"
+            )
+            adapter.chmod(0o700)
+            with patch.dict(
+                os.environ,
+                {"TWEED_LINEAR_ADAPTER": str(adapter), "LINEAR_API_KEY": secret},
+            ):
+                with self.assertRaises(RuntimeError) as caught:
+                    TWEED.call_linear_adapter({"operation": "fetch"})
+                value = TWEED.receipt(
+                    run_id="tw_0123456789abcdef",
+                    state="failed",
+                    error=secret + "\n" + ("x" * 10000),
+                )
+        encoded = json.dumps(value, separators=(",", ":"))
+        self.assertNotIn(secret, str(caught.exception))
+        self.assertNotIn(secret, encoded)
+        self.assertLess(len(encoded.encode()), 4096)
+
+    def test_external_adapter_is_terminated_at_stream_byte_limits(self):
+        with tempfile.TemporaryDirectory() as directory:
+            adapter = Path(directory) / "adapter.py"
+            adapter.write_text(
+                "import subprocess,sys\n"
+                "subprocess.Popen([sys.executable,'-c','import time; time.sleep(5)'])\n"
+                "sys.stdout.buffer.write(b'x' * 1100000)\n"
+            )
+            with patch.dict(
+                os.environ,
+                {
+                    "TWEED_LINEAR_ADAPTER": f"{sys.executable} {adapter}",
+                    "LINEAR_API_KEY": "not-forwarded-in-argv",
+                },
+            ):
+                started = time.monotonic()
+                with self.assertRaisesRegex(RuntimeError, "byte limit"):
+                    TWEED.call_linear_adapter({"operation": "fetch"})
+                self.assertLess(time.monotonic() - started, 2)
 
     def test_create_transport_failure_emits_retryable_sync_blocked_receipt(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -608,12 +645,12 @@ class TweedTests(unittest.TestCase):
                         TWEED,
                         "verify_linear_issue",
                         side_effect=AssertionError(
-                            "finish must use the atomic CAS instead of a separate verify"
+                            "finish must publish the persisted journal record directly"
                         ),
                     ),
                     patch.object(
                         TWEED,
-                        "update_linear_issue",
+                        "append_linear_record",
                         side_effect=RuntimeError("adapter offline"),
                     ),
                     contextlib.redirect_stdout(io.StringIO()) as output,
@@ -635,7 +672,7 @@ class TweedTests(unittest.TestCase):
                 with (
                     patch.object(
                         TWEED,
-                        "update_linear_issue",
+                        "append_linear_record",
                         return_value={
                             "status": "synced",
                             "identifier": issue["identifier"],
@@ -654,6 +691,96 @@ class TweedTests(unittest.TestCase):
             self.assertEqual(retry_code, 0)
             self.assertEqual(json.loads(retry_output.getvalue())["state"], "completed")
 
+    def test_resume_adopts_exact_post_checkpoint_commit_without_codex(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = make_repo(directory)
+            run_id = "tw_0123456789abcdef"
+            description = TWEED.intake_description(
+                "feature", "CSV", root, "CX", run_id
+            )
+            issue = make_issue("TST-1", description)
+            metadata = TWEED.parse_metadata(description)
+            report = "Status: implemented\n\n## Verification\n\n- Passed"
+            (root / "implementation.txt").write_text("done\n")
+            pre_commit = git(root, "rev-parse", "HEAD")
+            git(root, "add", "-A")
+            expected_tree = git(root, "write-tree")
+            with patch.dict(os.environ, {"TWEED_STATE_HOME": directory}):
+                TWEED.freeze_linear_snapshot(run_id, issue, "workflow")
+                TWEED.record_phase_artifacts(
+                    run_id,
+                    TWEED.PHASES["implement"],
+                    {"report_markdown": report},
+                )
+                TWEED.save_run(
+                    {
+                        "schema_version": TWEED.SCHEMA_VERSION,
+                        "run_id": run_id,
+                        "state": "finalizing",
+                        "operation": "phase",
+                        "phase": "implement",
+                        "issue": TWEED.compact_issue(issue),
+                        "metadata": metadata,
+                        "repository": str(root),
+                        "worktree": str(root),
+                        "branch": "main",
+                        "pre_commit_head": pre_commit,
+                        "expected_commit_tree": expected_tree,
+                        "thread_id": "thread-1",
+                        "summary": "done",
+                        "status": "implemented",
+                    }
+                )
+                committed = TWEED.commit_phase(
+                    root, "TST-1", TWEED.PHASES["implement"]
+                )
+                with (
+                    patch.object(TWEED, "verify_linear_issue"),
+                    patch.object(
+                        TWEED,
+                        "append_linear_record",
+                        return_value={
+                            "status": "synced",
+                            "identifier": "TST-1",
+                            "url": issue["url"],
+                        },
+                    ),
+                    patch.object(
+                        TWEED.Codex,
+                        "__init__",
+                        side_effect=AssertionError("finalization must not invoke Codex"),
+                    ),
+                    contextlib.redirect_stdout(io.StringIO()) as output,
+                ):
+                    code = TWEED.resume_command(
+                        SimpleNamespace(run_id=run_id, answer=[], agent=True)
+                    )
+                saved = TWEED.load_run(run_id)
+            self.assertEqual(code, 0)
+            self.assertEqual(saved["state"], "completed")
+            self.assertEqual(saved["commit"], committed)
+            self.assertEqual(json.loads(output.getvalue())["commit"], committed)
+
+    def test_finalizing_commit_adoption_rejects_correct_subject_with_wrong_tree(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = make_repo(directory)
+            before = git(root, "rev-parse", "HEAD")
+            (root / "review.txt").write_text("expected repair\n")
+            git(root, "add", "review.txt")
+            expected_tree = git(root, "write-tree")
+            (root / "review.txt").write_text("replacement repair\n")
+            git(root, "add", "review.txt")
+            git(root, "commit", "-m", "Review TST-1")
+            state = {
+                "pre_commit_head": before,
+                "expected_commit_tree": expected_tree,
+                "issue": {"identifier": "TST-1"},
+            }
+            with self.assertRaisesRegex(RuntimeError, "unexpected repository tree"):
+                TWEED.recover_finalizing_commit(
+                    state, TWEED.PHASES["review"], root
+                )
+
     def test_snapshot_is_frozen_once_into_separate_integrity_checked_artifacts(self):
         with tempfile.TemporaryDirectory() as directory:
             root = make_repo(directory)
@@ -661,14 +788,51 @@ class TweedTests(unittest.TestCase):
             description = TWEED.intake_description(
                 "problem", "Broken export", root, "CX", run_id
             )
-            description += "\n" + TWEED.section_block("rca", "Status: established\n\nCause")
-            issue = make_issue("TST-1", description)
+            genesis = tweed_journal.parse_genesis(description)
+            rca = tweed_journal.build_record(
+                issue_identifier="TST-1",
+                run_id=run_id,
+                phase="root-cause",
+                status="established",
+                artifact_digest=tweed_journal.sha256_text(
+                    "Status: established\n\nCause"
+                ),
+                predecessor_digest=genesis.digest,
+                genesis_digest=genesis.digest,
+                repository=str(root),
+                base_commit=git(root, "rev-parse", "HEAD"),
+                branch=None,
+                commit=None,
+                report="Status: established\n\nCause",
+            )
+            raw = {
+                "id": "12345678-1234-4123-8123-123456789abc",
+                "identifier": "TST-1",
+                "url": "https://linear.test/TST-1",
+                "title": "Fixture issue",
+                "description": description,
+                "updatedAt": "1",
+                "comments": [
+                    {
+                        "id": rca.metadata["comment_id"],
+                        "body": rca.comment,
+                        "createdAt": "1",
+                        "updatedAt": "1",
+                        "editedAt": None,
+                        "archivedAt": None,
+                    }
+                ],
+            }
+            raw["content_digest"] = TWEED.transport_content_digest(raw)
+            raw["snapshot_digest"] = TWEED.transport_snapshot_digest(raw)
+            issue = TWEED.validate_adapter_issue(root, raw)
             with patch.dict(os.environ, {"TWEED_STATE_HOME": directory}):
                 TWEED.freeze_linear_snapshot(run_id, issue, "workflow")
                 manifest = TWEED.load_artifact_manifest(run_id)
                 self.assertIn("request", manifest["artifacts"])
                 self.assertIn("rca", manifest["artifacts"])
                 self.assertIn("evidence", manifest["artifacts"])
+                self.assertIn("linear-transport-snapshot", manifest["artifacts"])
                 self.assertNotEqual(
                     manifest["artifacts"]["request"]["sha256"],
                     manifest["artifacts"]["rca"]["sha256"],
@@ -732,10 +896,20 @@ class TweedTests(unittest.TestCase):
                 "Status: scoped\n\n## Repository state\n\n"
                 f"- `README.md` → `{TWEED.sha256_file(root / 'README.md')}`"
             )
-            desired = TWEED.replace_metadata(
-                description,
-                {**TWEED.parse_metadata(description), "stage": "ready-to-implement", "contract_revision": 1},
-            ) + "\n" + TWEED.section_block("scope", scope_report)
+            record = TWEED.journal.build_record(
+                issue_identifier=issue["identifier"],
+                run_id=run_id,
+                phase="scope",
+                status="scoped",
+                artifact_digest=TWEED.digest(scope_report),
+                predecessor_digest=issue["revision"],
+                genesis_digest=issue["genesis_digest"],
+                repository=str(root),
+                base_commit=git(root, "rev-parse", "HEAD"),
+                branch=None,
+                commit=None,
+                report=scope_report,
+            )
             store = Path(directory) / "linear.json"
             trace = Path(directory) / "trace"
             write_fake_linear(store, issue)
@@ -747,7 +921,7 @@ class TweedTests(unittest.TestCase):
             }
             with patch.dict(os.environ, env):
                 TWEED.freeze_linear_snapshot(run_id, issue, "workflow")
-                TWEED.put_artifact(run_id, "linear-desired-description", desired)
+                TWEED.put_artifact(run_id, "linear-journal-record", record.comment)
                 TWEED.save_run(
                     {
                         "run_id": run_id,
@@ -759,11 +933,14 @@ class TweedTests(unittest.TestCase):
                         "repository": str(root),
                         "status": "scoped",
                         "summary": "done",
-                        "expected_revision": issue["revision"],
-                        "expected_digest": issue["digest"],
+                        "expected_head_digest": issue["revision"],
+                        "expected_snapshot_digest": issue["snapshot_digest"],
+                        "expected_content_digest": issue["content_digest"],
+                        "desired_head_digest": record.digest,
+                        "comment_id": record.metadata["comment_id"],
                     }
                 )
-                with contextlib.redirect_stdout(io.StringIO()):
+                with contextlib.redirect_stdout(io.StringIO()) as first_output:
                     result = TWEED.retry_sync_command(
                         SimpleNamespace(run_id=run_id, agent=True)
                     )
@@ -774,7 +951,7 @@ class TweedTests(unittest.TestCase):
                 with (
                     patch.object(
                         TWEED,
-                        "update_linear_issue",
+                        "append_linear_record",
                         side_effect=RuntimeError("offline again"),
                     ),
                     contextlib.redirect_stdout(io.StringIO()) as retry_output,
@@ -783,8 +960,8 @@ class TweedTests(unittest.TestCase):
                         SimpleNamespace(run_id=run_id, agent=True)
                     )
                 retry_saved = TWEED.load_run(run_id)["state"]
-            self.assertEqual(result, 0)
-            self.assertEqual(trace.read_text().splitlines(), ["compare-and-swap"])
+            self.assertEqual(result, 0, first_output.getvalue())
+            self.assertEqual(trace.read_text().splitlines(), ["append-or-recover"])
             self.assertEqual(completed_state, "completed")
             self.assertEqual(retry_result, 8)
             self.assertEqual(json.loads(retry_output.getvalue())["state"], "sync-blocked")
@@ -817,6 +994,27 @@ class TweedTests(unittest.TestCase):
                     artifact_hashes=["a" * 64],
                 )
                 self.assertEqual(key, same)
+                timed_key, _ = TWEED.evidence_cache_key(
+                    root,
+                    ["python", "-m", "unittest"],
+                    dependency_paths=[dependency],
+                    configuration_paths=[configuration],
+                    declared_environment=["DECLARED_TEST_INPUT"],
+                    tool_versions={"python": "3.14", "tool": "1"},
+                    artifact_hashes=["a" * 64],
+                    execution_controls={"timeout_seconds": 1},
+                )
+                other_timeout, _ = TWEED.evidence_cache_key(
+                    root,
+                    ["python", "-m", "unittest"],
+                    dependency_paths=[dependency],
+                    configuration_paths=[configuration],
+                    declared_environment=["DECLARED_TEST_INPUT"],
+                    tool_versions={"python": "3.14", "tool": "1"},
+                    artifact_hashes=["a" * 64],
+                    execution_controls={"timeout_seconds": 2},
+                )
+                self.assertNotEqual(timed_key, other_timeout)
                 with patch.dict(os.environ, {"TWEED_STATE_HOME": directory}):
                     TWEED.save_cached_evidence(key, document, {"passed": True})
                     self.assertEqual(
@@ -917,9 +1115,10 @@ class TweedTests(unittest.TestCase):
             root = make_repo(directory)
             counter = Path(directory) / "counter"
             script = (
-                "from pathlib import Path; import time; p=Path("
+                "from pathlib import Path; import subprocess,sys,time; p=Path("
                 + repr(str(counter))
                 + "); p.write_text(str(int(p.read_text())+1) if p.exists() else '1'); "
+                "subprocess.Popen([sys.executable,'-c','import time; time.sleep(5)']); "
                 "time.sleep(2)"
             )
             args = SimpleNamespace(
@@ -939,11 +1138,45 @@ class TweedTests(unittest.TestCase):
             with patch.dict(
                 os.environ, {"TWEED_STATE_HOME": str(Path(directory) / "state")}
             ):
+                started = time.monotonic()
                 for _ in range(2):
                     with contextlib.redirect_stdout(io.StringIO()) as output:
                         self.assertEqual(TWEED.evidence_command(args), 124)
                     self.assertFalse(json.loads(output.getvalue())["cacheable"])
+                elapsed = time.monotonic() - started
             self.assertEqual(counter.read_text(), "2")
+            self.assertLess(elapsed, 2)
+
+    def test_evidence_runner_terminates_oversized_output_without_caching(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = make_repo(directory)
+            args = SimpleNamespace(
+                repo=str(root),
+                evidence_command=[
+                    sys.executable,
+                    "-c",
+                    "import sys; sys.stdout.buffer.write(b'x' * 600000)",
+                ],
+                tool_version=["python-command=3.14"],
+                run_id=None,
+                dependency=[],
+                configuration=[],
+                declared_env=[],
+                no_dependencies=True,
+                no_configuration=True,
+                no_declared_env=True,
+                no_artifacts=True,
+                timeout=10,
+            )
+            with patch.dict(
+                os.environ, {"TWEED_STATE_HOME": str(Path(directory) / "state")}
+            ):
+                with contextlib.redirect_stdout(io.StringIO()) as output:
+                    self.assertEqual(TWEED.evidence_command(args), 125)
+            result = json.loads(output.getvalue())
+            self.assertFalse(result["cacheable"])
+            self.assertEqual(result["stdout"], "")
+            self.assertIn("byte limit", result["stderr"])
 
     def test_tracked_unchanged_inputs_reuse_content_hash_by_git_blob(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -973,9 +1206,49 @@ class TweedTests(unittest.TestCase):
                 old = {"run_id": run_id, "state": "sync-pending", "phase": "scope", "report_markdown": "Status: scoped", "workflow_text": "workflow"}
                 path.write_text(json.dumps(old))
                 loaded = TWEED.load_run(run_id)
-                self.assertEqual(loaded["run_schema_version"], 2)
+                self.assertEqual(loaded["run_schema_version"], 3)
                 self.assertTrue((path.parent / "run.v1.json").exists())
                 self.assertEqual(TWEED.read_artifact(run_id, "scope"), b"Status: scoped")
+
+    def test_pending_description_sync_migrates_explicitly_fail_closed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = make_repo(directory)
+            run_id = "tw_0123456789abcdef"
+            state_home = Path(directory) / "state"
+            with patch.dict(os.environ, {"TWEED_STATE_HOME": str(state_home)}):
+                path = TWEED.state_path(run_id)
+                path.parent.mkdir(parents=True)
+                path.write_text(
+                    json.dumps(
+                        {
+                            "run_schema_version": 2,
+                            "run_id": run_id,
+                            "state": "sync-blocked",
+                            "operation": "phase",
+                            "phase": "scope",
+                            "repository": str(root),
+                            "issue": {"identifier": "TST-1"},
+                            "status": "scoped",
+                        }
+                    )
+                )
+                loaded = TWEED.load_run(run_id)
+                with contextlib.redirect_stdout(io.StringIO()) as output:
+                    code = TWEED.retry_sync_command(
+                        SimpleNamespace(run_id=run_id, agent=True)
+                    )
+            self.assertTrue((path.parent / "run.v2.json").exists())
+            self.assertTrue(loaded["legacy_description_sync"])
+            self.assertEqual(code, 8)
+            self.assertIn("cannot be translated safely", output.getvalue())
+
+    def test_issue_lock_rejects_same_host_parallel_phase(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = make_repo(directory)
+            with TWEED.issue_execution_lock(root, "TST-1"):
+                with self.assertRaisesRegex(RuntimeError, "active for TST-1"):
+                    with TWEED.issue_execution_lock(root, "TST-1"):
+                        pass
 
     def test_skill_is_single_invocation_receipt_only_and_handles_all_states(self):
         skill = (ROOT / "skills/use-tweed/SKILL.md").read_text()
