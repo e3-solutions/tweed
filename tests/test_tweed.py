@@ -447,6 +447,20 @@ class TweedTests(unittest.TestCase):
             config.config_overrides,
         )
 
+    def test_all_child_sessions_and_subagents_use_sol_medium(self):
+        with patch.object(TWEED, "find_codex", return_value="/bin/true"):
+            config = TWEED.codex_config(Path("/tmp").resolve())
+        self.assertIn('model="gpt-5.6-sol"', config.config_overrides)
+        self.assertIn('model_reasoning_effort="medium"', config.config_overrides)
+        self.assertIn(
+            'agents.default_subagent_model="gpt-5.6-sol"',
+            config.config_overrides,
+        )
+        self.assertIn(
+            'agents.default_subagent_reasoning_effort="medium"',
+            config.config_overrides,
+        )
+
     def test_runner_owns_integration_worktree_and_commit(self):
         with tempfile.TemporaryDirectory() as directory:
             root = make_repo(directory)

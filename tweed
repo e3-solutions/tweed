@@ -30,6 +30,8 @@ from openai_codex.types import TurnStatus
 SCHEMA_VERSION = 1
 PROTOCOL = "dev.tweed.receipt.v1"
 NEEDS_INPUT = "needs-input"
+CODEX_MODEL = "gpt-5.6-sol"
+CODEX_REASONING_EFFORT = "medium"
 LAST_RUN_ID: str | None = None
 LAST_TURN_ID: str | None = None
 META_START = "<!-- tweed:metadata:start -->"
@@ -193,6 +195,13 @@ def codex_config(cwd: Path) -> CodexConfig:
     return CodexConfig(
         codex_bin=find_codex(),
         config_overrides=(
+            f'model="{CODEX_MODEL}"',
+            f'model_reasoning_effort="{CODEX_REASONING_EFFORT}"',
+            f'agents.default_subagent_model="{CODEX_MODEL}"',
+            (
+                "agents.default_subagent_reasoning_effort="
+                f'"{CODEX_REASONING_EFFORT}"'
+            ),
             'plugins."linear-progress-sync@coreedge-local".enabled=false',
         ),
         cwd=str(cwd),

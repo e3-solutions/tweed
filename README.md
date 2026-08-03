@@ -75,6 +75,10 @@ Its child sessions disable the local `linear-progress-sync` orchestrator because
 that plugin owns the same branch, Linear, and PR boundaries; only one runner may
 own those writes.
 
+Every child Codex session is pinned to `gpt-5.6-sol` with medium reasoning.
+Spawned implementation and review agents inherit that same model and effort,
+so all phases use one reproducible execution profile.
+
 ## Clarification
 
 Interactive commands ask a material question in the terminal and continue in
