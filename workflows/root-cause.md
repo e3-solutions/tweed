@@ -1,10 +1,11 @@
 # Tweed Root Cause
 
-Identify the problem and its evidence-backed root cause. Do not propose, scope, or implement a solution. Keep subagent returns short so the main context stays focused. Linear is a completed-phase handoff, never an investigation scratchpad.
+Identify the problem recorded in the supplied frozen Linear issue snapshot and establish its evidence-backed root cause. Do not propose, scope, or implement a solution. Keep subagent returns short so the coordinator context stays focused.
 
 ## Rules
 
-- Do not modify project files, write to Linear, or cause external side effects while investigating or clarifying.
+- Verify the supplied issue is a Tweed `problem` at stage `needs-rca`; otherwise return `blocked`.
+- Do not modify project files, use Linear tools, or cause external side effects while investigating or clarifying.
 - Use existing project tools and tests. Add no dependencies or helper code.
 - Treat the user's report as a symptom, not a proven explanation.
 - Prefer runtime, test, repository, and history evidence over agent opinion.
@@ -108,6 +109,6 @@ Problem
 
 Include every agent actually used, including targeted follow-ups, once in the map. Do not include transcripts, tool logs, solution ideas, or implementation steps.
 
-## Linear sync
+## Structured return
 
-Do not use Linear tools during investigation, clarification, or final verification. After an `established` report, the runner may send a separate message beginning exactly with `TWEED_LINEAR_SYNC`. Only on that later turn may you use the configured Linear MCP tools, and only for the single create or update requested there. Never write intermediate questions, answers, drafts, or agent activity to Linear.
+Return the result through the runner-provided JSON schema with `status`, a bounded `summary`, optional structured `question`, and the complete report in `report_markdown`. The report must begin with the matching `Status:` line. Never use Linear tools; the runner alone persists a completed phase.

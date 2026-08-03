@@ -1,38 +1,39 @@
-# Tweed Solution Scope
+# Tweed Scope
 
-Turn an established root cause into an implementation-ready solution scope. Identify exactly what should be changed and why, but do not modify code, implement the change, or perform external writes. The runner normally supplies a Linear issue identifier; use Linear MCP read tools to retrieve its completed RCA handoff.
+Turn the supplied frozen Linear issue snapshot into an implementation-ready solution scope. For a `problem`, scope from its established RCA. For a `feature`, scope directly from its original request. Identify exactly what should change and why, but do not modify code, implement the change, or perform external writes.
 
 ## Rules
 
-- Proceed only from an established root cause with concrete evidence. Otherwise return `Status: blocked` and do not design a solution.
-- Do not modify project files, write to Linear, or cause external side effects while scoping or clarifying. Reading the supplied Linear issue is allowed.
+- Verify the issue is at stage `needs-scope`. For a `problem`, proceed only from an established root cause with concrete evidence. For a `feature`, proceed from the recorded request and verified repository behavior. Otherwise return `Status: blocked` and do not design a solution.
+- Do not modify project files, use Linear tools, or cause external side effects while scoping or clarifying.
 - Reuse existing structures, libraries, and conventions. Add a dependency, abstraction, configuration surface, or migration only when evidence makes it necessary.
 - Research language and framework built-ins, existing project utilities, installed dependencies, and their exact versions before proposing custom machinery. Use primary sources such as official documentation or source when repository evidence is insufficient.
 - Separate verified facts and constraints from proposals and unresolved decisions.
 - Inspect the repository and completed RCA before asking the user. When an irreducible product, safety, compatibility, or architecture choice blocks a valid scope, return `Status: needs-input` with one exact question, its consequences, concrete options, and an evidence-backed recommendation when possible.
 - After receiving a clarification answer, normalize it as a decision, reconcile it with repository evidence, and continue the same scope. Do not repeat an answered question.
+- Every implementation step must be executable through repository edits and local validation inside the future runner-owned worktree. Put deployments, credential creation, remote configuration, live migrations, production/staging exercises, and other external actions in an explicitly non-blocking post-merge follow-up; never make them an implementation dependency or completion criterion.
+- Compute every evidence SHA-256 from the final file bytes, preserve all 64 lowercase hexadecimal characters, and verify the completed snapshot before returning. Never transcribe or abbreviate a digest manually.
 
 ## Workflow
 
-1. Freeze the verified root cause, repository path, Git `HEAD`, worktree state, evidence snapshot, constraints, and supporting evidence. Verify that the reported repository state still matches the current state. If relevant state changed, return `Status: blocked` instead of scoping a stale diagnosis.
-2. Start with independent agents on four axes:
-   - **Repository and reuse research:** Inventory internal utilities, language and framework built-ins, and installed libraries that could break the verified causal chain. Verify exact-version behavior from repository evidence, official documentation, or source, and identify the narrow gap custom code must fill.
-   - **Simplicity:** Find the smallest causal change and challenge new abstractions, dependencies, configuration, and unrelated cleanup.
-   - **Robustness and stability:** Find realistic failure modes, edge cases, compatibility hazards, partial failures, and rollback needs. Challenge a patch that fixes only the example.
-   - **Performance:** Inspect hot paths, latency, resource use, scaling behavior, and the overhead of proposed safeguards.
-3. Synthesize the smallest candidate that breaks the verified causal chain at the responsible boundary.
-4. As the baseline adversarial check, give that candidate, not raw transcripts, back to the four axis agents. Require each to try to falsify it against its objective and return only evidence-backed objections and the minimum correction needed.
-5. Add an independent specialist only for a material open question in feasibility, testability, integration or compatibility, security or privacy, data integrity, concurrency, migration, or operations.
-6. Reconcile supported objections. Continue targeted debate while a concrete agent task or repository check can resolve a material gap or contradiction. Ask the user only when investigation cannot resolve a material decision.
-7. Re-read cited files and conventions, confirm that `HEAD`, relevant worktree state, and evidence-file fingerprints have not changed, then verify the final scope against the completion gate. If relevant state changed, return `Status: blocked` instead of reporting a stale plan.
+1. Freeze the supplied request and, for a problem, its verified root cause. Record the repository path, Git `HEAD`, worktree state, evidence snapshot, constraints, and supporting evidence. Verify that the reported repository state still matches the current state. If relevant state changed, return `Status: blocked` instead of scoping stale input.
+2. Start exactly three independent agents:
+   - **Repository and reuse:** Inventory internal utilities, language and framework built-ins, installed libraries, integration points, and exact-version behavior needed by the request.
+   - **Product and simplicity:** Define the smallest coherent user-visible outcome and challenge new abstractions, dependencies, configuration, variants, and unrelated cleanup.
+   - **Robustness and verification:** Find realistic failure, compatibility, security, data, concurrency, performance, and operational risks; turn them into bounded safeguards and proving checks.
+3. If an initial agent is interrupted or fails, replace it once with the same frozen input. If the replacement fails, return `Status: blocked` rather than waiting indefinitely.
+4. Synthesize the smallest complete candidate from their bounded packets.
+5. Give only that candidate and its evidence to one fresh adversarial reviewer. Require material objections and the minimum correction needed; do not start a second general critique round.
+6. Add one specialist only when a named unresolved risk cannot be adjudicated from repository evidence or the three baseline packets.
+7. Reconcile supported objections, ask the user only when investigation cannot resolve a material decision, then re-read cited evidence and confirm `HEAD`, relevant worktree state, and evidence-file fingerprints have not changed.
 
-After the baseline challenge, do not add an agent or round without a specific unresolved question. Do not prefer a proposal merely because it changes fewer lines, and do not add safeguards for hypothetical risks unsupported by this system.
+Do not add an agent or round without a specific unresolved question. Do not prefer a proposal merely because it changes fewer lines, and do not add safeguards for hypothetical risks unsupported by this system.
 
 ## Completion gate
 
 Call the solution scoped only when:
 
-- it addresses the verified mechanism at the responsible boundary;
+- it addresses the requested outcome and, for a problem, the verified mechanism at the responsible boundary;
 - every included change is necessary and every non-goal is safely unnecessary;
 - realistic failure modes, compatibility constraints, and performance effects are covered;
 - existing code and dependencies are reused where appropriate;
@@ -40,6 +41,8 @@ Call the solution scoped only when:
 - changed surfaces and interface effects are explicit;
 - acceptance criteria and verification distinguish the real fix from the original failure; and
 - implementation steps are ordered, independently verifiable, and sufficient to deliver the scope; and
+- implementation steps require only repository edits and local checks, with external rollout or runtime validation clearly separated as post-merge follow-up; and
+- every evidence snapshot digest is a verified 64-character SHA-256 of the cited final file bytes, or `ABSENT` for a path that is confirmed absent; and
 - no material evidence-backed objection remains unresolved.
 
 If the gate fails because a user decision can resolve it, return `Status: needs-input`. Return `Status: blocked` for a stale or invalid RCA, an inaccessible Linear handoff, or another blocker that clarification cannot resolve. Do not fill gaps with speculative architecture.
@@ -127,6 +130,10 @@ Status: [scoped | blocked]
 
 - [Test or diagnostic that distinguishes fixed from broken]
 
+## Post-merge follow-up
+
+- [External rollout, provisioning, or live validation action that is not part of implementation, or "None"]
+
 ## Alternatives considered
 
 - [Alternative and evidence-backed reason it was rejected or partially used]
@@ -147,6 +154,6 @@ Verified RCA
 
 Include every agent actually used once in the map. Do not include transcripts, tool logs, patches, implementation work, or unrelated follow-ups.
 
-## Linear sync
+## Structured return
 
-Do not use Linear write tools during scoping, clarification, adversarial challenge, or final verification. After a `scoped` report, the runner may send a separate message beginning exactly with `TWEED_LINEAR_SYNC`. Only on that later turn may you update the supplied issue through the configured Linear MCP, and only as requested. Never write intermediate questions, answers, drafts, or agent activity to Linear.
+Return the result through the runner-provided JSON schema with `status`, a bounded `summary`, optional structured `question`, and the complete report in `report_markdown`. The report must begin with the matching `Status:` line. Never use Linear tools; the runner alone persists a completed phase.
