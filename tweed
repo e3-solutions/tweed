@@ -1,7 +1,7 @@
 #!/usr/bin/env -S uv run --script
 # /// script
 # requires-python = ">=3.10"
-# dependencies = ["openai-codex==0.144.4"]
+# dependencies = ["openai-codex==0.144.4", "keyring==25.7.0", "tomli==2.2.1; python_version < '3.11'"]
 # ///
 
 from __future__ import annotations
@@ -25,11 +25,18 @@ import uuid
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterator
+from urllib.parse import urlsplit
+
+try:
+    import tomllib
+except ModuleNotFoundError:  # pragma: no cover - Python 3.10
+    import tomli as tomllib
 
 from openai_codex import Codex, CodexConfig, Sandbox
 from openai_codex.types import TurnStatus
 
 import tweed_journal as journal
+import tweed_linear_oauth as linear_oauth
 
 
 SCHEMA_VERSION = 1
@@ -176,6 +183,36 @@ def find_codex() -> str:
     raise RuntimeError("no working Codex CLI found")
 
 
+def linear_mcp_disable_overrides() -> tuple[str, ...]:
+    """Disable configured Linear MCP aliases without synthesizing invalid entries."""
+    codex_home = Path(os.environ.get("CODEX_HOME", Path.home() / ".codex"))
+    config_path = codex_home / "config.toml"
+    if not config_path.exists():
+        return ()
+    try:
+        value = tomllib.loads(config_path.read_text())
+    except (OSError, UnicodeDecodeError, tomllib.TOMLDecodeError) as error:
+        raise RuntimeError("cannot safely inspect Codex MCP configuration") from error
+    servers = value.get("mcp_servers", {}) if isinstance(value, dict) else {}
+    if not isinstance(servers, dict):
+        raise RuntimeError("Codex MCP configuration is invalid")
+    disabled: list[str] = []
+    for name, server in servers.items():
+        if not isinstance(name, str) or not isinstance(server, dict):
+            continue
+        url = server.get("url")
+        args = server.get("args")
+        is_linear = isinstance(url, str) and urlsplit(url).hostname == "mcp.linear.app"
+        if isinstance(args, list):
+            is_linear = is_linear or any(
+                isinstance(item, str) and "https://mcp.linear.app/" in item
+                for item in args
+            )
+        if is_linear:
+            disabled.append(f"mcp_servers.{json.dumps(name)}.enabled=false")
+    return tuple(disabled)
+
+
 def codex_config(cwd: Path) -> CodexConfig:
     return CodexConfig(
         codex_bin=find_codex(),
@@ -184,9 +221,19 @@ def codex_config(cwd: Path) -> CodexConfig:
             f'model_reasoning_effort="{CODEX_REASONING_EFFORT}"',
             "features.hooks=false",
             'plugins."linear-progress-sync@coreedge-local".enabled=false',
+            *linear_mcp_disable_overrides(),
         ),
         cwd=str(cwd),
-        env={"LINEAR_API_KEY": "", "TWEED_LINEAR_ADAPTER": ""},
+        env={
+            "LINEAR_API_KEY": "",
+            "LINEAR_ACCESS_TOKEN": "",
+            "LINEAR_OAUTH_TOKEN": "",
+            "MCP_REMOTE_CONFIG_DIR": "",
+            "TWEED_LINEAR_ADAPTER": "",
+            "TWEED_LINEAR_AUTH": "",
+            "TWEED_LINEAR_CLIENT_ID": "",
+            "TWEED_LINEAR_OAUTH_FILE": "",
+        },
         client_name="tweed",
         client_title="Tweed",
         client_version="0.2.0",
@@ -206,6 +253,7 @@ def run_bounded_process(
     timeout: float,
     stdout_limit: int,
     stderr_limit: int,
+    env: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess[bytes]:
     """Run a child while retaining at most each declared stream limit."""
     stdin_file = tempfile.TemporaryFile()
@@ -219,6 +267,7 @@ def run_bounded_process(
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         start_new_session=True,
+        env=env,
     )
     captured: dict[str, bytearray] = {
         "stdout": bytearray(),
@@ -1097,10 +1146,14 @@ def linear_turn_timeout() -> int:
 def linear_adapter_command() -> list[str]:
     configured = os.environ.get("TWEED_LINEAR_ADAPTER", "").strip()
     if not configured:
-        if not os.environ.get("LINEAR_API_KEY"):
+        mode = os.environ.get("TWEED_LINEAR_AUTH", "oauth").strip().lower()
+        if mode not in {"oauth", "api-key"}:
             raise RuntimeError(
-                "Linear transport requires LINEAR_API_KEY; create a personal API key "
-                "in Linear Security & access settings and export it at runtime"
+                "TWEED_LINEAR_AUTH must be oauth or api-key"
+            )
+        if mode == "api-key" and not os.environ.get("LINEAR_API_KEY"):
+            raise RuntimeError(
+                "explicit api-key mode requires LINEAR_API_KEY"
             )
         command = [
             sys.executable,
@@ -1117,17 +1170,42 @@ def linear_adapter_command() -> list[str]:
     return command
 
 
+def linear_adapter_environment(command: list[str]) -> dict[str, str]:
+    """Do not forward Tweed authentication configuration to external adapters."""
+    environment = os.environ.copy()
+    bundled = not os.environ.get("TWEED_LINEAR_ADAPTER", "").strip() and (
+        len(command) >= 2
+        and Path(command[1]).resolve()
+        == Path(__file__).resolve().with_name("tweed_linear_adapter.py")
+    )
+    if bundled:
+        environment.setdefault("TWEED_LINEAR_AUTH", "oauth")
+        return environment
+    for name in (
+        "LINEAR_API_KEY",
+        "LINEAR_ACCESS_TOKEN",
+        "LINEAR_OAUTH_TOKEN",
+        "TWEED_LINEAR_AUTH",
+        "TWEED_LINEAR_CLIENT_ID",
+        "TWEED_LINEAR_OAUTH_FILE",
+    ):
+        environment.pop(name, None)
+    return environment
+
+
 def call_linear_adapter(request: dict[str, Any]) -> dict[str, Any]:
     envelope = {"protocol": LINEAR_PROTOCOL, **request}
+    command = linear_adapter_command()
     try:
         completed = run_bounded_process(
-            linear_adapter_command(),
+            command,
             input_bytes=json.dumps(
                 envelope, sort_keys=True, separators=(",", ":"), ensure_ascii=False
             ).encode("utf-8"),
             timeout=linear_turn_timeout(),
             stdout_limit=1024 * 1024,
             stderr_limit=512 * 1024,
+            env=linear_adapter_environment(command),
         )
     except subprocess.TimeoutExpired as error:
         raise RuntimeError("Linear adapter timed out") from error
@@ -1753,6 +1831,7 @@ def safe_error(value: object, maximum: int = 400) -> str:
     secret = os.environ.get("LINEAR_API_KEY")
     if secret:
         text = text.replace(secret, "[REDACTED]")
+    text = re.sub(r"(?i)\bBearer\s+[^\s,;]+", "Bearer [REDACTED]", text)
     text = re.sub(r"\blin_api_[A-Za-z0-9_-]+", "[REDACTED]", text)
     return " ".join(text.split())[:maximum]
 
@@ -2642,6 +2721,49 @@ def project_command(args: argparse.Namespace) -> int:
     return 0
 
 
+def auth_command(args: argparse.Namespace) -> int:
+    if args.agent:
+        raise RuntimeError("Linear OAuth setup is interactive and unavailable with --agent")
+    if args.auth_action == "login":
+        credentials = linear_oauth.login(
+            args.client_id,
+            manual=args.manual,
+            callback_timeout=args.timeout,
+        )
+        print(
+            "Linear OAuth connected with scopes: "
+            + ", ".join(credentials["scopes"])
+        )
+        return 0
+    if args.auth_action == "status":
+        value = linear_oauth.status()
+        if not value["configured"]:
+            print("Linear OAuth is not configured; run tweed auth login --client-id <id>")
+            return 1
+        if not value["logged_in"]:
+            print("Linear OAuth client is configured but not logged in")
+            return 1
+        state = "refresh required" if value["refresh_required"] else "connected"
+        viewer = value.get("viewer") or {}
+        identity = f" as {viewer.get('name')}" if viewer.get("name") else ""
+        print(
+            f"Linear OAuth: {state}{identity}; scopes: {', '.join(value['scopes'])}; "
+            f"expires_at: {value['expires_at']}"
+        )
+        return 0
+    if args.auth_action == "logout":
+        confirmed = linear_oauth.logout(local_only=args.local_only)
+        if confirmed:
+            print("Linear OAuth credentials removed")
+            return 0
+        print(
+            "Linear OAuth credentials removed locally; remote revocation was not confirmed. "
+            "Revoke the Tweed app in Linear settings."
+        )
+        return 2
+    raise RuntimeError("unsupported auth command")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="tweed")
     parser.add_argument(
@@ -2681,6 +2803,16 @@ def build_parser() -> argparse.ArgumentParser:
     project = subparsers.add_parser("project")
     project.add_argument("action", nargs="?", choices=["set", "clear"])
     project.add_argument("value", nargs="*")
+
+    auth = subparsers.add_parser("auth")
+    auth_subparsers = auth.add_subparsers(dest="auth_action", required=True)
+    auth_login = auth_subparsers.add_parser("login")
+    auth_login.add_argument("--client-id")
+    auth_login.add_argument("--manual", action="store_true")
+    auth_login.add_argument("--timeout", type=int, default=300)
+    auth_subparsers.add_parser("status")
+    auth_logout = auth_subparsers.add_parser("logout")
+    auth_logout.add_argument("--local-only", action="store_true")
     return parser
 
 
@@ -2700,6 +2832,8 @@ def main() -> int:
         return evidence_command(args)
     if args.command == "project":
         return project_command(args)
+    if args.command == "auth":
+        return auth_command(args)
     raise RuntimeError(f"unknown command: {args.command}")
 
 

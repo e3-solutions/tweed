@@ -1,22 +1,44 @@
 # Linear journal adapter
 
 Tweed bundles `tweed_linear_adapter.py`, a standard-library client for the fixed
-`https://api.linear.app/graphql` endpoint. For this local personal tool, export a
-personal key at runtime:
+`https://api.linear.app/graphql` endpoint. Its default authentication is Linear's
+first-party OAuth2 authorization-code flow with PKCE S256.
 
 ```sh
-export LINEAR_API_KEY=...
+tweed auth login --client-id YOUR_LINEAR_OAUTH_CLIENT_ID
 ```
 
-Linear documents personal API keys as the easiest authentication method for
-personal scripts and requires the raw key in the `Authorization` header. OAuth2
-remains the appropriate choice for applications used by others. The adapter
-never discovers credentials, puts the key in argv or JSON, reflects GraphQL
-messages/bodies/headers, or follows redirects. See [Linear GraphQL authentication
-and error handling](https://linear.app/developers/graphql).
-The parent blanks the key and adapter override in every Codex/model child
-environment, so repository code and model-invoked commands cannot access Linear
-authentication.
+Provision the application once from Linear settings using
+[`linear-oauth-app.json`](../linear-oauth-app.json). The registered callback must
+be exactly `http://localhost:43817/oauth/callback`; no client secret is used or
+stored. Login uses independent random state and verifier values, PKCE S256, an
+exact loopback callback, bounded waits, and the least-privilege
+`read,issues:create,comments:create` scopes. `--manual` supports environments
+where the browser cannot complete the loopback redirect.
+
+Tokens are stored outside repositories and run artifacts in the operating-system
+credential manager. Each complete record is written to the inactive one of two
+deterministic keyring slots before an owner-only nonsecret pointer is atomically
+switched; the same canonical state directory holds cross-process locks. Inactive
+cleanup is strict and retryable because both slot names remain discoverable. This
+prevents an in-place keyring overwrite from destroying the last recoverable
+refresh pair or orphaning an unknown token record. Setting
+`TWEED_LINEAR_OAUTH_FILE` explicitly selects a `0700`/`0600` file
+backend for hermetic tests or headless systems with an independently enforced
+filesystem boundary. Refresh operations are serialized with `flock`; the
+complete rotated token pair is atomically persisted. A write-ahead refresh marker
+permits exact replay only inside a conservative portion of Linear's documented
+30-minute lost-response grace. `tweed auth logout` attempts revocation at Linear
+before removing local tokens and reports when remote revocation was not confirmed.
+See [Linear OAuth2](https://linear.app/developers/oauth-2-0-authentication) and
+[GraphQL authentication](https://linear.app/developers/graphql).
+
+API-key authentication is retained only when explicitly selected with
+`TWEED_LINEAR_AUTH=api-key` and `LINEAR_API_KEY`. External
+`TWEED_LINEAR_ADAPTER` processes receive no Tweed credentials. The configured
+`linear` MCP server and known credential environment variables are disabled in
+every Codex/model child. These controls prevent Tweed from forwarding credentials;
+they do not claim to sandbox arbitrary same-user code from an unlocked OS keyring.
 
 ## Protocol and journal
 
@@ -25,6 +47,11 @@ and output using `"protocol":"dev.tweed.linear.v2"`. Operations are `fetch`,
 `verify`, `create-or-recover`, and `append-or-recover`. `TWEED_LINEAR_ADAPTER`
 may override the bundled executable for hermetic testing or a compatible
 installation; it is not required in production.
+
+The hosted Linear MCP tool surface is not a journal transport fallback. Its
+current creates have no caller-assigned IDs or idempotency keys, and comment
+reads omit archived-inclusive edit/archive state. Those gaps would weaken exact
+ambiguous-write recovery and fail-closed journal validation.
 
 The issue description is written only at intake. It keeps the visible original
 request and a canonical base64url protocol token containing the exact UTF-8

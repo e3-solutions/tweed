@@ -6,6 +6,7 @@ import contextlib
 import io
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -406,16 +407,81 @@ class TweedTests(unittest.TestCase):
                 TWEED.set_linear_project(root, None)
                 self.assertIsNone(TWEED.linear_project(root))
 
+    def test_auth_cli_is_interactive_bounded_and_never_prints_tokens(self):
+        args = SimpleNamespace(
+            agent=False,
+            auth_action="status",
+        )
+        with (
+            patch.object(
+                TWEED.linear_oauth,
+                "status",
+                return_value={
+                    "configured": True,
+                    "logged_in": True,
+                    "refresh_required": False,
+                    "expires_at": 1234,
+                    "scopes": ["read", "issues:create", "comments:create"],
+                    "access_token": "must-not-print",
+                },
+            ),
+            contextlib.redirect_stdout(io.StringIO()) as output,
+        ):
+            self.assertEqual(TWEED.auth_command(args), 0)
+        self.assertNotIn("must-not-print", output.getvalue())
+        with self.assertRaisesRegex(RuntimeError, "interactive"):
+            TWEED.auth_command(SimpleNamespace(agent=True, auth_action="status"))
+
     def test_child_sessions_disable_the_competing_linear_orchestrator(self):
-        with patch.object(TWEED, "find_codex", return_value="/bin/true"):
+        with (
+            patch.object(TWEED, "find_codex", return_value="/bin/true"),
+            patch.object(
+                TWEED,
+                "linear_mcp_disable_overrides",
+                return_value=('mcp_servers."linear".enabled=false',),
+            ),
+        ):
             config = TWEED.codex_config(Path("/tmp").resolve())
         self.assertIn("features.hooks=false", config.config_overrides)
         self.assertIn(
             'plugins."linear-progress-sync@coreedge-local".enabled=false',
             config.config_overrides,
         )
-        self.assertEqual(config.env["LINEAR_API_KEY"], "")
-        self.assertEqual(config.env["TWEED_LINEAR_ADAPTER"], "")
+        self.assertIn('mcp_servers."linear".enabled=false', config.config_overrides)
+        for name in (
+            "LINEAR_API_KEY",
+            "LINEAR_ACCESS_TOKEN",
+            "LINEAR_OAUTH_TOKEN",
+            "MCP_REMOTE_CONFIG_DIR",
+            "TWEED_LINEAR_ADAPTER",
+            "TWEED_LINEAR_AUTH",
+            "TWEED_LINEAR_CLIENT_ID",
+            "TWEED_LINEAR_OAUTH_FILE",
+        ):
+            self.assertEqual(config.env[name], "")
+
+    def test_linear_mcp_disable_overrides_handle_clean_http_alias_and_stdio(self):
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            with patch.dict(os.environ, {"CODEX_HOME": str(home)}):
+                self.assertEqual(TWEED.linear_mcp_disable_overrides(), ())
+                (home / "config.toml").write_text(
+                    '[mcp_servers."linear-prod"]\n'
+                    'url = "https://mcp.linear.app/mcp"\n'
+                    '[mcp_servers.other]\ncommand = "true"\n'
+                )
+                self.assertEqual(
+                    TWEED.linear_mcp_disable_overrides(),
+                    ('mcp_servers."linear-prod".enabled=false',),
+                )
+                (home / "config.toml").write_text(
+                    '[mcp_servers.linear]\ncommand = "npx"\n'
+                    'args = ["-y", "mcp-remote", "https://mcp.linear.app/mcp"]\n'
+                )
+                self.assertEqual(
+                    TWEED.linear_mcp_disable_overrides(),
+                    ('mcp_servers."linear".enabled=false',),
+                )
 
     def test_all_child_sessions_use_sol_medium(self):
         with patch.object(TWEED, "find_codex", return_value="/bin/true"):
@@ -500,20 +566,53 @@ class TweedTests(unittest.TestCase):
             self.assertEqual(state["issues"]["TST-1"]["description"], description)
             self.assertEqual(state["issues"]["TST-1"]["comments"][0]["body"], record.comment)
 
-    def test_missing_linear_adapter_fails_with_narrow_configuration_requirement(self):
-        with patch.dict(os.environ, {}, clear=False):
+    def test_api_key_fallback_requires_explicit_key(self):
+        with patch.dict(os.environ, {"TWEED_LINEAR_AUTH": "api-key"}, clear=False):
             os.environ.pop("TWEED_LINEAR_ADAPTER", None)
             os.environ.pop("LINEAR_API_KEY", None)
-            with self.assertRaisesRegex(RuntimeError, "LINEAR_API_KEY"):
+            with self.assertRaisesRegex(RuntimeError, "api-key mode"):
                 TWEED.linear_adapter_command()
 
-    def test_bundled_linear_adapter_is_default_with_runtime_api_key(self):
-        with patch.dict(os.environ, {"LINEAR_API_KEY": "configured"}):
+    def test_bundled_linear_adapter_defaults_to_oauth_without_api_key(self):
+        with patch.dict(os.environ, {}, clear=False):
             os.environ.pop("TWEED_LINEAR_ADAPTER", None)
+            os.environ.pop("TWEED_LINEAR_AUTH", None)
+            os.environ.pop("LINEAR_API_KEY", None)
             command = TWEED.linear_adapter_command()
         self.assertEqual(command[0], sys.executable)
         self.assertEqual(Path(command[1]).name, "tweed_linear_adapter.py")
-        self.assertNotIn("configured", command)
+
+    def test_external_adapter_receives_no_tweed_credentials(self):
+        with patch.dict(
+            os.environ,
+            {
+                "TWEED_LINEAR_ADAPTER": shutil.which("true") or "/usr/bin/true",
+                "TWEED_LINEAR_AUTH": "api-key",
+                "LINEAR_API_KEY": "secret",
+                "TWEED_LINEAR_OAUTH_FILE": "/secret/token-store",
+            },
+        ):
+            command = TWEED.linear_adapter_command()
+            environment = TWEED.linear_adapter_environment(command)
+        self.assertNotIn("LINEAR_API_KEY", environment)
+        self.assertNotIn("TWEED_LINEAR_AUTH", environment)
+        self.assertNotIn("TWEED_LINEAR_OAUTH_FILE", environment)
+
+    def test_external_adapter_cannot_spoof_bundled_credential_trust(self):
+        bundled = Path(TWEED.__file__).resolve().with_name("tweed_linear_adapter.py")
+        with patch.dict(
+            os.environ,
+            {
+                "TWEED_LINEAR_ADAPTER": f"{sys.executable} {bundled}",
+                "TWEED_LINEAR_AUTH": "api-key",
+                "LINEAR_API_KEY": "secret",
+                "TWEED_LINEAR_OAUTH_FILE": "/secret/token-store",
+            },
+        ):
+            command = TWEED.linear_adapter_command()
+            environment = TWEED.linear_adapter_environment(command)
+        self.assertNotIn("LINEAR_API_KEY", environment)
+        self.assertNotIn("TWEED_LINEAR_OAUTH_FILE", environment)
 
     def test_create_accepts_normalized_visible_markdown_with_exact_genesis_token(self):
         with tempfile.TemporaryDirectory() as directory:

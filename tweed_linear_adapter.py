@@ -13,6 +13,8 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
+import tweed_linear_oauth as oauth
+
 PROTOCOL = "dev.tweed.linear.v2"
 API_HOST = "api.linear.app"
 API_PATH = "/graphql"
@@ -59,6 +61,7 @@ def _text(value: object, label: str, maximum: int = MAX_COMMENT_BODY_BYTES) -> s
 class LinearClient:
     api_key: str
     connection_factory: Callable[..., Any] = http.client.HTTPSConnection
+    unauthorized_callback: Callable[[], None] | None = None
 
     def __post_init__(self) -> None:
         if not self.api_key:
@@ -112,6 +115,11 @@ class LinearClient:
                     pass
         if len(raw) > MAX_RESPONSE_BYTES:
             raise AdapterError("Linear response exceeds the byte limit")
+        if response.status == 401 and self.unauthorized_callback is not None:
+            try:
+                self.unauthorized_callback()
+            except oauth.OAuthError as error:
+                raise AdapterError("Linear OAuth credential invalidation failed") from error
         if response.status == 429:
             raise AdapterError("Linear rate limit reached; retry later")
         try:
@@ -573,6 +581,27 @@ def handle(request: dict[str, Any], client: LinearClient) -> dict[str, Any]:
     raise AdapterError("unsupported adapter operation")
 
 
+def client_from_environment() -> LinearClient:
+    mode = os.environ.get("TWEED_LINEAR_AUTH", "oauth").strip().lower()
+    if mode == "oauth":
+        token = oauth.access_token()
+        return LinearClient(
+            "Bearer " + token,
+            unauthorized_callback=lambda: oauth.invalidate_access_token(token),
+        )
+    if mode == "api-key":
+        authorization = os.environ.get("LINEAR_API_KEY", "")
+        if not authorization:
+            raise AdapterError("explicit api-key mode requires LINEAR_API_KEY")
+        return LinearClient(authorization)
+    raise AdapterError("TWEED_LINEAR_AUTH must be oauth or api-key")
+
+
+def authorization_from_environment() -> str:
+    """Compatibility/testing accessor; production uses client_from_environment."""
+    return client_from_environment().api_key
+
+
 def main() -> int:
     try:
         raw = sys.stdin.buffer.read(MAX_REQUEST_BYTES + 1)
@@ -581,8 +610,8 @@ def main() -> int:
         request = json.loads(raw.decode("utf-8"))
         if not isinstance(request, dict):
             raise AdapterError("adapter request must be an object")
-        response = handle(request, LinearClient(os.environ.get("LINEAR_API_KEY", "")))
-    except (AdapterError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        response = handle(request, client_from_environment())
+    except (AdapterError, oauth.OAuthError, UnicodeDecodeError, json.JSONDecodeError) as error:
         response = {"protocol": PROTOCOL, "status": "blocked", "reason": str(error)}
     except Exception:  # noqa: BLE001 - trust-boundary fail-closed; never emit internals.
         response = {

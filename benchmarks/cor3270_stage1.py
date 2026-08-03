@@ -207,7 +207,7 @@ def main() -> int:
             ],
             "artifact_store_bytes": replay["totals"]["artifact_store_bytes"],
             "live_linear_requests": 0,
-            "live_linear_reason": "LINEAR_API_KEY not configured",
+            "live_linear_reason": "OAuth app client ID has not been provisioned for a disposable canary",
         },
         "stable_replay_matches_fixture": matches,
         "exact_aggregate_model_tokens": None,

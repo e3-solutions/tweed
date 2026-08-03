@@ -24,8 +24,7 @@ issue.
 - Python 3.10 or newer
 - `uv`
 - Codex or the ChatGPT desktop app
-- `LINEAR_API_KEY`, created through Linear's Security & access settings for this
-  personal local tool
+- A Linear OAuth application client ID authorized once with `tweed auth login`
 
 For local development, make the script available on `PATH`:
 
@@ -46,6 +45,24 @@ tweed project clear
 
 The setting is stored per canonical Git root in
 `~/.config/tweed/config.json`. `TWEED_CONFIG` may select another file.
+
+## Connect Linear
+
+Create a private OAuth application from Linear's
+[application settings](https://linear.app/settings/api/applications/new) using
+the checked-in [`linear-oauth-app.json`](linear-oauth-app.json) values. The
+redirect URI must be exactly `http://localhost:43817/oauth/callback`. Copy the
+public client ID; no client secret is needed for Tweed's PKCE flow. Then run:
+
+```sh
+tweed auth login --client-id YOUR_CLIENT_ID
+tweed auth status
+```
+
+If a browser cannot return to localhost, use `tweed auth login --manual` and
+paste the complete redirected URL. `tweed auth logout` attempts to revoke both
+rotating tokens, always removes them locally, and warns if Linear does not
+confirm revocation; `--local-only` skips the remote attempt.
 
 ## Create an intake issue
 
@@ -77,12 +94,16 @@ orchestrator because those hooks own the same branch, Linear, and PR boundaries;
 only the Tweed runner may own those writes. Global hooks remain enabled outside
 Tweed-created sessions.
 
+Tweed also disables configured Linear MCP servers inside every child model
+session. All runner-initiated Linear I/O goes through the deterministic parent
+transport. Known Linear credential and adapter environment variables are blanked
+for child models.
+
 Every child Codex session is pinned to `gpt-5.6-sol` with medium reasoning.
 Spawned implementation and review agents inherit that same model and effort,
 so all phases use one reproducible execution profile.
 Linear credentials and adapter overrides are blanked in every model child
-environment; only the parent runner's deterministic adapter receives runtime
-Linear authentication.
+environment; the runner never forwards authentication to a model child.
 
 ## Clarification
 
@@ -102,11 +123,26 @@ private content-addressed artifacts under `~/.local/state/tweed/runs/`.
 ## Linear transport
 
 Tweed never starts a model session to read, copy, compare, format, create, or
-update Linear data. The bundled standard-library adapter reads `LINEAR_API_KEY`
-only at runtime and talks directly to Linear's fixed GraphQL endpoint. Tweed
-does not inspect connector storage, export OAuth credentials, put secrets in
-arguments, or print server response bodies. `TWEED_LINEAR_ADAPTER` remains an
-optional protocol override for hermetic tests and compatible installations.
+update Linear data. The bundled standard-library adapter uses Linear's
+authorization-code OAuth2 flow with PKCE S256 and talks directly to the fixed
+GraphQL endpoint. Access and rotating refresh tokens stay in the operating
+system credential manager and are never placed in argv, prompts, receipts, run
+artifacts, or model-child environments. This is a non-forwarding boundary, not a
+sandbox against arbitrary same-user code that can access an unlocked OS credential
+store. Refresh is serialized, crash-recoverable within Linear's documented replay
+grace, and atomic. An explicit
+`TWEED_LINEAR_OAUTH_FILE` enables a `0700`/`0600` file backend for hermetic tests
+or headless systems that supply their own filesystem isolation.
+
+Personal API keys remain an explicit headless fallback only:
+
+```sh
+TWEED_LINEAR_AUTH=api-key LINEAR_API_KEY=... tweed scope ENG-123
+```
+
+`TWEED_LINEAR_ADAPTER` remains an unauthenticated protocol override for hermetic
+tests and compatible installations; Tweed does not forward its credentials to
+external adapters.
 
 The issue description remains the stable original request and workflow index.
 Every successful RCA, scope, implementation, and review is one append-only,
@@ -123,6 +159,10 @@ it and fails closed. Linear comments are user-editable/deletable: Tweed detects
 edits, archives, forks, missing interior records, and deletion relative to a
 persisted frozen head, but a fresh client cannot prove that a now-deleted tail
 once existed. Retry synchronization never reruns completed reasoning.
+
+Linear's hosted MCP endpoint is intentionally not used for transport: its
+current create tools lack caller-supplied IDs/idempotency keys, and its comment
+reader lacks archived-inclusive edit/archive metadata required by this journal.
 
 ## Deterministic evidence reuse
 

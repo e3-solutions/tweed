@@ -121,6 +121,17 @@ class LinearAdapterTests(unittest.TestCase):
                     adapter.fetch_issue(self.client(script, secret), "TST-1")
                 self.assertNotIn(secret, str(caught.exception))
 
+    def test_oauth_401_marks_access_token_stale_without_retrying(self):
+        script = ScriptedConnections(Response(401, {"error": "expired"}))
+        invalidated: list[bool] = []
+        client = adapter.LinearClient(
+            "Bearer secret", script, unauthorized_callback=lambda: invalidated.append(True)
+        )
+        with self.assertRaisesRegex(adapter.AdapterError, "status 401"):
+            adapter.fetch_issue(client, "TST-1")
+        self.assertEqual(invalidated, [True])
+        self.assertEqual(len(script.requests), 1)
+
     def test_http_200_graphql_errors_fail_and_rate_limit_is_safe(self):
         for response in (
             Response(429, b"credential and server details"),
@@ -340,6 +351,62 @@ class LinearAdapterTests(unittest.TestCase):
         self.assertEqual(status, "recovered")
         self.assertEqual(found["comments"][0]["id"], comment_id)
         self.assertEqual(len(script.requests), 7)
+
+    def test_oauth_mutation_401_then_fresh_process_recovers_without_second_mutation(self):
+        comment_id = "12345678-1234-4123-8123-123456789abc"
+        body = "normalized journal body"
+        before = issue_page()
+        normalized = {key: value for key, value in before.items() if key != "comments"}
+        normalized["comments"] = []
+        request = {
+            "identifier": "TST-1",
+            "comment_id": comment_id,
+            "body": body,
+            "expected_snapshot_digest": adapter._snapshot_digest(normalized),
+            "expected_content_digest": adapter._content_digest(normalized),
+            "expected_head_digest": "predecessor",
+            "desired_head_digest": "desired",
+        }
+        invalidated: list[str] = []
+        first = ScriptedConnections(
+            issue_identity(),
+            graph({"issue": before}),
+            graph({"comments": {"nodes": []}}),
+            Response(401, {"error": "expired"}),
+            graph({"comments": {"nodes": []}}),
+        )
+        first_client = adapter.LinearClient(
+            "Bearer expired",
+            first,
+            unauthorized_callback=lambda: invalidated.append("expired"),
+        )
+        made = comment(comment_id, body)
+        direct = {**made, "issue": {"id": "issue-uuid"}}
+        recovered_page = issue_page([made])
+        second = ScriptedConnections(
+            issue_identity(),
+            graph({"issue": recovered_page}),
+            graph({"comments": {"nodes": [direct]}}),
+        )
+        with (
+            mock.patch.object(
+                adapter, "_journal_head", side_effect=["predecessor", "desired"]
+            ),
+            mock.patch.object(adapter, "_journal_record_digest", return_value="desired"),
+        ):
+            with self.assertRaisesRegex(adapter.AdapterError, "status 401"):
+                adapter.append_or_recover(first_client, request)
+            status, _issue = adapter.append_or_recover(
+                adapter.LinearClient("Bearer refreshed", second), request
+            )
+        mutation_count = sum(
+            "mutation TweedCommentCreate" in json.loads(kwargs["body"])["query"]
+            for script in (first, second)
+            for _args, kwargs in script.requests
+        )
+        self.assertEqual(invalidated, ["expired"])
+        self.assertEqual(status, "recovered")
+        self.assertEqual(mutation_count, 1)
 
     def test_conflicting_deterministic_comment_fails_without_mutation(self):
         comment_id = "12345678-1234-4123-8123-123456789abc"

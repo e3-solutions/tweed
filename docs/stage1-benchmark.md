@@ -10,7 +10,8 @@ deployment, or fixture-repository mutation.
 Reproduce the report without touching Linear or the fixture repository:
 
 ```sh
-uv run benchmarks/cor3270_stage1.py
+uv run --with openai-codex==0.144.4 --with tomli==2.2.1 \
+  python benchmarks/cor3270_stage1.py
 ```
 
 The immutable source run IDs are `tw_26fabe4180d04027` (scope),
@@ -32,9 +33,10 @@ Holding all 23 reasoning/reviewer tasks fixed and replacing only transport
 projects 2,930.512 seconds wall time, a 36.1% reduction. Total model task count
 falls from 38 to 23 (39.5%); model-powered Linear transport tasks fall from 15
 to zero. The bundled production adapter's live Linear latency is not measured
-because `LINEAR_API_KEY` was not configured. No connector credential was
-extracted and no live result is fabricated. Hermetic journal/adapter operations
-are covered by the complete local suite and committed fixture replay.
+because a Tweed OAuth app client ID has not yet been provisioned and authorized
+for a disposable canary. No connector credential was extracted and no live result
+is fabricated. Hermetic journal/adapter and OAuth operations are covered by the
+complete local suite and committed fixture replay.
 
 ## Snapshot replay
 

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://linear.app/.well-known/oauth-app-manifest.schema.json",
+  "schemaVersion": "1.0.0",
+  "distribution": "private",
+  "display": {
+    "description": "Runs Tweed's deterministic issue workflow from a local CLI."
+  },
+  "developer": {
+    "name": "Tweed Maintainers"
+  },
+  "oauth": {
+    "client_name": "Tweed CLI",
+    "client_uri": "https://github.com/e3-solutions/tweed",
+    "redirect_uris": [
+      "http://localhost:43817/oauth/callback"
+    ],
+    "grant_types": [
+      "authorization_code"
+    ]
+  }
+}
