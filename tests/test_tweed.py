@@ -207,7 +207,18 @@ class TweedTests(unittest.TestCase):
         result = TWEED.run_phase_turn(thread, "scope it", TWEED.PHASES["scope"])
         self.assertEqual(result, response)
         self.assertIn("output_schema", thread.options[0])
-        self.assertEqual(thread.options[0]["sandbox"], TWEED.Sandbox.read_only)
+        self.assertNotIn("sandbox", thread.options[0])
+
+    def test_phase_threads_are_unattended_and_unrestricted(self):
+        scope = TWEED.phase_thread_permissions(TWEED.PHASES["scope"])
+        self.assertEqual(scope["approval_mode"], TWEED.ApprovalMode.deny_all)
+        self.assertEqual(scope["sandbox"], TWEED.Sandbox.full_access)
+        self.assertNotIn("config", scope)
+
+        implement = TWEED.phase_thread_permissions(TWEED.PHASES["implement"])
+        self.assertEqual(implement["approval_mode"], TWEED.ApprovalMode.deny_all)
+        self.assertEqual(implement["sandbox"], TWEED.Sandbox.full_access)
+        self.assertNotIn("config", implement)
 
     def test_needs_input_requires_a_structured_question(self):
         thread = FakeThread(

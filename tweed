@@ -28,7 +28,7 @@ from typing import Any, Iterator
 from urllib.parse import urlsplit
 
 from codex_cli_bin import bundled_codex_path
-from openai_codex import Codex, CodexConfig, Sandbox
+from openai_codex import ApprovalMode, Codex, CodexConfig, Sandbox
 from openai_codex.types import TurnStatus
 
 import tweed_journal as journal
@@ -85,7 +85,7 @@ PHASES = {
         "needs-rca",
         "established",
         "needs-scope",
-        Sandbox.read_only,
+        Sandbox.full_access,
         "rca",
     ),
     "scope": Phase(
@@ -94,7 +94,7 @@ PHASES = {
         "needs-scope",
         "scoped",
         "ready-to-implement",
-        Sandbox.read_only,
+        Sandbox.full_access,
         "scope",
     ),
     "implement": Phase(
@@ -103,7 +103,7 @@ PHASES = {
         "ready-to-implement",
         "implemented",
         "ready-to-review",
-        Sandbox.workspace_write,
+        Sandbox.full_access,
         "implementation",
         True,
     ),
@@ -113,7 +113,7 @@ PHASES = {
         "ready-to-review",
         "reviewed",
         "ready-to-merge",
-        Sandbox.workspace_write,
+        Sandbox.full_access,
         "review",
         True,
     ),
@@ -132,6 +132,14 @@ PHASE_ARTIFACTS = {
     "implement": ("scope", "evidence"),
     "review": ("scope", "implementation", "evidence"),
 }
+
+
+def phase_thread_permissions(phase: Phase) -> dict[str, Any]:
+    """Return the explicitly authorized unrestricted unattended policy."""
+    return {
+        "approval_mode": ApprovalMode.deny_all,
+        "sandbox": phase.sandbox,
+    }
 
 
 def phase_schema(command: str) -> dict[str, Any]:
@@ -1802,7 +1810,7 @@ def phase_prompt(issue: dict[str, Any], phase: Phase, packet: dict[str, Any]) ->
 def run_phase_turn(thread: Any, prompt: str, phase: Phase) -> dict[str, Any]:
     timeout = int(os.environ.get("TWEED_PHASE_TIMEOUT", "1200"))
     result = completed_json_turn(
-        thread, prompt, phase_schema(phase.command), phase.sandbox, timeout
+        thread, prompt, phase_schema(phase.command), timeout_seconds=timeout
     )
     return validate_phase_result(result, phase)
 
@@ -1944,7 +1952,9 @@ def start_phase_thread(
     freeze_linear_snapshot(run_id, issue, workflow)
     packet = build_phase_packet(run_id, issue, phase)
     thread = codex.thread_start(
-        cwd=str(root), developer_instructions=workflow, sandbox=phase.sandbox
+        cwd=str(root),
+        developer_instructions=workflow,
+        **phase_thread_permissions(phase),
     )
     thread.set_name(f"Tweed {phase.command}: {issue['identifier']}")
     return thread, workflow, phase_prompt(issue, phase, packet)
@@ -2913,7 +2923,7 @@ def resume_command(args: argparse.Namespace) -> int:
                         state["thread_id"],
                         cwd=str(worktree),
                         developer_instructions=workflow_text,
-                        sandbox=phase.sandbox,
+                        **phase_thread_permissions(phase),
                     )
                     recovered = (
                         recover_recorded_result(thread, state, phase)

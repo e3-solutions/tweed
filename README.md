@@ -125,6 +125,15 @@ so all phases use one reproducible execution profile.
 Linear credentials and adapter overrides are blanked in every model child
 environment; the runner never forwards authentication to a model child.
 
+Child sessions run unattended with Codex `danger-full-access` and approval
+prompts disabled. They therefore have unrestricted filesystem and command
+network access, including for locked dependency installation and repository-
+supported test, lint, type, and build checks. Phase workflows still forbid
+out-of-phase edits, deploys, remote-service mutations, pushes, and other
+delivery actions, but those boundaries are instructions rather than an OS
+sandbox. Use Tweed only in repositories and environments trusted for full agent
+access.
+
 ## Clarification
 
 Interactive commands ask a material question in the terminal and continue in

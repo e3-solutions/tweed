@@ -219,6 +219,14 @@ The coordinator may modify only that worktree and may use read-only agents in
 parallel. V1 serializes all writers. It may return `implemented`, `partial`,
 `blocked`, or `needs-input`.
 
+All phase sessions are non-interactive and run with Codex
+`danger-full-access`; approval prompts are disabled. Filesystem and command
+network access are unrestricted so dependency installation and local validation
+can complete unattended. Phase workflows continue to prohibit out-of-phase
+edits, deployment, remote data mutation, push, merge, and other delivery
+actions, but those boundaries are instruction-enforced rather than sandbox-
+enforced. Tweed must run only in a trusted repository and host environment.
+
 `implemented` requires every acceptance criterion to map to the final diff and
 passing evidence, with no unexplained check failure or scope deviation. The
 runner then stages and commits the complete isolated worktree. Only a successful
