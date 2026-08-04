@@ -1,6 +1,6 @@
 # Tweed Root Cause
 
-Identify the problem recorded in the supplied frozen Linear issue snapshot and establish its evidence-backed root cause. Do not propose, scope, or implement a solution. Keep subagent returns short so the coordinator context stays focused.
+Identify the problem recorded in the supplied frozen artifact packet and establish its evidence-backed root cause. Verify each referenced artifact hash before use and open only phase-relevant artifacts; do not load the complete Linear description or prior transcripts. Do not propose, scope, or implement a solution. Keep subagent returns short so the coordinator context stays focused.
 
 ## Rules
 

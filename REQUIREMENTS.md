@@ -1,7 +1,7 @@
 # Tweed Requirements Specification
 
-Status: Draft v0.4
-Last updated: 2026-08-01
+Status: Draft v0.5
+Last updated: 2026-08-03
 
 ## 1. Purpose
 
@@ -78,45 +78,35 @@ Only the runner's narrow Linear writer may update the canonical issue. Only one
 implementation or review writer may mutate a repository at a time. Agents never
 commit, push, open pull requests, merge, or deploy.
 
-## 4. Linear issue format
+## 4. Linear issue and journal format
 
-The issue description contains one versioned metadata block and deterministic
-phase sections.
+The issue description contains the complete visible original request, a stable
+human-readable explanation that phase handoffs live in comments, and one
+canonical base64url protocol token containing the exact UTF-8 request and
+genesis metadata. Tweed never rewrites the description after intake.
 
 ````markdown
-<!-- tweed:metadata:start -->
-## Tweed
-
-```json
-{
-  "schema_version": 1,
-  "kind": "problem",
-  "stage": "needs-rca",
-  "contract_revision": 0,
-  "repository": "/absolute/repository",
-  "planning_base": "git-sha",
-  "integration_branch": null,
-  "integration_commit": null,
-  "linear_project": "Project",
-  "last_run": "tw_..."
-}
-```
-<!-- tweed:metadata:end -->
-
-<!-- tweed:request:start -->
-# Request
-
 [Original request without reinterpretation.]
-<!-- tweed:request:end -->
+
+---
+
+Tweed phase handoffs are appended as human-readable comments.
+
+`tweed-genesis-v2:<canonical-base64url-token>`
 ````
 
-Later phases add exactly one `rca`, `scope`, `implementation`, or `review`
-section using the same markers. Re-running synchronization replaces the same
-section rather than appending another copy.
+The token metadata includes a digest of the exact request. Valid legacy
+descriptions with contiguous phase sections are adopted as a deterministic
+virtual journal prefix without changing their prose.
 
-The runner composes the complete Markdown description deterministically. The
-Linear writer receives exact desired Markdown and does not summarize or rewrite
-it.
+Each later phase appends exactly one top-level Linear comment. Its visible body
+is the complete human-readable report. A strict machine envelope records the
+protocol, deterministic comment ID, issue and run identity, phase/status, legal
+from/to stages, exact artifact digest, predecessor and genesis digests, and
+repository/base/branch/commit provenance. The record digest binds canonical
+envelope bytes and exact UTF-8 report bytes. The exact values are carried in a
+canonical token so Linear may normalize visible Markdown without making a
+completed reasoning phase run again.
 
 ## 5. Linear boundaries
 
@@ -126,21 +116,46 @@ Each phase uses three capability boundaries:
 narrow Linear reader → phase coordinator → narrow Linear writer
 ```
 
+The reader and writer are deterministic operations of the bundled
+`dev.tweed.linear.v2` adapter, never Codex/model sessions. It uses the officially
+supported Linear OAuth2 authorization-code flow with PKCE S256 and rotating
+refresh tokens. The official private app's public client ID is built in, while
+forks and tests may persist a validated explicit override. The normal path
+requires no client secret or personal API key. Personal API keys are an explicit
+headless fallback only. Tweed never discovers
+or extracts connector credentials. An optional unauthenticated adapter override
+is retained for hermetic tests and compatible installations. The runner disables
+the configured Linear MCP capability and blanks known Linear authentication and
+adapter configuration in every Codex/model child environment.
+
 The reader retrieves one exact issue snapshot and performs no writes. The
 coordinator receives the frozen snapshot and performs no Linear writes. After a
 completion gate passes, the writer:
 
-1. Re-reads exactly the expected issue.
-2. Accepts an already-applied identical description as an idempotent success.
-3. Otherwise verifies the old description digest.
-4. Replaces the description exactly once.
-5. Reads the issue back and verifies the result.
+1. Fetches and validates the complete bounded comment chain.
+2. Recovers an exact existing deterministic run/phase comment idempotently.
+3. Otherwise requires the frozen content snapshot and unique predecessor head.
+4. Creates the deterministic comment once.
+5. Re-fetches the complete chain and requires the exact unique desired head.
 
-A digest mismatch blocks synchronization. It never overwrites concurrent user
-or Tweed changes.
+Malformed markers, edits/archives, bad hashes, dangling records, conflicting
+duplicates, forks, illegal transitions, or stale content block synchronization.
+Human prose is never overwritten.
 
-V1 creates no milestone comments and writes no drafts, questions, failures,
-partial results, agent activity, or transcripts to Linear.
+Each phase fetches and persists one complete authoritative snapshot. All phase
+work uses that frozen artifact. Resume performs only a cheap revision/digest
+verification; publication uses the frozen content and predecessor digests as
+fail-closed preconditions and validates again afterward.
+
+Linear documents ordinary comment creation but no predecessor-conditioned
+mutation. Tweed therefore makes no server-side atomic-CAS claim. Cross-host
+siblings can create a detectable fork. Comments are editable/deletable: Tweed
+detects all malformed or changed present records and rollback relative to a
+persisted frozen head, but a fresh client cannot prove that a deleted tail once
+existed. No documented public API supplies that missing historical anchor.
+
+Tweed writes no drafts, questions, failures, partial results, agent activity,
+or transcripts to Linear.
 
 ## 6. Intake
 
@@ -150,7 +165,9 @@ partial results, agent activity, or transcripts to Linear.
 - Original request.
 - Canonical Git repository path.
 - Current `HEAD` as the planning base.
-- Configured Linear project.
+- Effective Linear team/project, repository identity, binding source, and binding
+  digest. The read-only `linear-progress-sync` binding takes precedence over the
+  deprecated Tweed fallback; explicit per-command names take precedence over both.
 - Unique Tweed run ID.
 
 The create writer searches for the run ID before creating an issue. Retrying the
@@ -202,6 +219,14 @@ The coordinator may modify only that worktree and may use read-only agents in
 parallel. V1 serializes all writers. It may return `implemented`, `partial`,
 `blocked`, or `needs-input`.
 
+All phase sessions are non-interactive and run with Codex
+`danger-full-access`; approval prompts are disabled. Filesystem and command
+network access are unrestricted so dependency installation and local validation
+can complete unattended. Phase workflows continue to prohibit out-of-phase
+edits, deployment, remote data mutation, push, merge, and other delivery
+actions, but those boundaries are instruction-enforced rather than sandbox-
+enforced. Tweed must run only in a trusted repository and host environment.
+
 `implemented` requires every acceptance criterion to map to the final diff and
 passing evidence, with no unexplained check failure or scope deviation. The
 runner then stages and commits the complete isolated worktree. Only a successful
@@ -241,16 +266,39 @@ normalized into the completed phase report, not copied as conversation.
 
 Run state and full reports live privately under the XDG state directory with
 atomic writes and owner-only permissions. A completed report is persisted before
-Linear synchronization.
+Linear synchronization. Repository-writing phases also persist a `finalizing`
+checkpoint before committing; resume either completes the pending commit or
+adopts only the exact clean single-child Tweed commit, then synchronizes without
+starting Codex again.
+
+Request, RCA, scope, implementation, review, and evidence bodies are separate
+content-addressed artifacts. A versioned manifest records each path, SHA-256,
+byte length, and media type. Phase prompts carry only bounded phase-specific
+artifact references; agents verify and open a referenced artifact on demand.
+The runner materializes a complete local phase view from the protected request
+and validated journal while Linear itself retains the complete reports as
+readable comments. Existing run state is migrated lazily with an immutable
+backup. A pending legacy description-CAS synchronization is preserved but fails
+closed because its ambiguous remote outcome cannot safely be translated into a
+journal append.
+
+Deterministic evidence may be reused only when the complete cache key matches:
+repository commit/index/worktree identity, exact command arguments, dependency
+and lockfile digests, relevant configuration, declared environment inputs,
+tool/runtime versions, execution controls including timeout, and referenced
+artifact hashes. Uncertainty recomputes.
+Reviewer reasoning and targeted re-review are never cacheable substitutes.
 
 If synchronization fails or its acknowledgement is lost, `retry-sync` retries
 only the idempotent Linear operation. It never reruns the phase or creates a new
-implementation commit.
+implementation commit. A legacy intake created before team provenance was
+recorded can recover an already-created deterministic issue, but fails closed
+instead of creating a new issue because its target team cannot be proven.
 
 Agent mode emits exactly one versioned JSON receipt, including failures. It is
-limited to 4 KiB and contains only run, issue, phase, stage, summary, question,
-thread, branch, commit, and error fields. It never includes a complete report or
-raw task output.
+limited to 4 KiB and contains only run, issue, Linear binding provenance, phase,
+stage, summary, question, thread, branch, commit, and error fields. It never
+includes a complete report or raw task output.
 
 ## 13. Ready-to-merge boundary
 

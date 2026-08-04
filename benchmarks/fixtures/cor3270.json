@@ -1,0 +1,116 @@
+{
+  "name": "COR-3270 sanitized preserved snapshot topology",
+  "source_snapshot_digests": {
+    "scope": "sha256:55c17fabb9e99706c36f085beef07796d284e90f96403200a1b5de9e401abfcd",
+    "implement": "sha256:ca804829b7f59c11a5016076964be169697e46604181086b5567aeaafb691fcf",
+    "review": "sha256:76520ed3dfc38298bcd1894b7937d3a42d753b3c61a549984262b2344a902321"
+  },
+  "baseline": {
+    "wall_seconds": 4582.734,
+    "total_task_count": 38,
+    "task_counts": {"create": 1, "phase": 23, "read": 8, "update": 6},
+    "model_transport_task_count": 15,
+    "model_transport_task_seconds": 1652.222,
+    "projected_stage1_wall_seconds": 2930.512,
+    "source": "38 sanitized archived task timing records; transcripts excluded"
+  },
+  "runs": [
+    {
+      "phase": "scope",
+      "run_id": "tw_26fabe4180d04027",
+      "snapshot_bytes": 1210,
+      "title_bytes": 80,
+      "url_bytes": 120,
+      "repository_bytes": 48,
+      "section_bytes": {"request": 708},
+      "metadata": {
+        "schema_version": 1,
+        "kind": "feature",
+        "stage": "needs-scope",
+        "contract_revision": 0,
+        "planning_base": "e4e05afd90c5868e30116247f5d7cf0d77b3ea09",
+        "integration_branch": null,
+        "integration_commit": null,
+        "linear_project": "Negotiation",
+        "last_run": "tw_2e4a9e8da37d4d8a"
+      }
+    },
+    {
+      "phase": "implement",
+      "run_id": "tw_952ed09e00554161",
+      "snapshot_bytes": 17384,
+      "title_bytes": 80,
+      "url_bytes": 120,
+      "repository_bytes": 48,
+      "evidence_bytes": 2196,
+      "section_bytes": {"request": 708, "scope": 16111},
+      "metadata": {
+        "schema_version": 1,
+        "kind": "feature",
+        "stage": "ready-to-implement",
+        "contract_revision": 1,
+        "planning_base": "e4e05afd90c5868e30116247f5d7cf0d77b3ea09",
+        "integration_branch": null,
+        "integration_commit": null,
+        "linear_project": "Negotiation",
+        "last_run": "tw_26fabe4180d04027"
+      }
+    },
+    {
+      "phase": "review",
+      "run_id": "tw_e26ffa33f007461d",
+      "snapshot_bytes": 25324,
+      "title_bytes": 80,
+      "url_bytes": 120,
+      "repository_bytes": 48,
+      "evidence_bytes": 2196,
+      "section_bytes": {"request": 708, "scope": 16111, "implementation": 7821},
+      "metadata": {
+        "schema_version": 1,
+        "kind": "feature",
+        "stage": "ready-to-review",
+        "contract_revision": 2,
+        "planning_base": "e4e05afd90c5868e30116247f5d7cf0d77b3ea09",
+        "integration_branch": "tweed/cor-3270",
+        "integration_commit": "00f0af30e56dffa8586826920101c6d399542f51",
+        "linear_project": "Negotiation",
+        "last_run": "tw_952ed09e00554161"
+      }
+    }
+  ],
+  "expected_replay": {
+    "phases": [
+      {
+        "phase": "scope",
+        "snapshot_bytes": 1210,
+        "old_prompt_bytes": 1848,
+        "new_prompt_bytes": 2730,
+        "referenced_artifact_bytes": 708,
+        "artifact_store_bytes": 14024
+      },
+      {
+        "phase": "implement",
+        "snapshot_bytes": 17384,
+        "old_prompt_bytes": 18026,
+        "new_prompt_bytes": 2801,
+        "referenced_artifact_bytes": 18307,
+        "artifact_store_bytes": 65233
+      },
+      {
+        "phase": "review",
+        "snapshot_bytes": 25324,
+        "old_prompt_bytes": 25963,
+        "new_prompt_bytes": 3227,
+        "referenced_artifact_bytes": 26128,
+        "artifact_store_bytes": 90891
+      }
+    ],
+    "totals": {
+      "snapshot_bytes": 43918,
+      "old_prompt_bytes": 45837,
+      "new_prompt_bytes": 8758,
+      "referenced_artifact_bytes": 45143,
+      "artifact_store_bytes": 170148
+    }
+  }
+}

@@ -1,6 +1,6 @@
 # Tweed Scope
 
-Turn the supplied frozen Linear issue snapshot into an implementation-ready solution scope. For a `problem`, scope from its established RCA. For a `feature`, scope directly from its original request. Identify exactly what should change and why, but do not modify code, implement the change, or perform external writes.
+Turn the supplied frozen artifact packet into an implementation-ready solution scope. Verify each referenced artifact hash before use and open only the request and established RCA artifacts relevant to this phase; do not load the complete Linear description or prior transcripts. For a `problem`, scope from its established RCA. For a `feature`, scope directly from its original request. Identify exactly what should change and why, but do not modify code, implement the change, or perform external writes.
 
 ## Rules
 
@@ -13,6 +13,7 @@ Turn the supplied frozen Linear issue snapshot into an implementation-ready solu
 - After receiving a clarification answer, normalize it as a decision, reconcile it with repository evidence, and continue the same scope. Do not repeat an answered question.
 - Every implementation step must be executable through repository edits and local validation inside the future runner-owned worktree. Put deployments, credential creation, remote configuration, live migrations, production/staging exercises, and other external actions in an explicitly non-blocking post-merge follow-up; never make them an implementation dependency or completion criterion.
 - Compute every evidence SHA-256 from the final file bytes, preserve all 64 lowercase hexadecimal characters, and verify the completed snapshot before returning. Never transcribe or abbreviate a digest manually.
+- Under `## Repository state`, every `path → SHA-256|ABSENT` entry is machine-parsed repository evidence: use only repository-relative paths (valid: `src/example.ts`; invalid: `/absolute/run/artifacts/...` or `../...`). Packet `artifacts[].path`, `artifact_manifest.path`, run-state, and content-artifact paths are input provenance only and must never appear there. Keep the containment validator fail-closed; do not relativize or silently omit an unsafe entry.
 
 ## Workflow
 
@@ -104,7 +105,7 @@ Status: [scoped | blocked]
 - Repository: [absolute repository path]
 - HEAD: [Git commit, or "not a Git repository"]
 - Relevant worktree: [clean, or paths/status relevant to the scope]
-- Evidence snapshot: [one `path → SHA-256` entry for every existing cited file, planned write target, and material interface or test; use `path → ABSENT` for a planned new file]
+- Evidence snapshot: [one repository-relative `path → SHA-256` entry for every existing cited repository file, planned repository write target, and material repository interface or test; use `path → ABSENT` for a planned new file; never include packet, manifest, run-state, or artifact paths]
 
 ## Implementation steps
 
