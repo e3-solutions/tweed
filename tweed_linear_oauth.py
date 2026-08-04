@@ -16,6 +16,8 @@ from pathlib import Path
 import secrets
 import signal
 import stat
+import subprocess
+import sys
 import tempfile
 import time
 from typing import Any, Callable, Iterator
@@ -50,6 +52,9 @@ KEYRING_SERVICE = "dev.tweed.linear.oauth"
 KEYRING_ACCOUNT = "default"
 KEYRING_SLOT_PREFIX = "record-"
 KEYRING_SLOTS = (KEYRING_SLOT_PREFIX + "a", KEYRING_SLOT_PREFIX + "b")
+KEYRING_TIMEOUT_SECONDS = 10
+KEYRING_MAX_BYTES = MAX_OAUTH_RESPONSE_BYTES
+CREDENTIAL_LOCK_TIMEOUT_SECONDS = 15
 
 
 class OAuthError(RuntimeError):
@@ -94,7 +99,10 @@ def _secure_directory(path: Path) -> None:
 
 
 def _uses_system_keyring(path: Path) -> bool:
-    return not os.environ.get("TWEED_LINEAR_OAUTH_FILE", "").strip() and path == oauth_store_path()
+    return (
+        not os.environ.get("TWEED_LINEAR_OAUTH_FILE", "").strip()
+        and path == oauth_store_path()
+    )
 
 
 def _keyring_module():
@@ -117,31 +125,135 @@ def _keyring_module():
     return keyring
 
 
-def _keyring_read(account: str = KEYRING_ACCOUNT) -> bytes | None:
+def _keyring_backend_operation(
+    operation: str, account: str, encoded: bytes
+) -> bytes | None:
+    """Execute one keyring operation inside the bounded worker process."""
     keyring = _keyring_module()
     try:
-        value = keyring.get_password(KEYRING_SERVICE, account)
+        if operation == "read":
+            value = keyring.get_password(KEYRING_SERVICE, account)
+            if value is None:
+                return None
+            result = value.encode("utf-8")
+            if len(result) > KEYRING_MAX_BYTES:
+                raise OAuthError("system credential record exceeds the byte limit")
+            return result
+        if operation == "write":
+            keyring.set_password(KEYRING_SERVICE, account, encoded.decode("utf-8"))
+            return None
+        if operation == "delete":
+            if keyring.get_password(KEYRING_SERVICE, account) is not None:
+                keyring.delete_password(KEYRING_SERVICE, account)
+            return None
     except keyring.errors.KeyringError as error:
-        raise OAuthError("system credential storage could not be read") from error
-    return value.encode("utf-8") if value is not None else None
+        action = "read" if operation == "read" else "updated"
+        raise OAuthError(f"system credential storage could not be {action}") from error
+    except UnicodeError as error:
+        raise OAuthError("system credential record is invalid") from error
+    raise OAuthError("unsupported system credential operation")
+
+
+def _keyring_worker_main(arguments: list[str]) -> int:
+    """Private subprocess protocol; never places credential bytes in argv or env."""
+    response: dict[str, Any]
+    try:
+        if len(arguments) != 2 or arguments[0] not in {"read", "write", "delete"}:
+            raise OAuthError("invalid system credential worker request")
+        operation, account = arguments
+        if account not in (*KEYRING_SLOTS, KEYRING_ACCOUNT):
+            raise OAuthError("invalid system credential account")
+        encoded = sys.stdin.buffer.read(KEYRING_MAX_BYTES + 1)
+        if len(encoded) > KEYRING_MAX_BYTES:
+            raise OAuthError("system credential input exceeds the byte limit")
+        if operation != "write" and encoded:
+            raise OAuthError("invalid system credential worker input")
+        value = _keyring_backend_operation(operation, account, encoded)
+        response = {
+            "status": "ok",
+            "value": (
+                base64.b64encode(value).decode("ascii") if value is not None else None
+            ),
+        }
+    except OAuthError as error:
+        response = {"status": "blocked", "reason": str(error)}
+    sys.stdout.write(json.dumps(response, separators=(",", ":")))
+    return 0
+
+
+def _run_keyring_worker(
+    operation: str, account: str, encoded: bytes = b""
+) -> bytes | None:
+    command = [
+        sys.executable,
+        str(Path(__file__).resolve()),
+        "_keyring_worker",
+        operation,
+        account,
+    ]
+    try:
+        completed = subprocess.run(
+            command,
+            input=encoded,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            check=False,
+            timeout=KEYRING_TIMEOUT_SECONDS,
+            start_new_session=True,
+            env=os.environ.copy(),
+        )
+    except subprocess.TimeoutExpired as error:
+        raise OAuthError(
+            "system credential storage timed out; unlock it and retry"
+        ) from error
+    except OSError as error:
+        raise OAuthError("system credential storage worker could not start") from error
+    if completed.returncode != 0 or len(completed.stdout) > KEYRING_MAX_BYTES * 2:
+        raise OAuthError("system credential storage worker failed")
+    try:
+        response = json.loads(completed.stdout.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise OAuthError(
+            "system credential storage worker returned invalid data"
+        ) from error
+    if not isinstance(response, dict) or response.get("status") not in {
+        "ok",
+        "blocked",
+    }:
+        raise OAuthError("system credential storage worker returned invalid data")
+    if response["status"] != "ok":
+        reason = response.get("reason")
+        raise OAuthError(
+            reason
+            if isinstance(reason, str) and reason
+            else "system credential storage failed"
+        )
+    value = response.get("value")
+    if value is None:
+        return None
+    if operation != "read" or not isinstance(value, str):
+        raise OAuthError("system credential storage worker returned invalid data")
+    try:
+        decoded = base64.b64decode(value, validate=True)
+    except (ValueError, TypeError) as error:
+        raise OAuthError(
+            "system credential storage worker returned invalid data"
+        ) from error
+    if len(decoded) > KEYRING_MAX_BYTES:
+        raise OAuthError("system credential record exceeds the byte limit")
+    return decoded
+
+
+def _keyring_read(account: str = KEYRING_ACCOUNT) -> bytes | None:
+    return _run_keyring_worker("read", account)
 
 
 def _keyring_write(account: str, encoded: bytes) -> None:
-    keyring = _keyring_module()
-    try:
-        keyring.set_password(KEYRING_SERVICE, account, encoded.decode("utf-8"))
-    except keyring.errors.KeyringError as error:
-        raise OAuthError("system credential storage could not be updated") from error
+    _run_keyring_worker("write", account, encoded)
 
 
 def _keyring_delete(account: str) -> None:
-    keyring = _keyring_module()
-    try:
-        if keyring.get_password(KEYRING_SERVICE, account) is None:
-            return
-        keyring.delete_password(KEYRING_SERVICE, account)
-    except keyring.errors.KeyringError as error:
-        raise OAuthError("system credential storage could not be updated") from error
+    _run_keyring_worker("delete", account)
 
 
 def _check_private_file(path: Path) -> None:
@@ -222,16 +334,15 @@ def _keyring_active_account(path: Path) -> str | None:
     except (UnicodeDecodeError, json.JSONDecodeError) as error:
         raise OAuthError("Linear credential pointer is invalid") from error
     account = pointer.get("account") if isinstance(pointer, dict) else None
-    if (
-        not isinstance(account, str)
-        or account not in KEYRING_SLOTS
-    ):
+    if not isinstance(account, str) or account not in KEYRING_SLOTS:
         raise OAuthError("Linear credential pointer is invalid")
     return account
 
 
 @contextlib.contextmanager
-def _named_lock(path: Path | None, suffix: str) -> Iterator[Path]:
+def _named_lock(
+    path: Path | None, suffix: str, timeout: float | None = None
+) -> Iterator[Path]:
     store = path or oauth_store_path()
     _secure_directory(store.parent)
     lock_path = store.with_suffix(store.suffix + suffix)
@@ -244,18 +355,32 @@ def _named_lock(path: Path | None, suffix: str) -> Iterator[Path]:
     try:
         os.fchmod(descriptor, 0o600)
         _validate_private_descriptor(descriptor, "credential lock")
-        with os.fdopen(descriptor, "r+") as lock:
-            fcntl.flock(lock, fcntl.LOCK_EX)
-            yield store
+        lock = os.fdopen(descriptor, "r+")
     except BaseException:
         with contextlib.suppress(OSError):
             os.close(descriptor)
         raise
+    with lock:
+        if timeout is None:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+        else:
+            deadline = time.monotonic() + timeout
+            while True:
+                try:
+                    fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    break
+                except BlockingIOError as error:
+                    if time.monotonic() >= deadline:
+                        raise OAuthError(
+                            "Linear credential storage is busy; retry shortly"
+                        ) from error
+                    time.sleep(0.05)
+        yield store
 
 
 @contextlib.contextmanager
 def credential_lock(path: Path | None = None) -> Iterator[Path]:
-    with _named_lock(path, ".lock") as store:
+    with _named_lock(path, ".lock", CREDENTIAL_LOCK_TIMEOUT_SECONDS) as store:
         yield store
 
 
@@ -345,7 +470,9 @@ def clear_tokens(path: Path, credentials: dict[str, Any]) -> None:
             except FileNotFoundError:
                 pass
             except OSError as error:
-                raise OAuthError("Linear credential pointer could not be removed") from error
+                raise OAuthError(
+                    "Linear credential pointer could not be removed"
+                ) from error
             if active is not None:
                 _keyring_delete(active)
         else:
@@ -355,7 +482,9 @@ def clear_tokens(path: Path, credentials: dict[str, Any]) -> None:
 
 def _client_id(value: object) -> str:
     if not isinstance(value, str) or not value or len(value.encode()) > 512:
-        raise OAuthError("Linear OAuth client identity is missing; run tweed auth login")
+        raise OAuthError(
+            "Linear OAuth client identity is missing; run tweed auth login"
+        )
     if any(ord(character) < 0x21 or ord(character) > 0x7E for character in value):
         raise OAuthError("Linear OAuth client ID is invalid")
     return value
@@ -458,7 +587,9 @@ class OAuthHTTP:
                     if int(length) > MAX_OAUTH_RESPONSE_BYTES:
                         raise OAuthError("Linear OAuth response exceeds the byte limit")
                 except ValueError as error:
-                    raise OAuthError("Linear returned an invalid OAuth response") from error
+                    raise OAuthError(
+                        "Linear returned an invalid OAuth response"
+                    ) from error
             raw = response.read(MAX_OAUTH_RESPONSE_BYTES + 1)
         except OAuthError:
             raise
@@ -511,10 +642,16 @@ class OAuthHTTP:
         try:
             payload = json.loads(raw.decode("utf-8"))
         except (UnicodeDecodeError, json.JSONDecodeError) as error:
-            raise OAuthError("Linear returned an invalid OAuth status response") from error
+            raise OAuthError(
+                "Linear returned an invalid OAuth status response"
+            ) from error
         if response.status == 401:
             raise OAuthUnauthorized("Linear OAuth credential validation failed")
-        if response.status != 200 or not isinstance(payload, dict) or payload.get("errors"):
+        if (
+            response.status != 200
+            or not isinstance(payload, dict)
+            or payload.get("errors")
+        ):
             raise OAuthError("Linear OAuth credential validation failed")
         viewer = (payload.get("data") or {}).get("viewer")
         if (
@@ -642,7 +779,9 @@ def access_token(
                 raise OAuthError("Linear refresh recovery state does not match")
             age = now - float(pending["started_at"])
             if age < 0 or age > REFRESH_REPLAY_SECONDS:
-                raise OAuthError("Linear refresh recovery grace expired; run tweed auth login")
+                raise OAuthError(
+                    "Linear refresh recovery grace expired; run tweed auth login"
+                )
         if not credentials.get("refresh_token"):
             raise OAuthError("Linear OAuth login required; run tweed auth login")
         if credentials.get("reauthorization_required") is True:
@@ -664,20 +803,26 @@ def invalidate_access_token(expected: str, *, path: Path | None = None) -> None:
 
 def authorization_url(client_id: str, state_value: str, verifier: str) -> str:
     verifier = _pkce_verifier(verifier)
-    challenge = base64.urlsafe_b64encode(
-        hashlib.sha256(verifier.encode("ascii")).digest()
-    ).decode("ascii").rstrip("=")
-    return AUTHORIZE_URL + "?" + urlencode(
-        {
-            "response_type": "code",
-            "client_id": _client_id(client_id),
-            "redirect_uri": REDIRECT_URI,
-            "scope": ",".join(SCOPES),
-            "state": state_value,
-            "code_challenge": challenge,
-            "code_challenge_method": "S256",
-            "prompt": "consent",
-        }
+    challenge = (
+        base64.urlsafe_b64encode(hashlib.sha256(verifier.encode("ascii")).digest())
+        .decode("ascii")
+        .rstrip("=")
+    )
+    return (
+        AUTHORIZE_URL
+        + "?"
+        + urlencode(
+            {
+                "response_type": "code",
+                "client_id": _client_id(client_id),
+                "redirect_uri": REDIRECT_URI,
+                "scope": ",".join(SCOPES),
+                "state": state_value,
+                "code_challenge": challenge,
+                "code_challenge_method": "S256",
+                "prompt": "consent",
+            }
+        )
     )
 
 
@@ -705,7 +850,9 @@ def parse_callback_url(value: str, expected_state: str) -> str:
         raise OAuthError("Linear OAuth callback has unexpected parameters")
     if "error" in query:
         raise OAuthError("Linear authorization was denied")
-    if set(query) != {"code", "state"} or any(len(values) != 1 for values in query.values()):
+    if set(query) != {"code", "state"} or any(
+        len(values) != 1 for values in query.values()
+    ):
         raise OAuthError("Linear OAuth callback is incomplete")
     if not hmac.compare_digest(query["state"][0], expected_state):
         raise OAuthError("Linear OAuth callback state did not match")
@@ -774,7 +921,8 @@ def _loopback_callback(expected_state: str, timeout: int) -> str:
 
 def manual_timeout_supported() -> bool:
     return all(
-        hasattr(signal, attribute) for attribute in ("SIGALRM", "ITIMER_REAL", "setitimer")
+        hasattr(signal, attribute)
+        for attribute in ("SIGALRM", "ITIMER_REAL", "setitimer")
     )
 
 
@@ -804,7 +952,9 @@ def login(
         _pkce_verifier(verifier)
         url = authorization_url(selected, state_value, verifier)
         if manual:
-            print("Open this URL in a browser, authorize Tweed, then paste the full redirected URL:")
+            print(
+                "Open this URL in a browser, authorize Tweed, then paste the full redirected URL:"
+            )
             print(url)
             if input_fn is input:
                 if not manual_timeout_supported():
@@ -852,7 +1002,9 @@ def status(
     with credential_lock(path) as store:
         credentials = load_credentials(store)
     configured = bool(credentials.get("client_id") or DEFAULT_CLIENT_ID)
-    logged_in = bool(credentials.get("access_token") and credentials.get("refresh_token"))
+    logged_in = bool(
+        credentials.get("access_token") and credentials.get("refresh_token")
+    )
     if not configured or not logged_in:
         return {
             "configured": configured,
@@ -880,7 +1032,9 @@ def status(
         "configured": configured,
         "logged_in": logged_in,
         "refresh_required": bool(
-            logged_in and isinstance(expires_at, (int, float)) and expires_at <= clock() + REFRESH_SKEW_SECONDS
+            logged_in
+            and isinstance(expires_at, (int, float))
+            and expires_at <= clock() + REFRESH_SKEW_SECONDS
         ),
         "expires_at": int(expires_at) if isinstance(expires_at, (int, float)) else None,
         "scopes": scopes,
@@ -898,7 +1052,9 @@ def logout(
     with login_lock() as store:
         with credential_lock(store):
             credentials = load_credentials(store)
-            if not credentials.get("access_token") and not credentials.get("refresh_token"):
+            if not credentials.get("access_token") and not credentials.get(
+                "refresh_token"
+            ):
                 return True
             confirmed = True
             if not local_only:
@@ -921,3 +1077,7 @@ def logout(
                         confirmed = False
             clear_tokens(store, credentials)
             return confirmed
+
+
+if __name__ == "__main__" and len(sys.argv) >= 2 and sys.argv[1] == "_keyring_worker":
+    raise SystemExit(_keyring_worker_main(sys.argv[2:]))

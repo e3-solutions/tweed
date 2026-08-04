@@ -11,16 +11,23 @@ change through fresh, isolated phase coordinators.
 ```text
 Problem issue → RCA → scope → implement → review → ready to merge
 Feature issue → scope → implement → review → ready to merge
+Production incident → frozen MCP evidence → RCA → create issue with RCA → scope
 ```
 
 Every request begins as a real Linear issue. Linear is the durable baton between
 phases; downstream coordinators never inherit prior phase conversations.
+
+The production-incident intake is the sole exception: no issue exists during
+evidence collection or RCA. Only an established, non-duplicate RCA publishes a
+problem issue and its RCA record, leaving that issue at `needs-scope`.
 
 ## 2. V1 interface
 
 ```text
 tweed create problem <request>
 tweed create feature <request>
+tweed incident --window-start <UTC> --window-end <UTC> --impact <policy> \
+  --mcp-tool <server/read-tool> [...] <request>
 tweed root-cause <issue>
 tweed scope <issue>
 tweed implement <issue>
@@ -32,6 +39,22 @@ tweed retry-sync <run>
 Each phase command performs at most one legal stage transition. V1 has no
 automatic multi-phase command, arbitrary workflow graph, child-ticket creation,
 dashboard, deployment, or merge command.
+
+`incident` is one bounded intake transaction, not a general workflow graph. It
+uses one isolated collector session, establishes one RCA, and performs zero or
+one issue publication. Configured stdio MCPs may be called in at most seven
+dependency-planning rounds in that session. Tweed performs the JSON-RPC
+initialize, `tools/list`, and exact read calls itself; it binds the negotiated
+protocol, tool-catalog digest, arguments, and results into the evidence artifact.
+Only provider/tool pairs on an audited read allowlist may use this direct path;
+conflicting MCP annotations fail closed. The child receives runtime essentials
+plus only explicitly configured transport variables, never the runner's complete
+environment. No CLI or model-authored citation may substitute for an MCP receipt.
+
+Every collection must contain successful Linear and GitHub existing-work reads.
+An established RCA names the successful production and existing-work receipt IDs
+it relied on. Duplicate suppression is legal only when the exact reference occurs
+in a bound successful Linear or GitHub result.
 
 ## 3. Core invariants
 
@@ -127,6 +150,13 @@ or extracts connector credentials. An optional unauthenticated adapter override
 is retained for hermetic tests and compatible installations. The runner disables
 the configured Linear MCP capability and blanks known Linear authentication and
 adapter configuration in every Codex/model child environment.
+
+Incident collection is a separate read-only boundary. The runner exposes only
+explicit `server/tool` allowlists, records successful `mcpToolCall` items from
+the Codex turn itself, and freezes their exact arguments and results. The RCA
+child has every MCP disabled. Receipt hashes prove local bytes and call
+provenance, not remote-system attestation. A closed UTC window and explicit
+impact-ranking policy are bound into the snapshot.
 
 The reader retrieves one exact issue snapshot and performs no writes. The
 coordinator receives the frozen snapshot and performs no Linear writes. After a

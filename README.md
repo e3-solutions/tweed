@@ -13,11 +13,17 @@ one legal stage after its completion gate passes.
 ```text
 Problem: create → root-cause → scope → implement → review → ready-to-merge
 Feature: create → scope → implement → review → ready-to-merge
+Production incident: collect MCP evidence → root-cause → create + save RCA → scope
 ```
 
 Linear is the baton between phases. Coordinators do not inherit earlier phase
 conversations. Blocked, partial, and clarification results never advance the
 issue.
+
+The narrow `incident` exception creates no issue until a frozen,
+receipt-backed production evidence snapshot establishes an RCA. It then creates
+one issue and appends that RCA before returning `needs-scope`. A blocked or
+duplicate result creates nothing.
 
 ## Prerequisites
 
@@ -92,6 +98,37 @@ A problem starts at `needs-rca`; a feature starts at `needs-scope`.
 Creation receipts include the frozen team, project, binding source, and binding
 digest. Retry-sync reuses those exact values even if shared configuration changes.
 
+## Discover a production incident
+
+```sh
+tweed incident \
+  --window-start 2026-08-03T08:00:00Z \
+  --window-end 2026-08-04T08:00:00Z \
+  --impact "Select the highest confirmed user-impacting incident" \
+  --mcp-tool Railway/list_projects \
+  --mcp-tool Railway/list_services \
+  --mcp-tool Railway/environment_status \
+  --mcp-tool Railway/get_logs \
+  --mcp-tool github/search_prs \
+  --mcp-tool linear/search \
+  "Address recent problems in Negotiation production"
+```
+
+The collector runs as one isolated session with only the named read-only MCP
+tools. Model-facing calls are captured from Codex turn items. For configured
+stdio servers on Tweed's audited read-tool allowlist, Tweed discovers every
+`tools/list` page, lets the same collector plan bounded dependency layers,
+validates each call against the advertised schema, executes JSON-RPC itself with
+a minimal child environment, and records the genuine responses. It never
+substitutes a shell command for MCP evidence. Tweed freezes all
+successful arguments and results as one private, content-addressed artifact. A
+fresh RCA coordinator receives that snapshot and has no MCP access. An
+established result must bind its successful receipt IDs, including both Linear
+and GitHub existing-work checks. A duplicate reference must occur in one of
+those bound results; only then can Tweed return it without creating Linear work.
+An established new RCA creates the exact issue, appends the RCA, and returns it
+at `needs-scope`.
+
 ## Advance one explicit phase
 
 ```sh
@@ -162,6 +199,12 @@ store. Refresh is serialized, crash-recoverable within Linear's documented repla
 grace, and atomic. An explicit
 `TWEED_LINEAR_OAUTH_FILE` enables a `0700`/`0600` file backend for hermetic tests
 or headless systems that supply their own filesystem isolation.
+
+Operating-system credential calls run in isolated helpers with a hard timeout.
+A locked or unhealthy keychain fails quickly with an unlock-and-retry message
+instead of hanging Tweed. Codex MCP credentials are not extracted or reused for
+the GraphQL journal: the MCP mutation tools do not provide Tweed's
+caller-supplied IDs and archived-comment validation guarantees.
 
 Personal API keys remain an explicit headless fallback only:
 

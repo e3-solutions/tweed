@@ -8,11 +8,13 @@ from __future__ import annotations
 
 import argparse
 import contextlib
+from datetime import datetime, timedelta, timezone
 import fcntl
 import hashlib
 import json
 import os
 import re
+import selectors
 import shlex
 import signal
 import shutil
@@ -49,6 +51,62 @@ LINEAR_PLUGIN_DISABLE_OVERRIDES = (
     "plugins.linear-progress-sync@coreedge-local.enabled=false",
     "plugins.linear@openai-curated.enabled=false",
 )
+INCIDENT_RECEIPT_SCHEMA_VERSION = 1
+MAX_INCIDENT_MCP_CALLS = 64
+MAX_INCIDENT_EVIDENCE_BYTES = 2 * 1024 * 1024
+MAX_INCIDENT_DIRECT_ROUNDS = 7
+MAX_INCIDENT_DIRECT_CALL_BYTES = 512 * 1024
+MAX_INCIDENT_DIRECT_ARGUMENT_BYTES = 16 * 1024
+MAX_INCIDENT_DIRECT_RECEIPT_BYTES = (
+    MAX_INCIDENT_DIRECT_CALL_BYTES + MAX_INCIDENT_DIRECT_ARGUMENT_BYTES + 4096
+)
+MAX_INCIDENT_WINDOW = timedelta(days=7)
+MAX_INCIDENT_DIRECT_WALL_SECONDS = 300
+MAX_INCIDENT_COLLECTION_WALL_SECONDS = 1200
+MAX_MCP_SESSION_WALL_SECONDS = 180
+MAX_INCIDENT_TOOL_OUTPUT_TOKENS = 8192
+MCP_TOOL_RE = re.compile(r"^(?P<server>[A-Za-z0-9_-]+)/(?P<tool>[A-Za-z0-9_.:-]+)$")
+SUPPORTED_MCP_PROTOCOL_VERSIONS = {"2025-03-26", "2025-06-18"}
+INCIDENT_MCP_READ_ALLOWLIST = {
+    "Railway": {
+        "environment_status",
+        "get_logs",
+        "list_projects",
+        "list_services",
+    },
+    "github": {"fetch_pr", "search_prs"},
+    "linear": {"fetch", "get_issue", "list_comments", "list_issues", "search"},
+    "supabase": {"list_projects", "list_tables"},
+}
+DIRECT_MCP_READ_ALLOWLIST = {"Railway": INCIDENT_MCP_READ_ALLOWLIST["Railway"]}
+INCIDENT_PRODUCTION_EVIDENCE_TOOLS = {
+    "Railway/get_logs",
+}
+INCIDENT_EXISTING_WORK_SEARCH_TOOLS = {
+    "github": {"search", "search_prs"},
+    "linear": {"list_issues", "search"},
+}
+INCIDENT_EXISTING_WORK_BINDING_TOOLS = {
+    "github": {*INCIDENT_EXISTING_WORK_SEARCH_TOOLS["github"], "fetch_pr"},
+    "linear": {*INCIDENT_EXISTING_WORK_SEARCH_TOOLS["linear"], "get_issue"},
+}
+MCP_CHILD_ENV_ALLOWLIST = {
+    "HOME",
+    "LANG",
+    "LC_ALL",
+    "LOGNAME",
+    "NODE_EXTRA_CA_CERTS",
+    "PATH",
+    "SHELL",
+    "SSL_CERT_DIR",
+    "SSL_CERT_FILE",
+    "TEMP",
+    "TMP",
+    "TMPDIR",
+    "USER",
+    "XDG_CACHE_HOME",
+    "XDG_CONFIG_HOME",
+}
 LINEAR_CHILD_ENV_NAMES = (
     "LINEAR_API_KEY",
     "LINEAR_ACCESS_TOKEN",
@@ -66,6 +124,8 @@ LAST_RUN_ID: str | None = None
 LAST_TURN_ID: str | None = None
 META_START = "<!-- tweed:metadata:start -->"
 META_END = "<!-- tweed:metadata:end -->"
+
+
 @dataclass(frozen=True)
 class Phase:
     command: str
@@ -261,10 +321,9 @@ def linear_mcp_disable_overrides(codex_bin: str, cwd: Path) -> tuple[str, ...]:
         name = server.get("name")
         if not isinstance(name, str):
             raise RuntimeError("Codex returned an invalid MCP server name")
-        is_linear = (
-            LINEAR_MCP_ALIAS_RE.search(name) is not None
-            or _contains_linear_endpoint(server.get("transport"))
-        )
+        is_linear = LINEAR_MCP_ALIAS_RE.search(
+            name
+        ) is not None or _contains_linear_endpoint(server.get("transport"))
         if not is_linear:
             continue
         if CODEX_CONFIG_BARE_KEY_RE.fullmatch(name) is None:
@@ -287,6 +346,85 @@ def linear_mcp_disable_overrides(codex_bin: str, cwd: Path) -> tuple[str, ...]:
     return tuple(dict.fromkeys(disabled))
 
 
+def incident_mcp_overrides(
+    codex_bin: str, cwd: Path, allowed_tools: tuple[str, ...]
+) -> tuple[str, ...]:
+    """Expose only explicitly selected read-only tools from configured MCP servers."""
+    selected: dict[str, list[str]] = {}
+    for qualified in allowed_tools:
+        match = MCP_TOOL_RE.fullmatch(qualified)
+        if match is None:
+            raise RuntimeError("incident MCP tools must use the exact server/tool form")
+        selected.setdefault(match.group("server"), []).append(match.group("tool"))
+    overrides: list[str] = []
+    for server in _resolved_codex_mcp_servers(codex_bin, cwd):
+        name = server.get("name")
+        if (
+            not isinstance(name, str)
+            or CODEX_CONFIG_BARE_KEY_RE.fullmatch(name) is None
+        ):
+            raise RuntimeError("Codex returned an unsafe MCP server name")
+        is_linear = LINEAR_MCP_ALIAS_RE.search(
+            name
+        ) is not None or _contains_linear_endpoint(server.get("transport"))
+        tools = selected.get(name)
+        if tools and is_linear:
+            allowed_linear_reads = {
+                "fetch",
+                "get_issue",
+                "list_comments",
+                "list_issues",
+                "search",
+            }
+            if not set(tools).issubset(allowed_linear_reads):
+                raise RuntimeError(
+                    "incident collection permits only explicitly allowlisted read-only Linear tools"
+                )
+        if tools:
+            overrides.append(
+                f"mcp_servers.{name}.enabled_tools="
+                + json.dumps(sorted(set(tools)), separators=(",", ":"))
+            )
+            overrides.append(f"mcp_servers.{name}.supports_parallel_tool_calls=false")
+            continue
+        transport = server.get("transport")
+        transport_type = transport.get("type") if isinstance(transport, dict) else None
+        if transport_type == "stdio":
+            replacement = 'command="tweed-mcp-disabled"'
+        elif transport_type in {"sse", "streamable_http"}:
+            replacement = 'url="https://tweed-mcp-disabled.invalid"'
+        else:
+            raise RuntimeError("Codex returned an unsupported MCP transport")
+        overrides.append(f"mcp_servers.{name}={{{replacement},enabled=false}}")
+    return tuple(overrides)
+
+
+def incident_app_overrides(allowed_tools: tuple[str, ...]) -> tuple[str, ...]:
+    """Disable all connectors, then expose only audited per-tool reads."""
+    selected: dict[str, set[str]] = {}
+    for qualified in allowed_tools:
+        server, tool = qualified.split("/", 1)
+        if tool not in INCIDENT_MCP_READ_ALLOWLIST.get(server, set()):
+            raise RuntimeError(
+                f"incident app tool is not in the audited read allowlist: {qualified}"
+            )
+        selected.setdefault(server, set()).add(tool)
+    overrides = ["apps.default.enabled=false"]
+    for server, tools in sorted(selected.items()):
+        if CODEX_CONFIG_BARE_KEY_RE.fullmatch(server) is None:
+            raise RuntimeError("incident app connector has an unsafe name")
+        overrides.extend(
+            (
+                f"apps.{server}.enabled=true",
+                f"apps.{server}.destructive_enabled=false",
+                f"apps.{server}.open_world_enabled=false",
+                f"apps.{server}.enabled_tools="
+                + json.dumps(sorted(tools), separators=(",", ":")),
+            )
+        )
+    return tuple(overrides)
+
+
 def codex_config(cwd: Path) -> CodexConfig:
     codex_bin = find_codex()
     return CodexConfig(
@@ -307,8 +445,64 @@ def codex_config(cwd: Path) -> CodexConfig:
     )
 
 
+def incident_collector_codex_config(
+    cwd: Path, allowed_tools: tuple[str, ...]
+) -> CodexConfig:
+    codex_bin = find_codex()
+    return CodexConfig(
+        codex_bin=codex_bin,
+        config_overrides=(
+            f'model="{CODEX_MODEL}"',
+            f'model_reasoning_effort="{CODEX_REASONING_EFFORT}"',
+            "features.hooks=false",
+            f"tool_output_token_limit={MAX_INCIDENT_TOOL_OUTPUT_TOKENS}",
+            "tools.web_search=false",
+            *LINEAR_PLUGIN_DISABLE_OVERRIDES,
+            *incident_app_overrides(allowed_tools),
+            *incident_mcp_overrides(codex_bin, cwd, allowed_tools),
+        ),
+        cwd=str(cwd),
+        env=dict.fromkeys(LINEAR_CHILD_ENV_NAMES, ""),
+        client_name="tweed-incident-collector",
+        client_title="Tweed Incident Evidence",
+        client_version="0.2.0",
+        experimental_api=False,
+    )
+
+
+def incident_rca_codex_config(cwd: Path) -> CodexConfig:
+    """Run synthesis with every configured MCP disabled; only frozen evidence is input."""
+    codex_bin = find_codex()
+    return CodexConfig(
+        codex_bin=codex_bin,
+        config_overrides=(
+            f'model="{CODEX_MODEL}"',
+            f'model_reasoning_effort="{CODEX_REASONING_EFFORT}"',
+            "features.hooks=false",
+            "apps.default.enabled=false",
+            "tools.web_search=false",
+            *LINEAR_PLUGIN_DISABLE_OVERRIDES,
+            *incident_mcp_overrides(codex_bin, cwd, ()),
+        ),
+        cwd=str(cwd),
+        env=dict.fromkeys(LINEAR_CHILD_ENV_NAMES, ""),
+        client_name="tweed-incident-rca",
+        client_title="Tweed Incident RCA",
+        client_version="0.2.0",
+        experimental_api=False,
+    )
+
+
 class OutputLimitExceeded(RuntimeError):
     pass
+
+
+class McpToolCallError(RuntimeError):
+    pass
+
+
+def reject_non_json_number(value: str) -> None:
+    raise ValueError(f"invalid JSON number: {value}")
 
 
 def run_bounded_process(
@@ -519,7 +713,9 @@ def repository_cache_identity(root: Path) -> dict[str, Any]:
             relative = raw[3:].decode("utf-8", errors="surrogateescape")
             path = (root / relative).resolve()
             if not path.is_relative_to(root.resolve()) or not path.is_file():
-                raise RuntimeError("uncertain untracked repository state; evidence is not cacheable")
+                raise RuntimeError(
+                    "uncertain untracked repository state; evidence is not cacheable"
+                )
             untracked[relative] = sha256_file(path)
     return {
         "head": git(root, "rev-parse", "HEAD"),
@@ -689,7 +885,9 @@ def load_artifact_manifest(run_id: str) -> dict[str, Any]:
     try:
         manifest = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
-        raise RuntimeError(f"invalid artifact manifest for {run_id}: {error}") from error
+        raise RuntimeError(
+            f"invalid artifact manifest for {run_id}: {error}"
+        ) from error
     if (
         not isinstance(manifest, dict)
         or manifest.get("schema_version") != ARTIFACT_MANIFEST_VERSION
@@ -756,6 +954,1143 @@ def artifact_manifest_digest(manifest: dict[str, Any]) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
+def incident_policy(window_start: str, window_end: str, impact: str) -> dict[str, Any]:
+    def parse_utc(value: str, label: str) -> datetime:
+        if not isinstance(value, str) or not value.endswith("Z"):
+            raise RuntimeError(f"{label} must be an RFC3339 UTC timestamp ending in Z")
+        try:
+            parsed = datetime.fromisoformat(value[:-1] + "+00:00")
+        except ValueError as error:
+            raise RuntimeError(
+                f"{label} must be a valid RFC3339 UTC timestamp"
+            ) from error
+        if parsed.tzinfo != timezone.utc:
+            raise RuntimeError(f"{label} must be UTC")
+        return parsed
+
+    start = parse_utc(window_start, "incident window start")
+    end = parse_utc(window_end, "incident window end")
+    if start >= end:
+        raise RuntimeError("incident window start must be before its end")
+    if end - start > MAX_INCIDENT_WINDOW:
+        raise RuntimeError("incident window cannot exceed seven days")
+    normalized_impact = " ".join(str(impact).split())
+    if not normalized_impact:
+        raise RuntimeError("incident impact policy is required")
+    if len(normalized_impact.encode("utf-8")) > 1000:
+        raise RuntimeError("incident impact policy exceeds the byte limit")
+    return {
+        "schema": "dev.tweed.incident-policy.v1",
+        "environment": "production",
+        "window_start": window_start,
+        "window_end": window_end,
+        "impact_policy": normalized_impact,
+    }
+
+
+def incident_tool_allowlist(values: list[str]) -> tuple[str, ...]:
+    normalized = tuple(dict.fromkeys(item.strip() for item in values if item.strip()))
+    if not normalized:
+        raise RuntimeError("incident requires at least one --mcp-tool server/tool")
+    if len(normalized) > 32 or any(
+        MCP_TOOL_RE.fullmatch(item) is None for item in normalized
+    ):
+        raise RuntimeError("incident MCP tools must be bounded server/tool names")
+    for qualified in normalized:
+        server, tool = qualified.split("/", 1)
+        if tool not in INCIDENT_MCP_READ_ALLOWLIST.get(server, set()):
+            raise RuntimeError(
+                f"incident MCP tool is not in the audited read allowlist: {qualified}"
+            )
+    servers = {item.split("/", 1)[0].casefold() for item in normalized}
+    missing_existing_work = {"github", "linear"} - servers
+    if missing_existing_work:
+        raise RuntimeError(
+            "incident requires existing-work MCP reads from: "
+            + ", ".join(sorted(missing_existing_work))
+        )
+    return normalized
+
+
+def _stdio_mcp_transport(server: dict[str, Any], root: Path) -> dict[str, Any]:
+    """Validate a resolved Codex stdio transport without accepting shell syntax."""
+    transport = server.get("transport")
+    if not isinstance(transport, dict) or transport.get("type") != "stdio":
+        raise RuntimeError("incident direct MCP requires a configured stdio server")
+    command = transport.get("command")
+    args = transport.get("args") or []
+    configured_env = transport.get("env") or {}
+    forwarded_env_names = transport.get("env_vars") or []
+    configured_cwd = transport.get("cwd")
+    if not isinstance(command, str) or not command or "\x00" in command:
+        raise RuntimeError("incident direct MCP has an invalid command")
+    if not isinstance(args, list) or not all(
+        isinstance(value, str) and "\x00" not in value for value in args
+    ):
+        raise RuntimeError("incident direct MCP has invalid arguments")
+    if not isinstance(configured_env, dict) or not all(
+        isinstance(key, str)
+        and isinstance(value, str)
+        and "\x00" not in key
+        and "\x00" not in value
+        for key, value in configured_env.items()
+    ):
+        raise RuntimeError("incident direct MCP has an invalid environment")
+    if not isinstance(forwarded_env_names, list) or not all(
+        isinstance(name, str) and re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", name)
+        for name in forwarded_env_names
+    ):
+        raise RuntimeError(
+            "incident direct MCP has invalid forwarded environment names"
+        )
+    requested_protected = set(LINEAR_CHILD_ENV_NAMES) & (
+        set(forwarded_env_names) | set(configured_env)
+    )
+    if requested_protected:
+        raise RuntimeError(
+            "incident direct MCP requested protected environment names: "
+            + ", ".join(sorted(requested_protected))
+        )
+    if configured_cwd is not None and not isinstance(configured_cwd, str):
+        raise RuntimeError("incident direct MCP has an invalid working directory")
+    child_env = {
+        name: os.environ[name]
+        for name in sorted(MCP_CHILD_ENV_ALLOWLIST | set(forwarded_env_names))
+        if name in os.environ
+    }
+    child_env.update(configured_env)
+    return {
+        "command": [command, *args],
+        "cwd": Path(configured_cwd).expanduser() if configured_cwd else root,
+        "env": child_env,
+        "startup_timeout": min(
+            60.0, max(5.0, float(server.get("startup_timeout_sec") or 15))
+        ),
+        "tool_timeout": min(
+            120.0, max(5.0, float(server.get("tool_timeout_sec") or 60))
+        ),
+    }
+
+
+def _stdio_mcp_session(
+    server: dict[str, Any],
+    root: Path,
+    calls: list[dict[str, Any]],
+    *,
+    expected_tools_digest: str | None = None,
+    result_budget: int = MAX_INCIDENT_EVIDENCE_BYTES,
+    deadline: float | None = None,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], str]:
+    """Discover and call one configured MCP using bounded JSON-RPC over stdio."""
+    now = time.monotonic()
+    session_deadline = min(
+        now + MAX_MCP_SESSION_WALL_SECONDS,
+        deadline if deadline is not None else float("inf"),
+    )
+    if session_deadline <= now:
+        raise RuntimeError("incident direct MCP exceeded its overall deadline")
+    config = _stdio_mcp_transport(server, root)
+    process = subprocess.Popen(
+        config["command"],
+        cwd=config["cwd"],
+        env=config["env"],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        start_new_session=True,
+    )
+
+    def abort_setup() -> None:
+        if process.poll() is None:
+            with contextlib.suppress(ProcessLookupError, PermissionError):
+                os.killpg(process.pid, signal.SIGKILL)
+            with contextlib.suppress(subprocess.TimeoutExpired):
+                process.wait(timeout=2)
+        for stream in (process.stdin, process.stdout, process.stderr):
+            if stream is not None:
+                with contextlib.suppress(OSError):
+                    stream.close()
+
+    if process.stdin is None or process.stdout is None or process.stderr is None:
+        abort_setup()
+        raise RuntimeError("incident direct MCP did not expose stdio")
+    stderr = bytearray()
+    stderr_exceeded = threading.Event()
+    stderr_stop = threading.Event()
+    try:
+        stderr_fd = process.stderr.fileno()
+        os.set_blocking(stderr_fd, False)
+        os.set_blocking(process.stdin.fileno(), False)
+    except BaseException:
+        abort_setup()
+        raise
+
+    def kill_group(sig: int = signal.SIGKILL) -> None:
+        if process.poll() is not None:
+            return
+        try:
+            os.killpg(process.pid, sig)
+        except ProcessLookupError:
+            pass
+
+    def drain_stderr() -> None:
+        stderr_selector = selectors.DefaultSelector()
+        try:
+            stderr_selector.register(stderr_fd, selectors.EVENT_READ)
+            while not stderr_stop.is_set():
+                if not stderr_selector.select(0.2):
+                    if process.poll() is not None:
+                        return
+                    continue
+                try:
+                    chunk = os.read(stderr_fd, 65536)
+                except (BlockingIOError, OSError):
+                    if stderr_stop.is_set():
+                        return
+                    continue
+                if not chunk:
+                    return
+                remaining = 65537 - len(stderr)
+                if remaining > 0:
+                    stderr.extend(chunk[:remaining])
+                if len(stderr) > 65536:
+                    stderr_exceeded.set()
+                    kill_group()
+                    return
+        finally:
+            stderr_selector.close()
+
+    stderr_thread = threading.Thread(target=drain_stderr, daemon=True)
+    selector = selectors.DefaultSelector()
+    try:
+        stderr_thread.start()
+        selector.register(process.stdout, selectors.EVENT_READ)
+    except BaseException:
+        stderr_stop.set()
+        abort_setup()
+        stderr_thread.join(timeout=1)
+        selector.close()
+        raise
+    stdout_buffer = bytearray()
+    stdout_total = 0
+
+    def send(message: dict[str, Any], timeout: float) -> None:
+        encoded = (
+            json.dumps(
+                message,
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=False,
+                allow_nan=False,
+            ).encode("utf-8")
+            + b"\n"
+        )
+        write_deadline = min(time.monotonic() + timeout, session_deadline)
+        offset = 0
+        write_selector = selectors.DefaultSelector()
+        try:
+            write_selector.register(process.stdin.fileno(), selectors.EVENT_WRITE)
+            while offset < len(encoded):
+                remaining = write_deadline - time.monotonic()
+                if remaining <= 0:
+                    raise RuntimeError("incident direct MCP input timed out")
+                if process.poll() is not None:
+                    raise RuntimeError("incident direct MCP closed its input")
+                if not write_selector.select(min(remaining, 0.5)):
+                    continue
+                try:
+                    written = os.write(process.stdin.fileno(), encoded[offset:])
+                except BlockingIOError:
+                    continue
+                except (BrokenPipeError, OSError) as error:
+                    raise RuntimeError(
+                        "incident direct MCP closed its input"
+                    ) from error
+                if written <= 0:
+                    raise RuntimeError("incident direct MCP closed its input")
+                offset += written
+        finally:
+            write_selector.close()
+
+    def receive(request_id: int, timeout: float) -> dict[str, Any]:
+        nonlocal stdout_total
+        response_deadline = min(time.monotonic() + timeout, session_deadline)
+        while True:
+            while b"\n" in stdout_buffer:
+                line, _, remainder = stdout_buffer.partition(b"\n")
+                stdout_buffer[:] = remainder
+                if not line.strip():
+                    continue
+                try:
+                    response = json.loads(line, parse_constant=reject_non_json_number)
+                except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as error:
+                    raise RuntimeError(
+                        "incident direct MCP returned invalid JSON"
+                    ) from error
+                if not isinstance(response, dict):
+                    raise RuntimeError(
+                        "incident direct MCP returned an invalid response"
+                    )
+                if response.get("jsonrpc") != "2.0":
+                    raise RuntimeError("incident direct MCP returned invalid JSON-RPC")
+                if "method" in response:
+                    method = response.get("method")
+                    inbound_id = response.get("id")
+                    if not isinstance(method, str):
+                        raise RuntimeError(
+                            "incident direct MCP returned an invalid request"
+                        )
+                    if "id" not in response:
+                        continue
+                    if not isinstance(inbound_id, (str, int)) or isinstance(
+                        inbound_id, bool
+                    ):
+                        raise RuntimeError(
+                            "incident direct MCP returned an invalid request ID"
+                        )
+                    if method == "ping":
+                        send(
+                            {"jsonrpc": "2.0", "id": inbound_id, "result": {}},
+                            min(timeout, 5.0),
+                        )
+                    else:
+                        send(
+                            {
+                                "jsonrpc": "2.0",
+                                "id": inbound_id,
+                                "error": {
+                                    "code": -32601,
+                                    "message": "Method not supported by Tweed",
+                                },
+                            },
+                            min(timeout, 5.0),
+                        )
+                    continue
+                response_id = response.get("id")
+                if response_id == request_id and type(response_id) is not int:
+                    raise RuntimeError(
+                        "incident direct MCP returned an invalid response ID"
+                    )
+                if type(response_id) is int and response_id == request_id:
+                    has_result = "result" in response
+                    has_error = "error" in response
+                    if has_result == has_error:
+                        raise RuntimeError(
+                            "incident direct MCP returned an invalid response envelope"
+                        )
+                    if has_error:
+                        error_value = response["error"]
+                        if (
+                            not isinstance(error_value, dict)
+                            or type(error_value.get("code")) is not int
+                            or not isinstance(error_value.get("message"), str)
+                        ):
+                            raise RuntimeError(
+                                "incident direct MCP returned an invalid error envelope"
+                            )
+                        raise McpToolCallError(
+                            "incident direct MCP call failed with JSON-RPC code "
+                            + str(error_value["code"])
+                        )
+                    result = response.get("result")
+                    if not isinstance(result, dict):
+                        raise RuntimeError(
+                            "incident direct MCP returned an invalid result"
+                        )
+                    return result
+            remaining = response_deadline - time.monotonic()
+            if remaining <= 0:
+                raise RuntimeError("incident direct MCP timed out")
+            if stderr_exceeded.is_set():
+                raise RuntimeError("incident direct MCP stderr exceeded its byte limit")
+            if process.poll() is not None:
+                raise RuntimeError("incident direct MCP exited before responding")
+            ready = selector.select(min(remaining, 0.5))
+            if not ready:
+                continue
+            chunk = os.read(process.stdout.fileno(), 65536)
+            if not chunk:
+                raise RuntimeError("incident direct MCP closed its output")
+            stdout_total += len(chunk)
+            if stdout_total > MAX_INCIDENT_EVIDENCE_BYTES:
+                raise RuntimeError("incident direct MCP stdout exceeded its byte limit")
+            stdout_buffer.extend(chunk)
+
+    try:
+        send(
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "initialize",
+                "params": {
+                    "protocolVersion": "2025-06-18",
+                    "capabilities": {},
+                    "clientInfo": {"name": "tweed", "version": "0.2.0"},
+                },
+            },
+            config["startup_timeout"],
+        )
+        initialized = receive(1, config["startup_timeout"])
+        protocol_version = initialized.get("protocolVersion")
+        if protocol_version not in SUPPORTED_MCP_PROTOCOL_VERSIONS:
+            raise RuntimeError("incident direct MCP negotiated an unsupported protocol")
+        capabilities = initialized.get("capabilities")
+        server_info = initialized.get("serverInfo")
+        if (
+            not isinstance(capabilities, dict)
+            or not isinstance(capabilities.get("tools"), dict)
+            or not isinstance(server_info, dict)
+            or not isinstance(server_info.get("name"), str)
+            or not server_info["name"]
+            or not isinstance(server_info.get("version"), str)
+            or not server_info["version"]
+        ):
+            raise RuntimeError(
+                "incident direct MCP returned an invalid initialize result"
+            )
+        send(
+            {
+                "jsonrpc": "2.0",
+                "method": "notifications/initialized",
+                "params": {},
+            },
+            config["startup_timeout"],
+        )
+        tools: list[dict[str, Any]] = []
+        cursor: str | None = None
+        for page in range(8):
+            request_id = 2 + page
+            params = {"cursor": cursor} if cursor is not None else {}
+            send(
+                {
+                    "jsonrpc": "2.0",
+                    "id": request_id,
+                    "method": "tools/list",
+                    "params": params,
+                },
+                config["startup_timeout"],
+            )
+            listed = receive(request_id, config["startup_timeout"])
+            page_tools = listed.get("tools")
+            if not isinstance(page_tools, list) or not all(
+                isinstance(tool, dict)
+                and isinstance(tool.get("name"), str)
+                and isinstance(tool.get("inputSchema"), dict)
+                for tool in page_tools
+            ):
+                raise RuntimeError("incident direct MCP returned an invalid tool list")
+            tools.extend(page_tools)
+            if len(tools) > 256:
+                raise RuntimeError("incident direct MCP returned too many tools")
+            next_cursor = listed.get("nextCursor")
+            if next_cursor is None:
+                break
+            if not isinstance(next_cursor, str) or not next_cursor:
+                raise RuntimeError(
+                    "incident direct MCP returned an invalid tool cursor"
+                )
+            cursor = next_cursor
+        else:
+            raise RuntimeError(
+                "incident direct MCP tool listing exceeded its page limit"
+            )
+        tool_names = [tool["name"] for tool in tools]
+        if len(set(tool_names)) != len(tool_names):
+            raise RuntimeError("incident direct MCP returned invalid tool names")
+        tools_encoded = json.dumps(
+            tools,
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+            allow_nan=False,
+        ).encode("utf-8")
+        tools_digest = hashlib.sha256(tools_encoded).hexdigest()
+        if expected_tools_digest is not None and tools_digest != expected_tools_digest:
+            raise RuntimeError(
+                "incident direct MCP tool catalog changed during collection"
+            )
+        results: list[dict[str, Any]] = []
+        for sequence, call in enumerate(calls, 100):
+            if result_budget < MAX_INCIDENT_DIRECT_RECEIPT_BYTES:
+                raise RuntimeError(
+                    "incident MCP evidence has insufficient remaining byte budget"
+                )
+            started = time.monotonic()
+            send(
+                {
+                    "jsonrpc": "2.0",
+                    "id": sequence,
+                    "method": "tools/call",
+                    "params": {
+                        "name": call["tool"],
+                        "arguments": call["arguments"],
+                    },
+                },
+                config["tool_timeout"],
+            )
+            try:
+                result = receive(sequence, config["tool_timeout"])
+            except McpToolCallError as error:
+                receipt = {
+                    "server": call["server"],
+                    "tool": call["tool"],
+                    "qualified_tool": call["qualified_tool"],
+                    "arguments": call["arguments"],
+                    "result": None,
+                    "error": str(error),
+                    "status": "failed",
+                    "protocol_version": protocol_version,
+                    "tools_sha256": tools_digest,
+                    "duration_ms": round((time.monotonic() - started) * 1000),
+                }
+                receipt_bytes = json.dumps(
+                    receipt,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                    ensure_ascii=False,
+                    allow_nan=False,
+                ).encode("utf-8")
+                result_budget -= len(receipt_bytes)
+                if result_budget < 0:
+                    raise RuntimeError("incident MCP evidence exceeds the byte limit")
+                results.append(receipt)
+                continue
+            result_bytes = json.dumps(
+                result,
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=False,
+                allow_nan=False,
+            ).encode("utf-8")
+            if len(result_bytes) > MAX_INCIDENT_DIRECT_CALL_BYTES:
+                raise RuntimeError("incident direct MCP result exceeded its byte limit")
+            receipt = {
+                "server": call["server"],
+                "tool": call["tool"],
+                "qualified_tool": call["qualified_tool"],
+                "arguments": call["arguments"],
+                "result": result,
+                "error": (
+                    "incident direct MCP tool reported an error"
+                    if result.get("isError") is True
+                    else None
+                ),
+                "status": "failed" if result.get("isError") is True else "completed",
+                "protocol_version": protocol_version,
+                "tools_sha256": tools_digest,
+                "duration_ms": round((time.monotonic() - started) * 1000),
+            }
+            receipt_bytes = json.dumps(
+                receipt,
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=False,
+                allow_nan=False,
+            ).encode("utf-8")
+            result_budget -= len(receipt_bytes)
+            if result_budget < 0:
+                raise RuntimeError("incident MCP evidence exceeds the byte limit")
+            if result.get("isError") is True:
+                results.append(receipt)
+                continue
+            results.append(receipt)
+        return tools, results, protocol_version
+    finally:
+        selector.close()
+        with contextlib.suppress(OSError):
+            process.stdin.close()
+        kill_group(signal.SIGTERM)
+        try:
+            process.wait(timeout=1)
+        except subprocess.TimeoutExpired:
+            kill_group()
+            process.wait(timeout=2)
+        stderr_stop.set()
+        stderr_thread.join(timeout=1)
+        if stderr_thread.is_alive():
+            raise RuntimeError("incident direct MCP stderr did not close")
+        with contextlib.suppress(OSError):
+            process.stdout.close()
+        with contextlib.suppress(OSError):
+            process.stderr.close()
+
+
+def discover_direct_mcp_tools(
+    root: Path,
+    allowed_tools: tuple[str, ...],
+    *,
+    deadline: float | None = None,
+) -> tuple[tuple[str, ...], dict[str, dict[str, Any]], dict[str, dict[str, Any]]]:
+    """Discover selected stdio tools; other MCPs remain model-facing."""
+    selected: dict[str, set[str]] = {}
+    for qualified in allowed_tools:
+        match = MCP_TOOL_RE.fullmatch(qualified)
+        assert match is not None
+        selected.setdefault(match.group("server"), set()).add(match.group("tool"))
+    servers = {
+        server["name"]: server
+        for server in _resolved_codex_mcp_servers(find_codex(), root)
+        if isinstance(server.get("name"), str)
+    }
+    model_tools: list[str] = []
+    catalog: dict[str, dict[str, Any]] = {}
+    direct_servers: dict[str, dict[str, Any]] = {}
+    for qualified in allowed_tools:
+        match = MCP_TOOL_RE.fullmatch(qualified)
+        assert match is not None
+        server_name = match.group("server")
+        server = servers.get(server_name)
+        transport = server.get("transport") if isinstance(server, dict) else None
+        if not isinstance(transport, dict) or transport.get("type") != "stdio":
+            model_tools.append(qualified)
+            continue
+        if match.group("tool") not in DIRECT_MCP_READ_ALLOWLIST.get(server_name, set()):
+            raise RuntimeError(
+                f"incident direct MCP tool is not in the audited read allowlist: {qualified}"
+            )
+        if server_name in direct_servers:
+            continue
+        tools, _, protocol_version = _stdio_mcp_session(
+            server, root, [], deadline=deadline
+        )
+        tools_digest = hashlib.sha256(
+            json.dumps(
+                tools, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+            ).encode("utf-8")
+        ).hexdigest()
+        by_name = {tool["name"]: tool for tool in tools}
+        for tool_name in sorted(selected[server_name]):
+            tool = by_name.get(tool_name)
+            qualified_tool = f"{server_name}/{tool_name}"
+            if tool is None:
+                raise RuntimeError(
+                    f"configured incident MCP tool is unavailable: {server_name}/{tool_name}"
+                )
+            annotations = tool.get("annotations")
+            if isinstance(annotations, dict) and (
+                annotations.get("destructiveHint") is True
+                or annotations.get("readOnlyHint") is False
+            ):
+                raise RuntimeError(
+                    f"incident direct MCP tool conflicts with the read-only policy: {qualified_tool}"
+                )
+            input_schema = tool["inputSchema"]
+            validate_json_schema_definition(input_schema, input_schema)
+            catalog[qualified_tool] = {
+                "description": tool.get("description", ""),
+                "input_schema": input_schema,
+                "protocol_version": protocol_version,
+                "tools_sha256": tools_digest,
+            }
+        direct_servers[server_name] = server
+    return tuple(model_tools), catalog, direct_servers
+
+
+def _resolve_local_schema_ref(root: dict[str, Any], reference: str) -> dict[str, Any]:
+    if not reference.startswith("#/"):
+        raise RuntimeError("incident direct MCP schema uses a non-local reference")
+    value: Any = root
+    for raw_part in reference[2:].split("/"):
+        part = raw_part.replace("~1", "/").replace("~0", "~")
+        if not isinstance(value, dict) or part not in value:
+            raise RuntimeError("incident direct MCP schema has an invalid reference")
+        value = value[part]
+    if not isinstance(value, dict):
+        raise RuntimeError("incident direct MCP schema reference is not an object")
+    return value
+
+
+SUPPORTED_DIRECT_SCHEMA_KEYWORDS = {
+    "$defs",
+    "$ref",
+    "$schema",
+    "additionalProperties",
+    "anyOf",
+    "const",
+    "default",
+    "description",
+    "enum",
+    "format",
+    "items",
+    "maximum",
+    "maxItems",
+    "maxLength",
+    "minimum",
+    "minItems",
+    "minLength",
+    "nullable",
+    "properties",
+    "required",
+    "title",
+    "type",
+}
+
+
+def validate_json_schema_definition(
+    schema: dict[str, Any], root_schema: dict[str, Any], depth: int = 0
+) -> None:
+    """Reject unsupported or malformed MCP schemas before exposing their tools."""
+    if depth > 32:
+        raise RuntimeError("incident direct MCP schema exceeds the nesting limit")
+    if set(schema) - SUPPORTED_DIRECT_SCHEMA_KEYWORDS:
+        raise RuntimeError("incident direct MCP schema uses unsupported constraints")
+    if "$ref" in schema:
+        reference = schema["$ref"]
+        if not isinstance(reference, str):
+            raise RuntimeError("incident direct MCP schema has an invalid reference")
+        validate_json_schema_definition(
+            _resolve_local_schema_ref(root_schema, reference), root_schema, depth + 1
+        )
+    definitions = schema.get("$defs", {})
+    if not isinstance(definitions, dict) or not all(
+        isinstance(key, str) and isinstance(child, dict)
+        for key, child in definitions.items()
+    ):
+        raise RuntimeError("incident direct MCP schema has invalid definitions")
+    for child in definitions.values():
+        validate_json_schema_definition(child, root_schema, depth + 1)
+    schema_type = schema.get("type")
+    if schema_type is not None and not (
+        isinstance(schema_type, str)
+        or (
+            isinstance(schema_type, list)
+            and schema_type
+            and all(isinstance(item, str) for item in schema_type)
+        )
+    ):
+        raise RuntimeError("incident direct MCP schema has an invalid type")
+    properties = schema.get("properties", {})
+    if not isinstance(properties, dict) or not all(
+        isinstance(key, str) and isinstance(child, dict)
+        for key, child in properties.items()
+    ):
+        raise RuntimeError("incident direct MCP schema has invalid properties")
+    for child in properties.values():
+        validate_json_schema_definition(child, root_schema, depth + 1)
+    required = schema.get("required", [])
+    if not isinstance(required, list) or not all(
+        isinstance(item, str) for item in required
+    ):
+        raise RuntimeError("incident direct MCP schema has invalid required keys")
+    if not set(required).issubset(properties):
+        raise RuntimeError("incident direct MCP schema requires unknown keys")
+    any_of = schema.get("anyOf", [])
+    if not isinstance(any_of, list) or not all(
+        isinstance(child, dict) for child in any_of
+    ):
+        raise RuntimeError("incident direct MCP schema has invalid anyOf")
+    for child in any_of:
+        validate_json_schema_definition(child, root_schema, depth + 1)
+    items = schema.get("items")
+    if items is not None:
+        if not isinstance(items, dict):
+            raise RuntimeError("incident direct MCP schema has invalid items")
+        validate_json_schema_definition(items, root_schema, depth + 1)
+    additional = schema.get("additionalProperties", True)
+    if not isinstance(additional, (bool, dict)):
+        raise RuntimeError(
+            "incident direct MCP schema has invalid additionalProperties"
+        )
+    if isinstance(additional, dict):
+        validate_json_schema_definition(additional, root_schema, depth + 1)
+
+
+def validate_json_schema_value(
+    value: Any,
+    schema: dict[str, Any],
+    root_schema: dict[str, Any],
+    path: str = "$",
+    depth: int = 0,
+) -> None:
+    """Validate the bounded JSON Schema subset used by audited direct MCP tools."""
+    if depth > 32:
+        raise RuntimeError("incident direct MCP arguments exceed the nesting limit")
+    if set(schema) - SUPPORTED_DIRECT_SCHEMA_KEYWORDS:
+        raise RuntimeError("incident direct MCP schema uses unsupported constraints")
+    if "$ref" in schema:
+        reference = schema["$ref"]
+        if not isinstance(reference, str):
+            raise RuntimeError("incident direct MCP schema has an invalid reference")
+        validate_json_schema_value(
+            value,
+            _resolve_local_schema_ref(root_schema, reference),
+            root_schema,
+            path,
+            depth + 1,
+        )
+    if "anyOf" in schema:
+        options = schema["anyOf"]
+        if not isinstance(options, list) or not options:
+            raise RuntimeError("incident direct MCP schema has invalid anyOf")
+        matched = False
+        for option in options:
+            if not isinstance(option, dict):
+                raise RuntimeError("incident direct MCP schema has invalid anyOf")
+            try:
+                validate_json_schema_value(value, option, root_schema, path, depth + 1)
+            except RuntimeError:
+                continue
+            matched = True
+            break
+        if not matched:
+            raise RuntimeError(
+                f"incident direct MCP arguments violate schema at {path}"
+            )
+    if "const" in schema and value != schema["const"]:
+        raise RuntimeError(f"incident direct MCP arguments violate const at {path}")
+    if "enum" in schema:
+        enum = schema["enum"]
+        if not isinstance(enum, list) or value not in enum:
+            raise RuntimeError(f"incident direct MCP arguments violate enum at {path}")
+    expected_type = schema.get("type")
+    if expected_type is not None:
+        expected_types = (
+            expected_type if isinstance(expected_type, list) else [expected_type]
+        )
+        if not all(isinstance(item, str) for item in expected_types):
+            raise RuntimeError("incident direct MCP schema has an invalid type")
+        if schema.get("nullable") is True:
+            expected_types = [*expected_types, "null"]
+
+        def matches_type(name: str) -> bool:
+            return {
+                "array": isinstance(value, list),
+                "boolean": isinstance(value, bool),
+                "integer": isinstance(value, int) and not isinstance(value, bool),
+                "null": value is None,
+                "number": isinstance(value, (int, float))
+                and not isinstance(value, bool),
+                "object": isinstance(value, dict),
+                "string": isinstance(value, str),
+            }.get(name, False)
+
+        if not any(matches_type(name) for name in expected_types):
+            raise RuntimeError(
+                f"incident direct MCP arguments have wrong type at {path}"
+            )
+    if isinstance(value, dict):
+        properties = schema.get("properties", {})
+        required = schema.get("required", [])
+        if not isinstance(properties, dict) or not isinstance(required, list):
+            raise RuntimeError(
+                "incident direct MCP schema has invalid object constraints"
+            )
+        if not all(isinstance(item, str) for item in required):
+            raise RuntimeError("incident direct MCP schema has invalid required keys")
+        missing = set(required) - set(value)
+        if missing:
+            raise RuntimeError(
+                f"incident direct MCP arguments omit required keys at {path}"
+            )
+        additional = schema.get("additionalProperties", True)
+        if additional is False and set(value) - set(properties):
+            raise RuntimeError(f"incident direct MCP arguments add keys at {path}")
+        if not isinstance(additional, (bool, dict)):
+            raise RuntimeError(
+                "incident direct MCP schema has invalid additionalProperties"
+            )
+        for key, child in value.items():
+            child_schema = properties.get(key)
+            if child_schema is None and isinstance(additional, dict):
+                child_schema = additional
+            if child_schema is None:
+                continue
+            if not isinstance(child_schema, dict):
+                raise RuntimeError("incident direct MCP schema property is invalid")
+            validate_json_schema_value(
+                child, child_schema, root_schema, f"{path}.{key}", depth + 1
+            )
+    if isinstance(value, list):
+        if "maxItems" in schema and len(value) > schema["maxItems"]:
+            raise RuntimeError(f"incident direct MCP array is too long at {path}")
+        if "minItems" in schema and len(value) < schema["minItems"]:
+            raise RuntimeError(f"incident direct MCP array is too short at {path}")
+        item_schema = schema.get("items")
+        if item_schema is not None:
+            if not isinstance(item_schema, dict):
+                raise RuntimeError("incident direct MCP schema items are invalid")
+            for index, child in enumerate(value):
+                validate_json_schema_value(
+                    child, item_schema, root_schema, f"{path}[{index}]", depth + 1
+                )
+    if isinstance(value, str):
+        if "maxLength" in schema and len(value) > schema["maxLength"]:
+            raise RuntimeError(f"incident direct MCP string is too long at {path}")
+        if "minLength" in schema and len(value) < schema["minLength"]:
+            raise RuntimeError(f"incident direct MCP string is too short at {path}")
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        if "maximum" in schema and value > schema["maximum"]:
+            raise RuntimeError(f"incident direct MCP number is too large at {path}")
+        if "minimum" in schema and value < schema["minimum"]:
+            raise RuntimeError(f"incident direct MCP number is too small at {path}")
+
+
+def validate_direct_mcp_call(
+    call: dict[str, Any],
+    catalog: dict[str, dict[str, Any]],
+    policy: dict[str, Any],
+) -> dict[str, Any]:
+    if not isinstance(call, dict) or set(call) != {
+        "qualified_tool",
+        "arguments_json",
+    }:
+        raise RuntimeError("incident collector returned an invalid direct MCP call")
+    qualified = call.get("qualified_tool")
+    arguments_json = call.get("arguments_json")
+    if qualified not in catalog or not isinstance(arguments_json, str):
+        raise RuntimeError(
+            "incident collector returned a non-allowlisted direct MCP call"
+        )
+    encoded = arguments_json.encode("utf-8")
+    if len(encoded) > MAX_INCIDENT_DIRECT_ARGUMENT_BYTES:
+        raise RuntimeError("incident direct MCP arguments exceeded their byte limit")
+
+    def reject_constant(_value: str) -> None:
+        raise ValueError("non-finite number")
+
+    try:
+        arguments = json.loads(arguments_json, parse_constant=reject_constant)
+    except (json.JSONDecodeError, ValueError) as error:
+        raise RuntimeError("incident direct MCP arguments are invalid JSON") from error
+    if not isinstance(arguments, dict):
+        raise RuntimeError("incident direct MCP arguments must be a JSON object")
+    schema = catalog[qualified].get("input_schema")
+    properties = schema.get("properties", {}) if isinstance(schema, dict) else {}
+    required = schema.get("required", []) if isinstance(schema, dict) else []
+    if not isinstance(properties, dict) or not isinstance(required, list):
+        raise RuntimeError("incident direct MCP exposed an invalid input schema")
+    if set(arguments) - set(properties) or not set(required).issubset(arguments):
+        raise RuntimeError("incident direct MCP arguments do not match its schema")
+    if {"since", "until"}.issubset(properties):
+        arguments = {
+            **arguments,
+            "since": policy["window_start"],
+            "until": policy["window_end"],
+        }
+    validate_json_schema_value(arguments, schema, schema)
+    lines = arguments.get("lines")
+    if lines is not None and (
+        not isinstance(lines, int) or isinstance(lines, bool) or not 1 <= lines <= 1000
+    ):
+        raise RuntimeError("incident direct MCP lines must be between 1 and 1000")
+    server_name, tool = qualified.split("/", 1)
+    return {
+        "server": server_name,
+        "tool": tool,
+        "qualified_tool": qualified,
+        "arguments": arguments,
+    }
+
+
+def execute_direct_mcp_calls(
+    root: Path,
+    calls: list[dict[str, Any]],
+    catalog: dict[str, dict[str, Any]],
+    servers: dict[str, dict[str, Any]],
+    policy: dict[str, Any],
+    result_budget: int = MAX_INCIDENT_EVIDENCE_BYTES,
+    deadline: float | None = None,
+) -> list[dict[str, Any]]:
+    validated = [validate_direct_mcp_call(call, catalog, policy) for call in calls]
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for call in validated:
+        grouped.setdefault(call["server"], []).append(call)
+    results: list[dict[str, Any]] = []
+    for server_name, server_calls in grouped.items():
+        expected = catalog[server_calls[0]["qualified_tool"]]["tools_sha256"]
+        _, server_results, _ = _stdio_mcp_session(
+            servers[server_name],
+            root,
+            server_calls,
+            expected_tools_digest=expected,
+            result_budget=result_budget,
+            deadline=deadline,
+        )
+        results.extend(server_results)
+        result_budget -= len(
+            json.dumps(
+                server_results,
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=False,
+                allow_nan=False,
+            ).encode("utf-8")
+        )
+        if result_budget < 0:
+            raise RuntimeError("incident MCP evidence exceeds the byte limit")
+    return results
+
+
+def validate_incident_dispatch_budget(
+    items: list[Any],
+    direct_results: list[dict[str, Any]],
+    planned: list[dict[str, Any]],
+) -> int:
+    model_call_count = sum(
+        1
+        for wrapped in items
+        if getattr(getattr(wrapped, "root", wrapped), "type", None) == "mcpToolCall"
+    )
+    if model_call_count + len(direct_results) + len(planned) > MAX_INCIDENT_MCP_CALLS:
+        raise RuntimeError("incident collector exceeded the MCP call limit")
+    direct_bytes = len(
+        json.dumps(
+            direct_results,
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+            allow_nan=False,
+        ).encode("utf-8")
+    )
+    if direct_bytes >= MAX_INCIDENT_EVIDENCE_BYTES:
+        raise RuntimeError("incident MCP evidence exceeds the byte limit")
+    return MAX_INCIDENT_EVIDENCE_BYTES - direct_bytes
+
+
+def canonical_mcp_tool_name(server: object, tool: object) -> str:
+    """Map Codex app-connector receipt names back to configured server/tool names."""
+    server_name = str(server)
+    tool_name = str(tool)
+    if server_name == "codex_apps" and "." in tool_name:
+        app_server, app_tool = tool_name.split(".", 1)
+        if CODEX_CONFIG_BARE_KEY_RE.fullmatch(app_server) and re.fullmatch(
+            r"[A-Za-z0-9_.:-]+", app_tool
+        ):
+            return f"{app_server}/{app_tool}"
+    return f"{server_name}/{tool_name}"
+
+
+def canonical_mcp_evidence(
+    items: list[Any],
+    policy: dict[str, Any],
+    allowed_tools: tuple[str, ...],
+    direct_calls: list[dict[str, Any]] | None = None,
+    coverage: str | None = None,
+) -> bytes:
+    """Bind actual completed MCP thread items without trusting model-authored citations."""
+    allowed = set(allowed_tools)
+    calls: list[dict[str, Any]] = []
+    successful_calls = 0
+    call_ids: set[str] = set()
+    for wrapped in items:
+        item = getattr(wrapped, "root", wrapped)
+        if getattr(item, "type", None) != "mcpToolCall":
+            continue
+        server = getattr(item, "server", None)
+        tool = getattr(item, "tool", None)
+        qualified = canonical_mcp_tool_name(server, tool)
+        if qualified not in allowed:
+            raise RuntimeError(
+                f"incident collector used a non-allowlisted MCP tool: {qualified}"
+            )
+        call_id = str(getattr(item, "id", ""))
+        if not call_id or call_id in call_ids:
+            raise RuntimeError("incident MCP evidence has empty or duplicate call IDs")
+        call_ids.add(call_id)
+
+        def json_value(value: Any) -> Any:
+            if hasattr(value, "model_dump"):
+                return value.model_dump(mode="json", by_alias=True)
+            return value
+
+        status_value = getattr(
+            getattr(item, "status", None), "value", getattr(item, "status", None)
+        )
+        result = json_value(getattr(item, "result", None))
+        result_is_error = isinstance(result, dict) and result.get("isError") is True
+        completed = (
+            status_value == "completed"
+            and getattr(item, "error", None) is None
+            and result is not None
+            and not result_is_error
+        )
+        calls.append(
+            {
+                "sequence": len(calls) + 1,
+                "source": "codex-turn",
+                "call_id": call_id,
+                "server": server,
+                "tool": tool,
+                "qualified_tool": qualified,
+                "arguments": json_value(getattr(item, "arguments", None)),
+                "result": result if completed else None,
+                "status": "completed" if completed else "failed",
+                # Connector error text may contain remote payloads or credentials.
+                # The receipt records the failure without persisting that text.
+                "error": None if completed else "model-facing MCP call failed",
+                "duration_ms": getattr(item, "duration_ms", None),
+            }
+        )
+        if completed:
+            successful_calls += 1
+        if len(calls) > MAX_INCIDENT_MCP_CALLS:
+            raise RuntimeError("incident collector exceeded the MCP call limit")
+    for direct in direct_calls or []:
+        qualified = direct.get("qualified_tool")
+        if qualified not in allowed:
+            raise RuntimeError(
+                f"incident collector used a non-allowlisted MCP tool: {qualified}"
+            )
+        status = direct.get("status", "completed")
+        if status not in {"completed", "failed"}:
+            raise RuntimeError(f"incident MCP call has invalid status: {qualified}")
+        if status == "completed" and not isinstance(direct.get("result"), dict):
+            raise RuntimeError(f"incident MCP call returned no result: {qualified}")
+        if status == "failed" and not isinstance(direct.get("error"), str):
+            raise RuntimeError(f"incident MCP call omitted its error: {qualified}")
+        direct_call_id = f"runner-stdio:{len(calls) + 1}"
+        if direct_call_id in call_ids:
+            raise RuntimeError("incident MCP evidence has duplicate call IDs")
+        call_ids.add(direct_call_id)
+        calls.append(
+            {
+                "sequence": len(calls) + 1,
+                "source": "runner-stdio",
+                "call_id": direct_call_id,
+                "server": direct.get("server"),
+                "tool": direct.get("tool"),
+                "qualified_tool": qualified,
+                "arguments": direct.get("arguments"),
+                "result": direct.get("result"),
+                "status": status,
+                "error": direct.get("error"),
+                "duration_ms": direct.get("duration_ms"),
+                "protocol_version": direct.get("protocol_version"),
+                "tools_sha256": direct.get("tools_sha256"),
+            }
+        )
+        if status == "completed":
+            successful_calls += 1
+        if len(calls) > MAX_INCIDENT_MCP_CALLS:
+            raise RuntimeError("incident collector exceeded the MCP call limit")
+    if not successful_calls:
+        raise RuntimeError(
+            "incident collector produced no successful MCP evidence calls"
+        )
+    envelope = {
+        "schema_version": INCIDENT_RECEIPT_SCHEMA_VERSION,
+        "policy": policy,
+        "policy_sha256": digest(
+            json.dumps(
+                policy, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+            )
+        ),
+        "allowlist": list(allowed_tools),
+        "coverage": coverage,
+        "calls": calls,
+    }
+    encoded = json.dumps(
+        envelope,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+        allow_nan=False,
+    ).encode("utf-8")
+    if len(encoded) > MAX_INCIDENT_EVIDENCE_BYTES:
+        raise RuntimeError("incident MCP evidence exceeds the byte limit")
+    return encoded
+
+
 def manifest_digest(run_id: str) -> str:
     return artifact_manifest_digest(load_artifact_manifest(run_id))
 
@@ -784,7 +2119,9 @@ def restore_manifest_snapshot(run_id: str, state: dict[str, Any]) -> None:
     try:
         manifest = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
-        raise RuntimeError(f"run {run_id} artifact manifest snapshot is invalid") from error
+        raise RuntimeError(
+            f"run {run_id} artifact manifest snapshot is invalid"
+        ) from error
     if artifact_manifest_digest(manifest) != expected:
         raise RuntimeError(f"run {run_id} artifact manifest snapshot is corrupt")
     atomic_json_write(artifact_manifest_path(run_id), manifest)
@@ -840,7 +2177,9 @@ def linear_binding_repository(root: Path) -> dict[str, str]:
 
 def linear_sync_config_path() -> Path:
     override = os.environ.get(LINEAR_SYNC_CONFIG_DIR_ENV, "")
-    directory = Path(override).expanduser() if override else Path.home() / ".codex/linear-sync"
+    directory = (
+        Path(override).expanduser() if override else Path.home() / ".codex/linear-sync"
+    )
     return directory.resolve() / "repos.json"
 
 
@@ -901,7 +2240,9 @@ def _validate_shared_binding(repo: str, value: object) -> dict[str, Any]:
             raise RuntimeError(f"disabled Linear sync binding for {repo} is malformed")
         reason = value.get("reason", "")
         if not isinstance(reason, str):
-            raise RuntimeError(f"disabled Linear sync binding reason for {repo} is invalid")
+            raise RuntimeError(
+                f"disabled Linear sync binding reason for {repo} is invalid"
+            )
         return {"disabled": True, "reason": reason.strip()}
     if set(value) - {"team", "project", "disabled"} or value.get("disabled") not in {
         None,
@@ -936,7 +2277,9 @@ def shared_linear_binding(root: Path) -> dict[str, Any] | None:
         if re.fullmatch(r"[^/]+/[^/]+", repo):
             folded = repo.casefold()
             if folded in folded_github_repos:
-                raise RuntimeError("Linear sync bindings contain ambiguous repository keys")
+                raise RuntimeError(
+                    "Linear sync bindings contain ambiguous repository keys"
+                )
             folded_github_repos.add(folded)
         _validate_shared_binding(repo, value)
     repository = linear_binding_repository(root)
@@ -992,7 +2335,9 @@ def legacy_linear_binding(root: Path) -> dict[str, Any] | None:
     return binding
 
 
-def set_legacy_linear_binding(root: Path, team: str | None, project: str | None) -> None:
+def set_legacy_linear_binding(
+    root: Path, team: str | None, project: str | None
+) -> None:
     config = load_config()
     if team is not None or project is not None:
         config["folders"][str(root)] = {
@@ -1014,7 +2359,9 @@ def resolve_linear_binding(
     repository = linear_binding_repository(root)
     if team_override is not None or project_override is not None:
         if team_override is None or project_override is None:
-            raise RuntimeError("explicit Linear override requires both --team and --project")
+            raise RuntimeError(
+                "explicit Linear override requires both --team and --project"
+            )
         binding = {
             **repository,
             "repository": repository["identity"],
@@ -1112,9 +2459,11 @@ def load_run(run_id: str) -> dict[str, Any]:
             state["workflow_text"],
             manifest=manifest,
         )
-    if previous_schema == 2 and state.get("operation") == "phase" and state.get(
-        "state"
-    ) in {"sync-pending", "sync-blocked"}:
+    if (
+        previous_schema == 2
+        and state.get("operation") == "phase"
+        and state.get("state") in {"sync-pending", "sync-blocked"}
+    ):
         state["legacy_description_sync"] = True
     state["run_schema_version"] = RUN_SCHEMA_VERSION
     save_run(state)
@@ -1146,8 +2495,14 @@ def mark_run_terminal(run_id: str | None, state_name: str, error: str) -> None:
     if not path.exists():
         return
     state = json.loads(path.read_text())
-    if state.get("state") != "running":
-        return
+    previous_state = state.get("state")
+    if previous_state != "running":
+        if state.get("operation") != "incident" or previous_state not in {
+            "collecting",
+            "evidence-frozen",
+        }:
+            return
+        state["failed_from_state"] = previous_state
     state["state"] = state_name
     state["error"] = safe_error(error)
     if LAST_TURN_ID:
@@ -1211,6 +2566,7 @@ def intake_description(
     binding_source: str | None = None,
     binding_digest: str | None = None,
     binding_repository: str | None = None,
+    extra_metadata: dict[str, Any] | None = None,
 ) -> str:
     stage = "needs-rca" if kind == "problem" else "needs-scope"
     metadata = {
@@ -1234,6 +2590,14 @@ def intake_description(
                 "linear_binding_repository": binding_repository,
             }
         )
+    if extra_metadata:
+        reserved = set(metadata) & set(extra_metadata)
+        if reserved:
+            raise RuntimeError(
+                "incident metadata cannot replace genesis fields: "
+                + ", ".join(sorted(reserved))
+            )
+        metadata.update(extra_metadata)
     return journal.build_genesis_description(
         metadata,
         f"# Request\n\n{request}",
@@ -1319,7 +2683,9 @@ def artifact_reference(run_id: str, logical_name: str) -> dict[str, Any]:
     try:
         entry = manifest["artifacts"][logical_name]
     except KeyError as error:
-        raise RuntimeError(f"required phase artifact is missing: {logical_name}") from error
+        raise RuntimeError(
+            f"required phase artifact is missing: {logical_name}"
+        ) from error
     read_artifact(run_id, logical_name)
     return {
         "name": logical_name,
@@ -1334,12 +2700,12 @@ def build_phase_packet(
     run_id: str, issue: dict[str, Any], phase: Phase
 ) -> dict[str, Any]:
     required = list(PHASE_ARTIFACTS[phase.command])
-    if phase.command == "scope" and parse_metadata(issue["description"])["kind"] == "feature":
+    if (
+        phase.command == "scope"
+        and parse_metadata(issue["description"])["kind"] == "feature"
+    ):
         required.remove("rca")
-    references = [
-        artifact_reference(run_id, name)
-        for name in required
-    ]
+    references = [artifact_reference(run_id, name) for name in required]
     manifest_path, manifest_sha256 = snapshot_artifact_manifest(run_id)
     packet = {
         "schema": "dev.tweed.phase-packet.v1",
@@ -1385,9 +2751,9 @@ def load_frozen_issue(state: dict[str, Any]) -> dict[str, Any]:
     if isinstance(issue.get("description"), str):
         description = issue["description"]
     else:
-        description = read_artifact(
-            state["run_id"], "linear-description"
-        ).decode("utf-8")
+        description = read_artifact(state["run_id"], "linear-description").decode(
+            "utf-8"
+        )
         issue["description"] = description
     issue.setdefault("digest", digest(issue["description"]))
     if not isinstance(issue.get("revision"), str) or not issue["revision"]:
@@ -1418,13 +2784,9 @@ def compact_issue(issue: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def record_phase_artifacts(
-    run_id: str, phase: Phase, result: dict[str, Any]
-) -> None:
+def record_phase_artifacts(run_id: str, phase: Phase, result: dict[str, Any]) -> None:
     manifest = load_artifact_manifest(run_id)
-    put_artifact(
-        run_id, phase.section, result["report_markdown"], manifest=manifest
-    )
+    put_artifact(run_id, phase.section, result["report_markdown"], manifest=manifest)
     evidence = re.findall(
         r"^## (?:Verification|Repository state)\s*$\n.*?(?=^## |\Z)",
         result["report_markdown"],
@@ -1438,13 +2800,13 @@ def record_phase_artifacts(
     )
 
 
-def completed_json_turn(
+def completed_turn(
     thread: Any,
     prompt: str,
     schema: dict[str, Any],
     sandbox: Sandbox | None = None,
     timeout_seconds: int = 180,
-) -> dict[str, Any]:
+) -> Any:
     global LAST_TURN_ID
     options: dict[str, Any] = {"output_schema": schema}
     if sandbox is not None:
@@ -1477,6 +2839,23 @@ def completed_json_turn(
         )
     if not result.final_response:
         raise RuntimeError(f"Codex turn failed: {result.error or result.status}")
+    return result
+
+
+def completed_json_turn(
+    thread: Any,
+    prompt: str,
+    schema: dict[str, Any],
+    sandbox: Sandbox | None = None,
+    timeout_seconds: int = 180,
+) -> dict[str, Any]:
+    result = completed_turn(
+        thread,
+        prompt,
+        schema,
+        sandbox=sandbox,
+        timeout_seconds=timeout_seconds,
+    )
     try:
         value = json.loads(result.final_response)
     except json.JSONDecodeError as error:
@@ -1498,13 +2877,9 @@ def linear_adapter_command() -> list[str]:
     if not configured:
         mode = os.environ.get("TWEED_LINEAR_AUTH", "oauth").strip().lower()
         if mode not in {"oauth", "api-key"}:
-            raise RuntimeError(
-                "TWEED_LINEAR_AUTH must be oauth or api-key"
-            )
+            raise RuntimeError("TWEED_LINEAR_AUTH must be oauth or api-key")
         if mode == "api-key" and not os.environ.get("LINEAR_API_KEY"):
-            raise RuntimeError(
-                "explicit api-key mode requires LINEAR_API_KEY"
-            )
+            raise RuntimeError("explicit api-key mode requires LINEAR_API_KEY")
         command = [
             sys.executable,
             str(Path(__file__).resolve().with_name("tweed_linear_adapter.py")),
@@ -1591,9 +2966,7 @@ def transport_content_digest(
         ],
     }
     return digest(
-        json.dumps(
-            stable, ensure_ascii=False, sort_keys=True, separators=(",", ":")
-        )
+        json.dumps(stable, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     )
 
 
@@ -1620,9 +2993,7 @@ def transport_snapshot_digest(issue: dict[str, Any]) -> str:
         ],
     }
     return digest(
-        json.dumps(
-            stable, ensure_ascii=False, sort_keys=True, separators=(",", ":")
-        )
+        json.dumps(stable, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     )
 
 
@@ -1650,7 +3021,10 @@ def validate_adapter_issue(
         for item in value["comments"]
     ):
         raise RuntimeError("Linear adapter returned invalid issue comments")
-    if expected_identifier and value["identifier"].upper() != expected_identifier.upper():
+    if (
+        expected_identifier
+        and value["identifier"].upper() != expected_identifier.upper()
+    ):
         raise RuntimeError(
             f"Linear returned {value['identifier']} while reading {expected_identifier}"
         )
@@ -1691,7 +3065,9 @@ def read_linear_issue(root: Path, issue: str) -> dict[str, Any]:
     expected = sanitize_issue(issue).upper()
     response = call_linear_adapter({"operation": "fetch", "identifier": expected})
     if response.get("status") != "ok" or not isinstance(response.get("issue"), dict):
-        raise RuntimeError(response.get("reason") or "Linear snapshot fetch was blocked")
+        raise RuntimeError(
+            response.get("reason") or "Linear snapshot fetch was blocked"
+        )
     return validate_adapter_issue(root, response["issue"], expected)
 
 
@@ -1712,7 +3088,9 @@ def verify_linear_issue(issue: dict[str, Any]) -> None:
         }
     )
     if response.get("status") != "unchanged":
-        raise RuntimeError(response.get("reason") or "Linear issue changed during the phase")
+        raise RuntimeError(
+            response.get("reason") or "Linear issue changed during the phase"
+        )
 
 
 def create_linear_issue(
@@ -1737,13 +3115,20 @@ def create_linear_issue(
         request["team"] = team
     response = call_linear_adapter(request)
     if response.get("status") not in {"created", "recovered"}:
-        return {"status": "blocked", "identifier": None, "url": None, "reason": response.get("reason")}
+        return {
+            "status": "blocked",
+            "identifier": None,
+            "url": None,
+            "reason": response.get("reason"),
+        }
     issue = validate_adapter_issue(root, response.get("issue", {}))
     recovered_genesis = journal.parse_genesis(
         issue["transport_snapshot"]["description"]
     )
     if recovered_genesis.digest != journal.parse_genesis(description).digest:
-        raise RuntimeError("recovered Linear issue does not match the intake description")
+        raise RuntimeError(
+            "recovered Linear issue does not match the intake description"
+        )
     return {
         "status": "synced",
         "identifier": issue["identifier"],
@@ -2307,13 +3692,9 @@ def evidence_command(args: argparse.Namespace) -> int:
     artifact_hashes: list[str] = []
     if args.run_id:
         if args.no_artifacts:
-            raise RuntimeError(
-                "evidence cannot combine --run-id with --no-artifacts"
-            )
+            raise RuntimeError("evidence cannot combine --run-id with --no-artifacts")
         manifest = load_artifact_manifest(args.run_id)
-        artifact_hashes = [
-            entry["sha256"] for entry in manifest["artifacts"].values()
-        ]
+        artifact_hashes = [entry["sha256"] for entry in manifest["artifacts"].values()]
     elif not args.no_artifacts:
         raise RuntimeError(
             "evidence requires --run-id artifact inputs or --no-artifacts"
@@ -2374,6 +3755,874 @@ def evidence_command(args: argparse.Namespace) -> int:
         save_cached_evidence(key, document, result)
     print(json.dumps(result, ensure_ascii=False))
     return int(result["exit_code"])
+
+
+def incident_collector_schema(
+    direct_tools: tuple[str, ...] = (),
+) -> dict[str, Any]:
+    direct_items: dict[str, Any]
+    if direct_tools:
+        direct_items = {
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["qualified_tool", "arguments_json"],
+            "properties": {
+                "qualified_tool": {
+                    "type": "string",
+                    "enum": list(direct_tools),
+                },
+                "arguments_json": {
+                    "type": "string",
+                    "maxLength": MAX_INCIDENT_DIRECT_ARGUMENT_BYTES,
+                },
+            },
+        }
+    else:
+        direct_items = {
+            "type": "object",
+            "additionalProperties": False,
+            "required": [],
+            "properties": {},
+        }
+    properties: dict[str, Any] = {
+        "status": {"type": "string", "enum": ["collected", "blocked"]},
+        "summary": {"type": "string", "maxLength": 500},
+        "coverage": {"type": "string", "maxLength": 2000},
+        "direct_calls": {
+            "type": "array",
+            "maxItems": 16 if direct_tools else 0,
+            "items": direct_items,
+        },
+    }
+    return {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["status", "summary", "coverage", "direct_calls"],
+        "properties": properties,
+    }
+
+
+def incident_rca_schema() -> dict[str, Any]:
+    schema = phase_schema("root-cause")
+    schema["required"] = [
+        *schema["required"],
+        "issue_title",
+        "duplicate_reference",
+        "supporting_call_ids",
+        "existing_work_call_ids",
+    ]
+    schema["properties"] = {
+        **schema["properties"],
+        "issue_title": {"type": ["string", "null"], "maxLength": 120},
+        "duplicate_reference": {"type": ["string", "null"], "maxLength": 512},
+        "supporting_call_ids": {
+            "type": "array",
+            "maxItems": 16,
+            "items": {"type": "string", "maxLength": 200},
+        },
+        "existing_work_call_ids": {
+            "type": "array",
+            "maxItems": 16,
+            "items": {"type": "string", "maxLength": 200},
+        },
+    }
+    return schema
+
+
+def validate_incident_rca_result(value: dict[str, Any]) -> dict[str, Any]:
+    extras = {
+        "issue_title",
+        "duplicate_reference",
+        "supporting_call_ids",
+        "existing_work_call_ids",
+    }
+    if set(value) != {
+        "status",
+        "summary",
+        "question",
+        "report_markdown",
+        *extras,
+    }:
+        raise RuntimeError("incident RCA returned invalid fields")
+    result = validate_phase_result(
+        {key: value[key] for key in value if key not in extras},
+        PHASES["root-cause"],
+    )
+    title = value["issue_title"]
+    duplicate = value["duplicate_reference"]
+    for field in ("supporting_call_ids", "existing_work_call_ids"):
+        call_ids = value[field]
+        if (
+            not isinstance(call_ids, list)
+            or len(call_ids) > 16
+            or not all(isinstance(call_id, str) and call_id for call_id in call_ids)
+            or len(set(call_ids)) != len(call_ids)
+        ):
+            raise RuntimeError(f"incident RCA returned invalid {field}")
+        result[field] = call_ids
+    normalized_duplicate = None
+    if duplicate is not None:
+        normalized_duplicate = " ".join(str(duplicate).split())
+        if value["status"] != "established" or not normalized_duplicate:
+            raise RuntimeError(
+                "incident duplicate reference is inconsistent with RCA status"
+            )
+    if value["status"] == "established":
+        normalized = " ".join(str(title or "").split())
+        if not normalized and normalized_duplicate is None:
+            raise RuntimeError(
+                "established incident RCA requires a specific issue title"
+            )
+        result["issue_title"] = normalized or None
+    elif title is not None:
+        raise RuntimeError("non-established incident RCA cannot provide an issue title")
+    else:
+        result["issue_title"] = None
+    result["duplicate_reference"] = normalized_duplicate
+    return result
+
+
+def incident_evidence_envelope(encoded: bytes) -> dict[str, Any]:
+    try:
+        envelope = json.loads(encoded, parse_constant=reject_non_json_number)
+    except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as error:
+        raise RuntimeError("incident evidence artifact is invalid") from error
+    if not isinstance(envelope, dict) or not isinstance(envelope.get("calls"), list):
+        raise RuntimeError("incident evidence artifact is invalid")
+    call_ids = [
+        call.get("call_id") if isinstance(call, dict) else None
+        for call in envelope["calls"]
+    ]
+    if not all(isinstance(call_id, str) and call_id for call_id in call_ids) or len(
+        set(call_ids)
+    ) != len(call_ids):
+        raise RuntimeError("incident evidence has empty or duplicate call IDs")
+    if (
+        not isinstance(envelope.get("coverage"), str)
+        or not envelope["coverage"].strip()
+    ):
+        raise RuntimeError("incident evidence has no frozen coverage summary")
+    return envelope
+
+
+def frozen_incident_policy(run_id: str) -> dict[str, Any]:
+    try:
+        policy = json.loads(
+            read_artifact(run_id, "incident-policy"),
+            parse_constant=reject_non_json_number,
+        )
+    except (json.JSONDecodeError, ValueError) as error:
+        raise RuntimeError("incident policy artifact is invalid") from error
+    if not isinstance(policy, dict):
+        raise RuntimeError("incident policy artifact is invalid")
+    return policy
+
+
+def successful_incident_calls(envelope: dict[str, Any]) -> list[dict[str, Any]]:
+    return [
+        call
+        for call in envelope["calls"]
+        if isinstance(call, dict) and call.get("status", "completed") == "completed"
+    ]
+
+
+def is_bounded_production_call(call: dict[str, Any], policy: dict[str, Any]) -> bool:
+    arguments = call.get("arguments")
+    return (
+        call.get("qualified_tool") in INCIDENT_PRODUCTION_EVIDENCE_TOOLS
+        and isinstance(arguments, dict)
+        and arguments.get("since") == policy.get("window_start")
+        and arguments.get("until") == policy.get("window_end")
+    )
+
+
+def canonical_external_references(value: Any) -> set[str]:
+    references: set[str] = set()
+
+    def visit(item: Any) -> None:
+        if isinstance(item, dict):
+            for child in item.values():
+                visit(child)
+            return
+        if isinstance(item, list):
+            for child in item:
+                visit(child)
+            return
+        if not isinstance(item, str):
+            return
+        for identifier in re.findall(
+            r"(?<![A-Za-z0-9])([A-Za-z][A-Za-z0-9]*-[0-9]+)(?![A-Za-z0-9])",
+            item,
+        ):
+            references.add(identifier.casefold())
+        for url in re.findall(r"https?://[^\s<>\"'`\])}]+", item):
+            normalized = url.rstrip(".,;:")
+            if urlsplit(normalized).hostname:
+                references.add(normalized)
+
+    visit(value)
+    return references
+
+
+def validate_incident_collection_coverage(
+    encoded: bytes, expected_policy: dict[str, Any] | None = None
+) -> None:
+    envelope = incident_evidence_envelope(encoded)
+    policy = envelope.get("policy")
+    if not isinstance(policy, dict):
+        raise RuntimeError("incident evidence has no embedded policy")
+    policy_digest = digest(
+        json.dumps(
+            policy,
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+            allow_nan=False,
+        )
+    )
+    if envelope.get("policy_sha256") != policy_digest:
+        raise RuntimeError("incident evidence policy digest is invalid")
+    if expected_policy is not None and policy != expected_policy:
+        raise RuntimeError("incident evidence policy does not match the frozen policy")
+    calls = successful_incident_calls(envelope)
+    covered_servers: set[str] = set()
+    for call in calls:
+        qualified = str(call.get("qualified_tool", ""))
+        if "/" not in qualified:
+            continue
+        server, tool = qualified.split("/", 1)
+        server = server.casefold()
+        if tool.casefold() in INCIDENT_EXISTING_WORK_SEARCH_TOOLS.get(server, set()):
+            covered_servers.add(server)
+    missing = {"github", "linear"} - covered_servers
+    if missing:
+        raise RuntimeError(
+            "incident collection requires successful existing-work reads from: "
+            + ", ".join(sorted(missing))
+        )
+    bounded_production_calls = [
+        call for call in calls if is_bounded_production_call(call, policy)
+    ]
+    if not bounded_production_calls:
+        raise RuntimeError(
+            "incident collection requires successful production-observability evidence "
+            "bounded to the frozen window"
+        )
+
+
+def validate_incident_rca_evidence(run_id: str, result: dict[str, Any]) -> None:
+    policy = frozen_incident_policy(run_id)
+    encoded = read_artifact(run_id, "incident-evidence")
+    validate_incident_collection_coverage(encoded, policy)
+    envelope = incident_evidence_envelope(encoded)
+    calls = successful_incident_calls(envelope)
+    by_id = {str(call.get("call_id")): call for call in calls if call.get("call_id")}
+    supporting = result["supporting_call_ids"]
+    existing = result["existing_work_call_ids"]
+    if result["status"] == "established" and not supporting:
+        raise RuntimeError(
+            "established incident RCA has no successful evidence bindings"
+        )
+    for field, call_ids in (
+        ("supporting_call_ids", supporting),
+        ("existing_work_call_ids", existing),
+    ):
+        missing = [call_id for call_id in call_ids if call_id not in by_id]
+        if missing:
+            raise RuntimeError(f"incident RCA {field} contains an unsuccessful call")
+    if result["status"] == "established" and not any(
+        is_bounded_production_call(by_id[call_id], policy) for call_id in supporting
+    ):
+        raise RuntimeError(
+            "established incident RCA has no bound production-observability receipt"
+        )
+    if result["status"] == "established":
+        existing_servers: set[str] = set()
+        for call_id in existing:
+            qualified = str(by_id[call_id].get("qualified_tool", ""))
+            if "/" not in qualified:
+                continue
+            server, tool = qualified.split("/", 1)
+            server = server.casefold()
+            if tool.casefold() in INCIDENT_EXISTING_WORK_BINDING_TOOLS.get(
+                server, set()
+            ):
+                existing_servers.add(server)
+        if not {"github", "linear"}.issubset(existing_servers):
+            raise RuntimeError(
+                "incident RCA must bind successful Linear and GitHub existing-work checks"
+            )
+    duplicate = result.get("duplicate_reference")
+    if duplicate:
+        duplicate_text = str(duplicate)
+        is_identifier = re.fullmatch(r"[A-Za-z][A-Za-z0-9]*-[0-9]+", duplicate_text)
+        is_url = urlsplit(duplicate_text).scheme in {"http", "https"} and bool(
+            urlsplit(duplicate_text).hostname
+        )
+        if not is_identifier and not is_url:
+            raise RuntimeError(
+                "incident duplicate reference must be an exact identifier or URL"
+            )
+        needle = duplicate_text.casefold() if is_identifier else duplicate_text
+        matched = False
+        for call_id in existing:
+            call = by_id[call_id]
+            server = str(call.get("qualified_tool", "")).split("/", 1)[0].casefold()
+            references = canonical_external_references(call.get("result"))
+            if server in {"github", "linear"} and needle in references:
+                matched = True
+                break
+        if not matched:
+            raise RuntimeError(
+                "incident duplicate reference is not present in bound existing-work evidence"
+            )
+
+
+def verify_incident_publication_inputs(
+    run_id: str,
+    policy: dict[str, Any],
+    result: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Revalidate every frozen safety boundary before a Linear create attempt."""
+    evidence_bytes = read_artifact(run_id, "incident-evidence")
+    frozen_policy = frozen_incident_policy(run_id)
+    if frozen_policy != policy:
+        raise RuntimeError("incident policy state does not match its frozen artifact")
+    validate_incident_collection_coverage(evidence_bytes, frozen_policy)
+    if result is not None:
+        validate_incident_rca_evidence(run_id, result)
+    try:
+        return load_artifact_manifest(run_id)["artifacts"]["incident-evidence"]
+    except (KeyError, TypeError) as error:
+        raise RuntimeError("incident evidence artifact is missing") from error
+
+
+def build_incident_packet(
+    run_id: str, root: Path, policy: dict[str, Any]
+) -> dict[str, Any]:
+    validate_incident_collection_coverage(
+        read_artifact(run_id, "incident-evidence"), policy
+    )
+    references = [
+        artifact_reference(run_id, name)
+        for name in ("request", "incident-policy", "incident-evidence")
+    ]
+    manifest_path, manifest_sha256 = snapshot_artifact_manifest(run_id)
+    packet = {
+        "schema": "dev.tweed.incident-packet.v1",
+        "run_id": run_id,
+        "repository": str(root),
+        "policy": policy,
+        "artifacts": references,
+        "artifact_manifest": {
+            "path": str(manifest_path.resolve()),
+            "sha256": manifest_sha256,
+        },
+        "instructions": (
+            "Verify the three artifact hashes. Treat incident-evidence as the complete "
+            "external evidence boundary. Every production and existing-work claim must "
+            "map to a successful recorded MCP call. Do not make external calls."
+        ),
+    }
+    encoded = json.dumps(packet, separators=(",", ":"), ensure_ascii=False).encode()
+    if len(encoded) > 8192:
+        raise RuntimeError("incident packet exceeded the 8 KiB bound")
+    return packet
+
+
+def collect_incident_evidence(
+    root: Path,
+    run_id: str,
+    request: str,
+    policy: dict[str, Any],
+    allowed_tools: tuple[str, ...],
+) -> tuple[str, str]:
+    workflow = load_workflow("incident-evidence")
+    collection_deadline = time.monotonic() + MAX_INCIDENT_COLLECTION_WALL_SECONDS
+    direct_remaining = float(MAX_INCIDENT_DIRECT_WALL_SECONDS)
+    direct_started = time.monotonic()
+    model_tools, direct_catalog, direct_servers = discover_direct_mcp_tools(
+        root,
+        allowed_tools,
+        deadline=min(collection_deadline, direct_started + direct_remaining),
+    )
+    direct_remaining -= time.monotonic() - direct_started
+    direct_tool_names = tuple(sorted(direct_catalog))
+    direct_prompt_catalog = {
+        qualified: {
+            "description": entry["description"],
+            "input_schema": entry["input_schema"],
+        }
+        for qualified, entry in direct_catalog.items()
+    }
+    prompt = (
+        "Collect the read-only production evidence requested below. Use every allowed "
+        "model-facing tool that is material to coverage. For tools in the direct-call "
+        "catalog, return exact planned calls in direct_calls; Tweed—not you—will execute "
+        "them and return genuine MCP results in this same session. Do not repeat any "
+        "successful call. If more direct results are needed, return the next dependency "
+        "layer only. Return an empty direct_calls list only when collection is complete "
+        "or blocked.\n\n"
+        f"Request: {request}\n"
+        f"Policy: {json.dumps(policy, ensure_ascii=False, sort_keys=True)}\n"
+        f"Model-facing MCP tools: {json.dumps(list(model_tools))}\n"
+        "Direct-call MCP catalog: "
+        + json.dumps(direct_prompt_catalog, ensure_ascii=False, sort_keys=True)
+    )
+    timeout = int(os.environ.get("TWEED_PHASE_TIMEOUT", "1200"))
+    all_items: list[Any] = []
+    direct_results: list[dict[str, Any]] = []
+    seen_direct_calls: set[str] = set()
+    with Codex(incident_collector_codex_config(root, model_tools)) as codex:
+        thread = codex.thread_start(
+            cwd=str(root),
+            developer_instructions=workflow,
+            approval_mode=ApprovalMode.deny_all,
+            sandbox=Sandbox.read_only,
+        )
+        thread.set_name(f"Tweed incident evidence: {run_id}")
+        next_prompt = prompt
+        response: dict[str, Any] | None = None
+        for direct_round in range(MAX_INCIDENT_DIRECT_ROUNDS + 1):
+            collection_remaining = collection_deadline - time.monotonic()
+            if collection_remaining <= 0:
+                raise RuntimeError("incident evidence collection exceeded its deadline")
+            turn = completed_turn(
+                thread,
+                next_prompt,
+                incident_collector_schema(direct_tool_names),
+                sandbox=Sandbox.read_only,
+                timeout_seconds=max(1, min(timeout, int(collection_remaining))),
+            )
+            all_items.extend(turn.items)
+            try:
+                parsed = json.loads(turn.final_response)
+            except (TypeError, json.JSONDecodeError) as error:
+                raise RuntimeError(
+                    "incident collector returned invalid structured output"
+                ) from error
+            if not isinstance(parsed, dict) or set(parsed) != {
+                "status",
+                "summary",
+                "coverage",
+                "direct_calls",
+            }:
+                raise RuntimeError("incident collector returned invalid fields")
+            planned = parsed.get("direct_calls")
+            if not isinstance(planned, list):
+                raise RuntimeError(
+                    "incident collector returned invalid direct MCP calls"
+                )
+            if not planned:
+                response = parsed
+                break
+            if parsed.get("status") == "blocked":
+                raise RuntimeError(
+                    "blocked incident collection cannot request MCP calls"
+                )
+            if direct_round >= MAX_INCIDENT_DIRECT_ROUNDS:
+                raise RuntimeError(
+                    "incident collector exceeded its direct MCP round limit"
+                )
+            for call in planned:
+                call_key = json.dumps(
+                    call, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+                )
+                if call_key in seen_direct_calls:
+                    raise RuntimeError("incident collector repeated a direct MCP call")
+                seen_direct_calls.add(call_key)
+            remaining_result_budget = validate_incident_dispatch_budget(
+                all_items, direct_results, planned
+            )
+            if direct_remaining <= 0:
+                raise RuntimeError("incident direct MCP exceeded its overall deadline")
+            direct_started = time.monotonic()
+            try:
+                executed = execute_direct_mcp_calls(
+                    root,
+                    planned,
+                    direct_catalog,
+                    direct_servers,
+                    policy,
+                    result_budget=remaining_result_budget,
+                    deadline=min(
+                        collection_deadline, direct_started + direct_remaining
+                    ),
+                )
+            finally:
+                direct_remaining -= time.monotonic() - direct_started
+            direct_results.extend(executed)
+            if (
+                len(
+                    json.dumps(
+                        direct_results,
+                        sort_keys=True,
+                        separators=(",", ":"),
+                        ensure_ascii=False,
+                    ).encode("utf-8")
+                )
+                > MAX_INCIDENT_EVIDENCE_BYTES
+            ):
+                raise RuntimeError("incident MCP evidence exceeds the byte limit")
+            remaining_rounds = MAX_INCIDENT_DIRECT_ROUNDS - direct_round - 1
+            next_prompt = (
+                "Tweed executed the requested calls through the configured MCP transport. "
+                "Use these exact results to plan only the next missing dependency layer, "
+                "or return an empty direct_calls list and finalize coverage. "
+                f"You have {remaining_rounds} direct-call rounds remaining; when that "
+                "number is zero you must finalize without requesting more calls.\n\n"
+                + json.dumps(executed, ensure_ascii=False, sort_keys=True)
+            )
+    if response is None:
+        raise RuntimeError("incident collector did not finalize evidence collection")
+    if response.get("status") != "collected":
+        raise RuntimeError(
+            response.get("summary") or "incident evidence collection was blocked"
+        )
+    evidence = canonical_mcp_evidence(
+        all_items,
+        policy,
+        allowed_tools,
+        direct_calls=direct_results,
+        coverage=str(response.get("coverage") or ""),
+    )
+    validate_incident_collection_coverage(evidence, policy)
+    manifest = load_artifact_manifest(run_id)
+    put_artifact(
+        run_id,
+        "incident-evidence",
+        evidence,
+        media_type="application/json; charset=utf-8",
+        manifest=manifest,
+    )
+    put_artifact(run_id, "incident-collector-workflow", workflow, manifest=manifest)
+    return thread.id, str(response.get("summary") or "Evidence collected")
+
+
+def run_incident_rca(
+    root: Path, run_id: str, policy: dict[str, Any]
+) -> tuple[str, dict[str, Any], str]:
+    workflow = load_workflow("root-cause")
+    base_state = load_run(run_id)
+    put_artifact(run_id, "workflow", workflow)
+    packet = build_incident_packet(run_id, root, policy)
+    prompt = (
+        "Establish the root cause for this pre-Linear production incident packet. "
+        "Use independent investigators for repository tracing and falsification, but give "
+        "them only relevant slices of the frozen artifacts. Do not call external tools. "
+        "If an existing Linear issue or GitHub PR in the evidence already covers the same "
+        "causal mechanism and scope, set duplicate_reference to its exact identifier or URL; "
+        "otherwise set it to null. For an established new incident, provide a specific, "
+        "non-truncated issue_title. Bind every established conclusion to successful receipt "
+        "call IDs in supporting_call_ids. Put the successful Linear and GitHub receipt call "
+        "IDs actually used for dedupe in existing_work_call_ids. A duplicate reference must "
+        "appear in one of those bound results.\n\nBounded incident packet:\n"
+        + json.dumps(packet, indent=2, ensure_ascii=False)
+    )
+    timeout = int(os.environ.get("TWEED_PHASE_TIMEOUT", "1200"))
+    with Codex(incident_rca_codex_config(root)) as codex:
+        thread = codex.thread_start(
+            cwd=str(root),
+            developer_instructions=workflow,
+            approval_mode=ApprovalMode.deny_all,
+            sandbox=Sandbox.read_only,
+        )
+        thread.set_name(f"Tweed incident RCA: {run_id}")
+        save_run(
+            {
+                **base_state,
+                "state": "running",
+                "operation": "incident",
+                "phase": "root-cause",
+                "thread_id": thread.id,
+            }
+        )
+        value = completed_json_turn(
+            thread,
+            prompt,
+            incident_rca_schema(),
+            timeout_seconds=timeout,
+        )
+    return thread.id, validate_incident_rca_result(value), workflow
+
+
+def publish_incident(
+    *,
+    root: Path,
+    run_id: str,
+    request: str,
+    policy: dict[str, Any],
+    result: dict[str, Any],
+    thread_id: str,
+    binding: dict[str, Any],
+    agent: bool,
+) -> int:
+    base_state = load_run(run_id)
+    evidence_entry = verify_incident_publication_inputs(run_id, policy, result)
+    description = intake_description(
+        "problem",
+        request,
+        root,
+        binding["project"],
+        run_id,
+        team=binding["team"],
+        binding_source=binding["source"],
+        binding_digest=binding["binding_digest"],
+        binding_repository=binding["repository"],
+        extra_metadata={
+            "incident_policy_digest": digest(
+                json.dumps(
+                    policy, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+                )
+            ),
+            "incident_evidence_digest": evidence_entry["sha256"],
+            "incident_rca_run": run_id,
+        },
+    )
+    put_artifact(run_id, "linear-intake-description", description)
+    record_phase_artifacts(run_id, PHASES["root-cause"], result)
+    publication_evidence = {
+        key: result[key]
+        for key in (
+            "status",
+            "supporting_call_ids",
+            "existing_work_call_ids",
+            "duplicate_reference",
+        )
+    }
+    put_artifact(
+        run_id,
+        "incident-publication-evidence",
+        json.dumps(
+            publication_evidence,
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+            allow_nan=False,
+        ),
+        media_type="application/json; charset=utf-8",
+    )
+    pending = {
+        **base_state,
+        "state": "sync-pending",
+        "operation": "incident-publish",
+        "publish_step": "create",
+        "title": result["issue_title"],
+        "desired_digest": digest(description),
+        "thread_id": thread_id,
+        "summary": result["summary"],
+    }
+    save_run(pending)
+    try:
+        synced = create_linear_issue(
+            root,
+            binding["project"],
+            result["issue_title"],
+            description,
+            run_id,
+            team=binding["team"],
+        )
+    except Exception as error:
+        synced = {"status": "blocked", "reason": str(error)}
+    if synced.get("status") != "synced":
+        pending["state"] = "sync-blocked"
+        pending["sync_error"] = safe_error(
+            synced.get("reason") or "incident Linear issue creation was blocked"
+        )
+        save_run(pending)
+        emit(
+            receipt(
+                run_id=run_id,
+                state="sync-blocked",
+                phase="root-cause",
+                status="established",
+                next_stage="needs-scope",
+                summary=result["summary"],
+                thread_id=thread_id,
+                error=pending["sync_error"],
+                team=binding["team"],
+                project=binding["project"],
+                binding_source=binding["source"],
+                binding_digest=binding["binding_digest"],
+            ),
+            agent,
+        )
+        return 8
+    issue = synced.get("issue")
+    if not isinstance(issue, dict):
+        raise RuntimeError("incident Linear create returned no frozen issue")
+    freeze_linear_snapshot(run_id, issue, read_incident_workflow(run_id))
+    metadata = parse_metadata(issue["description"])
+    phase_result = {
+        key: result[key] for key in ("status", "summary", "question", "report_markdown")
+    }
+    return finish_phase(
+        root,
+        root,
+        None,
+        issue,
+        metadata,
+        PHASES["root-cause"],
+        run_id,
+        thread_id,
+        phase_result,
+        agent,
+    )
+
+
+def finalize_incident_rca(
+    run_id: str,
+    state: dict[str, Any],
+    result: dict[str, Any],
+    thread_id: str,
+    agent: bool,
+) -> int:
+    root = Path(state["repository"]).resolve()
+    validate_incident_rca_evidence(run_id, result)
+    record_phase_artifacts(run_id, PHASES["root-cause"], result)
+    if result["status"] == NEEDS_INPUT:
+        save_run(
+            {
+                **state,
+                "state": "awaiting-input",
+                "operation": "incident",
+                "thread_id": thread_id,
+                "phase": "root-cause",
+                "question": result["question"],
+                "summary": result["summary"],
+            }
+        )
+        emit(
+            receipt(
+                run_id=run_id,
+                state="awaiting-input",
+                phase="root-cause",
+                status=NEEDS_INPUT,
+                summary=result["summary"],
+                thread_id=thread_id,
+                question=result["question"],
+            ),
+            agent,
+        )
+        return 7
+    if result["status"] != "established":
+        save_run({**state, "state": result["status"], "summary": result["summary"]})
+        emit(
+            receipt(
+                run_id=run_id,
+                state=result["status"],
+                phase="root-cause",
+                status=result["status"],
+                summary=result["summary"],
+                thread_id=thread_id,
+            ),
+            agent,
+            result["report_markdown"],
+        )
+        return 3 if result["status"] == "not-established" else 4
+    if result["duplicate_reference"]:
+        save_run(
+            {
+                **state,
+                "state": "duplicate",
+                "summary": result["summary"],
+                "duplicate_reference": result["duplicate_reference"],
+            }
+        )
+        emit(
+            receipt(
+                run_id=run_id,
+                state="duplicate",
+                phase="root-cause",
+                status="established",
+                summary=(
+                    f"RCA matches existing work: {result['duplicate_reference']}. "
+                    "No Linear issue was created."
+                ),
+                thread_id=thread_id,
+            ),
+            agent,
+            result["report_markdown"],
+        )
+        return 9
+    request = read_artifact(run_id, "request").decode("utf-8")
+    binding = {
+        "team": state["team"],
+        "project": state["project"],
+        "source": state["binding_source"],
+        "binding_digest": state["binding_digest"],
+        "repository": state["binding_repository"],
+    }
+    return publish_incident(
+        root=root,
+        run_id=run_id,
+        request=request,
+        policy=state["policy"],
+        result=result,
+        thread_id=thread_id,
+        binding=binding,
+        agent=agent,
+    )
+
+
+def incident_command(args: argparse.Namespace) -> int:
+    if os.environ.get("TWEED_ACTIVE_RUN"):
+        raise RuntimeError("nested Tweed invocation is not allowed")
+    root = repository_root(args.repo)
+    binding = resolve_linear_binding(
+        root,
+        team_override=getattr(args, "team", None),
+        project_override=getattr(args, "project", None),
+    )
+    assert binding is not None
+    if binding.get("disabled") or binding.get("invalid_reason"):
+        raise RuntimeError(
+            binding.get("invalid_reason")
+            or binding.get("reason")
+            or "Linear sync is disabled"
+        )
+    request = read_request(
+        args.request, "What production problem should Tweed investigate?"
+    )
+    if not request:
+        raise RuntimeError("incident requires a request")
+    policy = incident_policy(args.window_start, args.window_end, args.impact)
+    allowed_tools = incident_tool_allowlist(args.mcp_tool)
+    run_id = new_run_id()
+    manifest = load_artifact_manifest(run_id)
+    put_artifact(run_id, "request", request, manifest=manifest)
+    put_artifact(
+        run_id,
+        "incident-policy",
+        json.dumps(policy, sort_keys=True, separators=(",", ":"), ensure_ascii=False),
+        media_type="application/json; charset=utf-8",
+        manifest=manifest,
+    )
+    state = {
+        "schema_version": SCHEMA_VERSION,
+        "run_id": run_id,
+        "state": "collecting",
+        "operation": "incident",
+        "repository": str(root),
+        "team": binding["team"],
+        "project": binding["project"],
+        "binding_source": binding["source"],
+        "binding_digest": binding["binding_digest"],
+        "binding_repository": binding["repository"],
+        "policy": policy,
+        "allowed_tools": list(allowed_tools),
+    }
+    save_run(state)
+    with active_run(run_id), run_execution_lock(run_id):
+        _collector_thread, collection_summary = collect_incident_evidence(
+            root, run_id, request, policy, allowed_tools
+        )
+        state.update(
+            {"state": "evidence-frozen", "collection_summary": collection_summary}
+        )
+        save_run(state)
+        thread_id, result, _workflow = run_incident_rca(root, run_id, policy)
+        return finalize_incident_rca(run_id, state, result, thread_id, args.agent)
 
 
 def create_command(args: argparse.Namespace) -> int:
@@ -2611,9 +4860,7 @@ def finish_phase(
         )
     commit = None
     if phase.writes_repository:
-        commit = recovered_commit or commit_phase(
-            worktree, issue["identifier"], phase
-        )
+        commit = recovered_commit or commit_phase(worktree, issue["identifier"], phase)
     report = read_artifact(run_id, phase.section).decode("utf-8")
     base_commit = (
         git(root, "rev-parse", "HEAD")
@@ -2765,7 +5012,9 @@ def phase_command(args: argparse.Namespace) -> int:
                         answer = input("Your answer\n> ").strip()
                         if not answer:
                             continue
-                        result = run_phase_turn(thread, continuation_prompt(answer), phase)
+                        result = run_phase_turn(
+                            thread, continuation_prompt(answer), phase
+                        )
                     if result["status"] == NEEDS_INPUT:
                         save_awaiting_run(
                             run_id,
@@ -2818,16 +5067,22 @@ def recover_finalizing_commit(
     if not phase.writes_repository:
         raise RuntimeError("only repository-writing phases may be finalizing")
     pre_commit = state.get("pre_commit_head")
-    if not isinstance(pre_commit, str) or not re.fullmatch(r"[a-f0-9]{40,64}", pre_commit):
+    if not isinstance(pre_commit, str) or not re.fullmatch(
+        r"[a-f0-9]{40,64}", pre_commit
+    ):
         raise RuntimeError("finalizing run lacks valid pre-commit provenance")
     expected_tree = state.get("expected_commit_tree")
-    if not isinstance(expected_tree, str) or not re.fullmatch(r"[a-f0-9]{40,64}", expected_tree):
+    if not isinstance(expected_tree, str) or not re.fullmatch(
+        r"[a-f0-9]{40,64}", expected_tree
+    ):
         raise RuntimeError("finalizing run lacks valid tree provenance")
     head = git(worktree, "rev-parse", "HEAD")
     if head == pre_commit:
         git(worktree, "add", "-A")
         if git(worktree, "write-tree") != expected_tree:
-            raise RuntimeError("finalizing worktree no longer matches the checkpoint tree")
+            raise RuntimeError(
+                "finalizing worktree no longer matches the checkpoint tree"
+            )
         return None
     if git(worktree, "status", "--porcelain"):
         raise RuntimeError("finalizing worktree changed after the phase commit")
@@ -2888,13 +5143,16 @@ def resume_finalizing_run(
 def resume_command(args: argparse.Namespace) -> int:
     global LAST_RUN_ID
     state = load_run(args.run_id)
+    if state.get("operation") == "incident":
+        return resume_incident_run(args, state)
     state_name = str(state.get("state"))
     phase = PHASES[state["phase"]]
     root = Path(state["repository"]).resolve()
     worktree = Path(state["worktree"]).resolve()
     branch = state.get("branch")
-    with run_execution_lock(args.run_id), issue_execution_lock(
-        root, state["issue"]["identifier"]
+    with (
+        run_execution_lock(args.run_id),
+        issue_execution_lock(root, state["issue"]["identifier"]),
     ):
         with repository_write_lock(root, phase.writes_repository):
             with active_run(args.run_id):
@@ -2903,7 +5161,9 @@ def resume_command(args: argparse.Namespace) -> int:
                         raise RuntimeError(
                             "a finalizing run resumes without a clarification answer"
                         )
-                    return resume_finalizing_run(args, state, phase, root, worktree, branch)
+                    return resume_finalizing_run(
+                        args, state, phase, root, worktree, branch
+                    )
                 answer = (
                     read_request(args.answer, "Answer the Tweed clarification")
                     if state_name == "awaiting-input"
@@ -2980,6 +5240,117 @@ def resume_command(args: argparse.Namespace) -> int:
                     )
 
 
+def recover_incident_result(
+    thread: Any, state: dict[str, Any]
+) -> dict[str, Any] | None:
+    turn_id = state.get("turn_id")
+    if not turn_id:
+        raise RuntimeError("interrupted incident run has no recorded Codex turn")
+    turns = thread.read(include_turns=True).thread.turns
+    recorded = next((turn for turn in turns if turn.id == turn_id), None)
+    if recorded is None:
+        raise RuntimeError("recorded incident turn is missing from its thread")
+    if recorded.status == TurnStatus.in_progress:
+        raise RuntimeError("recorded incident turn is still active; retry resume later")
+    if recorded.status == TurnStatus.completed:
+        try:
+            value = json.loads(final_response_from_turn(recorded))
+        except json.JSONDecodeError as error:
+            raise RuntimeError("completed incident turn has invalid output") from error
+        if not isinstance(value, dict):
+            raise RuntimeError("completed incident turn output was not an object")
+        return validate_incident_rca_result(value)
+    if recorded.status in {TurnStatus.interrupted, TurnStatus.failed}:
+        return None
+    raise RuntimeError(
+        f"recorded incident turn has unsupported status {recorded.status}"
+    )
+
+
+def read_incident_workflow(run_id: str) -> str:
+    """Read the frozen workflow, recovering the pre-fix orphan only by exact hash."""
+    try:
+        return read_artifact(run_id, "workflow").decode("utf-8")
+    except RuntimeError as error:
+        if str(error) != "artifact is missing: workflow":
+            raise
+    workflow = load_workflow("root-cause")
+    encoded = workflow.encode("utf-8")
+    sha256 = hashlib.sha256(encoded).hexdigest()
+    orphan = artifact_root(run_id) / "sha256" / sha256
+    if not orphan.is_file() or orphan.read_bytes() != encoded:
+        raise RuntimeError("artifact is missing: workflow")
+    put_artifact(run_id, "workflow", encoded)
+    return workflow
+
+
+def resume_incident_run(args: argparse.Namespace, state: dict[str, Any]) -> int:
+    global LAST_RUN_ID
+    state_name = str(state.get("state"))
+    if state_name not in {"awaiting-input", "running", "failed", "canceled"}:
+        raise RuntimeError(f"incident run is not resumable from {state_name!r}")
+    answer = (
+        read_request(args.answer, "Answer the Tweed clarification")
+        if state_name == "awaiting-input"
+        else " ".join(args.answer).strip()
+    )
+    prompt = resume_prompt(state_name, answer)
+    root = Path(state["repository"]).resolve()
+    with run_execution_lock(args.run_id), active_run(args.run_id):
+        LAST_RUN_ID = args.run_id
+        if state_name in {"failed", "canceled"} and not state.get("thread_id"):
+            manifest = load_artifact_manifest(args.run_id)
+            if "incident-evidence" not in manifest.get("artifacts", {}):
+                request = read_artifact(args.run_id, "request").decode("utf-8")
+                _, collection_summary = collect_incident_evidence(
+                    root,
+                    args.run_id,
+                    request,
+                    state["policy"],
+                    tuple(state["allowed_tools"]),
+                )
+                state["collection_summary"] = collection_summary
+            else:
+                read_artifact(args.run_id, "incident-evidence")
+            state.update({"state": "evidence-frozen"})
+            state.pop("error", None)
+            state.pop("failed_from_state", None)
+            save_run(state)
+            thread_id, result, _ = run_incident_rca(root, args.run_id, state["policy"])
+            return finalize_incident_rca(
+                args.run_id, state, result, thread_id, args.agent
+            )
+        with Codex(incident_rca_codex_config(root)) as codex:
+            workflow = read_incident_workflow(args.run_id)
+            thread = codex.thread_resume(
+                state["thread_id"],
+                cwd=str(root),
+                developer_instructions=workflow,
+                approval_mode=ApprovalMode.deny_all,
+                sandbox=Sandbox.read_only,
+            )
+            recovered = (
+                recover_incident_result(thread, state)
+                if state_name in {"running", "failed", "canceled"}
+                else None
+            )
+            LAST_RUN_ID = args.run_id
+            state["state"] = "running"
+            state.pop("error", None)
+            save_run(state)
+            if recovered is None:
+                value = completed_json_turn(
+                    thread,
+                    prompt,
+                    incident_rca_schema(),
+                    timeout_seconds=int(os.environ.get("TWEED_PHASE_TIMEOUT", "1200")),
+                )
+                result = validate_incident_rca_result(value)
+            else:
+                result = recovered
+        return finalize_incident_rca(args.run_id, state, result, thread.id, args.agent)
+
+
 def retry_sync_command(args: argparse.Namespace) -> int:
     state = load_run(args.run_id)
     issue = state.get("issue", {}).get("identifier")
@@ -2998,7 +5369,11 @@ def _retry_sync_command(args: argparse.Namespace) -> int:
     root = Path(state["repository"]).resolve()
     phase = state.get("phase")
     status = state.get("status") or (
-        "created" if state.get("operation") == "create" else None
+        "created"
+        if state.get("operation") == "create"
+        else "established"
+        if state.get("operation") == "incident-publish"
+        else None
     )
     previous_stage = (
         state.get("metadata", {}).get("stage")
@@ -3008,7 +5383,11 @@ def _retry_sync_command(args: argparse.Namespace) -> int:
     next_stage = (
         ("needs-rca" if state.get("kind") == "problem" else "needs-scope")
         if state.get("operation") == "create"
-        else PHASES[phase].next_stage if phase in PHASES else None
+        else "needs-scope"
+        if state.get("operation") == "incident-publish"
+        else PHASES[phase].next_stage
+        if phase in PHASES
+        else None
     )
     try:
         with active_run(args.run_id):
@@ -3030,6 +5409,67 @@ def _retry_sync_command(args: argparse.Namespace) -> int:
                     args.run_id,
                     team=state.get("team"),
                 )
+            elif state.get("operation") == "incident-publish":
+                intake = read_artifact(args.run_id, "linear-intake-description").decode(
+                    "utf-8"
+                )
+                if digest(intake) != state.get("desired_digest"):
+                    raise RuntimeError(
+                        "incident Linear intake does not match its pending digest"
+                    )
+                try:
+                    publication_evidence = json.loads(
+                        read_artifact(args.run_id, "incident-publication-evidence"),
+                        parse_constant=reject_non_json_number,
+                    )
+                except (json.JSONDecodeError, ValueError) as error:
+                    raise RuntimeError(
+                        "incident publication evidence artifact is invalid"
+                    ) from error
+                if not isinstance(publication_evidence, dict):
+                    raise RuntimeError(
+                        "incident publication evidence artifact is invalid"
+                    )
+                verify_incident_publication_inputs(
+                    args.run_id,
+                    state.get("policy"),
+                    publication_evidence,
+                )
+                synced = create_linear_issue(
+                    root,
+                    state["project"],
+                    state["title"],
+                    intake,
+                    args.run_id,
+                    team=state.get("team"),
+                )
+                if synced.get("status") == "synced":
+                    issue = synced.get("issue")
+                    if not isinstance(issue, dict):
+                        raise RuntimeError("incident create recovery returned no issue")
+                    freeze_linear_snapshot(
+                        args.run_id, issue, read_incident_workflow(args.run_id)
+                    )
+                    result = {
+                        "status": "established",
+                        "summary": state.get("summary", "Incident RCA established."),
+                        "question": None,
+                        "report_markdown": read_artifact(args.run_id, "rca").decode(
+                            "utf-8"
+                        ),
+                    }
+                    return finish_phase(
+                        root,
+                        root,
+                        None,
+                        issue,
+                        parse_metadata(issue["description"]),
+                        PHASES["root-cause"],
+                        args.run_id,
+                        state["thread_id"],
+                        result,
+                        args.agent,
+                    )
             elif state.get("operation") == "phase":
                 if state.get("legacy_description_sync"):
                     raise RuntimeError(
@@ -3037,9 +5477,9 @@ def _retry_sync_command(args: argparse.Namespace) -> int:
                         "safely; reasoning and artifacts are preserved in this run"
                     )
                 frozen_issue = load_frozen_issue(state)
-                raw_record = read_artifact(
-                    args.run_id, "linear-journal-record"
-                ).decode("utf-8")
+                raw_record = read_artifact(args.run_id, "linear-journal-record").decode(
+                    "utf-8"
+                )
                 record = journal.parse_comment(raw_record)
                 if record is None:
                     raise RuntimeError("persisted Linear journal record is invalid")
@@ -3175,17 +5615,16 @@ def project_command(args: argparse.Namespace) -> int:
 
 def auth_command(args: argparse.Namespace) -> int:
     if args.agent:
-        raise RuntimeError("Linear OAuth setup is interactive and unavailable with --agent")
+        raise RuntimeError(
+            "Linear OAuth setup is interactive and unavailable with --agent"
+        )
     if args.auth_action == "login":
         credentials = linear_oauth.login(
             args.client_id,
             manual=args.manual,
             callback_timeout=args.timeout,
         )
-        print(
-            "Linear OAuth connected with scopes: "
-            + ", ".join(credentials["scopes"])
-        )
+        print("Linear OAuth connected with scopes: " + ", ".join(credentials["scopes"]))
         return 0
     if args.auth_action == "status":
         value = linear_oauth.status()
@@ -3230,6 +5669,22 @@ def build_parser() -> argparse.ArgumentParser:
     create.add_argument("kind", choices=["problem", "feature"])
     create.add_argument("request", nargs="*")
 
+    incident = subparsers.add_parser("incident")
+    incident.add_argument("--team", help="exact Linear team name override")
+    incident.add_argument("--project", help="exact Linear project name override")
+    incident.add_argument("--window-start", required=True, help="RFC3339 UTC start")
+    incident.add_argument("--window-end", required=True, help="RFC3339 UTC end")
+    incident.add_argument(
+        "--impact", required=True, help="explicit impact-ranking policy"
+    )
+    incident.add_argument(
+        "--mcp-tool",
+        action="append",
+        default=[],
+        help="allowed read-only MCP tool as server/tool; repeat as needed",
+    )
+    incident.add_argument("request", nargs="*")
+
     for command in PHASES:
         phase = subparsers.add_parser(command)
         phase.add_argument("issue")
@@ -3259,7 +5714,9 @@ def build_parser() -> argparse.ArgumentParser:
     project.add_argument("value", nargs="*")
     project.add_argument("--team", help="exact Linear team name for legacy fallback")
     project.add_argument(
-        "--project", dest="project_name", help="exact Linear project name for legacy fallback"
+        "--project",
+        dest="project_name",
+        help="exact Linear project name for legacy fallback",
     )
 
     auth = subparsers.add_parser("auth")
@@ -3286,6 +5743,8 @@ def main() -> int:
         raise RuntimeError("nested Tweed invocation is not allowed")
     if args.command == "create":
         return create_command(args)
+    if args.command == "incident":
+        return incident_command(args)
     if args.command in PHASES:
         return phase_command(args)
     if args.command == "resume":
