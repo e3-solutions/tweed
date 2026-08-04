@@ -47,12 +47,12 @@ round trip. Local transform timing is emitted by the command and varies by machi
 
 | Phase | Frozen snapshot | Old initial prompt | New initial prompt | Referenced artifact bodies | Unique artifact bodies |
 |---|---:|---:|---:|---:|---:|
-| Scope | 1,210 B | 1,848 B | 2,407 B | 708 B | 13,445 B |
+| Scope | 1,210 B | 1,848 B | 2,730 B | 708 B | 14,024 B |
 | Implement | 17,384 B | 18,026 B | 2,801 B | 18,307 B | 65,233 B |
 | Review | 25,324 B | 25,963 B | 3,227 B | 26,128 B | 90,891 B |
-| Total | 43,918 B | 45,837 B | 8,435 B | 45,143 B | 169,569 B |
+| Total | 43,918 B | 45,837 B | 8,758 B | 45,143 B | 170,148 B |
 
-Initial phase prompts shrink 81.6% overall and never repeat the complete issue
+Initial phase prompts shrink 80.9% overall and never repeat the complete issue
 or report payload. Referenced bodies remain available by path/hash and are read
 only when needed. `artifact_store_bytes` is the sum of unique content-addressed
 artifact body bytes, including frozen descriptions/transport snapshots,
@@ -62,8 +62,8 @@ input.
 
 The current hermetic replay is an actual local measurement, not a projected
 workflow run: 0 child/model tasks, 0 model-powered Linear transport tasks, 0
-live Linear requests, 8,435 prompt bytes, 45,143 referenced-artifact bytes, and
-169,569 unique content-addressed artifact body bytes. Its latest transform wall time is emitted by the
+live Linear requests, 8,758 prompt bytes, 45,143 referenced-artifact bytes, and
+170,148 unique content-addressed artifact body bytes. Its latest transform wall time is emitted by the
 command because machine timing varies. A full lifecycle wall time and child-task
 count remain explicitly projected from the preserved baseline until an
 authenticated disposable canary can run. Exact attributable token accounting

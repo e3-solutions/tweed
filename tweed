@@ -1357,6 +1357,13 @@ def build_phase_packet(
             "complete Linear description."
         ),
     }
+    if phase.command == "scope":
+        packet["repository_evidence_contract"] = (
+            "In ## Repository state, every path → SHA-256|ABSENT entry must use a "
+            "repository-relative path (example: src/example.ts), never an absolute or "
+            ".. path. artifacts[].path, artifact_manifest.path, run-state, and content-"
+            "artifact paths are input provenance only and must not appear there."
+        )
     encoded = json.dumps(packet, ensure_ascii=False, separators=(",", ":")).encode(
         "utf-8"
     )

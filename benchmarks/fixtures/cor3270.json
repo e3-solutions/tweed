@@ -84,9 +84,9 @@
         "phase": "scope",
         "snapshot_bytes": 1210,
         "old_prompt_bytes": 1848,
-        "new_prompt_bytes": 2407,
+        "new_prompt_bytes": 2730,
         "referenced_artifact_bytes": 708,
-        "artifact_store_bytes": 13445
+        "artifact_store_bytes": 14024
       },
       {
         "phase": "implement",
@@ -108,9 +108,9 @@
     "totals": {
       "snapshot_bytes": 43918,
       "old_prompt_bytes": 45837,
-      "new_prompt_bytes": 8435,
+      "new_prompt_bytes": 8758,
       "referenced_artifact_bytes": 45143,
-      "artifact_store_bytes": 169569
+      "artifact_store_bytes": 170148
     }
   }
 }

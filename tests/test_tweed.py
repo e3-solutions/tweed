@@ -254,6 +254,18 @@ class TweedTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "does not match"):
                 TWEED.validate_scope_evidence(root, wrong)
 
+            observed_failure = report.replace(
+                "- `new-file.ts` → `ABSENT`",
+                "- `/tmp/tweed-run/artifacts/manifests/manifest.json` → `"
+                + ("a" * 64)
+                + "`\n"
+                "- `/tmp/tweed-run/artifacts/sha256/content` → `"
+                + ("b" * 64)
+                + "`",
+            )
+            with self.assertRaisesRegex(RuntimeError, "unsafe scope evidence path"):
+                TWEED.validate_scope_evidence(root, observed_failure)
+
             description = TWEED.intake_description(
                 "feature", "CSV export", root, "CX", "tw_0123456789abcdef"
             )
@@ -1529,6 +1541,39 @@ class TweedTests(unittest.TestCase):
                 TWEED.hashlib.sha256(manifest_bytes).hexdigest(),
                 manifest_ref["sha256"],
             )
+
+    def test_scope_packet_teaches_repository_evidence_contract(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = make_repo(directory)
+            run_id = "tw_0123456789abcdef"
+            description = TWEED.intake_description(
+                "feature", "Add an export control", root, "CX", run_id
+            )
+            issue = make_issue("TST-1", description)
+            with patch.dict(os.environ, {"TWEED_STATE_HOME": directory}):
+                TWEED.freeze_linear_snapshot(run_id, issue, "workflow")
+                TWEED.put_artifact(run_id, "request", "Add an export control")
+                packet = TWEED.build_phase_packet(
+                    run_id, issue, TWEED.PHASES["scope"]
+                )
+                prompt = TWEED.phase_prompt(
+                    issue, TWEED.PHASES["scope"], packet
+                )
+            contract = packet["repository_evidence_contract"]
+            self.assertIn("repository-relative path", contract)
+            self.assertIn("never an absolute or .. path", contract)
+            self.assertIn("artifact_manifest.path", contract)
+            self.assertIn("input provenance only", contract)
+            self.assertIn("repository_evidence_contract", prompt)
+            self.assertLess(len(json.dumps(packet).encode()), 8192)
+            self.assertLess(len(prompt.encode()), 12288)
+
+    def test_scope_workflow_documents_evidence_contract_at_output_boundary(self):
+        workflow = (ROOT / "workflows/scope-solution.md").read_text()
+        self.assertIn("machine-parsed repository evidence", workflow)
+        self.assertIn("use only repository-relative paths", workflow)
+        self.assertIn("`artifact_manifest.path`", workflow)
+        self.assertIn("never include packet, manifest, run-state", workflow)
 
     def test_retry_sync_reuses_artifacts_without_reasoning_or_refetch(self):
         with tempfile.TemporaryDirectory() as directory:
