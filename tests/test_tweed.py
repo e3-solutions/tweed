@@ -82,9 +82,7 @@ def write_fake_linear(path: Path, issue: dict) -> None:
     path.write_text(
         json.dumps(
             {
-                "issues": {
-                    issue["identifier"]: issue.get("transport_snapshot", issue)
-                },
+                "issues": {issue["identifier"]: issue.get("transport_snapshot", issue)},
                 "next": 2,
                 "writes": 0,
             }
@@ -139,6 +137,1244 @@ class ReadThread:
 
 
 class TweedTests(unittest.TestCase):
+    def test_incident_policy_requires_closed_utc_window_and_explicit_impact(self):
+        policy = TWEED.incident_policy(
+            "2026-08-03T00:00:00Z",
+            "2026-08-04T00:00:00Z",
+            "Select the highest confirmed user impact",
+        )
+        self.assertEqual(policy["environment"], "production")
+        for start, end, impact in (
+            ("2026-08-03", "2026-08-04T00:00:00Z", "impact"),
+            ("2026-08-04T00:00:00Z", "2026-08-03T00:00:00Z", "impact"),
+            ("2026-08-03T00:00:00Z", "2026-08-04T00:00:00Z", " "),
+        ):
+            with (
+                self.subTest(start=start, end=end, impact=impact),
+                self.assertRaises(RuntimeError),
+            ):
+                TWEED.incident_policy(start, end, impact)
+        with self.assertRaisesRegex(RuntimeError, "seven days"):
+            TWEED.incident_policy(
+                "2026-07-01T00:00:00Z",
+                "2026-08-04T00:00:00Z",
+                "impact",
+            )
+
+    def test_incident_mcp_receipts_are_from_actual_allowlisted_turn_items(self):
+        policy = TWEED.incident_policy(
+            "2026-08-03T00:00:00Z",
+            "2026-08-04T00:00:00Z",
+            "highest confirmed impact",
+        )
+        item = SimpleNamespace(
+            root=SimpleNamespace(
+                type="mcpToolCall",
+                id="call-1",
+                server="railway",
+                tool="get_logs",
+                arguments={"start": policy["window_start"]},
+                result={"content": [{"type": "text", "text": "bounded result"}]},
+                error=None,
+                duration_ms=12,
+                status=SimpleNamespace(value="completed"),
+            )
+        )
+        first = TWEED.canonical_mcp_evidence([item], policy, ("railway/get_logs",))
+        second = TWEED.canonical_mcp_evidence([item], policy, ("railway/get_logs",))
+        self.assertEqual(first, second)
+        envelope = json.loads(first)
+        self.assertEqual(envelope["calls"][0]["tool"], "get_logs")
+        self.assertEqual(
+            envelope["calls"][0]["arguments"]["start"], policy["window_start"]
+        )
+        with self.assertRaisesRegex(RuntimeError, "non-allowlisted"):
+            TWEED.canonical_mcp_evidence(
+                [item], policy, ("railway/environment_status",)
+            )
+        with self.assertRaisesRegex(RuntimeError, "no successful"):
+            TWEED.canonical_mcp_evidence([], policy, ("railway/get_logs",))
+
+        item.root.server = "codex_apps"
+        item.root.tool = "railway.get_logs"
+        app_evidence = json.loads(
+            TWEED.canonical_mcp_evidence([item], policy, ("railway/get_logs",))
+        )
+        self.assertEqual(app_evidence["calls"][0]["qualified_tool"], "railway/get_logs")
+
+    def test_incident_mcp_receipts_preserve_failed_attempts_without_losing_coverage(
+        self,
+    ):
+        policy = TWEED.incident_policy(
+            "2026-08-03T00:00:00Z",
+            "2026-08-04T00:00:00Z",
+            "highest confirmed impact",
+        )
+
+        def item(call_id: str, status: str, result: object, error: object = None):
+            return SimpleNamespace(
+                root=SimpleNamespace(
+                    type="mcpToolCall",
+                    id=call_id,
+                    server="codex_apps",
+                    tool="github.search_prs",
+                    arguments={"query": "production"},
+                    result=result,
+                    error=error,
+                    duration_ms=1,
+                    status=SimpleNamespace(value=status),
+                )
+            )
+
+        encoded = TWEED.canonical_mcp_evidence(
+            [
+                item("bad-query", "failed", None, "remote payload must be redacted"),
+                item("good-query", "completed", {"issues": []}),
+            ],
+            policy,
+            ("github/search_prs",),
+            coverage="GitHub existing-work search.",
+        )
+        calls = json.loads(encoded)["calls"]
+        self.assertEqual(calls[0]["status"], "failed")
+        self.assertEqual(calls[0]["error"], "model-facing MCP call failed")
+        self.assertNotIn("remote payload", encoded.decode())
+        self.assertEqual(calls[1]["status"], "completed")
+        self.assertIsNone(calls[1]["error"])
+
+        with self.assertRaisesRegex(RuntimeError, "no successful"):
+            TWEED.canonical_mcp_evidence(
+                [item("only-bad-query", "failed", None, "remote")],
+                policy,
+                ("github/search_prs",),
+                coverage="Failed GitHub attempt only.",
+            )
+
+    def test_incident_mcp_config_hard_filters_tools_and_disables_other_servers(self):
+        servers = [
+            {"name": "railway", "transport": {"type": "stdio"}},
+            {
+                "name": "linear",
+                "transport": {
+                    "type": "streamable_http",
+                    "url": "https://mcp.linear.app/mcp",
+                },
+            },
+        ]
+        with patch.object(TWEED, "_resolved_codex_mcp_servers", return_value=servers):
+            overrides = TWEED.incident_mcp_overrides(
+                "/codex", Path("/repo"), ("railway/get_logs",)
+            )
+        self.assertIn('mcp_servers.railway.enabled_tools=["get_logs"]', overrides)
+        self.assertIn(
+            'mcp_servers.linear={url="https://tweed-mcp-disabled.invalid",enabled=false}',
+            overrides,
+        )
+        app_overrides = TWEED.incident_app_overrides(
+            ("github/search_prs", "linear/search")
+        )
+        self.assertIn("apps.default.enabled=false", app_overrides)
+        self.assertIn('apps.github.enabled_tools=["search_prs"]', app_overrides)
+        self.assertIn('apps.linear.enabled_tools=["search"]', app_overrides)
+        self.assertNotIn("apps.slack.enabled=true", app_overrides)
+        with (
+            patch.object(TWEED, "_resolved_codex_mcp_servers", return_value=servers),
+            self.assertRaisesRegex(RuntimeError, "read-only Linear"),
+        ):
+            TWEED.incident_mcp_overrides(
+                "/codex", Path("/repo"), ("linear/save_issue",)
+            )
+        app_only_servers = [
+            {
+                "name": "Railway",
+                "transport": {"type": "stdio", "command": "railway", "args": ["mcp"]},
+            }
+        ]
+        with (
+            patch.object(TWEED, "find_codex", return_value="/codex"),
+            patch.object(
+                TWEED,
+                "_resolved_codex_mcp_servers",
+                return_value=app_only_servers,
+            ),
+        ):
+            app_only = TWEED.incident_collector_codex_config(
+                Path("/repo"), ("github/search_prs", "linear/search")
+            )
+        self.assertIn("apps.github.enabled=true", app_only.config_overrides)
+        self.assertIn("apps.linear.enabled=true", app_only.config_overrides)
+        self.assertTrue(
+            any(
+                value.startswith("mcp_servers.Railway=")
+                for value in app_only.config_overrides
+            )
+        )
+
+    def test_incident_direct_mcp_discovery_and_closed_window_validation(self):
+        servers = [
+            {
+                "name": "Railway",
+                "transport": {
+                    "type": "stdio",
+                    "command": "railway",
+                    "args": ["mcp"],
+                },
+            },
+            {
+                "name": "github",
+                "transport": {"type": "streamable_http", "url": "https://example"},
+            },
+        ]
+        tools = [
+            {
+                "name": "get_logs",
+                "description": "Read logs",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "since": {"type": "string"},
+                        "until": {"type": "string"},
+                        "lines": {"type": "integer"},
+                    },
+                },
+            }
+        ]
+        with (
+            patch.object(TWEED, "find_codex", return_value="/codex"),
+            patch.object(TWEED, "_resolved_codex_mcp_servers", return_value=servers),
+            patch.object(
+                TWEED,
+                "_stdio_mcp_session",
+                return_value=(tools, [], "2025-03-26"),
+            ),
+        ):
+            model_tools, catalog, direct_servers = TWEED.discover_direct_mcp_tools(
+                Path("/repo"), ("Railway/get_logs", "github/search")
+            )
+        self.assertEqual(model_tools, ("github/search",))
+        self.assertIn("Railway/get_logs", catalog)
+        self.assertIn("Railway", direct_servers)
+
+        policy = TWEED.incident_policy(
+            "2026-08-03T00:00:00Z",
+            "2026-08-04T00:00:00Z",
+            "highest confirmed impact",
+        )
+        valid = {
+            "qualified_tool": "Railway/get_logs",
+            "arguments_json": json.dumps(
+                {
+                    "since": policy["window_start"],
+                    "until": policy["window_end"],
+                    "lines": 100,
+                }
+            ),
+        }
+        normalized = TWEED.validate_direct_mcp_call(valid, catalog, policy)
+        self.assertEqual(normalized["tool"], "get_logs")
+        corrected = TWEED.validate_direct_mcp_call(
+            {
+                **valid,
+                "arguments_json": json.dumps(
+                    {"since": "30m", "until": "now", "lines": 100}
+                ),
+            },
+            catalog,
+            policy,
+        )
+        self.assertEqual(corrected["arguments"]["since"], policy["window_start"])
+        self.assertEqual(corrected["arguments"]["until"], policy["window_end"])
+
+    def test_incident_direct_mcp_strips_unrelated_environment(self):
+        server = {
+            "transport": {
+                "type": "stdio",
+                "command": "railway",
+                "args": ["mcp"],
+                "env": {"EXPLICIT_VALUE": "allowed"},
+                "env_vars": ["EXPLICIT_SECRET"],
+            }
+        }
+        with patch.dict(
+            os.environ,
+            {
+                "PATH": "/bin",
+                "HOME": "/home/test",
+                "LINEAR_API_KEY": "must-not-leak",
+                "UNRELATED_SECRET": "must-not-leak",
+                "EXPLICIT_SECRET": "forwarded",
+            },
+            clear=True,
+        ):
+            transport = TWEED._stdio_mcp_transport(server, Path("/repo"))
+        self.assertEqual(transport["env"]["EXPLICIT_SECRET"], "forwarded")
+        self.assertEqual(transport["env"]["EXPLICIT_VALUE"], "allowed")
+        self.assertNotIn("LINEAR_API_KEY", transport["env"])
+        self.assertNotIn("UNRELATED_SECRET", transport["env"])
+        for transport_config in (
+            {**server["transport"], "env": {"LINEAR_API_KEY": "secret"}},
+            {**server["transport"], "env_vars": ["LINEAR_API_KEY"]},
+        ):
+            with self.assertRaisesRegex(RuntimeError, "protected environment"):
+                TWEED._stdio_mcp_transport(
+                    {"transport": transport_config}, Path("/repo")
+                )
+
+    def test_incident_collector_schema_has_valid_empty_direct_call_contract(self):
+        direct_calls = TWEED.incident_collector_schema()["properties"]["direct_calls"]
+        self.assertEqual(direct_calls["maxItems"], 0)
+        self.assertNotIn("enum", direct_calls["items"])
+
+    def test_incident_direct_mcp_rejects_non_audited_mutation_tool(self):
+        servers = [
+            {
+                "name": "Railway",
+                "transport": {
+                    "type": "stdio",
+                    "command": "railway",
+                    "args": ["mcp"],
+                },
+            }
+        ]
+        with (
+            patch.object(TWEED, "find_codex", return_value="/codex"),
+            patch.object(TWEED, "_resolved_codex_mcp_servers", return_value=servers),
+            patch.object(TWEED, "_stdio_mcp_session") as session,
+            self.assertRaisesRegex(RuntimeError, "audited read allowlist"),
+        ):
+            TWEED.discover_direct_mcp_tools(Path("/repo"), ("Railway/delete_project",))
+        session.assert_not_called()
+
+    def test_incident_stdio_mcp_paginates_and_binds_complete_catalog(self):
+        with tempfile.TemporaryDirectory() as directory:
+            script = Path(directory) / "fake_mcp.py"
+            script.write_text(
+                """import json, sys
+for line in sys.stdin:
+    message = json.loads(line)
+    method = message.get("method")
+    if method == "initialize":
+        result = {"protocolVersion": "2025-03-26", "capabilities": {"tools": {}}, "serverInfo": {"name": "fake", "version": "1"}}
+    elif method == "notifications/initialized":
+        continue
+    elif method == "tools/list":
+        cursor = message.get("params", {}).get("cursor")
+        if cursor is None:
+            result = {"tools": [{"name": "first", "inputSchema": {"type": "object"}}], "nextCursor": "page-2"}
+        else:
+            result = {"tools": [{"name": "second", "inputSchema": {"type": "object"}}]}
+    elif method == "tools/call":
+        result = {"content": [{"type": "text", "text": "ok"}], "isError": False}
+    else:
+        continue
+    print(json.dumps({"jsonrpc": "2.0", "id": message["id"], "result": result}), flush=True)
+"""
+            )
+            server = {
+                "transport": {
+                    "type": "stdio",
+                    "command": sys.executable,
+                    "args": [str(script)],
+                }
+            }
+            tools, results, protocol = TWEED._stdio_mcp_session(
+                server,
+                Path(directory),
+                [
+                    {
+                        "server": "Fake",
+                        "tool": "second",
+                        "qualified_tool": "Fake/second",
+                        "arguments": {},
+                    }
+                ],
+            )
+        self.assertEqual([tool["name"] for tool in tools], ["first", "second"])
+        self.assertEqual(protocol, "2025-03-26")
+        self.assertEqual(results[0]["status"], "completed")
+
+    def test_incident_stdio_mcp_answers_ping_and_redacts_protocol_errors(self):
+        with tempfile.TemporaryDirectory() as directory:
+            script = Path(directory) / "fake_mcp.py"
+            script.write_text(
+                """import json, sys
+pending_initialize = None
+for line in sys.stdin:
+    message = json.loads(line)
+    if pending_initialize is not None:
+        assert message == {"jsonrpc": "2.0", "id": "server-ping", "result": {}}
+        print(json.dumps({"jsonrpc": "2.0", "id": pending_initialize, "result": {"protocolVersion": "2025-03-26", "capabilities": {"tools": {}}, "serverInfo": {"name": "fake", "version": "1"}}}), flush=True)
+        pending_initialize = None
+        continue
+    method = message.get("method")
+    if method == "initialize":
+        pending_initialize = message["id"]
+        print(json.dumps({"jsonrpc": "2.0", "id": "server-ping", "method": "ping", "params": {}}), flush=True)
+    elif method == "notifications/initialized":
+        continue
+    elif method == "tools/list":
+        result = {"tools": [{"name": "read", "inputSchema": {"type": "object"}}]}
+        print(json.dumps({"jsonrpc": "2.0", "id": message["id"], "result": result}), flush=True)
+    elif method == "tools/call":
+        print(json.dumps({"jsonrpc": "2.0", "id": message["id"], "error": {"code": -32001, "message": "secret-token-and-stack"}}), flush=True)
+"""
+            )
+            server = {
+                "transport": {
+                    "type": "stdio",
+                    "command": sys.executable,
+                    "args": [str(script)],
+                }
+            }
+            _, results, _ = TWEED._stdio_mcp_session(
+                server,
+                Path(directory),
+                [
+                    {
+                        "server": "Fake",
+                        "tool": "read",
+                        "qualified_tool": "Fake/read",
+                        "arguments": {},
+                    }
+                ],
+            )
+        self.assertEqual(results[0]["status"], "failed")
+        self.assertIn("-32001", results[0]["error"])
+        self.assertNotIn("secret-token", results[0]["error"])
+
+    def test_incident_stdio_mcp_rejects_missing_input_schema(self):
+        with tempfile.TemporaryDirectory() as directory:
+            script = Path(directory) / "fake_mcp.py"
+            script.write_text(
+                """import json, sys
+for line in sys.stdin:
+    message = json.loads(line)
+    method = message.get("method")
+    if method == "initialize":
+        result = {"protocolVersion": "2025-03-26", "capabilities": {"tools": {}}, "serverInfo": {"name": "fake", "version": "1"}}
+    elif method == "notifications/initialized":
+        continue
+    elif method == "tools/list":
+        result = {"tools": [{"name": "malformed"}]}
+    else:
+        continue
+    print(json.dumps({"jsonrpc": "2.0", "id": message["id"], "result": result}), flush=True)
+"""
+            )
+            server = {
+                "transport": {
+                    "type": "stdio",
+                    "command": sys.executable,
+                    "args": [str(script)],
+                }
+            }
+            with self.assertRaisesRegex(RuntimeError, "invalid tool list"):
+                TWEED._stdio_mcp_session(server, Path(directory), [])
+
+    def test_incident_stdio_mcp_rejects_incomplete_initialize_result(self):
+        with tempfile.TemporaryDirectory() as directory:
+            script = Path(directory) / "fake_mcp.py"
+            script.write_text(
+                """import json, sys
+for line in sys.stdin:
+    message = json.loads(line)
+    if message.get("method") == "initialize":
+        result = {"protocolVersion": "2025-03-26", "capabilities": {"tools": {}}}
+        print(json.dumps({"jsonrpc": "2.0", "id": message["id"], "result": result}), flush=True)
+"""
+            )
+            server = {
+                "transport": {
+                    "type": "stdio",
+                    "command": sys.executable,
+                    "args": [str(script)],
+                }
+            }
+            with self.assertRaisesRegex(RuntimeError, "invalid initialize"):
+                TWEED._stdio_mcp_session(server, Path(directory), [])
+
+    def test_incident_direct_mcp_validates_types_and_enums(self):
+        policy = TWEED.incident_policy(
+            "2026-08-03T00:00:00Z",
+            "2026-08-04T00:00:00Z",
+            "highest confirmed impact",
+        )
+        catalog = {
+            "Railway/get_logs": {
+                "input_schema": {
+                    "type": "object",
+                    "properties": {
+                        "log_type": {"type": "string", "enum": ["deploy", "http"]},
+                        "lines": {"type": "integer", "minimum": 1, "maximum": 1000},
+                        "since": {"type": "string"},
+                        "until": {"type": "string"},
+                    },
+                    "additionalProperties": False,
+                }
+            }
+        }
+        with self.assertRaisesRegex(RuntimeError, "enum"):
+            TWEED.validate_direct_mcp_call(
+                {
+                    "qualified_tool": "Railway/get_logs",
+                    "arguments_json": json.dumps({"log_type": "delete", "lines": 10}),
+                },
+                catalog,
+                policy,
+            )
+        with self.assertRaisesRegex(RuntimeError, "wrong type"):
+            TWEED.validate_direct_mcp_call(
+                {
+                    "qualified_tool": "Railway/get_logs",
+                    "arguments_json": json.dumps(
+                        {"log_type": "deploy", "lines": "many"}
+                    ),
+                },
+                catalog,
+                policy,
+            )
+
+    def test_incident_call_budget_fails_before_dispatch_65(self):
+        items = [
+            SimpleNamespace(root=SimpleNamespace(type="mcpToolCall"))
+            for _ in range(TWEED.MAX_INCIDENT_MCP_CALLS)
+        ]
+        with self.assertRaisesRegex(RuntimeError, "call limit"):
+            TWEED.validate_incident_dispatch_budget(
+                items,
+                [],
+                [{"qualified_tool": "Railway/get_logs", "arguments_json": "{}"}],
+            )
+
+    def test_incident_canonical_receipt_binds_runner_stdio_calls(self):
+        policy = TWEED.incident_policy(
+            "2026-08-03T00:00:00Z",
+            "2026-08-04T00:00:00Z",
+            "highest confirmed impact",
+        )
+        direct = {
+            "server": "Railway",
+            "tool": "list_projects",
+            "qualified_tool": "Railway/list_projects",
+            "arguments": {},
+            "result": {"content": [{"type": "text", "text": "negotiation"}]},
+            "protocol_version": "2025-03-26",
+            "tools_sha256": "a" * 64,
+            "duration_ms": 5,
+        }
+        envelope = json.loads(
+            TWEED.canonical_mcp_evidence(
+                [],
+                policy,
+                ("Railway/list_projects",),
+                direct_calls=[direct],
+            )
+        )
+        self.assertEqual(envelope["calls"][0]["source"], "runner-stdio")
+        self.assertEqual(envelope["calls"][0]["tools_sha256"], "a" * 64)
+        failed = {
+            **direct,
+            "result": None,
+            "status": "failed",
+            "error": "bounded MCP error",
+        }
+        with self.assertRaisesRegex(RuntimeError, "no successful"):
+            TWEED.canonical_mcp_evidence(
+                [],
+                policy,
+                ("Railway/list_projects",),
+                direct_calls=[failed],
+            )
+
+    def test_incident_duplicate_must_bind_successful_linear_and_github_receipts(self):
+        policy = TWEED.incident_policy(
+            "2026-08-03T00:00:00Z",
+            "2026-08-04T00:00:00Z",
+            "highest confirmed impact",
+        )
+
+        def item(
+            call_id: str, server: str, result: object, tool: str = "search"
+        ) -> SimpleNamespace:
+            return SimpleNamespace(
+                root=SimpleNamespace(
+                    type="mcpToolCall",
+                    id=call_id,
+                    server=server,
+                    tool=tool,
+                    arguments={"query": "incident"},
+                    result=result,
+                    error=None,
+                    duration_ms=1,
+                    status=SimpleNamespace(value="completed"),
+                )
+            )
+
+        encoded = TWEED.canonical_mcp_evidence(
+            [
+                item("linear-call", "linear", {"identifier": "COR-3293"}),
+                item("github-call", "github", {"url": "https://github.test/pr/1"}),
+            ],
+            policy,
+            ("linear/search", "github/search", "Railway/get_logs"),
+            direct_calls=[
+                {
+                    "server": "Railway",
+                    "tool": "get_logs",
+                    "qualified_tool": "Railway/get_logs",
+                    "arguments": {
+                        "since": policy["window_start"],
+                        "until": policy["window_end"],
+                    },
+                    "result": {"content": [{"type": "text", "text": "error"}]},
+                    "protocol_version": "2025-03-26",
+                    "tools_sha256": "a" * 64,
+                    "duration_ms": 1,
+                }
+            ],
+            coverage="Production logs plus Linear and GitHub existing-work searches.",
+        )
+        TWEED.validate_incident_collection_coverage(encoded)
+        with tempfile.TemporaryDirectory() as directory:
+            run_id = "tw_0123456789abcdee"
+            with patch.dict(os.environ, {"TWEED_STATE_HOME": directory}):
+                TWEED.put_artifact(run_id, "incident-evidence", encoded)
+                TWEED.put_artifact(run_id, "incident-policy", json.dumps(policy))
+                result = {
+                    "status": "established",
+                    "supporting_call_ids": ["runner-stdio:3"],
+                    "existing_work_call_ids": ["linear-call", "github-call"],
+                    "duplicate_reference": "COR-3293",
+                }
+                TWEED.validate_incident_rca_evidence(run_id, result)
+                fetched_pr = item(
+                    "github-fetch",
+                    "github",
+                    {"url": "https://github.test/pr/1"},
+                    "fetch_pr",
+                )
+                encoded_with_fetch = TWEED.canonical_mcp_evidence(
+                    [
+                        item("linear-call", "linear", {"identifier": "COR-3293"}),
+                        item("github-search", "github", {"issues": []}),
+                        fetched_pr,
+                    ],
+                    policy,
+                    (
+                        "linear/search",
+                        "github/search",
+                        "github/fetch_pr",
+                        "Railway/get_logs",
+                    ),
+                    direct_calls=[
+                        {
+                            "server": "Railway",
+                            "tool": "get_logs",
+                            "qualified_tool": "Railway/get_logs",
+                            "arguments": {
+                                "since": policy["window_start"],
+                                "until": policy["window_end"],
+                            },
+                            "result": {"content": [{"type": "text", "text": "error"}]},
+                            "protocol_version": "2025-03-26",
+                            "tools_sha256": "a" * 64,
+                            "duration_ms": 1,
+                        }
+                    ],
+                    coverage="Production logs plus Linear and GitHub existing-work searches.",
+                )
+                TWEED.put_artifact(run_id, "incident-evidence", encoded_with_fetch)
+                TWEED.validate_incident_collection_coverage(encoded_with_fetch)
+                TWEED.validate_incident_rca_evidence(
+                    run_id,
+                    {
+                        **result,
+                        "supporting_call_ids": ["runner-stdio:4"],
+                        "existing_work_call_ids": ["linear-call", "github-fetch"],
+                        "duplicate_reference": "https://github.test/pr/1",
+                    },
+                )
+                TWEED.put_artifact(run_id, "incident-evidence", encoded)
+                with self.assertRaisesRegex(RuntimeError, "not present"):
+                    TWEED.validate_incident_rca_evidence(
+                        run_id, {**result, "duplicate_reference": "COR-9999"}
+                    )
+                with self.assertRaisesRegex(RuntimeError, "not present"):
+                    TWEED.validate_incident_rca_evidence(
+                        run_id, {**result, "duplicate_reference": "COR-329"}
+                    )
+                outside_window = json.loads(encoded)
+                outside_window["calls"][2]["arguments"]["since"] = "30m"
+                outside_encoded = json.dumps(outside_window).encode()
+                with self.assertRaisesRegex(RuntimeError, "frozen window"):
+                    TWEED.validate_incident_collection_coverage(outside_encoded)
+                wrong_policy = {
+                    **policy,
+                    "window_start": "2026-08-02T00:00:00Z",
+                }
+                with self.assertRaisesRegex(RuntimeError, "frozen policy"):
+                    TWEED.validate_incident_collection_coverage(encoded, wrong_policy)
+
+    def test_incident_rca_requires_specific_title_and_fail_closed_dedupe(self):
+        established = {
+            "status": "established",
+            "summary": "Room teardown self-waits",
+            "question": None,
+            "report_markdown": "Status: established\n\n# Root cause\n\nCycle.",
+            "issue_title": " Production Room2 teardown self-deadlocks ",
+            "duplicate_reference": "COR-100",
+            "supporting_call_ids": ["call-production"],
+            "existing_work_call_ids": ["call-linear", "call-github"],
+        }
+        result = TWEED.validate_incident_rca_result(established)
+        self.assertEqual(
+            result["issue_title"], "Production Room2 teardown self-deadlocks"
+        )
+        self.assertEqual(result["duplicate_reference"], "COR-100")
+        with self.assertRaisesRegex(RuntimeError, "specific issue title"):
+            TWEED.validate_incident_rca_result(
+                {
+                    **established,
+                    "issue_title": None,
+                    "duplicate_reference": None,
+                }
+            )
+        duplicate = TWEED.validate_incident_rca_result(
+            {**established, "issue_title": None}
+        )
+        self.assertIsNone(duplicate["issue_title"])
+        self.assertEqual(duplicate["duplicate_reference"], "COR-100")
+
+    def test_incident_duplicate_creates_no_linear_issue(self):
+        result = {
+            "status": "established",
+            "summary": "Existing deployment drain incident",
+            "question": None,
+            "report_markdown": "Status: established\n\n# Root cause\n\nKnown.",
+            "issue_title": "Deployment replacement terminates active calls",
+            "duplicate_reference": "COR-3285",
+            "supporting_call_ids": ["call-production"],
+            "existing_work_call_ids": ["call-linear", "call-github"],
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = make_repo(directory)
+            args = SimpleNamespace(
+                repo=str(root),
+                team="Core",
+                project="Frontline",
+                request=["Address recent production problems"],
+                window_start="2026-08-03T00:00:00Z",
+                window_end="2026-08-04T00:00:00Z",
+                impact="highest confirmed user impact",
+                mcp_tool=["Railway/get_logs", "linear/search", "github/search_prs"],
+                agent=True,
+            )
+            with (
+                patch.dict(
+                    os.environ, {"TWEED_STATE_HOME": str(Path(directory) / "state")}
+                ),
+                patch.object(
+                    TWEED,
+                    "collect_incident_evidence",
+                    return_value=("collector-thread", "collected"),
+                ),
+                patch.object(
+                    TWEED,
+                    "run_incident_rca",
+                    return_value=("rca-thread", result, "workflow"),
+                ),
+                patch.object(TWEED, "validate_incident_rca_evidence"),
+                patch.object(TWEED, "publish_incident") as publish,
+                contextlib.redirect_stdout(io.StringIO()) as output,
+            ):
+                code = TWEED.incident_command(args)
+        self.assertEqual(code, 9)
+        publish.assert_not_called()
+        receipt = json.loads(output.getvalue())
+        self.assertEqual(receipt["state"], "duplicate")
+        self.assertIn("COR-3285", receipt["summary"])
+
+    def test_incident_publish_retry_recovers_create_then_appends_without_codex(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = make_repo(directory)
+            run_id = "tw_0123456789abcdee"
+            description = TWEED.intake_description(
+                "problem", "Incident", root, "Frontline", run_id
+            )
+            issue = make_issue("TST-1", description)
+            state_home = Path(directory) / "state"
+            policy = TWEED.incident_policy(
+                "2026-08-03T00:00:00Z",
+                "2026-08-04T00:00:00Z",
+                "highest confirmed impact",
+            )
+
+            def item(call_id: str, server: str, result: object) -> SimpleNamespace:
+                return SimpleNamespace(
+                    root=SimpleNamespace(
+                        type="mcpToolCall",
+                        id=call_id,
+                        server=server,
+                        tool="search_prs" if server == "github" else "search",
+                        arguments={"query": "incident"},
+                        result=result,
+                        error=None,
+                        duration_ms=1,
+                        status=SimpleNamespace(value="completed"),
+                    )
+                )
+
+            evidence = TWEED.canonical_mcp_evidence(
+                [
+                    item("linear-call", "linear", {"identifier": "COR-2"}),
+                    item("github-call", "github", {"url": "https://github.test/2"}),
+                ],
+                policy,
+                ("linear/search", "github/search_prs", "Railway/get_logs"),
+                direct_calls=[
+                    {
+                        "server": "Railway",
+                        "tool": "get_logs",
+                        "qualified_tool": "Railway/get_logs",
+                        "arguments": {
+                            "since": policy["window_start"],
+                            "until": policy["window_end"],
+                        },
+                        "result": {"content": [{"type": "text", "text": "error"}]},
+                        "protocol_version": "2025-03-26",
+                        "tools_sha256": "b" * 64,
+                        "duration_ms": 1,
+                    }
+                ],
+                coverage="Production logs plus existing-work searches.",
+            )
+            publication_evidence = {
+                "status": "established",
+                "supporting_call_ids": ["runner-stdio:3"],
+                "existing_work_call_ids": ["linear-call", "github-call"],
+                "duplicate_reference": None,
+            }
+            with patch.dict(os.environ, {"TWEED_STATE_HOME": str(state_home)}):
+                manifest = TWEED.load_artifact_manifest(run_id)
+                TWEED.put_artifact(
+                    run_id,
+                    "linear-intake-description",
+                    description,
+                    manifest=manifest,
+                )
+                TWEED.put_artifact(
+                    run_id,
+                    "rca",
+                    "Status: established\n\n# Root cause\n\nConfirmed.",
+                    manifest=manifest,
+                )
+                TWEED.put_artifact(
+                    run_id, "incident-evidence", evidence, manifest=manifest
+                )
+                TWEED.put_artifact(
+                    run_id,
+                    "incident-policy",
+                    json.dumps(policy),
+                    manifest=manifest,
+                )
+                TWEED.put_artifact(
+                    run_id,
+                    "incident-publication-evidence",
+                    json.dumps(publication_evidence),
+                    manifest=manifest,
+                )
+                TWEED.put_artifact(
+                    run_id,
+                    "workflow",
+                    TWEED.load_workflow("root-cause"),
+                    manifest=manifest,
+                )
+                TWEED.save_run(
+                    {
+                        "run_id": run_id,
+                        "state": "sync-blocked",
+                        "operation": "incident-publish",
+                        "phase": "root-cause",
+                        "repository": str(root),
+                        "project": "Frontline",
+                        "team": "Core",
+                        "title": "Specific incident",
+                        "thread_id": "thread-1",
+                        "summary": "RCA established",
+                        "policy": policy,
+                        "desired_digest": TWEED.digest(description),
+                    }
+                )
+                with (
+                    patch.object(
+                        TWEED,
+                        "create_linear_issue",
+                        return_value={
+                            "status": "synced",
+                            "identifier": "TST-1",
+                            "url": issue["url"],
+                            "issue": issue,
+                        },
+                    ) as create,
+                    patch.object(TWEED, "finish_phase", return_value=0) as finish,
+                ):
+                    code = TWEED._retry_sync_command(
+                        SimpleNamespace(run_id=run_id, agent=True)
+                    )
+            self.assertEqual(code, 0)
+            create.assert_called_once()
+            finish.assert_called_once()
+
+    def test_incident_established_path_creates_then_retries_single_rca_append(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = make_repo(directory)
+            state_home = Path(directory) / "state"
+            store = Path(directory) / "linear.json"
+            trace = Path(directory) / "linear.trace"
+            store.write_text(json.dumps({"issues": {}, "next": 1, "writes": 0}))
+            run_id = "tw_0123456789abcdee"
+            policy = TWEED.incident_policy(
+                "2026-08-03T00:00:00Z",
+                "2026-08-04T00:00:00Z",
+                "highest confirmed impact",
+            )
+
+            def item(call_id: str, server: str) -> SimpleNamespace:
+                return SimpleNamespace(
+                    root=SimpleNamespace(
+                        type="mcpToolCall",
+                        id=call_id,
+                        server=server,
+                        tool="search_prs" if server == "github" else "search",
+                        arguments={"query": "incident"},
+                        result={"items": []},
+                        error=None,
+                        duration_ms=1,
+                        status=SimpleNamespace(value="completed"),
+                    )
+                )
+
+            evidence = TWEED.canonical_mcp_evidence(
+                [item("linear-call", "linear"), item("github-call", "github")],
+                policy,
+                ("linear/search", "github/search_prs", "Railway/get_logs"),
+                direct_calls=[
+                    {
+                        "server": "Railway",
+                        "tool": "get_logs",
+                        "qualified_tool": "Railway/get_logs",
+                        "arguments": {
+                            "since": policy["window_start"],
+                            "until": policy["window_end"],
+                        },
+                        "result": {"content": [{"type": "text", "text": "error"}]},
+                        "protocol_version": "2025-03-26",
+                        "tools_sha256": "d" * 64,
+                        "duration_ms": 1,
+                    }
+                ],
+                coverage="Production logs plus existing-work searches.",
+            )
+            result = {
+                "status": "established",
+                "summary": "Confirmed incident",
+                "question": None,
+                "report_markdown": "Status: established\n\n# Root cause\n\nConfirmed.",
+                "issue_title": "Specific production incident",
+                "duplicate_reference": None,
+                "supporting_call_ids": ["runner-stdio:3"],
+                "existing_work_call_ids": ["linear-call", "github-call"],
+            }
+
+            def collect(
+                _root: Path,
+                current_run: str,
+                _request: str,
+                _policy: dict,
+                _tools: tuple,
+            ) -> tuple[str, str]:
+                self.assertEqual(json.loads(store.read_text())["writes"], 0)
+                TWEED.put_artifact(current_run, "incident-evidence", evidence)
+                return "collector-thread", "collected"
+
+            def rca(_root: Path, current_run: str, _policy: dict):
+                self.assertEqual(json.loads(store.read_text())["writes"], 0)
+                TWEED.put_artifact(
+                    current_run, "workflow", TWEED.load_workflow("root-cause")
+                )
+                return "rca-thread", result, "workflow"
+
+            args = SimpleNamespace(
+                repo=str(root),
+                team="Core",
+                project="Frontline",
+                request=["Address production incident"],
+                window_start=policy["window_start"],
+                window_end=policy["window_end"],
+                impact=policy["impact_policy"],
+                mcp_tool=[
+                    "Railway/get_logs",
+                    "linear/search",
+                    "github/search_prs",
+                ],
+                agent=True,
+            )
+            env = {
+                "TWEED_STATE_HOME": str(state_home),
+                "TWEED_LINEAR_ADAPTER": str(FAKE_ADAPTER),
+                "FAKE_LINEAR_STATE": str(store),
+                "FAKE_LINEAR_TRACE": str(trace),
+            }
+            blocked_append = {
+                "status": "blocked",
+                "identifier": None,
+                "url": None,
+                "reason": "simulated append outage",
+            }
+            blocked_create = {
+                "status": "blocked",
+                "identifier": None,
+                "url": None,
+                "reason": "simulated create outage",
+            }
+            with (
+                patch.dict(os.environ, env),
+                patch.object(TWEED, "new_run_id", return_value=run_id),
+                patch.object(TWEED, "collect_incident_evidence", side_effect=collect),
+                patch.object(TWEED, "run_incident_rca", side_effect=rca),
+                patch.object(TWEED, "create_linear_issue", return_value=blocked_create),
+                contextlib.redirect_stdout(io.StringIO()),
+            ):
+                self.assertEqual(TWEED.incident_command(args), 8)
+            self.assertEqual(json.loads(store.read_text())["writes"], 0)
+            self.assertFalse(trace.exists())
+
+            with (
+                patch.dict(os.environ, env),
+                patch.object(
+                    TWEED, "append_linear_record", return_value=blocked_append
+                ),
+                contextlib.redirect_stdout(io.StringIO()) as first_retry_output,
+            ):
+                first_retry_code = TWEED.retry_sync_command(
+                    SimpleNamespace(run_id=run_id, agent=True)
+                )
+                first_retry_state = TWEED.load_run(run_id)
+            self.assertEqual(
+                first_retry_code,
+                8,
+                (first_retry_state, first_retry_output.getvalue()),
+            )
+            self.assertEqual(
+                json.loads(store.read_text())["writes"],
+                1,
+                (first_retry_state, first_retry_output.getvalue()),
+            )
+            self.assertEqual(trace.read_text().splitlines(), ["create-or-recover"])
+
+            with (
+                patch.dict(os.environ, env),
+                contextlib.redirect_stdout(io.StringIO()) as output,
+            ):
+                retry_code = TWEED.retry_sync_command(
+                    SimpleNamespace(run_id=run_id, agent=True)
+                )
+                retry_state = TWEED.load_run(run_id)
+            self.assertEqual(
+                retry_code,
+                0,
+                (retry_state, output.getvalue()),
+            )
+            self.assertEqual(json.loads(store.read_text())["writes"], 2)
+            self.assertEqual(
+                trace.read_text().splitlines(),
+                ["create-or-recover", "append-or-recover"],
+            )
+            self.assertEqual(retry_state["state"], "completed")
+            receipt = json.loads(output.getvalue().splitlines()[0])
+            self.assertEqual(receipt["next_stage"], "needs-scope")
+
+    def test_incident_workflow_recovers_only_exact_orphan_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            run_id = "tw_0123456789abcdee"
+            with patch.dict(os.environ, {"TWEED_STATE_HOME": directory}):
+                workflow = TWEED.load_workflow("root-cause")
+                encoded = workflow.encode()
+                orphan = (
+                    TWEED.artifact_root(run_id)
+                    / "sha256"
+                    / hashlib.sha256(encoded).hexdigest()
+                )
+                TWEED.atomic_bytes_write(orphan, encoded)
+                TWEED.atomic_json_write(
+                    TWEED.artifact_manifest_path(run_id),
+                    TWEED.empty_artifact_manifest(run_id),
+                )
+                recovered = TWEED.read_incident_workflow(run_id)
+                self.assertEqual(recovered, workflow)
+                entry = TWEED.load_artifact_manifest(run_id)["artifacts"]["workflow"]
+                self.assertEqual(entry["sha256"], hashlib.sha256(encoded).hexdigest())
+
+    def test_incident_collection_failure_is_terminal_and_resumable(self):
+        with tempfile.TemporaryDirectory() as directory:
+            run_id = "tw_0123456789abcdee"
+            with patch.dict(os.environ, {"TWEED_STATE_HOME": directory}):
+                TWEED.save_run(
+                    {
+                        "run_id": run_id,
+                        "state": "collecting",
+                        "operation": "incident",
+                    }
+                )
+                TWEED.mark_run_terminal(run_id, "failed", "collector failed")
+                state = TWEED.load_run(run_id)
+        self.assertEqual(state["state"], "failed")
+        self.assertEqual(state["failed_from_state"], "collecting")
+
+    def test_incident_rca_synthesis_is_read_only(self):
+        with tempfile.TemporaryDirectory() as directory:
+            run_id = "tw_0123456789abcdee"
+            root = make_repo(directory)
+            state_home = Path(directory) / "state"
+            thread = SimpleNamespace(id="thread-1", set_name=lambda _name: None)
+            captured: dict[str, object] = {}
+
+            class Client:
+                def __enter__(self):
+                    return self
+
+                def __exit__(self, *_args):
+                    return None
+
+                def thread_start(self, **kwargs):
+                    captured.update(kwargs)
+                    return thread
+
+            client = Client()
+            policy = TWEED.incident_policy(
+                "2026-08-03T00:00:00Z",
+                "2026-08-04T00:00:00Z",
+                "highest confirmed impact",
+            )
+
+            def item(call_id: str, server: str) -> SimpleNamespace:
+                return SimpleNamespace(
+                    root=SimpleNamespace(
+                        type="mcpToolCall",
+                        id=call_id,
+                        server=server,
+                        tool="search",
+                        arguments={"query": "incident"},
+                        result={"items": []},
+                        error=None,
+                        duration_ms=1,
+                        status=SimpleNamespace(value="completed"),
+                    )
+                )
+
+            evidence = TWEED.canonical_mcp_evidence(
+                [item("linear-call", "linear"), item("github-call", "github")],
+                policy,
+                ("linear/search", "github/search", "Railway/get_logs"),
+                direct_calls=[
+                    {
+                        "server": "Railway",
+                        "tool": "get_logs",
+                        "qualified_tool": "Railway/get_logs",
+                        "arguments": {
+                            "since": policy["window_start"],
+                            "until": policy["window_end"],
+                        },
+                        "result": {"content": [{"type": "text", "text": "error"}]},
+                        "protocol_version": "2025-03-26",
+                        "tools_sha256": "c" * 64,
+                        "duration_ms": 1,
+                    }
+                ],
+                coverage="Production logs plus existing-work searches.",
+            )
+            with patch.dict(os.environ, {"TWEED_STATE_HOME": str(state_home)}):
+                for name, value in (
+                    ("request", "incident"),
+                    ("incident-policy", json.dumps(policy)),
+                    ("incident-evidence", evidence),
+                ):
+                    TWEED.put_artifact(run_id, name, value)
+                TWEED.save_run(
+                    {
+                        "run_id": run_id,
+                        "state": "evidence-frozen",
+                        "operation": "incident",
+                        "repository": str(root),
+                    }
+                )
+                with (
+                    patch.object(TWEED, "Codex", return_value=client),
+                    patch.object(TWEED, "incident_rca_codex_config"),
+                    patch.object(
+                        TWEED,
+                        "completed_json_turn",
+                        return_value={
+                            "status": "established",
+                            "summary": "root cause",
+                            "question": None,
+                            "report_markdown": "Status: established",
+                            "issue_title": "Specific incident",
+                            "duplicate_reference": None,
+                            "supporting_call_ids": ["call-1"],
+                            "existing_work_call_ids": ["call-2", "call-3"],
+                        },
+                    ),
+                ):
+                    TWEED.run_incident_rca(root, run_id, policy)
+        self.assertEqual(captured["sandbox"], TWEED.Sandbox.read_only)
+        self.assertEqual(captured["approval_mode"], TWEED.ApprovalMode.deny_all)
+
+    def test_incident_resume_reuses_frozen_evidence_without_recollection(self):
+        with tempfile.TemporaryDirectory() as directory:
+            run_id = "tw_0123456789abcdee"
+            root = make_repo(directory)
+            with patch.dict(
+                os.environ, {"TWEED_STATE_HOME": str(Path(directory) / "state")}
+            ):
+                TWEED.put_artifact(run_id, "incident-evidence", b"{}")
+                TWEED.put_artifact(run_id, "request", "incident")
+                result = {
+                    "status": "established",
+                    "summary": "duplicate",
+                    "question": None,
+                    "report_markdown": "Status: established",
+                    "issue_title": None,
+                    "duplicate_reference": "COR-1",
+                    "supporting_call_ids": ["call-1"],
+                    "existing_work_call_ids": ["call-1", "call-2"],
+                }
+                for terminal_state in ("failed", "canceled"):
+                    state = {
+                        "run_id": run_id,
+                        "state": terminal_state,
+                        "operation": "incident",
+                        "repository": str(root),
+                        "policy": {"window_start": "a", "window_end": "b"},
+                        "allowed_tools": ["linear/search", "github/search"],
+                    }
+                    TWEED.save_run(state)
+                    with (
+                        patch.object(TWEED, "collect_incident_evidence") as collect,
+                        patch.object(
+                            TWEED,
+                            "run_incident_rca",
+                            return_value=("thread", result, "workflow"),
+                        ) as rca,
+                        patch.object(TWEED, "finalize_incident_rca", return_value=9),
+                    ):
+                        code = TWEED.resume_incident_run(
+                            SimpleNamespace(run_id=run_id, answer=[], agent=True), state
+                        )
+                    self.assertEqual(code, 9)
+                    collect.assert_not_called()
+                    rca.assert_called_once()
+
     def test_problem_and_feature_start_at_their_only_legal_stage(self):
         with tempfile.TemporaryDirectory() as directory:
             root = make_repo(directory)
@@ -270,9 +1506,7 @@ class TweedTests(unittest.TestCase):
                 "- `/tmp/tweed-run/artifacts/manifests/manifest.json` → `"
                 + ("a" * 64)
                 + "`\n"
-                "- `/tmp/tweed-run/artifacts/sha256/content` → `"
-                + ("b" * 64)
-                + "`",
+                "- `/tmp/tweed-run/artifacts/sha256/content` → `" + ("b" * 64) + "`",
             )
             with self.assertRaisesRegex(RuntimeError, "unsafe scope evidence path"):
                 TWEED.validate_scope_evidence(root, observed_failure)
@@ -462,7 +1696,13 @@ class TweedTests(unittest.TestCase):
     def test_shared_binding_honors_env_override_and_beats_legacy(self):
         with tempfile.TemporaryDirectory() as directory:
             root = make_repo(directory)
-            git(root, "remote", "add", "origin", "git@github.com:e3-solutions/sample.git")
+            git(
+                root,
+                "remote",
+                "add",
+                "origin",
+                "git@github.com:e3-solutions/sample.git",
+            )
             sync_dir = Path(directory) / "shared"
             sync_dir.mkdir()
             (sync_dir / "repos.json").write_text(
@@ -518,11 +1758,7 @@ class TweedTests(unittest.TestCase):
             sync_dir.mkdir()
             (sync_dir / "repos.json").write_text(
                 json.dumps(
-                    {
-                        "repos": {
-                            str(root): {"disabled": True, "reason": "Not tracked"}
-                        }
-                    }
+                    {"repos": {str(root): {"disabled": True, "reason": "Not tracked"}}}
                 )
             )
             with patch.dict(
@@ -537,9 +1773,7 @@ class TweedTests(unittest.TestCase):
             self.assertTrue(binding["disabled"])
             self.assertEqual(binding["reason"], "Not tracked")
             self.assertEqual(binding["source"], "linear-progress-sync")
-            with patch.dict(
-                os.environ, {"LINEAR_SYNC_CONFIG_DIR": str(sync_dir)}
-            ):
+            with patch.dict(os.environ, {"LINEAR_SYNC_CONFIG_DIR": str(sync_dir)}):
                 explicit = TWEED.resolve_linear_binding(
                     root,
                     team_override="Explicit Team",
@@ -726,9 +1960,7 @@ class TweedTests(unittest.TestCase):
                 "transport": {"type": "stdio", "command": "math-server"},
             },
         ]
-        with patch.object(
-            TWEED, "_resolved_codex_mcp_servers", return_value=servers
-        ):
+        with patch.object(TWEED, "_resolved_codex_mcp_servers", return_value=servers):
             self.assertEqual(
                 TWEED.linear_mcp_disable_overrides("/codex", Path("/repo")),
                 (
@@ -745,9 +1977,7 @@ class TweedTests(unittest.TestCase):
             }
         ]
         with (
-            patch.object(
-                TWEED, "_resolved_codex_mcp_servers", return_value=servers
-            ),
+            patch.object(TWEED, "_resolved_codex_mcp_servers", return_value=servers),
             self.assertRaisesRegex(
                 RuntimeError,
                 "cannot safely disable Linear MCP alias 'linear.prod'",
@@ -766,13 +1996,12 @@ class TweedTests(unittest.TestCase):
             project_config = root / ".codex" / "config.toml"
             project_config.parent.mkdir()
             project_config.write_text(
-                "[mcp_servers.linear-project]\n"
-                'url = "https://mcp.linear.app/mcp"\n'
+                '[mcp_servers.linear-project]\nurl = "https://mcp.linear.app/mcp"\n'
             )
             home = Path(directory) / "codex-home"
             home.mkdir()
             (home / "config.toml").write_text(
-                f"[projects.{json.dumps(str(root))}]\ntrust_level = \"trusted\"\n"
+                f'[projects.{json.dumps(str(root))}]\ntrust_level = "trusted"\n'
             )
             env = {**os.environ, "CODEX_HOME": str(home)}
             with patch.dict(os.environ, env):
@@ -801,9 +2030,7 @@ class TweedTests(unittest.TestCase):
                     env=env,
                 )
                 self.assertEqual(completed.returncode, 0, completed.stderr)
-                self.assertEqual(
-                    completed.stdout.strip(), "linear-project (disabled)"
-                )
+                self.assertEqual(completed.stdout.strip(), "linear-project (disabled)")
             else:
                 self.assertNotEqual(completed.returncode, 0)
                 self.assertIn("No MCP server named", completed.stderr)
@@ -872,9 +2099,7 @@ class TweedTests(unittest.TestCase):
                         "config/read", {"cwd": directory, "includeLayers": False}
                     )
             plugins = result["config"]["plugins"]
-            self.assertFalse(
-                plugins["linear-progress-sync@coreedge-local"]["enabled"]
-            )
+            self.assertFalse(plugins["linear-progress-sync@coreedge-local"]["enabled"])
             self.assertFalse(plugins["linear@openai-curated"]["enabled"])
             self.assertNotIn('"linear-progress-sync@coreedge-local"', plugins)
 
@@ -1026,7 +2251,9 @@ class TweedTests(unittest.TestCase):
             self.assertEqual(stale["status"], "blocked")
             self.assertEqual(state["writes"], 1)
             self.assertEqual(state["issues"]["TST-1"]["description"], description)
-            self.assertEqual(state["issues"]["TST-1"]["comments"][0]["body"], record.comment)
+            self.assertEqual(
+                state["issues"]["TST-1"]["comments"][0]["body"], record.comment
+            )
 
     def test_api_key_fallback_requires_explicit_key(self):
         with patch.dict(os.environ, {"TWEED_LINEAR_AUTH": "api-key"}, clear=False):
@@ -1083,7 +2310,9 @@ class TweedTests(unittest.TestCase):
             description = TWEED.intake_description(
                 "feature", "CSV export", root, "CX", run_id
             )
-            normalized = description.replace("# Request\n\nCSV export", "Request: CSV export")
+            normalized = description.replace(
+                "# Request\n\nCSV export", "Request: CSV export"
+            )
             raw = {
                 "id": "12345678-1234-4123-8123-123456789abc",
                 "identifier": "TST-1",
@@ -1215,7 +2444,13 @@ class TweedTests(unittest.TestCase):
     def test_retry_sync_uses_frozen_binding_after_shared_config_changes(self):
         with tempfile.TemporaryDirectory() as directory:
             root = make_repo(directory)
-            git(root, "remote", "add", "origin", "https://github.com/e3-solutions/sample.git")
+            git(
+                root,
+                "remote",
+                "add",
+                "origin",
+                "https://github.com/e3-solutions/sample.git",
+            )
             sync_dir = Path(directory) / "shared"
             sync_dir.mkdir()
             config_path = sync_dir / "repos.json"
@@ -1286,7 +2521,9 @@ class TweedTests(unittest.TestCase):
                     ),
                     0,
                 )
-            self.assertEqual(captured, {"team": "Frozen Team", "project": "Frozen Project"})
+            self.assertEqual(
+                captured, {"team": "Frozen Team", "project": "Frozen Project"}
+            )
             self.assertEqual(frozen["binding_source"], "linear-progress-sync")
             self.assertRegex(frozen["binding_digest"], r"^[a-f0-9]{64}$")
 
@@ -1363,9 +2600,7 @@ class TweedTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = make_repo(directory)
             run_id = "tw_0123456789abcdef"
-            description = TWEED.intake_description(
-                "feature", "CSV", root, "CX", run_id
-            )
+            description = TWEED.intake_description("feature", "CSV", root, "CX", run_id)
             issue = make_issue("TST-1", description)
             metadata = TWEED.parse_metadata(description)
             report = "Status: implemented\n\n## Verification\n\n- Passed"
@@ -1399,9 +2634,7 @@ class TweedTests(unittest.TestCase):
                         "status": "implemented",
                     }
                 )
-                committed = TWEED.commit_phase(
-                    root, "TST-1", TWEED.PHASES["implement"]
-                )
+                committed = TWEED.commit_phase(root, "TST-1", TWEED.PHASES["implement"])
                 with (
                     patch.object(TWEED, "verify_linear_issue"),
                     patch.object(
@@ -1416,7 +2649,9 @@ class TweedTests(unittest.TestCase):
                     patch.object(
                         TWEED.Codex,
                         "__init__",
-                        side_effect=AssertionError("finalization must not invoke Codex"),
+                        side_effect=AssertionError(
+                            "finalization must not invoke Codex"
+                        ),
                     ),
                     contextlib.redirect_stdout(io.StringIO()) as output,
                 ):
@@ -1445,9 +2680,7 @@ class TweedTests(unittest.TestCase):
                 "issue": {"identifier": "TST-1"},
             }
             with self.assertRaisesRegex(RuntimeError, "unexpected repository tree"):
-                TWEED.recover_finalizing_commit(
-                    state, TWEED.PHASES["review"], root
-                )
+                TWEED.recover_finalizing_commit(state, TWEED.PHASES["review"], root)
 
     def test_snapshot_is_frozen_once_into_separate_integrity_checked_artifacts(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -1506,8 +2739,7 @@ class TweedTests(unittest.TestCase):
                     manifest["artifacts"]["rca"]["sha256"],
                 )
                 rca_path = (
-                    TWEED.artifact_root(run_id)
-                    / manifest["artifacts"]["rca"]["path"]
+                    TWEED.artifact_root(run_id) / manifest["artifacts"]["rca"]["path"]
                 )
                 rca_path.write_text("tampered")
                 with self.assertRaisesRegex(RuntimeError, "integrity check failed"):
@@ -1533,7 +2765,11 @@ class TweedTests(unittest.TestCase):
             run_id = "tw_0123456789abcdef"
             large = "SENSITIVE-COMPLETE-PAYLOAD-" + ("x" * 50000)
             description = TWEED.intake_description("feature", large, root, "CX", run_id)
-            scope = "Status: scoped\n\n## Repository state\n\n- `README.md` → `" + TWEED.sha256_file(root / "README.md") + "`"
+            scope = (
+                "Status: scoped\n\n## Repository state\n\n- `README.md` → `"
+                + TWEED.sha256_file(root / "README.md")
+                + "`"
+            )
             description += "\n" + TWEED.section_block("scope", scope)
             issue = make_issue("TST-1", description)
             with patch.dict(os.environ, {"TWEED_STATE_HOME": directory}):
@@ -1564,12 +2800,8 @@ class TweedTests(unittest.TestCase):
             with patch.dict(os.environ, {"TWEED_STATE_HOME": directory}):
                 TWEED.freeze_linear_snapshot(run_id, issue, "workflow")
                 TWEED.put_artifact(run_id, "request", "Add an export control")
-                packet = TWEED.build_phase_packet(
-                    run_id, issue, TWEED.PHASES["scope"]
-                )
-                prompt = TWEED.phase_prompt(
-                    issue, TWEED.PHASES["scope"], packet
-                )
+                packet = TWEED.build_phase_packet(run_id, issue, TWEED.PHASES["scope"])
+                prompt = TWEED.phase_prompt(issue, TWEED.PHASES["scope"], packet)
             contract = packet["repository_evidence_contract"]
             self.assertIn("repository-relative path", contract)
             self.assertIn("never an absolute or .. path", contract)
@@ -1665,7 +2897,9 @@ class TweedTests(unittest.TestCase):
             self.assertEqual(trace.read_text().splitlines(), ["append-or-recover"])
             self.assertEqual(completed_state, "completed")
             self.assertEqual(retry_result, 8)
-            self.assertEqual(json.loads(retry_output.getvalue())["state"], "sync-blocked")
+            self.assertEqual(
+                json.loads(retry_output.getvalue())["state"], "sync-blocked"
+            )
             self.assertEqual(retry_saved, "sync-blocked")
 
     def test_complete_evidence_cache_key_invalidates_each_declared_axis(self):
@@ -1722,24 +2956,60 @@ class TweedTests(unittest.TestCase):
                         TWEED.load_cached_evidence(key, document), {"passed": True}
                     )
                 variants = [
-                    (["python", "-m", "pytest"], dependency, configuration, "one", {"python": "3.14", "tool": "1"}, ["a" * 64]),
-                    (["python", "-m", "unittest"], dependency, configuration, "two", {"python": "3.14", "tool": "1"}, ["a" * 64]),
-                    (["python", "-m", "unittest"], dependency, configuration, "one", {"python": "3.14", "tool": "2"}, ["a" * 64]),
-                    (["python", "-m", "unittest"], dependency, configuration, "one", {"python": "3.14", "tool": "1"}, ["b" * 64]),
+                    (
+                        ["python", "-m", "pytest"],
+                        dependency,
+                        configuration,
+                        "one",
+                        {"python": "3.14", "tool": "1"},
+                        ["a" * 64],
+                    ),
+                    (
+                        ["python", "-m", "unittest"],
+                        dependency,
+                        configuration,
+                        "two",
+                        {"python": "3.14", "tool": "1"},
+                        ["a" * 64],
+                    ),
+                    (
+                        ["python", "-m", "unittest"],
+                        dependency,
+                        configuration,
+                        "one",
+                        {"python": "3.14", "tool": "2"},
+                        ["a" * 64],
+                    ),
+                    (
+                        ["python", "-m", "unittest"],
+                        dependency,
+                        configuration,
+                        "one",
+                        {"python": "3.14", "tool": "1"},
+                        ["b" * 64],
+                    ),
                 ]
                 for argv, dep, config, env_value, versions, hashes in variants:
                     with patch.dict(os.environ, {"DECLARED_TEST_INPUT": env_value}):
                         changed, _ = TWEED.evidence_cache_key(
-                            root, argv, dependency_paths=[dep], configuration_paths=[config],
-                            declared_environment=["DECLARED_TEST_INPUT"], tool_versions=versions,
+                            root,
+                            argv,
+                            dependency_paths=[dep],
+                            configuration_paths=[config],
+                            declared_environment=["DECLARED_TEST_INPUT"],
+                            tool_versions=versions,
                             artifact_hashes=hashes,
                         )
                     self.assertNotEqual(key, changed)
                 dependency.write_text("two")
                 changed, _ = TWEED.evidence_cache_key(
-                    root, ["python", "-m", "unittest"], dependency_paths=[dependency],
-                    configuration_paths=[configuration], declared_environment=["DECLARED_TEST_INPUT"],
-                    tool_versions={"python": "3.14", "tool": "1"}, artifact_hashes=["a" * 64],
+                    root,
+                    ["python", "-m", "unittest"],
+                    dependency_paths=[dependency],
+                    configuration_paths=[configuration],
+                    declared_environment=["DECLARED_TEST_INPUT"],
+                    tool_versions={"python": "3.14", "tool": "1"},
+                    artifact_hashes=["a" * 64],
                 )
                 self.assertNotEqual(key, changed)
 
@@ -1769,7 +3039,9 @@ class TweedTests(unittest.TestCase):
                 no_artifacts=True,
                 timeout=10,
             )
-            with patch.dict(os.environ, {"TWEED_STATE_HOME": str(Path(directory) / "state")}):
+            with patch.dict(
+                os.environ, {"TWEED_STATE_HOME": str(Path(directory) / "state")}
+            ):
                 with contextlib.redirect_stdout(io.StringIO()) as first:
                     self.assertEqual(TWEED.evidence_command(args), 0)
                 with contextlib.redirect_stdout(io.StringIO()) as second:
@@ -1932,12 +3204,20 @@ class TweedTests(unittest.TestCase):
             with patch.dict(os.environ, {"TWEED_STATE_HOME": directory}):
                 path = TWEED.state_path(run_id)
                 path.parent.mkdir(parents=True)
-                old = {"run_id": run_id, "state": "sync-pending", "phase": "scope", "report_markdown": "Status: scoped", "workflow_text": "workflow"}
+                old = {
+                    "run_id": run_id,
+                    "state": "sync-pending",
+                    "phase": "scope",
+                    "report_markdown": "Status: scoped",
+                    "workflow_text": "workflow",
+                }
                 path.write_text(json.dumps(old))
                 loaded = TWEED.load_run(run_id)
                 self.assertEqual(loaded["run_schema_version"], 3)
                 self.assertTrue((path.parent / "run.v1.json").exists())
-                self.assertEqual(TWEED.read_artifact(run_id, "scope"), b"Status: scoped")
+                self.assertEqual(
+                    TWEED.read_artifact(run_id, "scope"), b"Status: scoped"
+                )
 
     def test_pending_description_sync_migrates_explicitly_fail_closed(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -1983,7 +3263,16 @@ class TweedTests(unittest.TestCase):
         skill = (ROOT / "skills/use-tweed/SKILL.md").read_text()
         self.assertIn("Run exactly one command", skill)
         self.assertIn("at most 4 KiB", skill)
-        for state in ("created", "completed", "awaiting-input", "sync-pending", "sync-blocked", "failed", "resume", "retry-sync"):
+        for state in (
+            "created",
+            "completed",
+            "awaiting-input",
+            "sync-pending",
+            "sync-blocked",
+            "failed",
+            "resume",
+            "retry-sync",
+        ):
             self.assertIn(state, skill)
         self.assertIn("Do not ingest child output", skill)
 

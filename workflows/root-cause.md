@@ -4,13 +4,14 @@ Identify the problem recorded in the supplied frozen artifact packet and establi
 
 ## Rules
 
-- Verify the supplied issue is a Tweed `problem` at stage `needs-rca`; otherwise return `blocked`.
+- Verify the supplied input is either a Tweed `problem` at stage `needs-rca` or a runner-authenticated pre-Linear incident packet containing a frozen policy and MCP evidence snapshot; otherwise return `blocked`.
 - Do not modify project files, use Linear tools, or cause external side effects while investigating or clarifying.
 - Use existing project tools and tests. Add no dependencies or helper code.
 - Treat the user's report as a symptom, not a proven explanation.
 - Prefer runtime, test, repository, and history evidence over agent opinion.
 - Inspect available repository evidence before asking the user. When one material fact that cannot be discovered locally blocks the diagnosis, return `Status: needs-input` with one concise question, why it matters, concrete options when applicable, and a recommendation when evidence supports one.
 - After receiving a clarification answer, reconcile it with repository evidence and continue the same investigation. Do not repeat an answered question.
+- For a pre-Linear incident packet, treat the MCP snapshot as the complete external evidence boundary. Do not make new external calls. Every production claim must cite a successful receipt in that snapshot and fall within, or explicitly disclose its relationship to, the frozen incident window. Compare the established mechanism against the existing-work results in the snapshot and identify any matching Linear issue or GitHub PR; never recommend creating a duplicate.
 
 ## Workflow
 

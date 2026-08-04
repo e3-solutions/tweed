@@ -25,12 +25,18 @@ def content_digest(issue: dict, excluding: str | None = None) -> str:
         "title": issue.get("title"),
         "description": issue.get("description") or "",
         "comments": [
-            {"id": item["id"], "body": item["body"], "archivedAt": item.get("archivedAt")}
+            {
+                "id": item["id"],
+                "body": item["body"],
+                "archivedAt": item.get("archivedAt"),
+            }
             for item in issue.get("comments", [])
             if item["id"] != excluding
         ],
     }
-    return digest(json.dumps(stable, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
+    return digest(
+        json.dumps(stable, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    )
 
 
 def snapshot_digest(issue: dict) -> str:
@@ -55,7 +61,9 @@ def snapshot_digest(issue: dict) -> str:
             for item in issue.get("comments", [])
         ],
     }
-    return digest(json.dumps(stable, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
+    return digest(
+        json.dumps(stable, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    )
 
 
 def finalize(issue: dict) -> dict:
@@ -84,11 +92,18 @@ def main() -> int:
         if operation == "fetch":
             response = envelope("ok", issue=issue) if issue else envelope("not-found")
         elif operation == "verify":
-            unchanged = issue and issue["snapshot_digest"] == request["expected_snapshot_digest"]
+            unchanged = (
+                issue
+                and issue["snapshot_digest"] == request["expected_snapshot_digest"]
+            )
             response = envelope("unchanged" if unchanged else "stale", issue=issue)
         elif operation == "create-or-recover":
             issue = next(
-                (item for item in state["issues"].values() if item["id"] == request["issue_id"]),
+                (
+                    item
+                    for item in state["issues"].values()
+                    if item["id"] == request["issue_id"]
+                ),
                 None,
             )
             status = "recovered"
@@ -112,11 +127,17 @@ def main() -> int:
             response = envelope(status, issue=issue)
         elif operation == "append-or-recover":
             existing = next(
-                (item for item in issue["comments"] if item["id"] == request["comment_id"]),
+                (
+                    item
+                    for item in issue["comments"]
+                    if item["id"] == request["comment_id"]
+                ),
                 None,
             )
             if existing:
-                status = "recovered" if existing["body"] == request["body"] else "blocked"
+                status = (
+                    "recovered" if existing["body"] == request["body"] else "blocked"
+                )
                 response = envelope(status, issue=issue, reason="conflicting comment")
             elif (
                 issue["snapshot_digest"] != request["expected_snapshot_digest"]

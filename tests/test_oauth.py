@@ -63,7 +63,9 @@ class FakeHTTP:
 class Response:
     def __init__(self, status: int, payload: object):
         self.status = status
-        self.raw = payload if isinstance(payload, bytes) else json.dumps(payload).encode()
+        self.raw = (
+            payload if isinstance(payload, bytes) else json.dumps(payload).encode()
+        )
 
     def getheader(self, _name: str):
         return None
@@ -99,6 +101,50 @@ class ScriptedConnections:
 
 
 class OAuthTests(unittest.TestCase):
+    def test_keyring_worker_is_bounded_and_never_places_secret_in_argv(self):
+        secret = b"credential-secret-that-must-stay-on-stdin"
+        completed = subprocess.CompletedProcess(
+            ["worker"],
+            0,
+            json.dumps(
+                {
+                    "status": "ok",
+                    "value": __import__("base64").b64encode(secret).decode("ascii"),
+                }
+            ).encode(),
+            b"",
+        )
+        with mock.patch.object(oauth.subprocess, "run", return_value=completed) as run:
+            self.assertEqual(oauth._run_keyring_worker("read", "default"), secret)
+        args, kwargs = run.call_args
+        self.assertNotIn(secret.decode(), " ".join(args[0]))
+        self.assertEqual(kwargs["input"], b"")
+        self.assertEqual(kwargs["timeout"], oauth.KEYRING_TIMEOUT_SECONDS)
+        self.assertTrue(kwargs["start_new_session"])
+
+        with mock.patch.object(
+            oauth.subprocess,
+            "run",
+            side_effect=subprocess.TimeoutExpired(["worker"], 1),
+        ):
+            with self.assertRaisesRegex(oauth.OAuthError, "timed out") as caught:
+                oauth._run_keyring_worker("write", "default", secret)
+        self.assertNotIn(secret.decode(), str(caught.exception))
+
+    def test_keyring_worker_rejects_invalid_or_oversized_protocol_output(self):
+        for stdout in (
+            b"not-json",
+            json.dumps({"status": "ok", "value": "%%%"}).encode(),
+            b"x" * (oauth.KEYRING_MAX_BYTES * 2 + 1),
+        ):
+            completed = subprocess.CompletedProcess(["worker"], 0, stdout, b"")
+            with (
+                self.subTest(stdout=stdout[:20]),
+                mock.patch.object(oauth.subprocess, "run", return_value=completed),
+                self.assertRaises(oauth.OAuthError),
+            ):
+                oauth._run_keyring_worker("read", "default")
+
     def test_official_public_client_id_is_the_builtin_default(self):
         self.assertEqual(oauth.DEFAULT_CLIENT_ID, OFFICIAL_CLIENT_ID)
 
@@ -116,7 +162,9 @@ class OAuthTests(unittest.TestCase):
         self.assertEqual(args[:2], ("POST", oauth.TOKEN_PATH))
         self.assertNotIn(secret, json.dumps(kwargs["headers"]))
         oversized = oauth.OAuthHTTP(
-            ScriptedConnections(Response(200, b"x" * (oauth.MAX_OAUTH_RESPONSE_BYTES + 1)))
+            ScriptedConnections(
+                Response(200, b"x" * (oauth.MAX_OAUTH_RESPONSE_BYTES + 1))
+            )
         )
         with self.assertRaisesRegex(oauth.OAuthError, "byte limit") as caught:
             oversized.post_form(oauth.TOKEN_PATH, {"grant_type": "refresh_token"})
@@ -127,7 +175,9 @@ class OAuthTests(unittest.TestCase):
         value = oauth.authorization_url(CLIENT_ID, "csrf-state", verifier)
         parsed = urlsplit(value)
         query = parse_qs(parsed.query)
-        self.assertEqual(f"{parsed.scheme}://{parsed.netloc}{parsed.path}", oauth.AUTHORIZE_URL)
+        self.assertEqual(
+            f"{parsed.scheme}://{parsed.netloc}{parsed.path}", oauth.AUTHORIZE_URL
+        )
         self.assertEqual(query["response_type"], ["code"])
         self.assertEqual(query["client_id"], [CLIENT_ID])
         self.assertEqual(query["redirect_uri"], [oauth.REDIRECT_URI])
@@ -222,10 +272,14 @@ class OAuthTests(unittest.TestCase):
                 mock.patch.object(oauth, "oauth_store_path", return_value=path),
                 mock.patch.object(oauth, "_keyring_write", side_effect=write),
                 mock.patch.object(
-                    oauth, "_keyring_read", side_effect=lambda account: records.get(account)
+                    oauth,
+                    "_keyring_read",
+                    side_effect=lambda account: records.get(account),
                 ),
                 mock.patch.object(
-                    oauth, "_keyring_delete", side_effect=lambda account: records.pop(account, None)
+                    oauth,
+                    "_keyring_delete",
+                    side_effect=lambda account: records.pop(account, None),
                 ),
             ):
                 os.environ.pop("TWEED_LINEAR_OAUTH_FILE", None)
@@ -247,10 +301,14 @@ class OAuthTests(unittest.TestCase):
                 mock.patch.object(oauth, "oauth_store_path", return_value=path),
                 mock.patch.object(oauth, "_keyring_write", side_effect=write),
                 mock.patch.object(
-                    oauth, "_keyring_read", side_effect=lambda account: records.get(account)
+                    oauth,
+                    "_keyring_read",
+                    side_effect=lambda account: records.get(account),
                 ),
                 mock.patch.object(
-                    oauth, "_keyring_delete", side_effect=lambda account: records.pop(account, None)
+                    oauth,
+                    "_keyring_delete",
+                    side_effect=lambda account: records.pop(account, None),
                 ),
             ):
                 os.environ.pop("TWEED_LINEAR_OAUTH_FILE", None)
@@ -263,11 +321,17 @@ class OAuthTests(unittest.TestCase):
                         raise oauth.OAuthError("simulated pointer failure")
                     original_atomic(target, encoded)
 
-                with mock.patch.object(oauth, "_atomic_write_private", side_effect=fail_pointer):
+                with mock.patch.object(
+                    oauth, "_atomic_write_private", side_effect=fail_pointer
+                ):
                     with self.assertRaisesRegex(oauth.OAuthError, "pointer failure"):
-                        oauth.save_credentials(path, {**credentials(), "access_token": "new"})
+                        oauth.save_credentials(
+                            path, {**credentials(), "access_token": "new"}
+                        )
                 self.assertEqual(path.read_bytes(), first_pointer)
-                self.assertEqual(oauth.load_credentials(path)["access_token"], "access-old")
+                self.assertEqual(
+                    oauth.load_credentials(path)["access_token"], "access-old"
+                )
 
     def test_keyring_slot_failures_leave_one_complete_selected_record(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -282,22 +346,34 @@ class OAuthTests(unittest.TestCase):
                 mock.patch.object(oauth, "oauth_store_path", return_value=path),
                 mock.patch.object(oauth, "_keyring_write", side_effect=write),
                 mock.patch.object(
-                    oauth, "_keyring_read", side_effect=lambda account: records.get(account)
+                    oauth,
+                    "_keyring_read",
+                    side_effect=lambda account: records.get(account),
                 ),
                 mock.patch.object(
-                    oauth, "_keyring_delete", side_effect=lambda account: records.pop(account, None)
+                    oauth,
+                    "_keyring_delete",
+                    side_effect=lambda account: records.pop(account, None),
                 ),
             ):
                 os.environ.pop("TWEED_LINEAR_OAUTH_FILE", None)
                 oauth.save_credentials(path, credentials())
                 with mock.patch.object(
-                    oauth, "_keyring_write", side_effect=oauth.OAuthError("write failed")
+                    oauth,
+                    "_keyring_write",
+                    side_effect=oauth.OAuthError("write failed"),
                 ):
                     with self.assertRaisesRegex(oauth.OAuthError, "write failed"):
-                        oauth.save_credentials(path, {**credentials(), "access_token": "lost"})
-                self.assertEqual(oauth.load_credentials(path)["access_token"], "access-old")
+                        oauth.save_credentials(
+                            path, {**credentials(), "access_token": "lost"}
+                        )
+                self.assertEqual(
+                    oauth.load_credentials(path)["access_token"], "access-old"
+                )
                 with mock.patch.object(
-                    oauth, "_keyring_delete", side_effect=oauth.OAuthError("cleanup failed")
+                    oauth,
+                    "_keyring_delete",
+                    side_effect=oauth.OAuthError("cleanup failed"),
                 ):
                     with self.assertRaisesRegex(oauth.OAuthError, "cleanup failed"):
                         oauth.save_credentials(
@@ -335,7 +411,9 @@ class OAuthTests(unittest.TestCase):
                     ),
                 ),
                 mock.patch.object(
-                    oauth, "_keyring_read", side_effect=lambda account: records.get(account)
+                    oauth,
+                    "_keyring_read",
+                    side_effect=lambda account: records.get(account),
                 ),
                 mock.patch.object(oauth, "_keyring_delete", side_effect=delete),
             ):
@@ -362,10 +440,14 @@ class OAuthTests(unittest.TestCase):
                 mock.patch.dict(os.environ, {}, clear=False),
                 mock.patch.object(oauth, "oauth_store_path", return_value=path),
                 mock.patch.object(
-                    oauth, "_keyring_read", side_effect=lambda account: records.get(account)
+                    oauth,
+                    "_keyring_read",
+                    side_effect=lambda account: records.get(account),
                 ),
                 mock.patch.object(
-                    oauth, "_keyring_delete", side_effect=lambda account: records.pop(account, None)
+                    oauth,
+                    "_keyring_delete",
+                    side_effect=lambda account: records.pop(account, None),
                 ),
             ):
                 os.environ.pop("TWEED_LINEAR_OAUTH_FILE", None)
@@ -393,7 +475,9 @@ class OAuthTests(unittest.TestCase):
                     ),
                 ),
                 mock.patch.object(
-                    oauth, "_keyring_read", side_effect=lambda account: records.get(account)
+                    oauth,
+                    "_keyring_read",
+                    side_effect=lambda account: records.get(account),
                 ),
                 mock.patch.object(oauth, "_keyring_delete", side_effect=delete),
             ):
@@ -513,9 +597,9 @@ class OAuthTests(unittest.TestCase):
             oauth.save_credentials(path, value)
             with self.assertRaises(oauth.OAuthError):
                 oauth.access_token(path=path, http=FakeHTTP(), clock=lambda: 1_000)
-            value["pending_refresh"]["refresh_fingerprint"] = __import__("hashlib").sha256(
-                b"refresh-old"
-            ).hexdigest()
+            value["pending_refresh"]["refresh_fingerprint"] = (
+                __import__("hashlib").sha256(b"refresh-old").hexdigest()
+            )
             oauth.save_credentials(path, value)
             with self.assertRaisesRegex(oauth.OAuthError, "grace expired"):
                 oauth.access_token(path=path, http=FakeHTTP(), clock=lambda: 1_000)
@@ -576,7 +660,9 @@ class OAuthTests(unittest.TestCase):
                     raise oauth.OAuthError("simulated crash before durable rotation")
                 original_save(target, value)
 
-            with mock.patch.object(oauth, "save_credentials", side_effect=crash_on_rotated):
+            with mock.patch.object(
+                oauth, "save_credentials", side_effect=crash_on_rotated
+            ):
                 with self.assertRaisesRegex(oauth.OAuthError, "simulated crash"):
                     oauth.access_token(
                         path=path,
@@ -642,14 +728,14 @@ class OAuthTests(unittest.TestCase):
                     input_fn=lambda _prompt: redirected,
                 )
             self.assertEqual(http.calls[0][1]["client_id"], OFFICIAL_CLIENT_ID)
-            self.assertEqual(oauth.load_credentials(path)["client_id"], OFFICIAL_CLIENT_ID)
+            self.assertEqual(
+                oauth.load_credentials(path)["client_id"], OFFICIAL_CLIENT_ID
+            )
 
     def test_explicit_empty_client_id_override_fails_closed(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "linear.json"
-            with mock.patch.dict(
-                os.environ, {"TWEED_LINEAR_OAUTH_FILE": str(path)}
-            ):
+            with mock.patch.dict(os.environ, {"TWEED_LINEAR_OAUTH_FILE": str(path)}):
                 with self.assertRaisesRegex(oauth.OAuthError, "identity is missing"):
                     oauth.login("", manual=True, input_fn=lambda _prompt: "unused")
             self.assertFalse(path.exists())
@@ -666,7 +752,9 @@ class OAuthTests(unittest.TestCase):
             path = Path(directory) / "linear.json"
             with (
                 mock.patch.dict(os.environ, {"TWEED_LINEAR_OAUTH_FILE": str(path)}),
-                mock.patch.object(oauth, "manual_timeout_supported", return_value=False),
+                mock.patch.object(
+                    oauth, "manual_timeout_supported", return_value=False
+                ),
                 mock.patch("builtins.print"),
             ):
                 with self.assertRaisesRegex(oauth.OAuthError, "bounded manual login"):
@@ -758,7 +846,10 @@ class OAuthTests(unittest.TestCase):
 
     def test_logout_clears_local_tokens_but_does_not_confirm_400_or_401(self):
         for status in (400, 401):
-            with self.subTest(status=status), tempfile.TemporaryDirectory() as directory:
+            with (
+                self.subTest(status=status),
+                tempfile.TemporaryDirectory() as directory,
+            ):
                 path = Path(directory) / "linear.json"
                 oauth.save_credentials(path, credentials())
                 http = FakeHTTP((status, {}), (200, {}))
@@ -790,9 +881,13 @@ class OAuthTests(unittest.TestCase):
     def test_adapter_defaults_to_oauth_and_api_key_requires_explicit_mode(self):
         with (
             mock.patch.dict(os.environ, {}, clear=True),
-            mock.patch.object(adapter.oauth, "access_token", return_value="oauth-secret"),
+            mock.patch.object(
+                adapter.oauth, "access_token", return_value="oauth-secret"
+            ),
         ):
-            self.assertEqual(adapter.authorization_from_environment(), "Bearer oauth-secret")
+            self.assertEqual(
+                adapter.authorization_from_environment(), "Bearer oauth-secret"
+            )
         with mock.patch.dict(
             os.environ,
             {"TWEED_LINEAR_AUTH": "api-key", "LINEAR_API_KEY": "api-secret"},
@@ -800,8 +895,12 @@ class OAuthTests(unittest.TestCase):
         ):
             self.assertEqual(adapter.authorization_from_environment(), "api-secret")
         with mock.patch.dict(os.environ, {"LINEAR_API_KEY": "ignored"}, clear=True):
-            with mock.patch.object(adapter.oauth, "access_token", return_value="oauth-secret"):
-                self.assertEqual(adapter.authorization_from_environment(), "Bearer oauth-secret")
+            with mock.patch.object(
+                adapter.oauth, "access_token", return_value="oauth-secret"
+            ):
+                self.assertEqual(
+                    adapter.authorization_from_environment(), "Bearer oauth-secret"
+                )
         with mock.patch.dict(os.environ, {"TWEED_LINEAR_AUTH": "api-key"}, clear=True):
             with self.assertRaises(adapter.AdapterError):
                 adapter.authorization_from_environment()

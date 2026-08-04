@@ -10,6 +10,8 @@ Run exactly one command for the requested action:
 ```sh
 tweed --agent create problem <request>
 tweed --agent create feature <request>
+tweed --agent incident --window-start <UTC> --window-end <UTC> --impact <policy> \
+  --mcp-tool <server/read-tool> [...] <request>
 tweed --agent root-cause <issue>
 tweed --agent scope <issue>
 tweed --agent implement <issue>
@@ -18,6 +20,12 @@ tweed --agent resume <run> [answer]
 tweed --agent retry-sync <run>
 ```
 
+For `incident`, use the exact case-sensitive server/tool identities from the
+configured Codex MCP catalog. Include discovery reads needed to resolve later
+IDs (for example project and service listing before status/log reads); Tweed
+executes configured stdio MCP calls directly and freezes their JSON-RPC
+receipts.
+
 Treat stdout as exactly one `dev.tweed.receipt.v1` JSON object of at most 4 KiB.
 Do not ingest child output, task transcripts, polling output, run-state files, or
 content-addressed reports. Do not start a second Tweed command automatically.
@@ -25,6 +33,7 @@ content-addressed reports. Do not start a second Tweed command automatically.
 Handle the receipt by `state`:
 
 - `created` or `completed`: Return the compact issue, stage, branch, commit, and summary.
+- `duplicate`: Return the existing-work reference and explain that Tweed intentionally created no issue.
 - `awaiting-input`: Ask only the receipt's structured question. On a later user turn, invoke `resume` once with the answer.
 - `sync-pending` or `sync-blocked`: Explain that reasoning and repository work are preserved. On explicit continuation, invoke `retry-sync` once; never rerun the phase.
 - `blocked`, `partial`, or `not-established`: Return the summary and unchanged stage. Do not advance automatically.
