@@ -13,6 +13,7 @@ import sys
 import tempfile
 import time
 import unittest
+import warnings
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -659,53 +660,206 @@ class TweedTests(unittest.TestCase):
             patch.object(
                 TWEED,
                 "linear_mcp_disable_overrides",
-                return_value=('mcp_servers."linear".enabled=false',),
+                return_value=(
+                    'mcp_servers.linear={url="https://tweed-linear-disabled.invalid",enabled=false}',
+                ),
             ),
         ):
             config = TWEED.codex_config(Path("/tmp").resolve())
         self.assertIn("features.hooks=false", config.config_overrides)
+        for override in TWEED.LINEAR_PLUGIN_DISABLE_OVERRIDES:
+            self.assertIn(override, config.config_overrides)
         self.assertIn(
-            'plugins."linear-progress-sync@coreedge-local".enabled=false',
+            'mcp_servers.linear={url="https://tweed-linear-disabled.invalid",enabled=false}',
             config.config_overrides,
         )
-        self.assertIn('mcp_servers."linear".enabled=false', config.config_overrides)
-        for name in (
-            "LINEAR_API_KEY",
-            "LINEAR_ACCESS_TOKEN",
-            "LINEAR_OAUTH_TOKEN",
-            "MCP_REMOTE_CONFIG_DIR",
-            "TWEED_LINEAR_ADAPTER",
-            "TWEED_LINEAR_AUTH",
-            "TWEED_LINEAR_CLIENT_ID",
-            "TWEED_LINEAR_OAUTH_FILE",
-        ):
+        for name in TWEED.LINEAR_CHILD_ENV_NAMES:
             self.assertEqual(config.env[name], "")
 
     def test_linear_mcp_disable_overrides_handle_clean_http_alias_and_stdio(self):
+        servers = [
+            {
+                "name": "linear-prod",
+                "transport": {
+                    "type": "streamable_http",
+                    "url": "HTTPS://MCP.LINEAR.APP/mcp",
+                },
+            },
+            {
+                "name": "issues",
+                "transport": {
+                    "type": "stdio",
+                    "command": "npx",
+                    "args": [
+                        "-y",
+                        "mcp-remote",
+                        "https://mcp.linear.app",
+                    ],
+                },
+            },
+            {"name": "other", "transport": {"command": "true"}},
+            {
+                "name": "nonlinear-math",
+                "transport": {"type": "stdio", "command": "math-server"},
+            },
+        ]
+        with patch.object(
+            TWEED, "_resolved_codex_mcp_servers", return_value=servers
+        ):
+            self.assertEqual(
+                TWEED.linear_mcp_disable_overrides("/codex", Path("/repo")),
+                (
+                    'mcp_servers.linear-prod={url="https://tweed-linear-disabled.invalid",enabled=false}',
+                    'mcp_servers.issues={command="tweed-linear-disabled",enabled=false}',
+                ),
+            )
+
+    def test_linear_mcp_disable_overrides_reject_unsafe_alias(self):
+        servers = [
+            {
+                "name": "linear.prod",
+                "transport": {"url": "https://mcp.linear.app/mcp"},
+            }
+        ]
+        with (
+            patch.object(
+                TWEED, "_resolved_codex_mcp_servers", return_value=servers
+            ),
+            self.assertRaisesRegex(
+                RuntimeError,
+                "cannot safely disable Linear MCP alias 'linear.prod'",
+            ),
+        ):
+            TWEED.linear_mcp_disable_overrides("/codex", Path("/repo"))
+
+    def test_linear_mcp_disable_overrides_include_effective_project_layer(self):
+        codex = TWEED.find_codex()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            root.mkdir()
+            (root / ".git").mkdir()
+            nested = root / "packages" / "service"
+            nested.mkdir(parents=True)
+            project_config = root / ".codex" / "config.toml"
+            project_config.parent.mkdir()
+            project_config.write_text(
+                "[mcp_servers.linear-project]\n"
+                'url = "https://mcp.linear.app/mcp"\n'
+            )
+            home = Path(directory) / "codex-home"
+            home.mkdir()
+            (home / "config.toml").write_text(
+                f"[projects.{json.dumps(str(root))}]\ntrust_level = \"trusted\"\n"
+            )
+            env = {**os.environ, "CODEX_HOME": str(home)}
+            with patch.dict(os.environ, env):
+                overrides = TWEED.linear_mcp_disable_overrides(codex, nested)
+            completed = subprocess.run(
+                [codex, "mcp", "get", "linear-project"],
+                cwd=nested,
+                capture_output=True,
+                text=True,
+                timeout=15,
+                env=env,
+            )
+            if overrides:
+                self.assertEqual(
+                    overrides,
+                    (
+                        'mcp_servers.linear-project={url="https://tweed-linear-disabled.invalid",enabled=false}',
+                    ),
+                )
+                completed = subprocess.run(
+                    [codex, "-c", overrides[0], "mcp", "get", "linear-project"],
+                    cwd=nested,
+                    capture_output=True,
+                    text=True,
+                    timeout=15,
+                    env=env,
+                )
+                self.assertEqual(completed.returncode, 0, completed.stderr)
+                self.assertEqual(
+                    completed.stdout.strip(), "linear-project (disabled)"
+                )
+            else:
+                self.assertNotEqual(completed.returncode, 0)
+                self.assertIn("No MCP server named", completed.stderr)
+
+    def test_linear_mcp_override_parses_in_installed_codex(self):
+        codex = TWEED.find_codex()
+        configurations = {
+            "http-with-tool-policy": (
+                "[mcp_servers.linear]\n"
+                'url = "https://mcp.linear.app/mcp"\n'
+                "[mcp_servers.linear.tools.save_issue]\n"
+                'approval_mode = "approve"\n'
+            ),
+            "stdio-mcp-remote": (
+                "[mcp_servers.linear]\n"
+                'command = "npx"\n'
+                'args = ["-y", "mcp-remote", "https://mcp.linear.app/mcp"]\n'
+            ),
+        }
+        for label, contents in configurations.items():
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as directory:
+                home = Path(directory)
+                (home / "config.toml").write_text(contents)
+                with patch.dict(os.environ, {"CODEX_HOME": str(home)}):
+                    overrides = TWEED.linear_mcp_disable_overrides(codex, home)
+                self.assertEqual(
+                    overrides,
+                    (
+                        (
+                            'mcp_servers.linear={url="https://tweed-linear-disabled.invalid",enabled=false}'
+                            if label == "http-with-tool-policy"
+                            else 'mcp_servers.linear={command="tweed-linear-disabled",enabled=false}'
+                        ),
+                    ),
+                )
+                completed = subprocess.run(
+                    [codex, "-c", overrides[0], "mcp", "get", "linear"],
+                    capture_output=True,
+                    text=True,
+                    timeout=15,
+                    env={**os.environ, "CODEX_HOME": str(home)},
+                )
+                self.assertEqual(completed.returncode, 0, completed.stderr)
+                self.assertEqual(completed.stdout.strip(), "linear (disabled)")
+
+    def test_linear_plugin_overrides_disable_real_keys_in_installed_codex(self):
+        codex = TWEED.find_codex()
         with tempfile.TemporaryDirectory() as directory:
             home = Path(directory)
-            with patch.dict(os.environ, {"CODEX_HOME": str(home)}):
-                self.assertEqual(TWEED.linear_mcp_disable_overrides(), ())
-                (home / "config.toml").write_text(
-                    '[mcp_servers."linear-prod"]\n'
-                    'url = "https://mcp.linear.app/mcp"\n'
-                    '[mcp_servers.other]\ncommand = "true"\n'
-                )
-                self.assertEqual(
-                    TWEED.linear_mcp_disable_overrides(),
-                    ('mcp_servers."linear-prod".enabled=false',),
-                )
-                (home / "config.toml").write_text(
-                    '[mcp_servers.linear]\ncommand = "npx"\n'
-                    'args = ["-y", "mcp-remote", "https://mcp.linear.app/mcp"]\n'
-                )
-                self.assertEqual(
-                    TWEED.linear_mcp_disable_overrides(),
-                    ('mcp_servers."linear".enabled=false',),
-                )
+            (home / "config.toml").write_text(
+                '[plugins."linear-progress-sync@coreedge-local"]\n'
+                "enabled = true\n"
+                '[plugins."linear@openai-curated"]\n'
+                "enabled = true\n"
+            )
+            config = TWEED.CodexConfig(
+                codex_bin=codex,
+                config_overrides=TWEED.LINEAR_PLUGIN_DISABLE_OVERRIDES,
+                cwd=directory,
+                env={"CODEX_HOME": directory},
+            )
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", ResourceWarning)
+                with TWEED.Codex(config) as client:
+                    result = client._client._request_raw(
+                        "config/read", {"cwd": directory, "includeLayers": False}
+                    )
+            plugins = result["config"]["plugins"]
+            self.assertFalse(
+                plugins["linear-progress-sync@coreedge-local"]["enabled"]
+            )
+            self.assertFalse(plugins["linear@openai-curated"]["enabled"])
+            self.assertNotIn('"linear-progress-sync@coreedge-local"', plugins)
 
     def test_all_child_sessions_use_sol_medium(self):
-        with patch.object(TWEED, "find_codex", return_value="/bin/true"):
+        with (
+            patch.object(TWEED, "find_codex", return_value="/bin/true"),
+            patch.object(TWEED, "linear_mcp_disable_overrides", return_value=()),
+        ):
             config = TWEED.codex_config(Path("/tmp").resolve())
         self.assertIn('model="gpt-5.6-sol"', config.config_overrides)
         self.assertIn('model_reasoning_effort="medium"', config.config_overrides)
@@ -723,6 +877,70 @@ class TweedTests(unittest.TestCase):
             self.assertEqual(branch, "tweed/eng-9")
             self.assertEqual(git(worktree, "rev-parse", "HEAD"), commit)
             self.assertFalse(git(worktree, "status", "--porcelain"))
+
+    def test_initial_phase_config_uses_the_actual_child_worktree(self):
+        caller_root = Path("/tmp/tweed-caller").resolve()
+        worktree = Path("/tmp/tweed-integration").resolve()
+        issue = {
+            "identifier": "ENG-9",
+            "url": "https://linear.test/ENG-9",
+            "digest": "sha256:issue",
+        }
+        metadata = {
+            "planning_base": "a" * 40,
+            "stage": "ready-to-implement",
+        }
+        args = SimpleNamespace(
+            command="implement",
+            issue="ENG-9",
+            repo=str(caller_root),
+            agent=True,
+        )
+        with (
+            patch.object(TWEED, "repository_root", return_value=caller_root),
+            patch.object(TWEED, "new_run_id", return_value="tw_test"),
+            patch.object(TWEED, "active_run", return_value=contextlib.nullcontext()),
+            patch.object(
+                TWEED, "run_execution_lock", return_value=contextlib.nullcontext()
+            ),
+            patch.object(
+                TWEED, "issue_execution_lock", return_value=contextlib.nullcontext()
+            ),
+            patch.object(
+                TWEED, "repository_write_lock", return_value=contextlib.nullcontext()
+            ),
+            patch.object(TWEED, "read_linear_issue", return_value=issue),
+            patch.object(
+                TWEED,
+                "validate_issue_for_phase",
+                return_value=(metadata, caller_root),
+            ),
+            patch.object(
+                TWEED,
+                "prepare_implementation_worktree",
+                return_value=(worktree, "tweed/eng-9"),
+            ),
+            patch.object(TWEED, "codex_config", return_value=object()) as config,
+            patch.object(
+                TWEED,
+                "Codex",
+                return_value=contextlib.nullcontext(object()),
+            ),
+            patch.object(
+                TWEED,
+                "start_phase_thread",
+                return_value=(SimpleNamespace(id="thread-1"), "workflow", "prompt"),
+            ),
+            patch.object(TWEED, "save_run"),
+            patch.object(
+                TWEED,
+                "run_phase_turn",
+                return_value={"status": "implemented"},
+            ),
+            patch.object(TWEED, "finish_phase", return_value=0),
+        ):
+            self.assertEqual(TWEED.phase_command(args), 0)
+        config.assert_called_once_with(worktree)
 
     def test_review_without_repairs_keeps_implementation_commit(self):
         with tempfile.TemporaryDirectory() as directory:

@@ -108,15 +108,16 @@ applies only bounded in-scope repairs, commits any passing corrections, and
 advances the issue to `ready-to-merge`.
 
 Tweed does not push, open a pull request, merge, deploy, or delete its worktree.
-Its child sessions disable lifecycle hooks and the local `linear-progress-sync`
-orchestrator because those hooks own the same branch, Linear, and PR boundaries;
-only the Tweed runner may own those writes. Global hooks remain enabled outside
-Tweed-created sessions.
+Its child sessions disable lifecycle hooks, the local `linear-progress-sync`
+orchestrator, and the installed Linear plugin because those surfaces overlap the
+same branch, Linear, and PR boundaries; only the Tweed runner may own those
+writes. Global hooks and plugins remain enabled outside Tweed-created sessions.
 
-Tweed also disables configured Linear MCP servers inside every child model
-session. All runner-initiated Linear I/O goes through the deterministic parent
-transport. Known Linear credential and adapter environment variables are blanked
-for child models.
+Tweed also resolves all effective Codex configuration layers for the exact child
+working directory, then disables every detected Linear MCP server before a model
+thread starts. All runner-initiated Linear I/O goes through the deterministic
+parent transport. Known Linear credential and adapter environment variables are
+blanked for child models.
 
 Every child Codex session is pinned to `gpt-5.6-sol` with medium reasoning.
 Spawned implementation and review agents inherit that same model and effort,

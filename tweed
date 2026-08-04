@@ -1,7 +1,7 @@
 #!/usr/bin/env -S uv run --script
 # /// script
 # requires-python = ">=3.10"
-# dependencies = ["openai-codex==0.144.4", "keyring==25.7.0", "tomli==2.2.1; python_version < '3.11'"]
+# dependencies = ["openai-codex==0.144.4", "keyring==25.7.0"]
 # ///
 
 from __future__ import annotations
@@ -27,11 +27,7 @@ from pathlib import Path
 from typing import Any, Iterator
 from urllib.parse import urlsplit
 
-try:
-    import tomllib
-except ModuleNotFoundError:  # pragma: no cover - Python 3.10
-    import tomli as tomllib
-
+from codex_cli_bin import bundled_codex_path
 from openai_codex import Codex, CodexConfig, Sandbox
 from openai_codex.types import TurnStatus
 
@@ -47,6 +43,22 @@ PROTOCOL = "dev.tweed.receipt.v1"
 LINEAR_PROTOCOL = "dev.tweed.linear.v2"
 LINEAR_SYNC_CONFIG_DIR_ENV = "LINEAR_SYNC_CONFIG_DIR"
 MAX_BINDING_CONFIG_BYTES = 1_048_576
+CODEX_CONFIG_BARE_KEY_RE = re.compile(r"^[A-Za-z0-9_-]+$")
+LINEAR_MCP_ALIAS_RE = re.compile(r"(?:^|[-_])linear(?:$|[-_])", re.IGNORECASE)
+LINEAR_PLUGIN_DISABLE_OVERRIDES = (
+    "plugins.linear-progress-sync@coreedge-local.enabled=false",
+    "plugins.linear@openai-curated.enabled=false",
+)
+LINEAR_CHILD_ENV_NAMES = (
+    "LINEAR_API_KEY",
+    "LINEAR_ACCESS_TOKEN",
+    "LINEAR_OAUTH_TOKEN",
+    "MCP_REMOTE_CONFIG_DIR",
+    "TWEED_LINEAR_ADAPTER",
+    "TWEED_LINEAR_AUTH",
+    "TWEED_LINEAR_CLIENT_ID",
+    "TWEED_LINEAR_OAUTH_FILE",
+)
 NEEDS_INPUT = "needs-input"
 CODEX_MODEL = "gpt-5.6-sol"
 CODEX_REASONING_EFFORT = "medium"
@@ -165,7 +177,12 @@ def find_codex() -> str:
         if resolved:
             return resolved
         raise RuntimeError(f"Codex CLI not found: {explicit}")
+    try:
+        bundled = str(bundled_codex_path())
+    except (FileNotFoundError, OSError):
+        bundled = None
     candidates = [
+        bundled,
         shutil.which("codex"),
         str(Path.home() / ".vite-plus/bin/codex"),
         "/Applications/ChatGPT.app/Contents/Resources/codex",
@@ -185,57 +202,96 @@ def find_codex() -> str:
     raise RuntimeError("no working Codex CLI found")
 
 
-def linear_mcp_disable_overrides() -> tuple[str, ...]:
-    """Disable configured Linear MCP aliases without synthesizing invalid entries."""
-    codex_home = Path(os.environ.get("CODEX_HOME", Path.home() / ".codex"))
-    config_path = codex_home / "config.toml"
-    if not config_path.exists():
-        return ()
+def _contains_linear_endpoint(value: Any) -> bool:
+    if isinstance(value, dict):
+        return any(_contains_linear_endpoint(item) for item in value.values())
+    if isinstance(value, list):
+        return any(_contains_linear_endpoint(item) for item in value)
+    if not isinstance(value, str):
+        return False
+    for match in re.finditer(r"https?://[^\s\"']+", value, re.IGNORECASE):
+        if (urlsplit(match.group(0)).hostname or "").casefold() == "mcp.linear.app":
+            return True
+    return False
+
+
+def _resolved_codex_mcp_servers(codex_bin: str, cwd: Path) -> list[dict[str, Any]]:
+    """Resolve every effective MCP layer without starting a model thread."""
+    command = [codex_bin]
+    for override in ("features.hooks=false", *LINEAR_PLUGIN_DISABLE_OVERRIDES):
+        command.extend(("-c", override))
+    command.extend(("mcp", "list", "--json"))
+    env = {**os.environ, **dict.fromkeys(LINEAR_CHILD_ENV_NAMES, "")}
     try:
-        value = tomllib.loads(config_path.read_text())
-    except (OSError, UnicodeDecodeError, tomllib.TOMLDecodeError) as error:
-        raise RuntimeError("cannot safely inspect Codex MCP configuration") from error
-    servers = value.get("mcp_servers", {}) if isinstance(value, dict) else {}
-    if not isinstance(servers, dict):
-        raise RuntimeError("Codex MCP configuration is invalid")
+        completed = run_bounded_process(
+            command,
+            cwd=cwd,
+            timeout=15,
+            stdout_limit=2_097_152,
+            stderr_limit=65_536,
+            env=env,
+        )
+    except (OSError, subprocess.SubprocessError, OutputLimitExceeded) as error:
+        raise RuntimeError("cannot safely resolve Codex MCP configuration") from error
+    if completed.returncode != 0:
+        raise RuntimeError("cannot safely resolve Codex MCP configuration")
+    try:
+        value = json.loads(completed.stdout)
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise RuntimeError("Codex returned invalid MCP configuration") from error
+    if not isinstance(value, list) or len(value) > 1024:
+        raise RuntimeError("Codex returned invalid MCP configuration")
+    if not all(isinstance(server, dict) for server in value):
+        raise RuntimeError("Codex returned invalid MCP configuration")
+    return value
+
+
+def linear_mcp_disable_overrides(codex_bin: str, cwd: Path) -> tuple[str, ...]:
+    """Replace every effective Linear MCP with a complete disabled transport."""
     disabled: list[str] = []
-    for name, server in servers.items():
-        if not isinstance(name, str) or not isinstance(server, dict):
+    for server in _resolved_codex_mcp_servers(codex_bin, cwd):
+        name = server.get("name")
+        if not isinstance(name, str):
+            raise RuntimeError("Codex returned an invalid MCP server name")
+        is_linear = (
+            LINEAR_MCP_ALIAS_RE.search(name) is not None
+            or _contains_linear_endpoint(server.get("transport"))
+        )
+        if not is_linear:
             continue
-        url = server.get("url")
-        args = server.get("args")
-        is_linear = isinstance(url, str) and urlsplit(url).hostname == "mcp.linear.app"
-        if isinstance(args, list):
-            is_linear = is_linear or any(
-                isinstance(item, str) and "https://mcp.linear.app/" in item
-                for item in args
+        if CODEX_CONFIG_BARE_KEY_RE.fullmatch(name) is None:
+            raise RuntimeError(
+                f"cannot safely disable Linear MCP alias {name!r}: "
+                "Codex config overrides require a bare key"
             )
-        if is_linear:
-            disabled.append(f"mcp_servers.{json.dumps(name)}.enabled=false")
-    return tuple(disabled)
+        transport = server.get("transport")
+        transport_type = transport.get("type") if isinstance(transport, dict) else None
+        if transport_type == "stdio":
+            replacement = 'command="tweed-linear-disabled"'
+        elif transport_type in {"sse", "streamable_http"}:
+            replacement = 'url="https://tweed-linear-disabled.invalid"'
+        else:
+            raise RuntimeError(
+                f"cannot safely disable Linear MCP alias {name!r}: "
+                "Codex returned an unsupported transport"
+            )
+        disabled.append(f"mcp_servers.{name}={{{replacement},enabled=false}}")
+    return tuple(dict.fromkeys(disabled))
 
 
 def codex_config(cwd: Path) -> CodexConfig:
+    codex_bin = find_codex()
     return CodexConfig(
-        codex_bin=find_codex(),
+        codex_bin=codex_bin,
         config_overrides=(
             f'model="{CODEX_MODEL}"',
             f'model_reasoning_effort="{CODEX_REASONING_EFFORT}"',
             "features.hooks=false",
-            'plugins."linear-progress-sync@coreedge-local".enabled=false',
-            *linear_mcp_disable_overrides(),
+            *LINEAR_PLUGIN_DISABLE_OVERRIDES,
+            *linear_mcp_disable_overrides(codex_bin, cwd),
         ),
         cwd=str(cwd),
-        env={
-            "LINEAR_API_KEY": "",
-            "LINEAR_ACCESS_TOKEN": "",
-            "LINEAR_OAUTH_TOKEN": "",
-            "MCP_REMOTE_CONFIG_DIR": "",
-            "TWEED_LINEAR_ADAPTER": "",
-            "TWEED_LINEAR_AUTH": "",
-            "TWEED_LINEAR_CLIENT_ID": "",
-            "TWEED_LINEAR_OAUTH_FILE": "",
-        },
+        env=dict.fromkeys(LINEAR_CHILD_ENV_NAMES, ""),
         client_name="tweed",
         client_title="Tweed",
         client_version="0.2.0",
@@ -2665,7 +2721,7 @@ def phase_command(args: argparse.Namespace) -> int:
                     )
                 elif phase.command == "review":
                     worktree, branch = review_worktree(root, metadata)
-                with Codex(codex_config(caller_root)) as codex:
+                with Codex(codex_config(worktree)) as codex:
                     thread, workflow, prompt = start_phase_thread(
                         codex, worktree, issue, phase, run_id
                     )
