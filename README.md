@@ -14,7 +14,7 @@ Feature: create → scope → implement → review → publish
 
 Tweed uses your local Codex installation and its authenticated Linear MCP. The
 publish phase also uses your existing Git and GitHub CLI authentication.
-Every phase coordinator is pinned to `gpt-5.6-sol` with high reasoning, and
+Every phase coordinator is pinned to `gpt-5.6-sol` with medium reasoning, and
 every spawned subagent is pinned to `gpt-5.6-sol` with medium reasoning.
 
 Prerequisites:
@@ -75,6 +75,13 @@ tweed scope LIN-123
 tweed implement LIN-123
 tweed review LIN-123
 tweed publish LIN-123
+```
+
+If a phase needs one clarification, answer it by resuming the same coordinator
+session from the receipt instead of restarting the phase:
+
+```sh
+tweed --repo /path/to/repository resume RCA <resume_session_id> "The answer"
 ```
 
 - **Create** writes a human title and a `What`/`Why`/`How` description for a bug
