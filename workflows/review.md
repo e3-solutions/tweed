@@ -7,12 +7,31 @@ Children must not use Linear. Apply only evidence-backed, in-scope corrections
 and stop at a clean reviewed local commit. Do not push, open or merge a pull
 request, deploy, or perform remote delivery actions.
 
+## Durable phase boundary
+
+- This is a fresh phase coordinator. Its only request-specific input is the
+  Linear issue identifier. Read the issue description and all completed Tweed
+  comments from Linear. Do not expect or accept inherited coordinator/subagent
+  context, implementation material injected into the prompt, hidden files, or
+  local phase state.
+- The completed Linear comments are the complete durable review input. The JSON
+  receipt is control-plane data only. Resuming this same coordinator after
+  `needs-input` is the sole within-phase context exception.
+- Before returning `completed`, publish and re-read the review comment. It must
+  let a fresh publish coordinator establish readiness, provenance, validation,
+  and remaining concerns using only Linear and the repository. If any material
+  finding, evidence, fix, validation result, or concern remains only in this
+  coordinator's context, do not complete the phase.
+
 ## Contract and safety
 
 - Require solution scope and implementation comments. A bug also requires an
   established RCA; a feature does not. Extract the recorded branch and commit.
-  If a review comment already exists, verify its branch and commit locally and
-  return it without duplicating the phase.
+  Validate every required comment against its current self-contained handoff
+  schema; never reconstruct missing facts from non-Linear context. If a review
+  comment already exists, return it without duplicating the phase only after
+  its complete handoff and branch/commit are verified locally. Otherwise return
+  `blocked` and name the missing or stale fact.
 - Treat the scope, non-goals, acceptance criteria, and validation as the
   contract. Use the implementation comment as provenance, not as proof of
   quality.
@@ -59,6 +78,10 @@ in the receipt but must not be applied.
 3. Require every proposed finding to include a stable ID, axis, material
    consequence, violated contract, file:line or runtime evidence, owning
    surface, minimum correction, and proving check.
+   Consolidate every material reviewer, specialist, and fixer conclusion in the
+   final review map with its evidence, affected files or boundary, objection or
+   risk, confidence, and unresolved gap. Do not publish raw returns,
+   transcripts, or tool logs.
 4. Reproduce or trace each finding. Accept or reject it with evidence before any
    edit. Reject style preferences, equivalent rewrites, hypothetical hardening,
    generic future-proofing, unrelated defects, subjective refactors, and
@@ -97,6 +120,12 @@ Call the phase reviewed only when:
 - relevant broader checks pass without unexplained failure; and
 - a fresh independent whole-diff pass has zero unresolved material findings.
 
+The verified Linear comment must itself carry all findings (including rejected
+ones that were material enough to investigate), their evidence and disposition,
+every fix and re-review, the final branch/commit, complete validation mapped to
+the contract, remaining concerns, and an explicit readiness decision. Facts
+present only in coordinator memory do not satisfy the gate.
+
 If no review edit was made and review cannot complete, return `blocked`. If
 review edits exist but a finding, failed check, interruption, or scope-crossing
 correction prevents a passing commit, preserve the changes and return `blocked`
@@ -112,26 +141,35 @@ After the reviewed commit exists, publish exactly one:
 
 **Verdict:** Ready to publish
 
+### Review basis
+- Approved contract: [scope comment and RCA when applicable]
+- Implementation reviewed: [branch and full implementation commit]
+- Review target: [changed files, boundaries, interfaces, and consumers]
+
 ### Final axis results
-- Simplicity and scope fidelity: [clean]
-- Correctness and robustness: [clean]
-- Compatibility and integration: [clean]
-- Performance and resource use: [clean]
-- Verification quality: [clean]
+| Axis | Result | Evidence | Remaining concern |
+|---|---|---|---|
+| Simplicity and scope fidelity | [clean/finding] | [diff/repository evidence] | [None or concern] |
+| Correctness and robustness | [clean/finding] | [runtime/test evidence] | [None or concern] |
+| Compatibility and integration | [clean/finding] | [caller/consumer evidence] | [None or concern] |
+| Performance and resource use | [clean/finding] | [path/measurement evidence] | [None or concern] |
+| Verification quality | [clean/finding] | [criterion/check mapping] | [None or concern] |
 
 ### Findings
-| ID | Axis | Evidence | Disposition | Fix | Re-review |
-|---|---|---|---|---|---|
-| [ID or None] | [axis] | [evidence] | [accepted/rejected] | [result] | [result] |
+| ID | Axis | Material consequence/contract | Evidence | Disposition | Fix | Re-review |
+|---|---|---|---|---|---|---|
+| [ID or None] | [axis] | [consequence and violated contract] | [`file:line` or diagnostic] | [accepted/rejected and why] | [commit/file result or None] | [independent proof] |
 
 ### Changes made
 - [Finding ID and minimum correction, or “None.”]
 
 ### Verification
-- `[exact command]` → [result and contract proved]
+| Exact command or diagnostic | Result | Contract/finding proved | Coverage boundary |
+|---|---|---|---|
+| `[command]` | [pass/fail and salient counts] | [criterion/finding] | [files/interface] |
 
-### Remaining findings
-None.
+### Remaining concerns
+[Remaining finding, operational/CI caveat, or “None.”]
 
 ### Git handoff
 - Branch: `[branch]`
@@ -139,13 +177,23 @@ None.
 - Reviewed commit: `[full final commit]`
 - Worktree: clean
 
+### Readiness
+- Delivery state: Ready to publish
+- Evidence: [why scope, findings, validation, and Git provenance support readiness]
+- Conditions still outside this phase: [CI/publish/rollout conditions, or “None.”]
+
 ### Review map
-- [Reviewer/fixer role] — [reviewed/fixed/challenged]: [one-line result]
-- Final clean pass — reviewed: zero unresolved material findings
+| Role | Material conclusion | Evidence | Affected surface | Objection or risk | Confidence | Unresolved gap | Relationship |
+|---|---|---|---|---|---|---|---|
+| [Reviewer/fixer role] | [substantive finding or fix result] | [`file:line` or diagnostic] | [files/boundary] | [objection or risk] | [high/medium/low and why] | [gap or None] | [reviewed/fixed/challenged] |
+
+**Final clean pass:** [Evidence-backed result across the whole diff and why
+zero unresolved material findings remain.]
 ```
 
 Include every reviewer, specialist, and fixer once. Do not include transcripts,
-tool logs, hashes, or unscoped tips.
+tool logs, hashes, or unscoped tips. Do not reduce material conclusions to
+context-free labels such as “clean.”
 
 ## Receipt
 
