@@ -45,7 +45,9 @@ If the user requests only one phase, run only that command. For an existing
 issue, skip creation and start at the requested phase; do not infer an
 unspecified issue kind by reading Linear in this task. Never paste the calling
 conversation or an earlier phase report into a later command; Linear is the
-handoff.
+handoff. Each completed phase comment must be the complete durable report for
+the next fresh coordinator. The compact receipt is control-plane data only and
+must never become a second report or handoff channel.
 
 The runner calls the first working local `codex` on `PATH`, using its existing
 Linear MCP, and installs nothing. Treat each command's stdout as one JSON receipt

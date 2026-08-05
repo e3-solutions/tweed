@@ -6,6 +6,21 @@ yourself to read the issue and write the final comment. Keep all repository
 investigation in isolated subagents so the invoking task receives only the
 bounded receipt.
 
+## Durable phase boundary
+
+- This is a fresh phase coordinator. Its only request-specific input is the
+  Linear issue identifier. Read the issue description and completed Tweed
+  comments from Linear; do not expect or request inherited coordinator or
+  subagent context, a prior report in the prompt, hidden files, or local phase
+  state.
+- The JSON receipt is control-plane data only. Never treat its summary as a
+  handoff or put report content in it. Resuming this coordinator after
+  `needs-input` is the only within-phase context exception.
+- Before returning `completed`, publish and re-read the Linear comment. It must
+  contain every material fact the scope phase will need without access to this
+  coordinator's context. If the write cannot be verified or the comment is
+  incomplete, do not return `completed`.
+
 ## Boundaries
 
 - The input must identify an existing Linear bug issue. If it does not, return
@@ -51,6 +66,10 @@ bounded receipt.
    Relationship: supports | challenges | unresolved
    ```
 
+   In the final synthesis, retain every material conclusion with its evidence,
+   affected files or boundary, objection or risk, confidence, and unresolved
+   gap. Do not copy a transcript or tool log.
+
 6. Reconcile the independent results. Identify the best-supported causal chain,
    the strongest credible alternative, contradictions, and the exact evidence
    still missing from the completion gate.
@@ -73,6 +92,13 @@ Call the root cause established only when direct evidence identifies all four:
 - the mechanism connecting that trigger to the observed failure; and
 - why the strongest credible alternative does not fit the evidence.
 
+The completed Linear handoff must also name the affected boundaries and files,
+separate reproduction/runtime evidence from repository/configuration/history
+evidence, record every strong alternative actually checked, disclose all
+material uncertainty, and consolidate the investigation map into substantive
+evidence-bearing conclusions. A correct diagnosis in coordinator context is
+not complete until those facts are present in the verified Linear comment.
+
 Direct evidence can include a reproduction, execution trace, failing test,
 focused diagnostic, logs, telemetry, or configuration/history records. A
 plausible theory, code smell, or investigator consensus is not enough.
@@ -86,8 +112,11 @@ will do so, report `not-established` and name the smallest next diagnostic.
 ## First Tweed comment
 
 For terminal `established` or `not-established` results, check whether an
-existing comment begins with `## Tweed · Root Cause Analysis`. Reuse that result
-instead of duplicating it. Otherwise add exactly one comment in this form:
+existing comment begins with `## Tweed · Root Cause Analysis`. Reuse it only if
+it satisfies the current completion gate and self-contained schema; otherwise
+return `blocked` and name the missing durable handoff facts rather than
+duplicating or silently accepting it. Otherwise add exactly one comment in this
+form:
 
 ```markdown
 ## Tweed · Root Cause Analysis
@@ -101,16 +130,26 @@ instead of duplicating it. Otherwise add exactly one comment in this form:
 [Observed behavior, expected behavior, affected surface, and triggering
 conditions now known.]
 
-### Failure chain
+### Causal chain
 1. [Trigger]
 2. [Responsible boundary and mechanism]
 3. [Observed failure]
 
 ### Evidence
-- [Diagnostic, runtime, history, configuration, or `file:line` evidence]
 
-### Alternative checked
-- [Strongest credible alternative and why it does or does not fit]
+#### Reproduction and runtime
+- [Reproduction, focused diagnostic, trace, log, or runtime result and what it proves]
+
+#### Repository, configuration, and history
+- [`file:line`, configuration, dependency, or history evidence and what it proves]
+
+### Affected boundaries and files
+- [`path` or external boundary]: [responsibility, failure contribution, and affected callers/consumers]
+
+### Alternatives checked
+| Alternative | Evidence tested | Result | Why weaker than the conclusion |
+|---|---|---|---|
+| [Strong credible alternative] | [diagnostic or repository evidence] | [rejected/unresolved] | [reason] |
 
 ### Remaining uncertainty
 [Material unknowns, or “None.”]
@@ -121,13 +160,19 @@ conditions now known.]
 - Worktree: [clean or relevant dirty/untracked state]
 
 ### Investigation map
-- [Agent role] — [supports/challenges/unresolved]: [one-line conclusion]
-- Synthesis — [established/not established]: [why the gate passed or failed]
+| Role | Material conclusion | Evidence | Affected surface | Objection or risk | Confidence | Unresolved gap | Relationship |
+|---|---|---|---|---|---|---|---|
+| [Agent role] | [substantive finding] | [diagnostic and `file:line`] | [files/boundary] | [strongest objection or risk] | [high/medium/low and why] | [gap or None] | [supports/challenges/unresolved] |
+
+**Synthesis:** [Established/not established, the reconciled causal chain, why
+the completion gate passed or failed, and how conflicting evidence was
+resolved.]
 ```
 
 Include every investigator and targeted follow-up once in the map. Keep claims
 traceable to evidence. Never include transcripts, tool logs, hidden metadata,
-hashes, solution ideas, or implementation steps.
+hashes, solution ideas, or implementation steps. Do not collapse substantive
+findings into labels such as “clean” or “agreed.”
 
 ## Receipt
 

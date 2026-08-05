@@ -7,18 +7,38 @@ GitHub. Do not spawn implementation agents, change code, merge, deploy, delete
 branches, or mutate anything outside the scoped push, PR, and final Linear
 comment.
 
+## Durable phase boundary
+
+- This is a fresh phase coordinator. Its only request-specific input is the
+  Linear issue identifier. Read the issue description and every completed Tweed
+  comment from Linear. Do not expect or accept inherited coordinator/subagent
+  context, a review report injected into the prompt, hidden files, or local
+  phase state.
+- The completed Linear comments are the complete durable delivery contract.
+  The compact JSON receipt is control-plane data only; it is not a report or a
+  second handoff channel.
+- Before returning `completed`, publish and re-read the final Linear comment.
+  It must record the exact PR, branch, reviewed commit, base, observed CI/PR
+  state, readiness, and remaining delivery conditions. If the write cannot be
+  verified or any of those facts remains only in coordinator context, do not
+  complete the phase.
+
 ## Preconditions
 
 - Require solution scope, implementation, and
   `## Tweed · Implementation Review` comments. A bug also requires established
-  RCA; a feature does not.
+  RCA; a feature does not. Validate every required comment against its current
+  self-contained handoff schema; never reconstruct missing facts from a
+  receipt, prompt, transcript, or local file.
 - Extract the exact reviewed branch and commit. Require a clean local worktree
   on that branch, with `HEAD` equal to the reviewed commit.
 - Require a configured GitHub `origin`, a working authenticated `gh`, and an
   identifiable default base branch. Ask one question only if the correct base
   branch cannot be discovered.
 - If a final Tweed publish comment and matching open PR already exist, return
-  that completed result without creating or commenting again.
+  that completed result without creating or commenting again only after the
+  comment's complete delivery state and all GitHub facts are re-verified.
+  Otherwise return `blocked` and name the missing or stale fact.
 - Never force-push, rewrite history, change code, rerun implementation, merge,
   mark a draft PR ready, deploy, or close another PR.
 
@@ -64,15 +84,26 @@ comment.
 
    **Status:** Ready to merge
 
+   ### Delivery
    - Pull request: [URL]
+   - Pull request state: Open and non-draft
    - Branch: `[branch]`
    - Reviewed commit: `[full commit]`
    - Base: `[base branch]`
    - CI: [observed status, or “Pending/not observed”]
+
+   ### Final delivery state
+   - Readiness: Ready to merge
+   - Delivered contract: [concise issue outcome carried from the reviewed handoff]
+   - Remaining conditions: [CI, approvals, or “None observed”]
+   - Not performed by Tweed: Merge and deployment
    ```
 
 If the push or PR succeeds but the Linear write fails, a retry must recover the
 existing PR and add only the missing comment. Never open a duplicate PR.
+
+The phase is not complete merely because the push or pull request succeeded.
+Completion requires the verified self-contained Linear delivery comment above.
 
 ## Receipt
 

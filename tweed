@@ -60,23 +60,28 @@ WORKFLOWS = {
     ),
     "rca": (
         "bug-rca.md",
-        "Read the Linear issue, run the RCA, and publish its first Tweed comment. ",
+        "Start fresh with only the issue identifier. Read the Linear issue, run "
+        "the RCA, and publish its complete first Tweed comment. ",
     ),
     "scope": (
         "scope.md",
-        "Read the issue and required handoff, then publish the solution scope. ",
+        "Start fresh with only the issue identifier. Read the issue and completed "
+        "Tweed comments from Linear, then publish the complete solution scope. ",
     ),
     "implement": (
         "implement.md",
-        "Implement the approved scope, commit it locally, and publish the handoff. ",
+        "Start fresh with only the issue identifier. Read the durable Linear "
+        "handoff, implement it, commit locally, and publish the complete handoff. ",
     ),
     "review": (
         "review.md",
-        "Review the implementation, make bounded fixes, and publish the verdict. ",
+        "Start fresh with only the issue identifier. Read the durable Linear "
+        "handoff, review it, make bounded fixes, and publish the complete verdict. ",
     ),
     "publish": (
         "publish.md",
-        "Push the reviewed commit, open or recover its PR, and record it in Linear. ",
+        "Start fresh with only the issue identifier. Read the durable Linear "
+        "handoff, publish the reviewed commit, and record final delivery in Linear. ",
     ),
 }
 
@@ -215,6 +220,12 @@ def run_phase(
             "You are already the Tweed phase coordinator. TWEED_PHASE_CHILD=1 is set. "
             "Execute this supplied workflow directly. Do not invoke the tweed executable "
             "or delegate back to the use-tweed skill.\n\n"
+            "# Durable handoff guard\n\n"
+            "For every phase after create, the Input below is only a Linear issue "
+            "identifier. Start fresh and load all request-specific facts from the issue "
+            "description and completed Tweed comments in Linear. Do not assume inherited "
+            "coordinator/subagent context or use the JSON receipt as a report. The "
+            "workflow's verified Linear comment is the sole cross-phase handoff.\n\n"
             "# Model policy\n\n"
             f"This coordinator is pinned to {MODEL} at {COORDINATOR_EFFORT} "
             f"reasoning. Spawn every child on {MODEL} at {SUBAGENT_EFFORT} "

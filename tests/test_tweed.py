@@ -43,6 +43,87 @@ def receipt(state="completed", result="established"):
 
 
 class TweedRunnerTests(unittest.TestCase):
+    def test_phase_templates_define_complete_durable_linear_handoffs(self):
+        required_sections = {
+            "rca": (
+                "### Root cause",
+                "### Problem definition",
+                "### Causal chain",
+                "#### Reproduction and runtime",
+                "#### Repository, configuration, and history",
+                "### Affected boundaries and files",
+                "### Alternatives checked",
+                "### Remaining uncertainty",
+                "### Investigation map",
+            ),
+            "scope": (
+                "### Handoff basis",
+                "### Outcome",
+                "### Repository evidence",
+                "### Reuse decision",
+                "### Change surface",
+                "### Implementation steps",
+                "### Acceptance criteria",
+                "### Validation",
+                "### Risks and safeguards",
+                "### Non-goals",
+                "### Alternatives considered",
+                "### Decisions and assumptions",
+                "### Debate map",
+            ),
+            "implement": (
+                "### Delivered behavior",
+                "### Changed files and responsibilities",
+                "### Verification",
+                "### Review findings",
+                "### Deviations",
+                "### Remaining work",
+                "### Git handoff",
+                "### Complete review handoff",
+                "### Implementation map",
+            ),
+            "review": (
+                "### Review basis",
+                "### Final axis results",
+                "### Findings",
+                "### Changes made",
+                "### Verification",
+                "### Remaining concerns",
+                "### Git handoff",
+                "### Readiness",
+                "### Review map",
+            ),
+            "publish": (
+                "### Delivery",
+                "### Final delivery state",
+                "Pull request state:",
+                "Reviewed commit:",
+                "Remaining conditions:",
+            ),
+        }
+
+        for phase, sections in required_sections.items():
+            workflow_name, _ = RUNNER.WORKFLOWS[phase]
+            template = (ROOT / "workflows" / workflow_name).read_text()
+            with self.subTest(phase=phase):
+                self.assertIn("## Durable phase boundary", template)
+                self.assertIn("only request-specific input", template)
+                self.assertIn("Linear issue identifier", template)
+                self.assertIn("control-plane data only", template)
+                self.assertIn("re-read", template)
+                for section in sections:
+                    self.assertIn(section, template)
+
+    def test_later_phase_prompts_start_fresh_and_read_linear(self):
+        for phase in ("rca", "scope", "implement", "review", "publish"):
+            _, assignment = RUNNER.WORKFLOWS[phase]
+            with self.subTest(phase=phase):
+                self.assertIn("Start fresh with only the issue identifier", assignment)
+                self.assertIn("Linear", assignment)
+
+        self.assertNotIn("report_markdown", RUNNER.RECEIPT_FIELDS)
+        self.assertNotIn("handoff", RUNNER.RECEIPT_FIELDS)
+
     def test_coordinator_uses_medium_reasoning(self):
         self.assertEqual(RUNNER.COORDINATOR_EFFORT, "medium")
         with mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"):
@@ -107,14 +188,23 @@ class TweedRunnerTests(unittest.TestCase):
             receipt_path.write_text(json.dumps(receipt("needs-input", "needs-input")))
             return subprocess.CompletedProcess(command, 0, stderr="")
 
-        with mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"), mock.patch.object(
-            RUNNER.subprocess, "run", side_effect=fake_run
+        with (
+            mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
+            mock.patch.object(RUNNER.subprocess, "run", side_effect=fake_run),
         ):
             result = RUNNER.run_phase(ROOT, "rca", "COR-1")
 
         self.assertEqual(result["resume_session_id"], SESSION_ID)
         self.assertEqual(observed["env"][RUNNER.PHASE_CHILD_ENV], "1")
         self.assertIn("already the Tweed phase coordinator", observed["prompt"])
+        self.assertIn(
+            "the Input below is only a Linear issue identifier", observed["prompt"]
+        )
+        self.assertIn(
+            "verified Linear comment is the sole cross-phase handoff",
+            observed["prompt"],
+        )
+        self.assertNotIn("report_markdown", observed["prompt"])
 
     def test_resume_continues_session_with_only_the_answer(self):
         observed = {}
@@ -126,8 +216,9 @@ class TweedRunnerTests(unittest.TestCase):
             receipt_path.write_text(json.dumps(receipt()))
             return subprocess.CompletedProcess(command, 0, stderr="")
 
-        with mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"), mock.patch.object(
-            RUNNER.subprocess, "run", side_effect=fake_run
+        with (
+            mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
+            mock.patch.object(RUNNER.subprocess, "run", side_effect=fake_run),
         ):
             result = RUNNER.run_phase(
                 ROOT, "rca", "Use production.", resume_session_id=SESSION_ID

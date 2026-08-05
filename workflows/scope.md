@@ -8,6 +8,22 @@ publish the final scope. Children must not use Linear. Do not modify repository
 files, implement the change, create a branch, or perform any external write
 other than the final Linear comment.
 
+## Durable phase boundary
+
+- This is a fresh phase coordinator. Its only request-specific input is the
+  Linear issue identifier. Read the issue description and all completed prior
+  Tweed comments from Linear. Do not expect or accept inherited coordinator or
+  subagent context, a prior report injected into the prompt, hidden files, or
+  local phase state.
+- The issue description and completed Tweed comments are the complete durable
+  handoff. The compact JSON receipt is control-plane data only. Resuming this
+  same coordinator after `needs-input` is the sole within-phase exception.
+- Before returning `completed`, publish and re-read the scope comment. It must
+  be sufficient for a fresh implementation coordinator that knows only the
+  issue identifier. If any material basis, file responsibility, decision,
+  ordering constraint, risk, or proving check remains only in this
+  coordinator's context, do not complete the phase.
+
 ## Boundaries
 
 - Determine whether the issue is a bug or feature from `**Kind:**` in its
@@ -16,7 +32,10 @@ other than the final Linear comment.
   comment. A feature must not invent or require an RCA. If the kind is ambiguous
   or a bug lacks established RCA, return `needs-input` or `blocked`.
 - Treat the issue description and, for bugs, RCA as the durable request
-  contract. Verify material repository claims before relying on them.
+  contract. Require applicable prior comments to satisfy their self-contained
+  handoff schemas, and verify material repository claims before relying on
+  them. Return `blocked` instead of reconstructing a missing prior report from
+  any non-Linear context.
 - Reuse existing structures, language or framework capabilities, project
   utilities, and installed libraries. Add a dependency, abstraction,
   configuration surface, schema, or migration only when evidence makes it
@@ -58,6 +77,9 @@ other than the final Linear comment.
    axis, and the read-only evidence standard. Keep initial conclusions blind.
    Require a concise return with recommendation, repository evidence, rejected
    excess, material risks, confidence, and missing information.
+   Consolidate every material conclusion in the final debate map with its
+   evidence, affected files or boundaries, objection or risk, confidence, and
+   unresolved gap. Never paste raw returns, transcripts, or tool logs.
 4. Synthesize the smallest complete candidate. Every proposed change must map
    to the bug's RCA mechanism, the feature's requested outcome, or an observable
    acceptance criterion.
@@ -90,6 +112,14 @@ Call the solution scoped only when:
   verifiable; and
 - no material evidence-backed objection remains unresolved.
 
+The Linear comment itself must satisfy this gate. It must tie the outcome to
+the established RCA or feature request, provide repository evidence, assign an
+exact responsibility to every file or boundary in the change surface, record
+reuse choices, order dependent implementation steps, and preserve acceptance,
+validation, risks, safeguards, non-goals, alternatives, decisions,
+assumptions, and substantive debate findings. Coordinator knowledge that is
+not present in the verified comment does not count.
+
 If one user decision can close the gap, return `needs-input` with one exact
 question, explain its consequence in `summary`, and put concrete options plus a
 recommendation in `next_action`. Otherwise return `blocked` and name the
@@ -98,11 +128,17 @@ smallest missing investigation. Never fill gaps with speculative architecture.
 ## Linear comment
 
 If a comment already begins with `## Tweed · Solution Scope`, validate it is
-complete and return it instead of duplicating the phase. Otherwise publish one
-terminal `scoped` comment:
+complete under the current gate and return it instead of duplicating the phase.
+If it is incomplete, return `blocked` and identify the missing durable handoff
+facts. Otherwise publish one terminal `scoped` comment:
 
 ```markdown
 ## Tweed · Solution Scope
+
+### Handoff basis
+- Request outcome: [exact issue outcome this scope delivers]
+- RCA link (bug): [established causal chain and responsible boundary, or “Not applicable — feature”]
+- Constraints carried forward: [material issue/RCA constraints]
 
 ### Outcome
 [Smallest complete outcome and how it resolves the bug or delivers the feature.]
@@ -115,7 +151,9 @@ terminal `scoped` comment:
 - Custom code required: [narrow uncovered gap, or “None.”]
 
 ### Change surface
-- [Component/path]: [exact responsibility to change]
+| File or boundary | Current evidence | Exact responsibility | Interface/caller effect |
+|---|---|---|---|
+| [`path` or boundary] | [`file:line` or repository result] | [bounded change] | [consumer effect or None] |
 
 ### Implementation steps
 1. **[Step]**
@@ -131,7 +169,9 @@ terminal `scoped` comment:
 - [Observable behavior proving the fix]
 
 ### Risks and safeguards
-- [Evidence-backed risk]: [proportional safeguard]
+| Risk | Evidence and affected boundary | Safeguard | Proving check |
+|---|---|---|---|
+| [Evidence-backed risk] | [repository fact and surface] | [proportional safeguard] | [validation] |
 
 ### Validation
 - [Regression, focused, and broader project checks]
@@ -140,7 +180,9 @@ terminal `scoped` comment:
 - [External rollout/live validation, or “None.”]
 
 ### Alternatives considered
-- [Alternative and evidence-backed rejection]
+| Alternative | Evidence | Decision and reason |
+|---|---|---|
+| [Alternative] | [repository or dependency evidence] | [rejected/partially reused and why] |
 
 ### Decisions and assumptions
 - Decision: [direction] — Basis: [evidence]
@@ -153,12 +195,20 @@ terminal `scoped` comment:
 - Worktree: [clean or relevant dirty state]
 
 ### Debate map
-- [Agent axis] — [supports/challenges/unresolved]: [one-line conclusion]
-- Synthesis — scoped: [why the gate passed]
+| Axis/role | Material conclusion | Evidence | Affected surface | Objection or risk | Confidence | Unresolved gap | Relationship |
+|---|---|---|---|---|---|---|---|
+| [Agent axis] | [substantive finding] | [`file:line`, version, or diagnostic] | [files/boundary] | [challenge or risk] | [high/medium/low and why] | [gap or None] | [supports/challenges/resolved] |
+
+**Adversarial review:** [material objection, evidence, and minimum correction,
+or “No material objection after evidence review.”]
+
+**Synthesis:** [Why this is the smallest complete scope, how supported
+objections were resolved, and why the completion gate passed.]
 ```
 
 Include every agent used once. Do not include transcripts, tool logs, hashes,
-patches, or implementation work.
+patches, or implementation work. Do not replace evidence-bearing findings with
+generic statements such as “approved” or “clean.”
 
 ## Receipt
 

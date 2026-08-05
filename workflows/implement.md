@@ -7,11 +7,28 @@ and publish the final handoff. Children must not use Linear. Work only in the
 supplied local repository. Stop after a verified local commit: do not push, open
 a pull request, merge, deploy, or mutate remote services or data.
 
+## Durable phase boundary
+
+- This is a fresh phase coordinator. Its only request-specific input is the
+  Linear issue identifier. Read the issue description and every completed Tweed
+  comment from Linear. Do not expect or accept inherited coordinator/subagent
+  context, a scope injected into the prompt, hidden files, or local phase state.
+- Treat the Linear scope and RCA as the complete durable contract. The compact
+  JSON receipt is control-plane data only. Resuming this same coordinator after
+  `needs-input` is the only within-phase context exception.
+- Before returning `completed`, publish and re-read the implementation comment.
+  It must give a fresh review coordinator the complete implementation and
+  validation provenance using only Linear plus the repository. If any material
+  changed responsibility, evidence, risk, finding, deviation, or unresolved
+  item remains only in this coordinator's context, do not complete the phase.
+
 ## Contract and safety
 
 - Require a complete `## Tweed · Solution Scope`. A bug also requires an
   established `## Tweed · Root Cause Analysis`; a feature does not. Otherwise
-  return `blocked` before editing.
+  return `blocked` before editing. Validate required comments against their
+  current self-contained schemas; never reconstruct missing facts from a
+  receipt, prompt, transcript, or local file.
 - Treat the scope's outcome, change surface, steps, non-goals, acceptance
   criteria, and validation as the approved contract. Do not redesign or broaden
   it during implementation.
@@ -28,8 +45,10 @@ a pull request, merge, deploy, or mutate remote services or data.
 ## Preflight
 
 1. Read the durable Linear handoff. If a comment already begins with
-   `## Tweed · Implementation`, verify its branch and commit still exist locally
-   and return that completed result without reimplementing.
+   `## Tweed · Implementation`, validate the complete handoff under the current
+   gate and verify its branch and commit still exist locally. Return that
+   completed result without reimplementing only when both checks pass;
+   otherwise return `blocked` and name the missing or stale fact.
 2. Record repository identity, current branch, `HEAD`, staged, unstaged, and
    untracked paths. Derive a human branch named
    `tweed/<issue-id>-<short-title-slug>`.
@@ -56,6 +75,10 @@ a pull request, merge, deploy, or mutate remote services or data.
 3. Require each writer to re-read its assigned files before editing and return
    only: completed scope items, files changed, checks and results, blocker, and
    deviation. Writers may not create new product or architecture decisions.
+   Consolidate each material writer and reviewer conclusion in the final
+   implementation map with its evidence, affected files or boundary, objection
+   or risk, confidence, and unresolved gap. Do not publish raw returns,
+   transcripts, or tool logs.
 4. After every wave, inspect the actual diff, map every hunk to an approved
    step, rerun focused checks when feasible, and only then unlock dependents. If
    a writer fails, inspect the workspace before reassigning; never assume it
@@ -97,6 +120,13 @@ Call the phase implemented only when:
 - independent reviewers have no unresolved material finding; and
 - the issue branch has a clean, passing commit.
 
+The verified Linear comment must independently prove this gate and serve as a
+complete review handoff: branch and commit, delivered behavior, acceptance
+mapping, changed files and responsibilities, affected interfaces/consumers,
+exact tests and results, material findings and dispositions, deviations, risks,
+and unresolved work. A passing result known only to this coordinator is not a
+completed phase.
+
 If no edit was made and work cannot proceed, return `blocked`. If implementation
 changes exist but a blocker, failed check, interruption, deviation, or finding
 prevents a safe commit, preserve the actual changes and return `blocked` with
@@ -110,36 +140,56 @@ After the passing commit exists, publish exactly one:
 ```markdown
 ## Tweed · Implementation
 
-### Delivered
-- [Scope item or acceptance criterion] → [files]
+### Delivered behavior
+- [Observable behavior] → [scope item/acceptance criterion] → [files]
 
-### Changes
-- [`file` or component]: [responsibility changed]
+### Changed files and responsibilities
+| File or boundary | Responsibility delivered | Interfaces/callers affected | Evidence |
+|---|---|---|---|
+| [`file` or boundary] | [exact change] | [consumer effect or None] | [`file:line`, diff fact, or diagnostic] |
 
 ### Verification
-- `[exact command or diagnostic]` → [result and criterion proved]
+| Command or diagnostic | Result | Scope/criterion proved | Relevant boundary |
+|---|---|---|---|
+| `[exact command or diagnostic]` | [pass/fail and salient counts] | [criterion] | [files/interface] |
 
 ### Review findings
-- [Finding] → [fixed/rejected] because [evidence]
+| Finding | Evidence and consequence | Disposition/fix | Recheck |
+|---|---|---|---|
+| [Finding or None] | [file/runtime evidence] | [fixed/rejected and why] | [proof] |
 
 ### Deviations
 [Narrow clarification, or “None.”]
 
 ### Remaining work
-None.
+[Unresolved implementation/review item with consequence, or “None.”]
 
 ### Git handoff
 - Branch: `[branch]`
 - Commit: `[full commit]`
 - Worktree: clean
 
+### Complete review handoff
+- Review target: [branch and full implementation commit]
+- Contract source: [scope comment, plus RCA comment for a bug]
+- Changed boundaries: [interfaces, callers, formats, state, or “No interface change”]
+- Failure/compatibility risks to recheck: [risk and evidence, or “None known”]
+- Acceptance evidence: [criterion → exact proving command/result]
+- Deviations and unresolved items: [items, or “None”]
+
 ### Implementation map
-- [Agent role] — [authored/reviewed/challenged]: [one-line result]
-- Synthesis — implemented: [why the gate passed]
+| Role | Material conclusion | Evidence | Affected surface | Objection or risk | Confidence | Unresolved gap | Relationship |
+|---|---|---|---|---|---|---|---|
+| [Agent role] | [substantive authored/review finding] | [`file:line` or diagnostic] | [files/boundary] | [objection or risk] | [high/medium/low and why] | [gap or None] | [authored/reviewed/challenged] |
+
+**Synthesis:** [How every scope item maps to the commit and passing evidence,
+how material findings were resolved, and why review can begin from this comment
+alone.]
 ```
 
 Include every writer and reviewer once. Do not include transcripts, tool logs,
-hash manifests, or unrelated refactoring ideas.
+hash manifests, or unrelated refactoring ideas. Do not summarize material
+subagent work with context-free labels such as “done” or “clean.”
 
 ## Receipt
 
