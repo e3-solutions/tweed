@@ -1,43 +1,52 @@
 ---
 name: use-tweed
-description: Invoke the local Tweed delivery runner through one bounded receipt. Use when a user asks Codex to create or advance a Tweed Linear issue, answer a Tweed clarification, resume an interrupted Tweed run, or retry pending Linear synchronization without loading child transcripts or reports.
+description: Take a software bug or feature from standardized Linear intake through the applicable isolated phases and a ready-to-merge GitHub pull request using bounded receipts. Bugs use evidence-backed RCA before solution scoping; features proceed directly to scope. Use when the user asks Tweed to record, investigate, build, solve, implement, review, or publish a software request, or asks for one Tweed phase on an existing Linear issue without loading child work into the current context.
 ---
 
 # Use Tweed
 
-Run exactly one command for the requested action:
+Keep this invoking task thin. Do not inspect the repository, read Linear,
+investigate, or spawn subagents here. Each phase is exactly one command.
+Invoke the bare `tweed` executable from `PATH`; the repository installer owns
+that link. Do not search for or expect a runner inside this skill directory.
+
+For a new request, classify it as a bug only when it reports incorrect existing
+behavior; classify a requested capability as a feature. Assemble a compact
+factual intake from the user's messages. Keep expected outcome, impact,
+workflow, constraints, environment, examples, and evidence when supplied. For a
+bug, also keep observed behavior and reproduction. Do not investigate or guess.
+Safely quote the intake and run one:
 
 ```sh
-tweed --agent create problem <request>
-tweed --agent create feature <request>
-tweed --agent incident --window-start <UTC> --window-end <UTC> --impact <policy> \
-  --mcp-tool <server/read-tool> [...] <request>
-tweed --agent root-cause <issue>
-tweed --agent scope <issue>
-tweed --agent implement <issue>
-tweed --agent review <issue>
-tweed --agent resume <run> [answer]
-tweed --agent retry-sync <run>
+tweed --repo <repository> create bug <factual intake>
+tweed --repo <repository> create feature <factual intake>
 ```
 
-For `incident`, use the exact case-sensitive server/tool identities from the
-configured Codex MCP catalog. Include discovery reads needed to resolve later
-IDs (for example project and service listing before status/log reads); Tweed
-executes configured stdio MCP calls directly and freezes their JSON-RPC
-receipts.
+For a full bug fix, run these fresh phases in order:
 
-Treat stdout as exactly one `dev.tweed.receipt.v1` JSON object of at most 4 KiB.
-Do not ingest child output, task transcripts, polling output, run-state files, or
-content-addressed reports. Do not start a second Tweed command automatically.
+```sh
+tweed --repo <repository> RCA <receipt.issue>
+tweed --repo <repository> scope <receipt.issue>
+tweed --repo <repository> implement <receipt.issue>
+tweed --repo <repository> review <receipt.issue>
+tweed --repo <repository> publish <receipt.issue>
+```
 
-Handle the receipt by `state`:
+For a full feature, skip RCA and run `scope`, `implement`, `review`, then
+`publish`. Start each phase only when the prior receipt is `completed`, and pass
+only the issue identifier returned by creation.
 
-- `created` or `completed`: Return the compact issue, stage, branch, commit, and summary.
-- `duplicate`: Return the existing-work reference and explain that Tweed intentionally created no issue.
-- `awaiting-input`: Ask only the receipt's structured question. On a later user turn, invoke `resume` once with the answer.
-- `sync-pending` or `sync-blocked`: Explain that reasoning and repository work are preserved. On explicit continuation, invoke `retry-sync` once; never rerun the phase.
-- `blocked`, `partial`, or `not-established`: Return the summary and unchanged stage. Do not advance automatically.
-- `failed` or `canceled`: Return the bounded error and run ID. If the user asks to continue an interrupted phase, invoke `resume` once without an answer.
+If the user requests only one phase, run only that command. For an existing
+issue, skip creation and start at the requested phase; do not infer an
+unspecified issue kind by reading Linear in this task. Never paste the calling
+conversation or an earlier phase report into a later command; Linear is the
+handoff.
 
-Never use Linear tools directly. Tweed owns its deterministic Linear journal
-adapter, phase coordinator, worktree, commit, and readiness gates.
+The runner calls the first working local `codex` on `PATH`, using its existing
+Linear MCP, and installs nothing. Treat each command's stdout as one JSON receipt
+of at most 4 KiB. Do not open coordinator/subagent tasks, Linear, or logs.
+
+On `needs-input`, ask only `question`, then rerun that same phase once with its
+original input plus `Question: <question> Answer: <answer>`. Stop on `blocked`
+or `failed` and return the receipt directly. Never bypass, reorder, or retry a
+phase automatically.

@@ -1,0 +1,23 @@
+#!/bin/sh
+set -eu
+
+repo_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+bin_dir=${TWEED_BIN_DIR:-"$HOME/.local/bin"}
+codex_dir=${CODEX_HOME:-"$HOME/.codex"}
+
+link_file() {
+    source_path=$1
+    target_path=$2
+    if [ -e "$target_path" ] && [ ! -L "$target_path" ]; then
+        echo "refusing to replace non-symlink: $target_path" >&2
+        exit 1
+    fi
+    ln -sfn "$source_path" "$target_path"
+}
+
+mkdir -p "$bin_dir" "$codex_dir/skills"
+link_file "$repo_dir/tweed" "$bin_dir/tweed"
+link_file "$repo_dir/skills/use-tweed" "$codex_dir/skills/use-tweed"
+
+echo "Installed Tweed CLI: $bin_dir/tweed"
+echo "Installed Tweed skill: $codex_dir/skills/use-tweed"

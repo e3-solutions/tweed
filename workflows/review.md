@@ -1,135 +1,156 @@
 # Tweed Implementation Review
 
-Independently review the current integration worktree against the approved scope in the supplied frozen artifact packet. Verify referenced hashes and open scope, implementation, and evidence artifacts on demand; do not load the complete Linear description or prior transcripts. Apply only evidence-backed in-scope corrections, and repeat until the implementation has zero unresolved material findings. Do not redesign or broaden the approved solution.
+Independently review the implementation recorded in the supplied Linear issue
+against its approved Tweed scope. Use Linear MCP yourself to read the issue and
+Tweed comments, check for an existing review, and publish the final review.
+Children must not use Linear. Apply only evidence-backed, in-scope corrections
+and stop at a clean reviewed local commit. Do not push, open or merge a pull
+request, deploy, or perform remote delivery actions.
 
-## Rules
+## Contract and safety
 
-- Treat the supplied scope, repository snapshot, non-goals, acceptance criteria, and validation as the contract. Use the completed implementation report only for baseline and ownership provenance; do not trust its quality claims.
-- Verify the issue is at stage `ready-to-review` and the worktree `HEAD` matches its integration commit; otherwise return `blocked` before editing.
-- Permit local repository fixes and validation only. Preserve the Git index exactly; do not stage or unstage. Do not commit, branch, stash, reset, clean, push, open a PR, use Linear tools, deploy, publish, mutate remote services or data, or run an irreversible migration. The runner owns the final commit.
-- Preserve pre-existing user work and unrelated dirty paths. Never overwrite, revert, or attribute them to the review.
-- Reviewers never edit. Only a separately assigned fixer may change a validated finding's owned surface.
-- Agent agreement does not make a finding material; evidence does. Do not require an agent to invent a finding.
-- Research exact-version language, framework, and installed-library capabilities from repository metadata and primary sources before accepting custom code that appears to duplicate them.
+- Require solution scope and implementation comments. A bug also requires an
+  established RCA; a feature does not. Extract the recorded branch and commit.
+  If a review comment already exists, verify its branch and commit locally and
+  return it without duplicating the phase.
+- Treat the scope, non-goals, acceptance criteria, and validation as the
+  contract. Use the implementation comment as provenance, not as proof of
+  quality.
+- Switch to the recorded branch only from a clean worktree. Require its history
+  to contain the implementation commit. Never reset, clean, stash, discard, or
+  overwrite user changes.
+- Reviewers never edit. Only a separately assigned fixer may change a validated
+  finding's bounded surface, and that fixer cannot close its own finding.
+- Agent agreement does not make a finding material; reproducible evidence does.
+- Research exact installed versions and primary sources before claiming custom
+  code duplicates an existing library or framework capability.
 
 ## Preflight
 
-Before writing, verify the repository path and `HEAD` match the scope snapshot. Verify the implementation handoff's scope digest, baseline HEAD/ref, complete pre-existing dirty/index manifest, and implementation-owned `baseline → final` path manifest against the supplied scope and current workspace. Require the current staged, unstaged, and untracked path set to equal the disjoint union of the pre-existing manifest and implementation-owned manifest; any unaccounted or multiply owned path blocks automatic fixes. Derive the review target from the owned paths. Do not require implementation-owned targets to match scope-baseline hashes because they contain the implementation under review; require their current hashes to match the handoff's final hashes.
-
-Record a fingerprint of the entire current workspace and index. Return `Status: blocked` before edits when either handoff is missing or ambiguous, `HEAD` moved, a pre-existing user path or index entry changed, an implementation-owned path no longer matches its handoff, implementation changes cannot be distinguished safely from user work, or the review target cannot be resolved inside the approved change surface. Without exact provenance, review may report read-only observations but must not apply fixes.
+Record the repository, branch, current `HEAD`, implementation commit, and Git
+status. A clean reviewed commit may be newer than the implementation commit, but
+the implementation commit must remain in its ancestry. Before automatic fixes,
+require a clean worktree on the issue branch. If state is ambiguous or user work
+could be overwritten, return `blocked`; read-only observations may be reported
+in the receipt but must not be applied.
 
 ## Review workflow
 
-1. Start independent non-writing reviewers on five axes:
-   - **Simplicity, clarity, reuse, and scope fidelity:** Aggressively seek deletion and reduction. Find unnecessary hunks, nesting, abstractions, dependencies, duplication, compatibility shims, cleanup, and custom code already covered by a project utility, language or framework built-in, or installed library. Verify exact-version behavior from repository evidence, official documentation, or source. Require every diff hunk to serve an approved step or acceptance criterion and every non-goal to remain excluded.
-   - **Correctness and robustness:** Trace the changed behavior and realistic failure paths, including state transitions, validation, error handling, partial failure, data integrity, and concurrency when applicable.
-   - **Compatibility and integration:** Trace changed interfaces to their callers and consumers. Check public APIs, wire and storage formats, CLI/config/environment behavior, supported runtime or dependency versions, forward and backward compatibility, mixed-version operation, upgrade ordering, rollback or downgrade behavior when applicable, and existing contract or integration tests.
-   - **Performance and resource use:** Examine relevant hot paths, algorithmic work, allocations, queries, I/O, caching, batching, and concurrency overhead. Prefer existing performant primitives and require measurement, execution-path evidence, or a concrete scaling argument for material findings.
-   - **Verification quality:** Map every acceptance criterion to implementation and a proving check. Challenge missing regressions, assertions that do not prove behavior, untested failure paths, and unexplained build/type/lint/test failures.
-2. Add a performance, security or privacy, accessibility, data, concurrency, migration, operations, or other specialist only when a concrete changed boundary creates a material question.
-3. Require every proposed finding to include a stable ID, axis, material consequence, violated scope item, acceptance criterion, non-goal, or verified contract, file:line or runtime evidence, owning surface, minimum correction, and proving check.
-4. The coordinator reproduces or traces findings, deduplicates them, and records each as accepted or rejected with evidence before any fix. Reject style preferences, equivalent rewrites, hypothetical hardening, generic future-proofing, unrelated pre-existing defects, subjective readability refactors, unsupported performance concerns, and tests that do not prove scoped behavior.
-5. Assign each accepted finding to exactly one bounded fixer. Run fixes concurrently only when complete write and command-side-effect surfaces are disjoint; serialize overlaps and shared mutable outputs. A fixer receives the finding, approved boundary, non-goals, acceptance criteria, and proving check. It cannot close its own finding.
-6. After every fix, the coordinator inspects the diff and reruns the finding's proving check. A non-authoring reviewer re-reviews the affected surface. Rerun compatibility review whenever a boundary or contract changes, and rerun every affected acceptance check after a simplicity correction.
-7. Continue only while an evidence-backed material finding has a bounded in-scope correction or a new concrete diagnostic can add evidence or adjudicate a conflict. If findings repeat without new evidence, fixes oscillate, or reviewers conflict, stop only when no further bounded in-scope diagnostic or correction can make progress.
-8. When targeted findings clear, run a fresh whole-diff pass across all five baseline axes and every triggered specialist. Then run exact acceptance checks and the relevant broader build, type, lint, contract, integration, and test suites. Convert a material clean-pass finding or relevant final-check failure into the same evidence-backed finding format, return it to the bounded fix and targeted re-review loop, and repeat the whole-diff clean pass after correction.
+1. Spawn fresh, independent, non-writing reviewers without inherited
+   conversation. Run them concurrently when possible or in blind waves across:
+   - **Simplicity, clarity, reuse, and scope fidelity:** seek deletion and
+     reduction; challenge unnecessary hunks, nesting, abstractions,
+     dependencies, duplication, compatibility shims, cleanup, and custom code
+     already covered by verified project or installed capabilities.
+   - **Correctness and robustness:** trace changed behavior and realistic
+     failures, including state transitions, validation, error handling, partial
+     failure, data integrity, and concurrency when applicable.
+   - **Compatibility and integration:** trace interfaces to callers and
+     consumers; check APIs, formats, CLI/config behavior, supported versions,
+     mixed-version behavior, and rollback constraints when applicable.
+   - **Performance and resource use:** inspect relevant algorithms,
+     allocations, queries, I/O, caching, batching, and concurrency overhead;
+     require measurement or a concrete execution-path argument.
+   - **Verification quality:** map every acceptance criterion to implementation
+     and a proving check; challenge missing regressions, weak assertions,
+     untested failures, and unexplained check failures.
+2. Add a security/privacy, accessibility, data, migration, operations, or other
+   specialist only when a concrete changed boundary creates a material question.
+3. Require every proposed finding to include a stable ID, axis, material
+   consequence, violated contract, file:line or runtime evidence, owning
+   surface, minimum correction, and proving check.
+4. Reproduce or trace each finding. Accept or reject it with evidence before any
+   edit. Reject style preferences, equivalent rewrites, hypothetical hardening,
+   generic future-proofing, unrelated defects, subjective refactors, and
+   unsupported performance concerns.
+5. Assign every accepted finding to exactly one bounded fixer. Serialize
+   overlapping file or command effects. Inspect each fix and rerun its proving
+   check; then use a non-authoring reviewer to recheck the affected surface.
+6. If a finding proves the approved design is incomplete or requires a new
+   component, behavior, dependency, interface, schema, migration, rollout, or
+   product decision, do not fix it in review. Return `blocked` with the exact
+   evidence and change that must go back to scope.
+7. When targeted findings clear, run a fresh whole-diff pass across all baseline
+   axes, followed by the exact acceptance checks and relevant broader build,
+   type, lint, contract, integration, and test suites. A new material finding
+   re-enters the bounded fix and re-review loop.
+8. If fixes were made, stage only review-owned changes and create one additional
+   commit containing the issue ID. Never rewrite the implementation commit.
+   Require a clean worktree at the final reviewed commit.
 
-Use `tweed evidence` for a deterministic check only when every dependency/lockfile, relevant configuration file, environment input, tool/runtime version, and referenced run artifact is declared. Cache hits never replace reviewer reasoning, the fresh whole-diff pass, or targeted non-authoring re-review. Recompute normally on any uncertainty.
-
-For a behavior or regression finding, add a regression check when feasible. Never trust a fixer's reported pass without rerunning the check.
-
-## Fix boundary
-
-Apply the minimum correction only when it stays inside an approved path and behavior, introduces no new public interface, dependency, schema, migration, configuration, rollout, or product choice, and does not change a non-goal or acceptance criterion. Prefer removing an unnecessary hunk over rewriting valid code.
-
-If a finding proves the approved design or step is wrong or incomplete, needs a new component or path, changes observable behavior, or requires a new dependency, interface, schema, migration, rollout contract, product decision, or architecture choice, do not fix it here. Return it to scoping with the exact evidence and decision needed.
-
-## Status semantics
-
-- `reviewed`: The final whole-diff pass has zero unresolved validated material findings and every relevant check passes. In-scope fixes may have been applied.
-- `blocked`: Review cannot complete and no review edit was made, whether because preflight is unsafe or stale, resolution requires re-scoping, or a reviewer, diagnostic, or check failed before correction.
-- `partial`: Review edits exist, but a finding, failed check, interruption, oscillation, conflict, or scope-crossing correction prevents completion. Preserve and report the actual changes; do not roll them back automatically.
+Continue only while a bounded correction or concrete diagnostic can resolve a
+material finding. Stop if fixes oscillate or evidence cannot adjudicate a
+conflict. Never require an agent to invent a finding.
 
 ## Completion gate
 
-Return `Status: reviewed` only when:
+Call the phase reviewed only when:
 
-- every final diff hunk maps to an approved step or acceptance criterion;
+- every final diff hunk maps to the approved scope or an accepted correction;
 - every acceptance criterion has passing evidence;
-- no unnecessary machinery, duplication, dependency, or unrelated cleanup remains;
-- no custom code remains where a verified built-in, project utility, or installed library provides a simpler equivalent without a material tradeoff;
-- relevant hot paths have no evidence-backed avoidable performance or resource regression;
+- no unnecessary machinery, duplication, dependency, or unrelated cleanup
+  remains;
 - realistic failures at changed boundaries are handled;
-- compatibility is established for every changed interface and consumer, including mixed-version, rollback, and downgrade behavior when applicable;
-- non-goals and pre-existing user work remain untouched;
+- compatibility is established for each changed interface and consumer;
+- relevant hot paths have no evidence-backed avoidable regression;
+- non-goals and user work remain untouched;
 - relevant broader checks pass without unexplained failure; and
-- the final independent whole-diff pass has zero unresolved validated material findings.
+- a fresh independent whole-diff pass has zero unresolved material findings.
 
-## Output
+If no review edit was made and review cannot complete, return `blocked`. If
+review edits exist but a finding, failed check, interruption, or scope-crossing
+correction prevents a passing commit, preserve the changes and return `blocked`
+with `result: partial`. Do not publish a Linear review comment until the gate
+passes.
+
+## Linear comment
+
+After the reviewed commit exists, publish exactly one:
 
 ```markdown
-Status: [reviewed | blocked | partial]
+## Tweed · Implementation Review
 
-# Implementation review
+**Verdict:** Ready to publish
 
-[Verdict and concise explanation.]
+### Final axis results
+- Simplicity and scope fidelity: [clean]
+- Correctness and robustness: [clean]
+- Compatibility and integration: [clean]
+- Performance and resource use: [clean]
+- Verification quality: [clean]
 
-## Final axis results
+### Findings
+| ID | Axis | Evidence | Disposition | Fix | Re-review |
+|---|---|---|---|---|---|
+| [ID or None] | [axis] | [evidence] | [accepted/rejected] | [result] | [result] |
 
-- Simplicity and scope fidelity: [clean, or unresolved finding]
-- Correctness and robustness: [clean, or unresolved finding]
-- Compatibility and integration: [clean, or unresolved finding]
-- Verification quality: [clean, or unresolved finding]
-- Performance and resource use: [clean, or unresolved finding]
+### Changes made
+- [Finding ID and minimum correction, or “None.”]
 
-## Findings
+### Verification
+- `[exact command]` → [result and contract proved]
 
-| ID | Axis | Evidence | Disposition | Fixer | Re-review | Result |
-|---|---|---|---|---|---|---|
-| [ID] | [axis] | [file:line or diagnostic] | [accepted/rejected] | [agent or none] | [check/reviewer] | [resolved/unresolved] |
+### Remaining findings
+None.
 
-## Changes made
+### Git handoff
+- Branch: `[branch]`
+- Implementation commit: `[commit]`
+- Reviewed commit: `[full final commit]`
+- Worktree: clean
 
-- [File or component]: [minimum correction and finding ID]
-
-## Verification
-
-- `[exact command or diagnostic]` → [result and criterion/finding proved]
-
-## Remaining findings
-
-["None." or the exact issue that remains.]
-
-## Refactoring opportunities
-
-- [Applied deletion, simplification, reuse, readability, or performance correction and its evidence]
-- [Deferred tip that would require re-scope, or "None"]
-
-## Return to scope
-
-["None." or the evidence-backed scope change or decision required.]
-
-## Repository state
-
-- Review baseline: [HEAD and workspace fingerprint]
-- Final: [HEAD and workspace fingerprint]
-- Scope digest: [digest of the supplied report]
-
-## Cycle summary
-
-Approved scope and implementation diff
-├─ Initial review — [accepted/rejected finding summary]
-├─ Fix and targeted re-review — [resolved finding summary]
-├─ Final clean pass — [zero findings or remaining issue]
-└─ Result — [reviewed/blocked/partial]: [why the gate passed or failed]
-
-## Agent map
-
-- [Agent role/name] — [reviewed/fixed/challenged; cumulative one-line result]
+### Review map
+- [Reviewer/fixer role] — [reviewed/fixed/challenged]: [one-line result]
+- Final clean pass — reviewed: zero unresolved material findings
 ```
 
-Include every reviewer, specialist, fixer, and final-pass agent actually used exactly once in the agent map, even when it participated in multiple cycles. Do not include transcripts or tool logs.
+Include every reviewer, specialist, and fixer once. Do not include transcripts,
+tool logs, hashes, or unscoped tips.
 
-## Structured return
+## Receipt
 
-Return the result through the runner-provided JSON schema with `status`, a bounded `summary`, optional structured `question`, and the complete report in `report_markdown`. The report must begin with the matching `Status:` line. Never use Linear tools; the runner alone persists a completed phase and commits a passing worktree.
+Return only the runner-provided JSON receipt with `phase: review`. Success uses
+`state: completed`, `result: reviewed`, the issue identifier and URL, and the
+exact branch and final commit; the PR field is null. Clarification uses
+`needs-input`. All other incomplete outcomes use `state: blocked`, with
+`result: blocked` or `partial` and the safest next action.

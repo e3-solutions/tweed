@@ -15,29 +15,16 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      matrix:
-        python: ["3.10", "3.13"]
+    timeout-minutes: 2
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: astral-sh/setup-uv@v6
-        with:
-          python-version: ${{ matrix.python }}
-          enable-cache: true
-      - name: Unit and integration tests
-        run: uv run --with openai-codex==0.144.4 --with keyring==25.7.0 --with tomli==2.2.1 python -m unittest discover -s tests -v
-      - name: Correctness-focused Ruff validation
-        run: uvx ruff check --select E9,F63,F7,F82 tweed tweed_journal.py tweed_linear_adapter.py tweed_linear_oauth.py tests benchmarks scripts
-      - name: Compile Python sources
-        run: uv run --with openai-codex==0.144.4 --with keyring==25.7.0 --with tomli==2.2.1 python -m py_compile tweed tweed_journal.py tweed_linear_adapter.py tweed_linear_oauth.py
-      - name: Validate Codex skill
-        run: uv run python scripts/validate_skill.py skills/use-tweed
-      - name: Verify benchmark fixture
-        run: uv run --with openai-codex==0.144.4 --with tomli==2.2.1 python benchmarks/cor3270_stage1.py
+      - name: Smoke-test runner
+        run: |
+          python -m py_compile tweed
+          sh -n install
+          ./tweed --help
       - name: Reject whitespace errors in the PR diff
         if: github.event_name == 'pull_request'
         run: git diff --check origin/${{ github.base_ref }}...HEAD

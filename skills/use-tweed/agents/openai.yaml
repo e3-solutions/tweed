@@ -1,4 +1,13 @@
 interface:
   display_name: "Use Tweed"
-  short_description: "Run Tweed through bounded receipts"
-  default_prompt: "Use $use-tweed to advance this Linear-backed delivery safely."
+  short_description: "Take bugs and features from intake to PR"
+  default_prompt: "Use $use-tweed to take this bug or feature through isolated delivery phases to a reviewed pull request."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "linear"
+      description: "Read and update the durable Linear task record"
+      transport: "streamable_http"
+      url: "https://mcp.linear.app/mcp"
+policy:
+  allow_implicit_invocation: true
