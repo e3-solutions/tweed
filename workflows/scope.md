@@ -1,21 +1,17 @@
 # Tweed Solution Scope
 
-Turn the supplied Linear request into the smallest implementation-ready solution
-scope. For a bug, start from its established RCA. For a feature, start from the
-requested outcome and verified repository behavior. Use Linear MCP yourself to
-read the issue and applicable Tweed comments, check for an existing scope, and
-publish the final scope. Children must not use Linear. Do not modify repository
-files, implement the change, create a branch, or perform any external write
-other than the final Linear comment.
+Turn the supplied handoff into the smallest implementation-ready solution scope.
+For a bug, use only its established RCA; for a feature, use only its intake.
+Do not modify repository files, implement the change, create a branch, or
+perform any external write other than the final Linear comment.
 
 ## Boundaries
 
-- Determine whether the issue is a bug or feature from `**Kind:**` in its
-  description, falling back to an unambiguous existing label. A bug requires an
-  established `## Tweed · Root Cause Analysis`
-  comment. A feature must not invent or require an RCA. If the kind is ambiguous
-  or a bug lacks established RCA, return `needs-input` or `blocked`.
-- Treat the issue description and, for bugs, RCA as the durable request
+- If the handoff contains an existing `## Tweed · Solution Scope`, validate and
+  return it before requiring predecessor artifacts.
+- Use the kind returned by the context handoff. A bug requires an established
+  `## Tweed · Root Cause Analysis`; a feature must not invent or require one.
+- Treat the supplied RCA or feature intake as the complete durable request
   contract. Verify material repository claims before relying on them.
 - Reuse existing structures, language or framework capabilities, project
   utilities, and installed libraries. Add a dependency, abstraction,
@@ -35,13 +31,13 @@ other than the final Linear comment.
 
 ## Scoping workflow
 
-1. Record the exact request, constraints, acceptance clues, and supplied
-   evidence. For a bug, record the established causal chain and responsible
-   boundary. For a feature, characterize current behavior and the requested
-   outcome without assuming an implementation. Record the repository path, Git
-   `HEAD`, and relevant clean/dirty worktree state. If repository evidence
-   materially contradicts the handoff, return `blocked` with the smallest
-   re-investigation needed.
+1. Record the exact request, constraints, acceptance clues, and evidence from
+   the supplied handoff. For a bug, record the established causal chain and
+   responsible boundary. For a feature, characterize current behavior and the
+   requested outcome without assuming an implementation. Record the repository
+   path, Git `HEAD`, and relevant clean/dirty worktree state. If repository
+   evidence materially contradicts the handoff, return `blocked` with the
+   smallest re-investigation needed.
 2. Spawn exactly three independent read-only agents, without inherited
    conversation:
    - **Repository and reuse:** inventory internal utilities, framework or
@@ -97,9 +93,7 @@ smallest missing investigation. Never fill gaps with speculative architecture.
 
 ## Linear comment
 
-If a comment already begins with `## Tweed · Solution Scope`, validate it is
-complete and return it instead of duplicating the phase. Otherwise publish one
-terminal `scoped` comment:
+Publish one terminal `scoped` comment:
 
 ```markdown
 ## Tweed · Solution Scope

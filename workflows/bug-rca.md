@@ -1,8 +1,7 @@
 # Tweed Bug RCA
 
-Investigate the bug recorded in the supplied Linear issue and publish one
-evidence-backed root cause analysis as its first Tweed comment. Use Linear MCP
-yourself to read the issue and write the final comment. Keep all repository
+Investigate the bug from the supplied handoff and publish one evidence-backed
+root cause analysis as its first Tweed comment. Keep all repository
 investigation in isolated subagents so the invoking task receives only the
 bounded receipt.
 
@@ -11,8 +10,8 @@ bounded receipt.
 - The input must identify an existing Linear bug issue. If it does not, return
   `needs-input`; never create or guess an issue. If the issue is a feature,
   return `blocked` because features proceed directly to scope.
-- The coordinator may use Linear only to read the issue, check for a prior Tweed
-  RCA comment, and publish the final comment. Children must not use Linear.
+- Reuse a supplied existing RCA and stop. Otherwise use only the supplied
+  intake.
 - Do not change the issue title or description, modify project files, install
   dependencies, add helper code, create a branch, propose a fix, or implement
   anything.
@@ -25,9 +24,9 @@ bounded receipt.
 
 ## Investigation workflow
 
-1. Read the Linear issue and record the exact reported behavior, expected
-   behavior when known, affected surface, reproduction details, environment,
-   constraints, and supplied evidence. Do not silently fill gaps.
+1. Read the supplied intake and record the exact reported and expected behavior,
+   impact, acceptance clues, affected surface, reproduction details,
+   environment, constraints, and supplied evidence. Do not silently fill gaps.
 2. Record the absolute repository path, Git `HEAD`, and whether the worktree is
    clean or dirty. Treat dirty and untracked files as live state rather than as
    evidence from `HEAD`, and disclose when they affect the finding.
@@ -85,9 +84,8 @@ will do so, report `not-established` and name the smallest next diagnostic.
 
 ## First Tweed comment
 
-For terminal `established` or `not-established` results, check whether an
-existing comment begins with `## Tweed · Root Cause Analysis`. Reuse that result
-instead of duplicating it. Otherwise add exactly one comment in this form:
+For terminal `established` or `not-established` results, add exactly one comment
+in this form:
 
 ```markdown
 ## Tweed · Root Cause Analysis
@@ -98,8 +96,8 @@ instead of duplicating it. Otherwise add exactly one comment in this form:
 [Precise causal statement, or “Root cause not established.”]
 
 ### Problem definition
-[Observed behavior, expected behavior, affected surface, and triggering
-conditions now known.]
+[Observed and expected behavior, impact, constraints, acceptance clues,
+affected surface, and triggering conditions now known.]
 
 ### Failure chain
 1. [Trigger]

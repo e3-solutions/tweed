@@ -1,18 +1,15 @@
 # Tweed Implementation Review
 
-Independently review the implementation recorded in the supplied Linear issue
-against its approved Tweed scope. Use Linear MCP yourself to read the issue and
-Tweed comments, check for an existing review, and publish the final review.
-Children must not use Linear. Apply only evidence-backed, in-scope corrections
-and stop at a clean reviewed local commit. Do not push, open or merge a pull
-request, deploy, or perform remote delivery actions.
+Independently review the supplied implementation against its approved Tweed
+scope. Apply only evidence-backed, in-scope corrections and stop at a clean
+reviewed local commit. Do not push, open or merge a pull request, deploy, or
+perform remote delivery actions.
 
 ## Contract and safety
 
-- Require solution scope and implementation comments. A bug also requires an
-  established RCA; a feature does not. Extract the recorded branch and commit.
-  If a review comment already exists, verify its branch and commit locally and
-  return it without duplicating the phase.
+- If an existing review is supplied, verify its branch and commit locally and
+  return it. Otherwise require the solution scope and implementation handoffs,
+  then extract the recorded branch and commit.
 - Treat the scope, non-goals, acceptance criteria, and validation as the
   contract. Use the implementation comment as provenance, not as proof of
   quality.

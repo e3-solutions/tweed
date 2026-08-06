@@ -1,17 +1,14 @@
 # Tweed Implementation
 
-Implement the approved Tweed scope from the supplied Linear issue using bounded
-Codex subagents. Use Linear MCP yourself to read the issue, its Tweed scope, and
-its RCA when the issue is a bug; check for an existing implementation handoff
-and publish the final handoff. Children must not use Linear. Work only in the
-supplied local repository. Stop after a verified local commit: do not push, open
-a pull request, merge, deploy, or mutate remote services or data.
+Implement the approved Tweed scope from the supplied handoff using bounded Codex
+subagents. Work only in the supplied local repository. Stop after a verified
+local commit: do not push, open a pull request, merge, deploy, or mutate remote
+services or data.
 
 ## Contract and safety
 
-- Require a complete `## Tweed · Solution Scope`. A bug also requires an
-  established `## Tweed · Root Cause Analysis`; a feature does not. Otherwise
-  return `blocked` before editing.
+- Require a complete `## Tweed · Solution Scope`; it is the complete
+  implementation contract. Otherwise return `blocked` before editing.
 - Treat the scope's outcome, change surface, steps, non-goals, acceptance
   criteria, and validation as the approved contract. Do not redesign or broaden
   it during implementation.
@@ -27,9 +24,9 @@ a pull request, merge, deploy, or mutate remote services or data.
 
 ## Preflight
 
-1. Read the durable Linear handoff. If a comment already begins with
-   `## Tweed · Implementation`, verify its branch and commit still exist locally
-   and return that completed result without reimplementing.
+1. If the handoff contains an existing `## Tweed · Implementation`, verify its
+   branch and commit still exist locally and return it. Otherwise read the
+   supplied scope.
 2. Record repository identity, current branch, `HEAD`, staged, unstaged, and
    untracked paths. Derive a human branch named
    `tweed/<issue-id>-<short-title-slug>`.
