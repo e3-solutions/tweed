@@ -20,7 +20,7 @@ bounded receipt.
 - Prefer runtime, test, repository, configuration, and history evidence over
   agent opinion.
 - Inspect available evidence before asking the user. Ask only when one material
-  fact cannot be discovered from the repository or issue.
+  fact cannot be discovered from the repository or supplied intake.
 
 ## Investigation workflow
 
