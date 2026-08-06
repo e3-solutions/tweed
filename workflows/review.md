@@ -4,8 +4,9 @@ Independently review the implementation recorded in the supplied Linear issue
 against its approved Tweed scope. Use Linear MCP yourself to read the issue and
 Tweed comments, check for an existing review, and publish the final review.
 Children must not use Linear. Apply only evidence-backed, in-scope corrections
-and stop at a clean reviewed local commit. Do not push, open or merge a pull
-request, deploy, or perform remote delivery actions.
+and stop at a clean reviewed local commit. Preserve the implementation draft PR
+without pushing, changing its metadata or readiness, merging, deploying, or
+performing other remote delivery actions.
 
 ## Contract and safety
 
@@ -137,6 +138,8 @@ None.
 - Branch: `[branch]`
 - Implementation commit: `[commit]`
 - Reviewed commit: `[full final commit]`
+- Draft PR: `[URL from the implementation handoff, or “None” for a legacy
+  handoff]`
 - Worktree: clean
 
 ### Review map
@@ -151,6 +154,6 @@ tool logs, hashes, or unscoped tips.
 
 Return only the runner-provided JSON receipt with `phase: review`. Success uses
 `state: completed`, `result: reviewed`, the issue identifier and URL, and the
-exact branch and final commit; the PR field is null. Clarification uses
-`needs-input`. All other incomplete outcomes use `state: blocked`, with
-`result: blocked` or `partial` and the safest next action.
+exact branch and final commit, plus the unchanged draft PR URL when present.
+Clarification uses `needs-input`. All other incomplete outcomes use
+`state: blocked`, with `result: blocked` or `partial` and the safest next action.

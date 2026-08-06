@@ -1,11 +1,11 @@
 # Tweed Publish
 
-Publish the reviewed Tweed implementation as a ready-to-merge GitHub pull
-request and record it in Linear. Use Linear MCP yourself to read the issue and
-its Tweed handoffs, and use the installed authenticated `git` and `gh` CLIs for
-GitHub. Do not spawn implementation agents, change code, merge, deploy, delete
-branches, or mutate anything outside the scoped push, PR, and final Linear
-comment.
+Publish the reviewed Tweed implementation by updating its draft GitHub pull
+request, marking it ready for review, and recording it in Linear. Use Linear MCP
+yourself to read the issue and its Tweed handoffs, and use the installed
+authenticated `git` and `gh` CLIs for GitHub. Do not spawn implementation
+agents, change code, merge, deploy, delete branches, or mutate anything outside
+the scoped push, PR finalization, and final Linear comment.
 
 ## Preconditions
 
@@ -17,10 +17,15 @@ comment.
 - Require a configured GitHub `origin`, a working authenticated `gh`, and an
   identifiable default base branch. Ask one question only if the correct base
   branch cannot be discovered.
-- If a final Tweed publish comment and matching open PR already exist, return
-  that completed result without creating or commenting again.
+- Require the implementation handoff's PR URL and confirm it is open, targets
+  the expected base, and uses the exact reviewed head branch. It should be draft
+  unless an interrupted publish already marked it ready. For compatibility with
+  an older handoff that has no PR URL, search by exact head branch and recover
+  the matching open PR or create one draft after pushing.
+- If a final Tweed publish comment and matching open non-draft PR already exist,
+  return that completed result without creating or commenting again.
 - Never force-push, rewrite history, change code, rerun implementation, merge,
-  mark a draft PR ready, deploy, or close another PR.
+  deploy, close another PR, or change an unrelated PR.
 
 ## Publish workflow
 
@@ -30,15 +35,17 @@ comment.
 2. Discover the GitHub repository and default base branch from `gh` or the
    remote. Confirm the reviewed branch differs from the base and contains the
    intended commits.
-3. Search for an existing pull request from the exact head branch. Reuse it when
-   it points at the reviewed commit and is open and non-draft. If it is draft,
-   blocked, closed, or points somewhere unsafe, return `blocked` rather than
-   changing it implicitly.
-4. If the branch is not yet published, run an ordinary upstream push to
-   `origin`. Never use `--force` or a destructive refspec.
-5. Create one non-draft pull request when none exists. Use a concise human title
-   derived from the Linear title, prefixed with the issue identifier. The body
-   must contain:
+3. Resolve the implementation draft PR by its recorded URL and exact head
+   branch. If an older handoff has no draft, search by the exact head branch;
+   reuse only one matching open PR. A closed, merged, mismatched, or duplicate PR
+   is ambiguous, so return `blocked` without changing it. If the matching PR is
+   already non-draft, require it to point at the exact reviewed commit and treat
+   its readiness as completed remote state from an interrupted or legacy run.
+4. Push the reviewed head to the existing branch with an ordinary upstream push
+   to `origin`. Never use `--force` or a destructive refspec. When a PR already
+   exists, verify it now points at the reviewed commit.
+5. When the PR is still draft, update it with a concise human title derived from
+   the Linear title, prefixed with the issue identifier, and a body containing:
 
    ```markdown
    ## Summary
@@ -54,8 +61,12 @@ comment.
    - [Issue identifier and URL]
    ```
 
+   If compatibility recovery found no PR, create it as a draft with this title
+   and body after the push. Then mark the exact draft ready for review. If the
+   exact PR is already non-draft, do not change it again. Never alter the
+   readiness of any other PR.
 6. Verify the PR is open, non-draft, targets the discovered base, uses the
-   reviewed head branch and commit, and reports no immediately visible creation
+   reviewed head branch and commit, and reports no immediately visible update
    error. Do not claim CI has passed unless GitHub shows it.
 7. Add exactly one Linear comment after the PR is verified:
 

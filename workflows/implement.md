@@ -4,8 +4,9 @@ Implement the approved Tweed scope from the supplied Linear issue using bounded
 Codex subagents. Use Linear MCP yourself to read the issue, its Tweed scope, and
 its RCA when the issue is a bug; check for an existing implementation handoff
 and publish the final handoff. Children must not use Linear. Work only in the
-supplied local repository. Stop after a verified local commit: do not push, open
-a pull request, merge, deploy, or mutate remote services or data.
+supplied repository. Create or recover the issue branch's draft pull request as
+the implementation kickoff, but do not mark it ready, merge, deploy, or mutate
+other remote services or data.
 
 ## Contract and safety
 
@@ -21,15 +22,20 @@ a pull request, merge, deploy, or mutate remote services or data.
 - Never overwrite, discard, stash, reset, clean, or attribute pre-existing user
   work to Tweed. Never use destructive Git commands.
 - Local file edits, local validation, branch creation, staging, and committing
-  are allowed. Linear may be written only after a passing commit exists.
-- External delivery, credentials, live migrations, production checks, pushes,
-  PR creation, and deployment belong to later phases.
+  are allowed. Linear may be written only after a passing implementation commit
+  exists.
+- The only allowed GitHub writes are ordinary non-force pushes of the issue
+  branch and creation of one draft pull request for that exact branch. Reuse the
+  same branch and PR on retries. Credentials, live migrations, production
+  checks, PR readiness, merging, and deployment belong to later phases.
 
 ## Preflight
 
 1. Read the durable Linear handoff. If a comment already begins with
    `## Tweed · Implementation`, verify its branch and commit still exist locally
-   and return that completed result without reimplementing.
+   and its recorded PR remains open for the exact head branch, whether it is
+   still draft or was later published. Then return that completed result without
+   reimplementing.
 2. Record repository identity, current branch, `HEAD`, staged, unstaged, and
    untracked paths. Derive a human branch named
    `tweed/<issue-id>-<short-title-slug>`.
@@ -40,9 +46,28 @@ a pull request, merge, deploy, or mutate remote services or data.
    attempt, continue only when every changed path and hunk can be mapped to the
    approved scope. Otherwise return `blocked` and preserve it exactly. Any
    unrelated dirty state blocks automatic implementation.
-5. Verify that the scoped files, interfaces, dependencies, and tests still
+5. If the clean issue branch already contains a non-empty issue-labeled commit
+   beyond the kickoff but no Linear implementation comment, treat it as a
+   candidate from an interrupted attempt. Reuse it only when its complete diff
+   maps to the scope and, if already pushed, the draft PR points at that exact
+   commit. Rerun the required validation and reviews before recording the
+   handoff; do not duplicate the edit or commit.
+6. Verify that the scoped files, interfaces, dependencies, and tests still
    match current repository behavior. Return `blocked` when the scope is
-   materially stale or requires an external action to pass.
+   materially stale or requires an external action beyond the permitted GitHub
+   kickoff to pass.
+7. Require a configured GitHub `origin`, authenticated `gh`, and an identifiable
+   default base branch. Confirm the issue branch differs from the base. Search
+   for a pull request with that exact head branch and reuse it only when it is
+   open and draft. A non-draft, closed, merged, or mismatched PR is ambiguous;
+   return `blocked` without changing it.
+8. If no PR exists, ensure the branch has a commit beyond the base by creating
+   one empty kickoff commit containing the issue ID when necessary. Push the
+   exact branch with an ordinary upstream push, never `--force` or a destructive
+   refspec, then run `gh pr create --draft`. Use a concise issue-derived title
+   and a body containing the issue link, approved outcome, implementation-in-
+   progress status, and pending verification. Verify that the resulting PR is
+   open, draft, targets the default base, and uses the exact issue branch.
 
 ## Implementation workflow
 
@@ -76,8 +101,13 @@ a pull request, merge, deploy, or mutate remote services or data.
    repository-supported build, type, lint, and test checks. For a bug fix, add a
    regression check that fails for the original mechanism when feasible.
 8. Reinspect the final diff and Git status. Stage only implementation-owned
-   files and create one commit with a concise message containing the issue ID.
-   Do not amend unrelated commits. Require a clean worktree after committing.
+   files and create one implementation commit with a concise message containing
+   the issue ID, unless preflight recovered that exact commit from an interrupted
+   attempt. Do not amend the kickoff or unrelated commits. Require a clean
+   worktree after committing. Push the implementation commit with an ordinary
+   non-force push and verify the draft PR's head is that exact commit. Review
+   may add a later local correction commit before publish pushes the reviewed
+   head.
 
 ## Completion gate
 
@@ -93,15 +123,18 @@ Call the phase implemented only when:
 - no unnecessary custom code, abstraction, duplication, or evidenced
   performance regression remains when a simpler verified capability exists;
 - no unauthorized dependency, interface, migration, cleanup, or external side
-  effect occurred;
+  effect beyond the exact branch push and draft PR occurred;
 - independent reviewers have no unresolved material finding; and
-- the issue branch has a clean, passing commit.
+- the issue branch has a clean, passing implementation commit; and
+- one verified open draft PR points from the exact implementation commit on the
+  issue branch to the default base.
 
 If no edit was made and work cannot proceed, return `blocked`. If implementation
 changes exist but a blocker, failed check, interruption, deviation, or finding
 prevents a safe commit, preserve the actual changes and return `blocked` with
 `result: partial`. Do not publish a Linear implementation comment until the
-completion gate passes.
+completion gate passes. If kickoff succeeded before a later block, preserve and
+report the branch, kickoff commit, and draft PR so a retry can resume them.
 
 ## Linear comment
 
@@ -131,6 +164,7 @@ None.
 ### Git handoff
 - Branch: `[branch]`
 - Commit: `[full commit]`
+- Draft PR: `[URL]`
 - Worktree: clean
 
 ### Implementation map
@@ -145,6 +179,6 @@ hash manifests, or unrelated refactoring ideas.
 
 Return only the runner-provided JSON receipt with `phase: implement`. Success
 uses `state: completed`, `result: implemented`, the issue identifier and URL,
-and the exact branch and full commit; the PR field is null. Clarification uses
-`needs-input`. All other incomplete outcomes use `state: blocked`, with
+the exact branch, full implementation commit, and draft PR URL. Clarification
+uses `needs-input`. All other incomplete outcomes use `state: blocked`, with
 `result: blocked` or `partial` and the safest next action.

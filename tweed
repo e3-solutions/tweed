@@ -63,7 +63,8 @@ WORKFLOWS = {
     ),
     "implement": (
         "implement.md",
-        "Implement the approved scope, commit it locally, and publish the handoff. ",
+        "Open or recover the draft PR, implement the approved scope, and "
+        "publish the handoff. ",
     ),
     "review": (
         "review.md",
@@ -71,7 +72,8 @@ WORKFLOWS = {
     ),
     "publish": (
         "publish.md",
-        "Push the reviewed commit, open or recover its PR, and record it in Linear. ",
+        "Push the reviewed commit, finalize its draft PR, and record it in "
+        "Linear. ",
     ),
 }
 
@@ -115,6 +117,30 @@ def emit(receipt: dict) -> None:
     if len(output.encode()) > 4096:
         raise RuntimeError("receipt exceeded 4 KiB")
     print(output)
+
+
+def validate_receipt(receipt: dict, phase: str) -> dict:
+    if not isinstance(receipt, dict) or set(receipt) != set(RECEIPT_SCHEMA["required"]):
+        raise RuntimeError("Codex returned an invalid receipt")
+    if receipt["phase"] != phase:
+        raise RuntimeError("Codex returned the wrong phase")
+    if receipt["state"] == "completed" and (
+        not receipt["issue"] or not receipt["linear_url"]
+    ):
+        raise RuntimeError("completed phase is missing its Linear issue")
+    if receipt["state"] == "completed" and (
+        receipt["result"] != COMPLETED_RESULTS[phase]
+    ):
+        raise RuntimeError(f"completed {phase} returned the wrong result")
+    if receipt["state"] == "needs-input" and not receipt["question"]:
+        raise RuntimeError("phase requested input without a question")
+    if phase in {"implement", "review", "publish"} and receipt["state"] == "completed":
+        if not receipt["branch"] or not receipt["commit"]:
+            raise RuntimeError(f"completed {phase} is missing Git provenance")
+    if phase in {"implement", "publish"} and receipt["state"] == "completed":
+        if not receipt["pull_request_url"]:
+            raise RuntimeError(f"completed {phase} is missing its pull request")
+    return receipt
 
 
 def run_phase(repository: Path, phase: str, phase_input: str) -> dict:
@@ -185,28 +211,7 @@ def run_phase(repository: Path, phase: str, phase_input: str) -> dict:
             raise RuntimeError(detail[-1][:800] if detail else f"{phase} failed")
         receipt = json.loads(receipt_path.read_text())
 
-    if not isinstance(receipt, dict) or set(receipt) != set(RECEIPT_SCHEMA["required"]):
-        raise RuntimeError("Codex returned an invalid receipt")
-    if receipt["phase"] != phase:
-        raise RuntimeError("Codex returned the wrong phase")
-    if receipt["state"] == "completed" and (
-        not receipt["issue"] or not receipt["linear_url"]
-    ):
-        raise RuntimeError("completed phase is missing its Linear issue")
-    if receipt["state"] == "completed" and (
-        receipt["result"] != COMPLETED_RESULTS[phase]
-    ):
-        raise RuntimeError(f"completed {phase} returned the wrong result")
-    if receipt["state"] == "needs-input" and not receipt["question"]:
-        raise RuntimeError("phase requested input without a question")
-    if phase in {"implement", "review", "publish"} and receipt["state"] == "completed":
-        if not receipt["branch"] or not receipt["commit"]:
-            raise RuntimeError(f"completed {phase} is missing Git provenance")
-    if phase == "publish" and receipt["state"] == "completed" and not receipt[
-        "pull_request_url"
-    ]:
-        raise RuntimeError("completed publish is missing its pull request")
-    return receipt
+    return validate_receipt(receipt, phase)
 
 
 def parse() -> tuple[Path, str, str]:
