@@ -33,9 +33,10 @@ other remote services or data.
 
 1. Read the durable Linear handoff. If a comment already begins with
    `## Tweed · Implementation`, verify its branch and commit still exist locally
-   and its recorded PR remains open for the exact head branch, whether it is
-   still draft or was later published. Then return that completed result without
-   reimplementing.
+   and its recorded PR belongs to the GitHub repository derived from `origin`,
+   remains open, and uses that repository and the exact head branch, whether it
+   is still draft or was later published. Then return that completed result
+   without reimplementing.
 2. Record repository identity, current branch, `HEAD`, staged, unstaged, and
    untracked paths. Derive a human branch named
    `tweed/<issue-id>-<short-title-slug>`.
@@ -57,17 +58,31 @@ other remote services or data.
    materially stale or requires an external action beyond the permitted GitHub
    kickoff to pass.
 7. Require a configured GitHub `origin`, authenticated `gh`, and an identifiable
-   default base branch. Confirm the issue branch differs from the base. Search
-   for a pull request with that exact head branch and reuse it only when it is
-   open and draft. A non-draft, closed, merged, or mismatched PR is ambiguous;
-   return `blocked` without changing it.
+   default base branch. Derive one canonical
+   `<host>/<owner>/<repo>` selector from `origin`; do not use ambient `GH_REPO`
+   or a repository inferred from the current directory. Confirm the issue branch
+   differs from the base. Scope every `gh` read and write explicitly to that
+   selector. Search all PR states with the equivalent of
+   `gh pr list --repo <host>/<owner>/<repo> --state all --head <branch>` and
+   inspect every match. Reuse exactly one match only when it is open and draft
+   in that canonical repository, its URL and head repository use the exact host,
+   owner, and repository, and its base and head branches match. Any duplicate,
+   non-draft, closed, merged, or mismatched PR is ambiguous; return `blocked`
+   without changing it.
 8. If no PR exists, ensure the branch has a commit beyond the base by creating
-   one empty kickoff commit containing the issue ID when necessary. Push the
-   exact branch with an ordinary upstream push, never `--force` or a destructive
-   refspec, then run `gh pr create --draft`. Use a concise issue-derived title
-   and a body containing the issue link, approved outcome, implementation-in-
-   progress status, and pending verification. Verify that the resulting PR is
-   open, draft, targets the default base, and uses the exact issue branch.
+   one empty kickoff commit containing the issue ID when necessary. Preserve any
+   staged work by using the index-safe equivalent of
+   `git commit --allow-empty --only -m "<issue-id> kickoff"`, then require
+   `git diff-tree --quiet HEAD^ HEAD` to prove its tree equals its parent before
+   pushing. If the kickoff is not empty, return `blocked` without pushing and
+   preserve the work. Push the exact branch with an ordinary upstream push,
+   never `--force` or a destructive refspec, then run `gh pr create --draft`
+   with explicit `--repo <host>/<owner>/<repo>`, `--base <base>`, and
+   `--head <branch>` arguments. Use a concise issue-derived title and a body
+   containing the issue link, approved outcome, implementation-in-progress
+   status, and pending verification. Verify the resulting PR URL, host,
+   repository, head repository, state, base, and head against the exact expected
+   values before continuing.
 
 ## Implementation workflow
 

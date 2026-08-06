@@ -87,7 +87,8 @@ tweed publish LIN-123
   robustness analysis.
 - **Implement** creates or reuses an issue branch, pushes a safe kickoff commit,
   opens or recovers its draft PR, delegates bounded code ownership, validates
-  the change, commits it locally, and records the handoff.
+  the change, pushes the verified implementation commit to the draft, and
+  records the handoff.
 - **Review** independently challenges the complete diff, applies only verified
   in-scope corrections, reruns validation, and records the final commit.
 - **Publish** pushes the reviewed commit, finalizes the existing draft PR, marks

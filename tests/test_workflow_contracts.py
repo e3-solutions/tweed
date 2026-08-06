@@ -7,6 +7,10 @@ ROOT = Path(__file__).resolve().parents[1]
 TWEED = runpy.run_path(str(ROOT / "tweed"), run_name="tweed_module")
 
 
+def normalized(path):
+    return " ".join((ROOT / path).read_text().split()).casefold()
+
+
 def completed_receipt(phase):
     return {
         "phase": phase,
@@ -44,21 +48,67 @@ class ReceiptContractTests(unittest.TestCase):
 
 
 class WorkflowContractTests(unittest.TestCase):
-    def test_implementation_owns_draft_pr_kickoff(self):
-        workflow = (ROOT / "workflows" / "implement.md").read_text()
+    def test_implementation_owns_safe_repository_bound_draft_kickoff(self):
+        workflow = normalized("workflows/implement.md")
 
-        self.assertIn("`gh pr create --draft`", workflow)
-        self.assertIn("only allowed GitHub writes", workflow)
-        self.assertIn("candidate from an interrupted attempt", workflow)
-        self.assertIn("whether it is\n   still draft or was later published", workflow)
-        self.assertNotIn("do not push, open\na pull request", workflow)
+        required = (
+            "only allowed github writes",
+            "candidate from an interrupted attempt",
+            "recorded pr belongs to the github repository derived from `origin`",
+            "gh pr list --repo <host>/<owner>/<repo> --state all --head <branch>",
+            "git commit --allow-empty --only",
+            "git diff-tree --quiet head^ head",
+            "gh pr create --draft",
+            "with explicit `--repo <host>/<owner>/<repo>`, `--base <base>`, "
+            "and `--head <branch>` arguments",
+            "push the implementation commit",
+            "full implementation commit, and draft pr url",
+        )
+        for contract in required:
+            with self.subTest(contract=contract):
+                self.assertIn(contract, workflow)
+        self.assertNotIn("do not push, open a pull request", workflow)
+        self.assertNotIn("pushes, pr creation, and deployment belong", workflow)
+        self.assertNotIn("--head <owner>:<branch>", workflow)
 
-    def test_publish_promotes_existing_draft(self):
-        workflow = (ROOT / "workflows" / "publish.md").read_text()
+    def test_review_preserves_pr_without_remote_delivery(self):
+        workflow = normalized("workflows/review.md")
 
-        self.assertIn("mark the exact draft ready for review", workflow)
-        self.assertIn("implementation draft PR", workflow)
-        self.assertIn("already non-draft", workflow)
+        self.assertIn(
+            "preserve the implementation draft pr without pushing, changing its "
+            "metadata or readiness",
+            workflow,
+        )
+        self.assertIn("draft pr: `[url from the implementation handoff", workflow)
+        self.assertIn("unchanged draft pr url when present", workflow)
+        self.assertNotIn("mark that exact draft ready", workflow)
+
+    def test_publish_promotes_exact_repository_draft_after_review_push(self):
+        workflow = normalized("workflows/publish.md")
+
+        required = (
+            "derive one canonical `<host>/<owner>/<repo>` selector from `origin`",
+            "scope every `gh` read and write explicitly to that selector",
+            "when a legacy handoff has no pr url",
+            "gh pr list --repo <host>/<owner>/<repo> --state all --head <branch>",
+            "url and head repository both use the exact canonical host",
+            "cross-host, cross-repository",
+            "already non-draft",
+            "mark that exact draft ready for review",
+        )
+        for contract in required:
+            with self.subTest(contract=contract):
+                self.assertIn(contract, workflow)
+        self.assertLess(
+            workflow.index("push the reviewed head"),
+            workflow.index("mark that exact draft ready for review"),
+        )
+        self.assertNotIn("--head <owner>:<branch>", workflow)
+
+    def test_ci_runs_contract_tests(self):
+        workflow = normalized(".github/workflows/ci.yml")
+
+        self.assertIn("python -m unittest discover -s tests -v", workflow)
 
 
 if __name__ == "__main__":

@@ -15,13 +15,17 @@ the scoped push, PR finalization, and final Linear comment.
 - Extract the exact reviewed branch and commit. Require a clean local worktree
   on that branch, with `HEAD` equal to the reviewed commit.
 - Require a configured GitHub `origin`, a working authenticated `gh`, and an
-  identifiable default base branch. Ask one question only if the correct base
+  identifiable default base branch. Derive one canonical
+  `<host>/<owner>/<repo>` selector from `origin`; do not use ambient `GH_REPO`
+  or a repository inferred from the current directory. Scope every `gh` read and
+  write explicitly to that selector. Ask one question only if the correct base
   branch cannot be discovered.
-- Require the implementation handoff's PR URL and confirm it is open, targets
-  the expected base, and uses the exact reviewed head branch. It should be draft
-  unless an interrupted publish already marked it ready. For compatibility with
-  an older handoff that has no PR URL, search by exact head branch and recover
-  the matching open PR or create one draft after pushing.
+- When the implementation handoff has a PR URL, require it to belong to
+  that exact host, owner, and repository and confirm it is open, targets the
+  expected base, and uses the same canonical head repository plus the exact
+  reviewed head branch. It should be draft unless an interrupted publish already
+  marked it ready. When a legacy handoff has no PR URL, enter the all-state
+  exact-head recovery in the workflow instead of failing this precondition.
 - If a final Tweed publish comment and matching open non-draft PR already exist,
   return that completed result without creating or commenting again.
 - Never force-push, rewrite history, change code, rerun implementation, merge,
@@ -36,16 +40,22 @@ the scoped push, PR finalization, and final Linear comment.
    remote. Confirm the reviewed branch differs from the base and contains the
    intended commits.
 3. Resolve the implementation draft PR by its recorded URL and exact head
-   branch. If an older handoff has no draft, search by the exact head branch;
-   reuse only one matching open PR. A closed, merged, mismatched, or duplicate PR
-   is ambiguous, so return `blocked` without changing it. If the matching PR is
-   already non-draft, require it to point at the exact reviewed commit and treat
-   its readiness as completed remote state from an interrupted or legacy run.
+   branch. Verify that its URL and head repository both use the exact canonical
+   host, owner, and repository before any mutation. If a legacy handoff has no
+   PR URL, search every state with the equivalent of
+   `gh pr list --repo <host>/<owner>/<repo> --state all --head <branch>` and
+   inspect every match. Reuse only one matching open PR from that canonical
+   repository. A closed, merged, mismatched, cross-host, cross-repository, or
+   duplicate PR is ambiguous, so return `blocked` without changing it. If the
+   matching PR is already non-draft, require it to point at the exact reviewed
+   commit and treat its readiness as completed remote state from an interrupted
+   or legacy run.
 4. Push the reviewed head to the existing branch with an ordinary upstream push
    to `origin`. Never use `--force` or a destructive refspec. When a PR already
    exists, verify it now points at the reviewed commit.
-5. When the PR is still draft, update it with a concise human title derived from
-   the Linear title, prefixed with the issue identifier, and a body containing:
+5. When the exact canonical-repository PR is still draft, update it with a
+   concise human title derived from the Linear title, prefixed with the issue
+   identifier, and a body containing:
 
    ```markdown
    ## Summary
@@ -61,13 +71,16 @@ the scoped push, PR finalization, and final Linear comment.
    - [Issue identifier and URL]
    ```
 
-   If compatibility recovery found no PR, create it as a draft with this title
-   and body after the push. Then mark the exact draft ready for review. If the
-   exact PR is already non-draft, do not change it again. Never alter the
+   If legacy recovery found no all-state match, create a draft with this title
+   and body after the push, using explicit
+   `--repo <host>/<owner>/<repo>`, `--base <base>`, and `--head <branch>`
+   arguments. Then mark that exact draft ready for review. If the exact PR is
+   already non-draft, do not change it again. Never alter the metadata or
    readiness of any other PR.
 6. Verify the PR is open, non-draft, targets the discovered base, uses the
-   reviewed head branch and commit, and reports no immediately visible update
-   error. Do not claim CI has passed unless GitHub shows it.
+   exact canonical host and head repository, reviewed head branch and commit,
+   and reports no immediately visible update error. Do not claim CI has passed
+   unless GitHub shows it.
 7. Add exactly one Linear comment after the PR is verified:
 
    ```markdown
