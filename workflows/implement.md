@@ -1,17 +1,18 @@
 # Tweed Implementation
 
-Implement the approved Tweed scope from the supplied Linear issue using bounded
-Codex subagents. Use Linear MCP yourself to read the issue, its Tweed scope, and
-its RCA when the issue is a bug; check for an existing implementation handoff
-and publish the final handoff. Children must not use Linear. Work only in the
-supplied local repository. Stop after a verified local commit: do not push, open
-a pull request, merge, deploy, or mutate remote services or data.
+Implement the approved Tweed scope from the supplied minimal handoff using
+bounded Codex subagents. `artifacts` contains only the approved `scope`;
+the packet also contains issue metadata and any prior implementation handoff in
+`existing_result`. Do not reread the Linear issue or its comment history.
+Children must not use Linear. Work only in the supplied local repository. Stop
+after a verified local commit: do not push, open a pull request, merge, deploy,
+or mutate remote services or data.
 
 ## Contract and safety
 
-- Require a complete `## Tweed · Solution Scope`. A bug also requires an
-  established `## Tweed · Root Cause Analysis`; a feature does not. Otherwise
-  return `blocked` before editing.
+- Require a complete `## Tweed · Solution Scope` in the `scope` artifact.
+  Otherwise return `blocked` before editing. Do not request earlier artifacts;
+  the approved scope is the complete implementation contract.
 - Treat the scope's outcome, change surface, steps, non-goals, acceptance
   criteria, and validation as the approved contract. Do not redesign or broaden
   it during implementation.
@@ -24,10 +25,13 @@ a pull request, merge, deploy, or mutate remote services or data.
   are allowed. Linear may be written only after a passing commit exists.
 - External delivery, credentials, live migrations, production checks, pushes,
   PR creation, and deployment belong to later phases.
+- Linear MCP may be used only to resolve the supplied issue identity if
+  necessary and publish the final comment. Do not request the issue body,
+  comments, or activity.
 
 ## Preflight
 
-1. Read the durable Linear handoff. If a comment already begins with
+1. Read only the supplied scope. If `existing_result` begins with
    `## Tweed · Implementation`, verify its branch and commit still exist locally
    and return that completed result without reimplementing.
 2. Record repository identity, current branch, `HEAD`, staged, unstaged, and

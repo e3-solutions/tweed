@@ -42,6 +42,14 @@ unspecified issue kind by reading Linear in this task. Never paste the calling
 conversation or an earlier phase report into a later command; Linear is the
 handoff.
 
+For every non-create command, the runner first starts an isolated read-only
+handoff loader. It copies only the required typed artifacts from Linear, then
+starts the phase worker with that packet: intake for RCA; bug RCA or feature
+intake for scope; scope for implementation; scope plus implementation for
+review; and implementation plus review for publication. The phase worker must
+not receive the full issue, unrelated comments, activity, or prior agent
+conversation.
+
 The runner calls the first working local `codex` on `PATH`, using its existing
 Linear MCP, and installs nothing. Treat each command's stdout as one JSON receipt
 of at most 4 KiB. Do not open coordinator/subagent tasks, Linear, or logs.

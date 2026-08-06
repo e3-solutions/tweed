@@ -5,6 +5,21 @@ reviewed, ready-to-merge GitHub pull request. Each phase starts a fresh local
 Codex task; Linear is the durable handoff, and the invoking task sees only a
 bounded JSON receipt.
 
+Before each non-create phase, Tweed starts a separate read-only handoff loader.
+It selects exact durable artifacts from Linear and passes only the phase's typed
+context packet to the worker:
+
+```text
+RCA:       intake
+Scope:     bug RCA | feature intake
+Implement: scope
+Review:    scope + implementation
+Publish:   implementation + review
+```
+
+The worker receives issue identity metadata and those artifacts, not the full
+issue description, comment history, activity, or earlier agent conversation.
+
 ```text
 Bug:     create → RCA → scope → implement → review → publish
 Feature: create → scope → implement → review → publish
@@ -93,4 +108,5 @@ tweed publish LIN-123
 
 When a user asks an agent to use Tweed, the skill selects the bug or feature
 route, runs the commands in sequence, and passes only the Linear issue identifier
-between them. Any `needs-input`, `blocked`, or failed phase stops the chain.
+between them. Tweed resolves that identifier into the minimal internal handoff
+automatically. Any `needs-input`, `blocked`, or failed phase stops the chain.

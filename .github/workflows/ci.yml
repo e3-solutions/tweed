@@ -23,6 +23,7 @@ jobs:
       - name: Smoke-test runner
         run: |
           python -m py_compile tweed
+          python -m unittest discover -s tests -v
           sh -n install
           ./tweed --help
       - name: Reject whitespace errors in the PR diff

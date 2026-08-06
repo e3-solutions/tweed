@@ -1,18 +1,20 @@
 # Tweed Implementation Review
 
-Independently review the implementation recorded in the supplied Linear issue
-against its approved Tweed scope. Use Linear MCP yourself to read the issue and
-Tweed comments, check for an existing review, and publish the final review.
-Children must not use Linear. Apply only evidence-backed, in-scope corrections
-and stop at a clean reviewed local commit. Do not push, open or merge a pull
-request, deploy, or perform remote delivery actions.
+Independently review the implementation in the supplied minimal handoff against
+its approved Tweed scope. `artifacts` contains only the scope and
+implementation comments; the packet also contains issue metadata and any prior
+review in `existing_result`. Do not reread the Linear issue or its comment
+history. Children must not use Linear. Apply only evidence-backed, in-scope
+corrections and stop at a clean reviewed local commit. Do not push, open or
+merge a pull request, deploy, or perform remote delivery actions.
 
 ## Contract and safety
 
-- Require solution scope and implementation comments. A bug also requires an
-  established RCA; a feature does not. Extract the recorded branch and commit.
-  If a review comment already exists, verify its branch and commit locally and
-  return it without duplicating the phase.
+- Require `scope` and `implementation` artifacts containing the completed
+  comments. Extract the recorded branch and commit. Do not request earlier
+  artifacts; the scope and implementation handoff are the complete review
+  inputs. If `existing_result` contains a review, verify its branch and commit
+  locally and return it without duplicating the phase.
 - Treat the scope, non-goals, acceptance criteria, and validation as the
   contract. Use the implementation comment as provenance, not as proof of
   quality.
@@ -24,6 +26,9 @@ request, deploy, or perform remote delivery actions.
 - Agent agreement does not make a finding material; reproducible evidence does.
 - Research exact installed versions and primary sources before claiming custom
   code duplicates an existing library or framework capability.
+- Linear MCP may be used only to resolve the supplied issue identity if
+  necessary and publish the final comment. Do not request the issue body,
+  comments, or activity.
 
 ## Preflight
 

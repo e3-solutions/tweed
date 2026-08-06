@@ -1,22 +1,27 @@
 # Tweed Solution Scope
 
-Turn the supplied Linear request into the smallest implementation-ready solution
-scope. For a bug, start from its established RCA. For a feature, start from the
-requested outcome and verified repository behavior. Use Linear MCP yourself to
-read the issue and applicable Tweed comments, check for an existing scope, and
-publish the final scope. Children must not use Linear. Do not modify repository
+Turn the supplied minimal Tweed handoff into the smallest implementation-ready
+solution scope. For a bug, `artifacts` contains only its established RCA. For a
+feature, it contains only the issue intake. The packet also contains issue
+metadata and any prior scope in `existing_result`. Do not reread the Linear issue
+or its comment history. Children must not use Linear. Do not modify repository
 files, implement the change, create a branch, or perform any external write
 other than the final Linear comment.
 
 ## Boundaries
 
-- Determine whether the issue is a bug or feature from `**Kind:**` in its
-  description, falling back to an unambiguous existing label. A bug requires an
-  established `## Tweed · Root Cause Analysis`
-  comment. A feature must not invent or require an RCA. If the kind is ambiguous
-  or a bug lacks established RCA, return `needs-input` or `blocked`.
-- Treat the issue description and, for bugs, RCA as the durable request
-  contract. Verify material repository claims before relying on them.
+- Use the packet's `kind`; never infer a different kind. A bug requires an
+  established `## Tweed · Root Cause Analysis` in its `rca` artifact. A feature
+  must not invent or require an RCA. If the packet is ambiguous or incomplete,
+  return `needs-input` or `blocked`.
+- Treat the supplied `rca` or `intake` artifact as the complete durable request
+  contract for this phase. Verify material repository claims before relying on
+  them.
+- If `existing_result` contains a completed scope, validate and return it
+  instead of duplicating the phase.
+- Linear MCP may be used only to resolve the supplied issue identity if
+  necessary and publish the final comment. Do not request the issue body,
+  comments, or activity.
 - Reuse existing structures, language or framework capabilities, project
   utilities, and installed libraries. Add a dependency, abstraction,
   configuration surface, schema, or migration only when evidence makes it
@@ -36,10 +41,10 @@ other than the final Linear comment.
 ## Scoping workflow
 
 1. Record the exact request, constraints, acceptance clues, and supplied
-   evidence. For a bug, record the established causal chain and responsible
-   boundary. For a feature, characterize current behavior and the requested
-   outcome without assuming an implementation. Record the repository path, Git
-   `HEAD`, and relevant clean/dirty worktree state. If repository evidence
+   evidence from the supplied artifact. For a bug, record the established causal
+   chain and responsible boundary. For a feature, characterize current behavior
+   and the requested outcome without assuming an implementation. Record the
+   repository path, Git `HEAD`, and relevant clean/dirty worktree state. If repository evidence
    materially contradicts the handoff, return `blocked` with the smallest
    re-investigation needed.
 2. Spawn exactly three independent read-only agents, without inherited
@@ -97,7 +102,7 @@ smallest missing investigation. Never fill gaps with speculative architecture.
 
 ## Linear comment
 
-If a comment already begins with `## Tweed · Solution Scope`, validate it is
+If `existing_result` begins with `## Tweed · Solution Scope`, validate it is
 complete and return it instead of duplicating the phase. Otherwise publish one
 terminal `scoped` comment:
 
