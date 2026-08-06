@@ -5,6 +5,10 @@ reviewed, ready-to-merge GitHub pull request. Each phase starts a fresh local
 Codex task; Linear is the durable handoff, and the invoking task sees only a
 bounded JSON receipt.
 
+For every non-create phase, Tweed calls the configured Linear MCP directly
+through Codex app-server and selects the latest exact Tweed heading in Python.
+The phase agent receives only that verbatim artifact and issue identity metadata.
+
 ```text
 Bug:     create → RCA → scope → implement → review → publish
 Feature: create → scope → implement → review → publish
@@ -20,7 +24,7 @@ every spawned subagent is pinned to `gpt-5.6-sol` with medium reasoning.
 Prerequisites:
 
 - macOS or Linux with Git and Python 3.10+
-- a working local `codex` command
+- a current local `codex` command with app-server MCP RPC support
 - the GitHub CLI (`gh`) for publishing pull requests
 
 Clone Tweed and run its installer:
