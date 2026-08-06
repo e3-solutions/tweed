@@ -5,9 +5,8 @@ reviewed, ready-to-merge GitHub pull request. Each phase starts a fresh local
 Codex task; Linear is the durable handoff, and the invoking task sees only a
 bounded JSON receipt.
 
-For every non-create phase, Tweed calls the configured Linear MCP directly
-through Codex app-server and selects the latest exact Tweed heading in Python.
-The phase agent receives only that verbatim artifact and issue identity metadata.
+Each non-create phase receives only the latest required Tweed section, selected
+by exact heading through the configured Linear MCP.
 
 ```text
 Bug:     create → RCA → scope → implement → review → publish

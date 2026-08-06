@@ -1,99 +1,51 @@
-import importlib.machinery
-import importlib.util
+import runpy
 import unittest
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[1]
-LOADER = importlib.machinery.SourceFileLoader("tweed_runner", str(ROOT / "tweed"))
-SPEC = importlib.util.spec_from_loader(LOADER.name, LOADER)
-TWEED = importlib.util.module_from_spec(SPEC)
-LOADER.exec_module(TWEED)
+TWEED = runpy.run_path(Path(__file__).resolve().parents[1] / "tweed")
+HEADERS = TWEED["PHASE_HEADERS"]
+select_handoff = TWEED["select_handoff"]
 
 
 def issue(kind="Bug"):
-    return {
-        "id": "LIN-123",
-        "title": "Example",
-        "url": "https://linear.app/example/issue/LIN-123/example",
-        "description": f"## What\n**Kind:** {kind}\n\nExact intake",
-        "labels": [],
-    }
+    return {"id": "LIN-1", "title": "Example", "url": "linear.test/LIN-1", "description": f"**Kind:** {kind}\n\nIntake"}
 
 
-def comment(header, marker, created_at, parent_id=None):
-    return {
-        "body": f"{header}\n\n{marker}",
-        "createdAt": created_at,
-        "parentId": parent_id,
-    }
+def comment(phase, marker, date, **extra):
+    return {"id": marker, "body": f"{HEADERS.get(phase, phase)}\n\n{marker}", "createdAt": date, "parentId": None} | extra
 
 
-class DeterministicHandoffTests(unittest.TestCase):
-    def setUp(self):
-        self.comments = [
-            comment(TWEED.PHASE_HEADERS["rca"], "RCA", "2026-01-01T00:00:00Z"),
-            comment(TWEED.PHASE_HEADERS["scope"], "SCOPE", "2026-01-02T00:00:00Z"),
-            comment(
-                TWEED.PHASE_HEADERS["implement"],
-                "IMPLEMENTATION",
-                "2026-01-03T00:00:00Z",
-            ),
-            comment(TWEED.PHASE_HEADERS["review"], "REVIEW", "2026-01-04T00:00:00Z"),
-            comment("## Unrelated", "FLUFF", "2026-01-05T00:00:00Z"),
+class HandoffTests(unittest.TestCase):
+    def test_phase_matrix(self):
+        fluff = comment("other", "FLUFF", "9")
+        cases = [
+            ("rca", issue(), [], {"intake"}),
+            ("scope", issue(), [comment("rca", "RCA", "1"), fluff], {"rca"}),
+            ("scope", issue("Feature"), [fluff], {"intake"}),
+            ("implement", issue(), [comment("scope", "SCOPE", "2"), fluff], {"scope"}),
+            ("review", issue(), [comment("scope", "SCOPE", "2"), comment("implement", "CODE", "3")], {"scope", "implement"}),
+            ("publish", issue(), [comment("review", "REVIEW", "4")], {"review"}),
         ]
+        for phase, linear_issue, comments, expected in cases:
+            handoff = select_handoff(linear_issue, comments, phase)
+            self.assertEqual(set(handoff["context"]), expected)
+            self.assertNotIn("FLUFF", str(handoff))
 
-    def test_each_phase_receives_only_its_required_artifacts(self):
-        cases = {
-            "rca": (issue(), [], ["intake"]),
-            "scope": (
-                issue(),
-                self.comments[0:1] + self.comments[4:],
-                [TWEED.PHASE_HEADERS["rca"]],
-            ),
-            "implement": (
-                issue(),
-                self.comments[1:2] + self.comments[4:],
-                [TWEED.PHASE_HEADERS["scope"]],
-            ),
-            "review": (
-                issue(),
-                self.comments[1:3] + self.comments[4:],
-                [TWEED.PHASE_HEADERS["scope"], TWEED.PHASE_HEADERS["implement"]],
-            ),
-            "publish": (issue(), self.comments[3:], [TWEED.PHASE_HEADERS["review"]]),
-        }
-        for phase, (linear_issue, comments, expected) in cases.items():
-            with self.subTest(phase=phase):
-                handoff = TWEED.select_handoff(linear_issue, comments, phase)
-                self.assertEqual(
-                    [item["type"] for item in handoff["artifacts"]], expected
-                )
-                self.assertNotIn("FLUFF", str(handoff))
+    def test_latest_current_result_wins(self):
+        comments = [comment("scope", "OLD", "1"), comment("rca", "RCA", "2"), comment("scope", "NEW", "3")]
+        context = select_handoff(issue(), comments, "scope")["context"]
+        self.assertEqual(set(context), {"existing"})
+        self.assertIn("NEW", context["existing"])
 
-    def test_feature_scope_receives_intake_instead_of_rca(self):
-        handoff = TWEED.select_handoff(
-            issue("Feature"), self.comments[0:1] + self.comments[4:], "scope"
-        )
-        self.assertEqual(
-            handoff["artifacts"],
-            [{"type": "intake", "content": issue("Feature")["description"]}],
-        )
-
-    def test_latest_existing_phase_result_replaces_predecessors(self):
-        comments = self.comments + [
-            comment(TWEED.PHASE_HEADERS["scope"], "LATEST", "2026-02-01T00:00:00Z")
+    def test_replies_inline_and_near_matches_are_ignored(self):
+        comments = [
+            comment("scope", "REPLY", "1", parentId="parent"),
+            comment("scope", "INLINE", "2", quotedText="anchor"),
+            comment(HEADERS["scope"] + " ", "SPACE", "3"),
         ]
-        handoff = TWEED.select_handoff(issue(), comments, "scope")
-        self.assertIn("LATEST", handoff["existing_result"])
-        self.assertEqual(handoff["artifacts"], [])
-        self.assertNotIn("RCA", str(handoff))
-
-    def test_missing_predecessor_is_named_without_other_comments(self):
-        handoff = TWEED.select_handoff(issue(), self.comments[-1:], "implement")
-        self.assertEqual(handoff["missing"], TWEED.PHASE_HEADERS["scope"])
-        self.assertEqual(handoff["artifacts"], [])
-        self.assertNotIn("FLUFF", str(handoff))
+        context = select_handoff(issue(), comments, "implement")["context"]
+        self.assertEqual(context, {"missing": HEADERS["scope"]})
 
 
 if __name__ == "__main__":
