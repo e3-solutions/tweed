@@ -1,38 +1,32 @@
 # Tweed Publish
 
-Publish the reviewed Tweed implementation in the supplied minimal handoff as a
-ready-to-merge GitHub pull request and record it in Linear. `artifacts` contains
-only the implementation and review comments; the packet also contains
-issue metadata and any prior pull-request handoff in `existing_result`. Do not
-reread the Linear issue or its comment history. Use the installed authenticated
-`git` and `gh` CLIs for GitHub. Do not spawn implementation agents, change code,
-merge, deploy, delete branches, or mutate anything outside the scoped push, PR,
-and final Linear comment.
+Publish the reviewed Tweed implementation as a ready-to-merge GitHub pull
+request and record it in Linear. Use Linear MCP yourself to read the issue and
+its Tweed handoffs, and use the installed authenticated `git` and `gh` CLIs for
+GitHub. Do not spawn implementation agents, change code, merge, deploy, delete
+branches, or mutate anything outside the scoped push, PR, and final Linear
+comment.
 
 ## Preconditions
 
-- Require `## Tweed · Implementation` and
-  `## Tweed · Implementation Review` comments in the supplied artifacts. Do not
-  request earlier artifacts; these are the complete publish inputs.
+- Require solution scope, implementation, and
+  `## Tweed · Implementation Review` comments. A bug also requires established
+  RCA; a feature does not.
 - Extract the exact reviewed branch and commit. Require a clean local worktree
   on that branch, with `HEAD` equal to the reviewed commit.
 - Require a configured GitHub `origin`, a working authenticated `gh`, and an
   identifiable default base branch. Ask one question only if the correct base
   branch cannot be discovered.
-- If `existing_result` contains a final Tweed publish comment and the matching
-  open PR exists, return that completed result without creating or commenting
-  again.
-- Linear MCP may be used only to resolve the supplied issue identity if
-  necessary and publish the final comment. Do not request the issue body,
-  comments, or activity.
+- If a final Tweed publish comment and matching open PR already exist, return
+  that completed result without creating or commenting again.
 - Never force-push, rewrite history, change code, rerun implementation, merge,
   mark a draft PR ready, deploy, or close another PR.
 
 ## Publish workflow
 
-1. Read the supplied title, URL, implementation, and review handoffs. Confirm
-   the reviewed commit is a descendant of the implementation commit and that
-   the local branch is clean.
+1. Read the Linear issue title, URL, and completed Tweed comments. Confirm the
+   reviewed commit is a descendant of the implementation commit and that the
+   local branch is clean.
 2. Discover the GitHub repository and default base branch from `gh` or the
    remote. Confirm the reviewed branch differs from the base and contains the
    intended commits.

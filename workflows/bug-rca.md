@@ -1,22 +1,18 @@
 # Tweed Bug RCA
 
-Investigate the bug described by the supplied Tweed handoff packet and publish
-one evidence-backed root cause analysis as its first Tweed comment. The packet
-contains issue metadata, one exact `intake` artifact, and any existing RCA in
-`existing_result`. Do not reread the Linear issue or its comment history. Keep
-all repository investigation in isolated subagents so the invoking task
-receives only the bounded receipt.
+Investigate the bug recorded in the supplied Linear issue and publish one
+evidence-backed root cause analysis as its first Tweed comment. Use Linear MCP
+yourself to read the issue and write the final comment. Keep all repository
+investigation in isolated subagents so the invoking task receives only the
+bounded receipt.
 
 ## Boundaries
 
-- The handoff must identify an existing Linear bug issue. If it does not, return
+- The input must identify an existing Linear bug issue. If it does not, return
   `needs-input`; never create or guess an issue. If the issue is a feature,
   return `blocked` because features proceed directly to scope.
-- If `existing_result` contains a completed RCA, validate and return it instead
-  of duplicating the phase.
-- The coordinator may use Linear only to resolve the supplied issue identity if
-  necessary and publish the final comment. It must not request the issue body,
-  comments, or activity. Children must not use Linear.
+- The coordinator may use Linear only to read the issue, check for a prior Tweed
+  RCA comment, and publish the final comment. Children must not use Linear.
 - Do not change the issue title or description, modify project files, install
   dependencies, add helper code, create a branch, propose a fix, or implement
   anything.
@@ -29,10 +25,9 @@ receives only the bounded receipt.
 
 ## Investigation workflow
 
-1. Read only the supplied `intake` artifact and record the exact reported
-   behavior, expected behavior when known, affected surface, reproduction
-   details, environment, constraints, and supplied evidence. Do not silently
-   fill gaps.
+1. Read the Linear issue and record the exact reported behavior, expected
+   behavior when known, affected surface, reproduction details, environment,
+   constraints, and supplied evidence. Do not silently fill gaps.
 2. Record the absolute repository path, Git `HEAD`, and whether the worktree is
    clean or dirty. Treat dirty and untracked files as live state rather than as
    evidence from `HEAD`, and disclose when they affect the finding.
