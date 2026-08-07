@@ -40,7 +40,7 @@ class HandoffTests(unittest.TestCase):
             ("scope", issue(), [rca, unrelated], {"rca"}),
             ("scope", issue("Feature"), [unrelated], {"intake"}),
             ("implement", issue(), [rca, scope, unrelated], {"scope"}),
-            ("review", issue(), [scope, implementation], {"scope", "implement"}),
+            ("review", issue(), [scope, implementation], {"implement"}),
             ("publish", issue(), [review], {"review"}),
         ]
         for phase, linear_issue, comments, expected in cases:

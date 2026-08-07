@@ -72,6 +72,7 @@ class TweedRunnerTests(unittest.TestCase):
                 "| Axis/role | Material conclusion | Evidence |",
             ],
             "implement.md": [
+                "### Review contract",
                 "### Delivered behavior",
                 "| File or boundary | Responsibility delivered |",
                 "| Command or diagnostic | Result | Scope/criterion proved |",

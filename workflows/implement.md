@@ -115,6 +115,12 @@ this schema and contains the evidence required by the completion gate.
 ```markdown
 ## Tweed · Implementation
 
+### Review contract
+- Outcome: [approved behavior this implementation must deliver]
+- Acceptance criteria: [observable criteria carried forward from scope]
+- Non-goals: [boundaries the review must preserve]
+- Risks and safeguards: [material risks and required safeguards]
+
 ### Delivered behavior
 - [Observable behavior] → [scope item/acceptance criterion] → [files]
 

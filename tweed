@@ -91,7 +91,7 @@ PHASE_INPUTS = {
     "scope:bug": ("rca",),
     "scope:feature": ("intake",),
     "implement": ("scope",),
-    "review": ("scope", "implement"),
+    "review": ("implement",),
     "publish": ("review",),
 }
 
