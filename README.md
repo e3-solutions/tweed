@@ -19,7 +19,8 @@ Feature: create → scope → implement → review → publish
 ## Install
 
 Tweed uses your local Codex installation and its authenticated Linear MCP. The
-publish phase also uses your existing Git and GitHub CLI authentication.
+implement, review, and publish phases also use your existing Git and GitHub CLI
+authentication.
 Every phase coordinator is pinned to `gpt-5.6-sol` with medium reasoning, and
 every spawned subagent is pinned to `gpt-5.6-sol` with medium reasoning.
 
@@ -27,7 +28,7 @@ Prerequisites:
 
 - macOS or Linux with Git and Python 3.10+
 - a working local `codex` command
-- the GitHub CLI (`gh`) for publishing pull requests
+- the GitHub CLI (`gh`) for draft and published pull requests
 
 Clone Tweed and run its installer:
 
@@ -110,12 +111,13 @@ tweed resume RCA <session-id> "clarification answer"
 - **Scope** turns an established bug cause or feature outcome into the smallest
   implementation-ready plan after independent reuse, simplicity, and
   robustness analysis.
-- **Implement** creates or reuses an issue branch, delegates bounded code
-  ownership, validates the change, commits it locally, and records the handoff.
+- **Implement** creates or reuses the official Linear branch and one draft PR,
+  then pushes each coherent, verified implementation commit to that draft.
 - **Review** independently challenges the complete diff, applies only verified
-  in-scope corrections, reruns validation, and records the final commit.
-- **Publish** pushes that reviewed commit, creates or recovers one non-draft PR,
-  and records its URL in Linear. It never merges or deploys.
+  in-scope corrections, pushes any correction commits to the same draft, and
+  records the final commit.
+- **Publish** verifies and finalizes that draft, marks it ready for review, and
+  records its URL in Linear. It never merges or deploys.
 
 When a user asks an agent to use Tweed, the skill selects the bug or feature
 route, runs the commands in sequence, and passes only the Linear issue identifier
