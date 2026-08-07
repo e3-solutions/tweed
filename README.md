@@ -94,6 +94,7 @@ tweed scope LIN-123
 tweed implement LIN-123
 tweed review LIN-123
 tweed publish LIN-123
+tweed resume RCA <session-id> "clarification answer"
 ```
 
 - **Create** writes a human title and a `What`/`Why`/`How` description for a bug
@@ -113,3 +114,5 @@ tweed publish LIN-123
 When a user asks an agent to use Tweed, the skill selects the bug or feature
 route, runs the commands in sequence, and passes only the Linear issue identifier
 between them. Any `needs-input`, `blocked`, or failed phase stops the chain.
+After `needs-input`, `resume` continues the same coordinator session with the
+answer instead of restarting its investigation.
