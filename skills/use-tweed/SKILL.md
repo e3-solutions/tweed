@@ -47,9 +47,10 @@ unspecified issue kind by reading Linear in this task. Never paste the calling
 conversation or an earlier phase report into a later command; Linear is the
 handoff.
 
-The runner calls the first working local `codex` on `PATH`, using its existing
-Linear MCP, and installs nothing. Treat each command's stdout as one JSON receipt
-of at most 4 KiB. Do not open coordinator/subagent tasks, Linear, or logs.
+The runner calls the first working local `codex` on `PATH`, uses Codex's Linear
+MCP without a model to select only the handoff required by the next phase, and
+installs nothing. Treat each command's stdout as one JSON receipt of at most 4
+KiB. Do not open coordinator/subagent tasks, Linear, or logs.
 
 On `needs-input`, ask only `question`. If `resume_session_id` is present,
 continue the same coordinator once:

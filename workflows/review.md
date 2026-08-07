@@ -1,23 +1,24 @@
 # Tweed Implementation Review
 
-Independently review the implementation recorded in the supplied Linear issue
-against its approved Tweed scope. Use Linear MCP yourself to read the issue and
-Tweed comments, check for an existing review, and publish the final review.
-Children must not use Linear. Apply only evidence-backed, in-scope corrections
-and stop at a clean reviewed local commit. Do not push, open or merge a pull
-request, deploy, or perform remote delivery actions.
+Independently review the supplied latest implementation handoff. It carries the
+approved outcome, acceptance criteria, non-goals, risks, implementation, and
+verification needed by this phase. The runner supplies only that implementation
+or an existing review result, plus issue metadata. Use Linear only to publish
+and verify the final review. Children must not use Linear. Apply only
+evidence-backed, in-contract corrections and stop at a clean reviewed local
+commit. Do not push, open or merge a pull request, deploy, or perform remote
+delivery actions.
 
 ## Contract and safety
 
-- Require solution scope and implementation comments. A bug also requires an
-  established RCA; a feature does not. Extract the recorded branch and commit.
-  If a review comment already exists, validate it under the current gate and
+- If an `existing` review was supplied, validate it under the current gate and
   comment schema, then verify its branch and commit locally. Return it without
   duplicating the phase only when both checks pass; otherwise return `blocked`
-  and name the missing or stale fact.
-- Treat the scope, non-goals, acceptance criteria, and validation as the
-  contract. Use the implementation comment as provenance, not as proof of
-  quality.
+  and name the missing or stale fact. Otherwise require the supplied
+  implementation handoff, then extract the recorded branch and commit.
+- Treat its carried-forward outcome, non-goals, acceptance criteria, risks, and
+  validation as the contract. Treat implementation claims as provenance, not
+  as proof of quality.
 - Switch to the recorded branch only from a clean worktree. Require its history
   to contain the implementation commit. Never reset, clean, stash, discard, or
   overwrite user changes.
@@ -88,7 +89,8 @@ conflict. Never require an agent to invent a finding.
 
 Call the phase reviewed only when:
 
-- every final diff hunk maps to the approved scope or an accepted correction;
+- every final diff hunk maps to the carried-forward contract or an accepted
+  correction;
 - every acceptance criterion has passing evidence;
 - no unnecessary machinery, duplication, dependency, or unrelated cleanup
   remains;
@@ -100,7 +102,7 @@ Call the phase reviewed only when:
 - a fresh independent whole-diff pass has zero unresolved material findings.
 
 If no review edit was made and review cannot complete, return `blocked`. If
-review edits exist but a finding, failed check, interruption, or scope-crossing
+review edits exist but a finding, failed check, interruption, or contract-crossing
 correction prevents a passing commit, preserve the changes and return `blocked`
 with `result: partial`. Do not publish a Linear review comment until the gate
 passes.
@@ -118,7 +120,7 @@ this schema and contains the evidence required by the completion gate.
 **Verdict:** Ready to publish
 
 ### Review basis
-- Approved contract: [scope comment and RCA when applicable]
+- Contract carried forward: [outcome, acceptance criteria, non-goals, and risks from the implementation handoff]
 - Implementation reviewed: [branch and full implementation commit]
 - Review target: [changed files, boundaries, interfaces, and consumers]
 

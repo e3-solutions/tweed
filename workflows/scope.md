@@ -2,21 +2,20 @@
 
 Turn the supplied Linear request into the smallest implementation-ready solution
 scope. For a bug, start from its established RCA. For a feature, start from the
-requested outcome and verified repository behavior. Use Linear MCP yourself to
-read the issue and applicable Tweed comments, check for an existing scope, and
-publish the final scope. Children must not use Linear. Do not modify repository
-files, implement the change, create a branch, or perform any external write
-other than the final Linear comment.
+requested outcome and verified repository behavior. The runner supplies only
+the selected intake, latest RCA, or latest existing scope needed for this phase.
+Use Linear only to publish and verify the final scope. Children must not use
+Linear. Do not modify repository files, implement the change, create a branch,
+or perform any other external write.
 
 ## Boundaries
 
-- Determine whether the issue is a bug or feature from `**Kind:**` in its
-  description, falling back to an unambiguous existing label. A bug requires an
-  established `## Tweed · Root Cause Analysis`
-  comment. A feature must not invent or require an RCA. If the kind is ambiguous
-  or a bug lacks established RCA, return `needs-input` or `blocked`.
-- Treat the issue description and, for bugs, RCA as the durable request
-  contract. Verify material repository claims before relying on them.
+- Use the supplied issue kind. A bug requires an established
+  `## Tweed · Root Cause Analysis` handoff. A feature receives its intake and
+  must not invent or require an RCA. If the kind is missing or a bug lacks its
+  RCA handoff, return `needs-input` or `blocked`.
+- Treat the supplied feature intake or bug RCA as the durable request contract.
+  Verify material repository claims before relying on them.
 - Reuse existing structures, language or framework capabilities, project
   utilities, and installed libraries. Add a dependency, abstraction,
   configuration surface, schema, or migration only when evidence makes it
@@ -97,10 +96,10 @@ smallest missing investigation. Never fill gaps with speculative architecture.
 
 ## Linear comment
 
-If a comment already begins with `## Tweed · Solution Scope`, validate it is
-complete under the current gate and comment schema before returning it. If it
-is incomplete, return `blocked` and identify the missing handoff facts.
-Otherwise publish one terminal `scoped` comment:
+If an `existing` solution scope was supplied, validate it under the current
+gate and comment schema before returning it. If it is incomplete, return
+`blocked` and identify the missing handoff facts. Otherwise publish one terminal
+`scoped` comment:
 
 After writing, re-read the comment and return `completed` only if it matches
 this schema and contains the evidence required by the completion gate.

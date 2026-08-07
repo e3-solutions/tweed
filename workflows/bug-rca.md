@@ -1,8 +1,8 @@
 # Tweed Bug RCA
 
-Investigate the bug recorded in the supplied Linear issue and publish one
-evidence-backed root cause analysis as its first Tweed comment. Use Linear MCP
-yourself to read the issue and write the final comment. Keep all repository
+Investigate the bug from the supplied deterministic Linear handoff and publish
+one evidence-backed root cause analysis as its first Tweed comment. The runner
+has already selected the issue intake or latest existing RCA. Keep repository
 investigation in isolated subagents so the invoking task receives only the
 bounded receipt.
 
@@ -11,8 +11,8 @@ bounded receipt.
 - The input must identify an existing Linear bug issue. If it does not, return
   `needs-input`; never create or guess an issue. If the issue is a feature,
   return `blocked` because features proceed directly to scope.
-- The coordinator may use Linear only to read the issue, check for a prior Tweed
-  RCA comment, and publish the final comment. Children must not use Linear.
+- The coordinator may use Linear only to publish and verify the final comment.
+  Do not fetch other issue content or comments. Children must not use Linear.
 - Do not change the issue title or description, modify project files, install
   dependencies, add helper code, create a branch, propose a fix, or implement
   anything.
@@ -25,7 +25,7 @@ bounded receipt.
 
 ## Investigation workflow
 
-1. Read the Linear issue and record the exact reported behavior, expected
+1. Read the supplied intake and record the exact reported behavior, expected
    behavior when known, affected surface, reproduction details, environment,
    constraints, and supplied evidence. Do not silently fill gaps.
 2. Record the absolute repository path, Git `HEAD`, and whether the worktree is
@@ -85,11 +85,10 @@ will do so, report `not-established` and name the smallest next diagnostic.
 
 ## First Tweed comment
 
-For terminal `established` or `not-established` results, check whether an
-existing comment begins with `## Tweed · Root Cause Analysis`. Reuse it only if
-it satisfies the current completion gate and comment schema; otherwise return
-`blocked` and name the missing handoff facts. Otherwise add exactly one comment
-in this form:
+For terminal `established` or `not-established` results, reuse a supplied
+`existing` RCA only if it satisfies the current completion gate and comment
+schema; otherwise return `blocked` and name the missing handoff facts. When no
+existing RCA was supplied, add exactly one comment in this form:
 
 After writing, re-read the comment and return `completed` only if it matches
 this schema and contains the evidence required by the completion gate.

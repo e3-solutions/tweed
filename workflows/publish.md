@@ -1,17 +1,18 @@
 # Tweed Publish
 
 Publish the reviewed Tweed implementation as a ready-to-merge GitHub pull
-request and record it in Linear. Use Linear MCP yourself to read the issue and
-its Tweed handoffs, and use the installed authenticated `git` and `gh` CLIs for
-GitHub. Do not spawn implementation agents, change code, merge, deploy, delete
-branches, or mutate anything outside the scoped push, PR, and final Linear
-comment.
+request and record it in Linear. The runner supplies only the latest review or
+existing publish result plus issue metadata. Use Linear only to publish and
+verify the final comment, and use the installed authenticated `git` and `gh`
+CLIs for GitHub. Do not spawn implementation agents, change code, merge, deploy,
+delete branches, or mutate anything outside the scoped push, PR, and final
+Linear comment.
 
 ## Preconditions
 
-- Require solution scope, implementation, and
-  `## Tweed · Implementation Review` comments. A bug also requires established
-  RCA; a feature does not.
+- If an `existing` publish result was supplied, validate its complete delivery
+  state and matching open PR before returning it. Otherwise require a complete
+  `## Tweed · Implementation Review`; it is the complete publish handoff.
 - Extract the exact reviewed branch and commit. Require a clean local worktree
   on that branch, with `HEAD` equal to the reviewed commit.
 - Require a configured GitHub `origin`, a working authenticated `gh`, and an
@@ -26,9 +27,9 @@ comment.
 
 ## Publish workflow
 
-1. Read the Linear issue title, URL, and completed Tweed comments. Confirm the
-   reviewed commit is a descendant of the implementation commit and that the
-   local branch is clean.
+1. Read the supplied review and issue metadata. Confirm the reviewed commit is
+   a descendant of the implementation commit and that the local branch is
+   clean.
 2. Discover the GitHub repository and default base branch from `gh` or the
    remote. Confirm the reviewed branch differs from the base and contains the
    intended commits.
