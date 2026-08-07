@@ -28,8 +28,10 @@ a pull request, merge, deploy, or mutate remote services or data.
 ## Preflight
 
 1. Read the durable Linear handoff. If a comment already begins with
-   `## Tweed · Implementation`, verify its branch and commit still exist locally
-   and return that completed result without reimplementing.
+   `## Tweed · Implementation`, validate it under the current gate and comment
+   schema, then verify its branch and commit still exist locally. Return it
+   without reimplementing only when both checks pass; otherwise return `blocked`
+   and name the missing or stale fact.
 2. Record repository identity, current branch, `HEAD`, staged, unstaged, and
    untracked paths. Derive a human branch named
    `tweed/<issue-id>-<short-title-slug>`.
@@ -107,26 +109,35 @@ completion gate passes.
 
 After the passing commit exists, publish exactly one:
 
+After writing, re-read the comment and return `completed` only if it matches
+this schema and contains the evidence required by the completion gate.
+
 ```markdown
 ## Tweed · Implementation
 
-### Delivered
-- [Scope item or acceptance criterion] → [files]
+### Delivered behavior
+- [Observable behavior] → [scope item/acceptance criterion] → [files]
 
-### Changes
-- [`file` or component]: [responsibility changed]
+### Changed files and responsibilities
+| File or boundary | Responsibility delivered | Interfaces/callers affected | Evidence |
+|---|---|---|---|
+| [`file` or boundary] | [exact change] | [consumer effect or None] | [`file:line`, diff fact, or diagnostic] |
 
 ### Verification
-- `[exact command or diagnostic]` → [result and criterion proved]
+| Command or diagnostic | Result | Scope/criterion proved | Relevant boundary |
+|---|---|---|---|
+| `[exact command or diagnostic]` | [pass/fail and salient counts] | [criterion] | [files/interface] |
 
 ### Review findings
-- [Finding] → [fixed/rejected] because [evidence]
+| Finding | Evidence and consequence | Disposition/fix | Recheck |
+|---|---|---|---|
+| [Finding or None] | [file/runtime evidence] | [fixed/rejected and why] | [proof] |
 
 ### Deviations
 [Narrow clarification, or “None.”]
 
 ### Remaining work
-None.
+[Non-blocking follow-up outside this phase, or “None.”]
 
 ### Git handoff
 - Branch: `[branch]`
@@ -134,8 +145,12 @@ None.
 - Worktree: clean
 
 ### Implementation map
-- [Agent role] — [authored/reviewed/challenged]: [one-line result]
-- Synthesis — implemented: [why the gate passed]
+| Role | Material conclusion | Evidence | Affected surface | Confidence | Relationship |
+|---|---|---|---|---|---|
+| [Agent role] | [substantive authored/review finding] | [`file:line` or diagnostic] | [files/boundary] | [high/medium/low and why] | [authored/reviewed/challenged] |
+
+**Synthesis:** [How scope items map to the commit and passing evidence, how
+material findings were resolved, and why review can begin from this comment.]
 ```
 
 Include every writer and reviewer once. Do not include transcripts, tool logs,

@@ -41,6 +41,51 @@ def receipt(state="completed"):
 
 
 class TweedRunnerTests(unittest.TestCase):
+    def test_workflows_require_complete_evidence_bearing_handoffs(self):
+        required_markers = {
+            "bug-rca.md": [
+                "### Causal chain",
+                "#### Reproduction and runtime",
+                "### Affected boundaries and files",
+                "| Alternative | Evidence tested | Result |",
+                "| Role | Material conclusion | Evidence |",
+            ],
+            "scope.md": [
+                "### Handoff basis",
+                "| File or boundary | Current evidence | Exact responsibility |",
+                "| Risk | Evidence and affected boundary | Safeguard |",
+                "| Alternative | Evidence | Decision and reason |",
+                "| Axis/role | Material conclusion | Evidence |",
+            ],
+            "implement.md": [
+                "### Delivered behavior",
+                "| File or boundary | Responsibility delivered |",
+                "| Command or diagnostic | Result | Scope/criterion proved |",
+                "| Finding | Evidence and consequence | Disposition/fix |",
+                "| Role | Material conclusion | Evidence |",
+            ],
+            "review.md": [
+                "### Review basis",
+                "| Axis | Result | Evidence | Remaining concern |",
+                "| ID | Axis | Material consequence/contract | Evidence |",
+                "| Exact command or diagnostic | Result | Contract/finding proved |",
+                "| Role | Material conclusion | Evidence |",
+            ],
+            "publish.md": [
+                "### Delivery",
+                "Pull request state: Open and non-draft",
+                "### Final delivery state",
+                "Remaining conditions:",
+            ],
+        }
+
+        for filename, markers in required_markers.items():
+            workflow = (ROOT / "workflows" / filename).read_text()
+            with self.subTest(workflow=filename):
+                self.assertIn("After writing, re-read the comment", workflow)
+                for marker in markers:
+                    self.assertIn(marker, workflow)
+
     def test_phase_child_guard_stops_before_invoking_instructions(self):
         skill = (ROOT / "skills/use-tweed/SKILL.md").read_text()
         guard = skill.split("Keep this invoking task thin", 1)[0]
