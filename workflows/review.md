@@ -6,22 +6,30 @@ verification needed by this phase. The runner supplies only that implementation
 or an existing review result, plus issue metadata. Use Linear only to publish
 and verify the final review. Children must not use Linear. Apply only
 evidence-backed, in-contract corrections and stop at a clean reviewed local
-commit. Do not push, open or merge a pull request, deploy, or perform remote
-delivery actions.
+commit. Push verified correction commits to the implementation draft PR, but do
+not create another PR, change its metadata or readiness, merge, or deploy.
 
 ## Contract and safety
 
 - If an `existing` review was supplied, validate it under the current gate and
-  comment schema, then verify its branch and commit locally. Return it without
-  duplicating the phase only when both checks pass; otherwise return `blocked`
-  and name the missing or stale fact. Otherwise require the supplied
-  implementation handoff, then extract the recorded branch and commit.
+  comment schema, then verify its branch, commit, and recorded PR. The PR may be
+  draft or already published, but it must remain open in the canonical
+  repository at that exact reviewed head. Return it without duplicating the
+  phase only when every check passes; otherwise return `blocked` and name the
+  missing or stale fact. Otherwise require the supplied implementation handoff,
+  then extract the recorded branch, commit, and draft PR.
 - Treat its carried-forward outcome, non-goals, acceptance criteria, risks, and
   validation as the contract. Treat implementation claims as provenance, not
   as proof of quality.
+- For a new review, require the implementation handoff's draft PR URL. Derive
+  the canonical repository from `origin`, scope every `gh` read explicitly to
+  it, and verify the PR is open and draft with the recorded official branch,
+  expected base, and implementation commit. A missing, duplicate, closed,
+  merged, non-draft, or mismatched PR blocks review before any correction.
 - Switch to the recorded branch only from a clean worktree. Require its history
-  to contain the implementation commit. Never reset, clean, stash, discard, or
-  overwrite user changes.
+  and remote PR head to contain the implementation commit. Never reset, clean,
+  stash, discard, or overwrite user changes. The only GitHub write allowed is an
+  ordinary non-force push of a verified review correction commit to that branch.
 - Reviewers never edit. Only a separately assigned fixer may change a validated
   finding's bounded surface, and that fixer cannot close its own finding.
 - Agent agreement does not make a finding material; reproducible evidence does.
@@ -30,12 +38,15 @@ delivery actions.
 
 ## Preflight
 
-Record the repository, branch, current `HEAD`, implementation commit, and Git
-status. A clean reviewed commit may be newer than the implementation commit, but
-the implementation commit must remain in its ancestry. Before automatic fixes,
-require a clean worktree on the issue branch. If state is ambiguous or user work
-could be overwritten, return `blocked`; read-only observations may be reported
-in the receipt but must not be applied.
+Record the repository, branch, current `HEAD`, implementation commit, draft PR,
+and Git status. A clean reviewed commit may be newer than the implementation
+commit, but the implementation commit must remain in its ancestry. Before
+automatic fixes, require a clean worktree on the issue branch. A new review
+requires the draft at the recorded implementation head; an existing review may
+observe the same open PR at its recorded reviewed head and later published
+readiness. If state is ambiguous or user work could be overwritten, return
+`blocked`; read-only observations may be reported in the receipt but must not be
+applied.
 
 ## Review workflow
 
@@ -79,7 +90,9 @@ in the receipt but must not be applied.
    re-enters the bounded fix and re-review loop.
 8. If fixes were made, stage only review-owned changes and create one additional
    commit containing the issue ID. Never rewrite the implementation commit.
-   Require a clean worktree at the final reviewed commit.
+   Rerun the proving checks, push the correction normally to the same draft PR,
+   and verify its head is the final reviewed commit. If no fix was needed, verify
+   the draft still points at the implementation commit. Require a clean worktree.
 
 Continue only while a bounded correction or concrete diagnostic can resolve a
 material finding. Stop if fixes oscillate or evidence cannot adjudicate a
@@ -98,14 +111,18 @@ Call the phase reviewed only when:
 - compatibility is established for each changed interface and consumer;
 - relevant hot paths have no evidence-backed avoidable regression;
 - non-goals and user work remain untouched;
-- relevant broader checks pass without unexplained failure; and
-- a fresh independent whole-diff pass has zero unresolved material findings.
+- relevant broader checks pass without unexplained failure;
+- a fresh independent whole-diff pass has zero unresolved material findings;
+- the worktree is clean and the verified PR points at the final reviewed commit.
+  It is draft for a new review; an idempotent retry may observe later published
+  readiness only when the existing review records the same PR and commit.
 
 If no review edit was made and review cannot complete, return `blocked`. If
 review edits exist but a finding, failed check, interruption, or contract-crossing
 correction prevents a passing commit, preserve the changes and return `blocked`
 with `result: partial`. Do not publish a Linear review comment until the gate
-passes.
+passes. If a correction commit was pushed before a later block, preserve it and
+report the draft URL and current head so a retry can resume safely.
 
 ## Linear comment
 
@@ -153,6 +170,7 @@ this schema and contains the evidence required by the completion gate.
 - Branch: `[branch]`
 - Implementation commit: `[commit]`
 - Reviewed commit: `[full final commit]`
+- Draft PR: `[URL]`
 - Worktree: clean
 
 ### Review map
@@ -171,6 +189,6 @@ tool logs, hashes, or unscoped tips.
 
 Return only the runner-provided JSON receipt with `phase: review`. Success uses
 `state: completed`, `result: reviewed`, the issue identifier and URL, and the
-exact branch and final commit; the PR field is null. Clarification uses
+exact branch, final commit, and unchanged draft PR URL. Clarification uses
 `needs-input`. All other incomplete outcomes use `state: blocked`, with
 `result: blocked` or `partial` and the safest next action.
