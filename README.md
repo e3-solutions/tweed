@@ -31,13 +31,15 @@ cd tweed
 ./install
 ```
 
-The installer creates two symlinks:
+The installer copies committed `HEAD` into a versioned snapshot under
+`~/.local/share/tweed/releases/`. Two stable links select that snapshot:
 
-- `~/.local/bin/tweed` → this checkout's CLI
-- `~/.codex/skills/use-tweed` → this checkout's Codex skill
+- `~/.local/bin/tweed` → the active release's launcher
+- `~/.codex/skills/use-tweed` → the active release's Codex skill
 
-Keep the checkout in place. If `~/.local/bin` is not already on `PATH`, add it
-to your shell configuration:
+The checkout can then move between branches or be deleted without changing the
+installed behavior. If `~/.local/bin` is not already on `PATH`, add it to your
+shell configuration:
 
 ```sh
 export PATH="$HOME/.local/bin:$PATH"
@@ -61,9 +63,26 @@ codex mcp list
 gh auth status
 ```
 
-For a non-default location, set `TWEED_BIN_DIR` or `CODEX_HOME` when running
-`./install`. Because installation uses symlinks, pulling updates into this
-checkout updates the installed CLI and skill immediately.
+For a non-default location, set `TWEED_BIN_DIR`, `TWEED_HOME`, or `CODEX_HOME`
+when running `./install`.
+
+## Updates
+
+At most once per day, Tweed checks the public repository for the highest stable
+`vX.Y.Z` tag. It fetches that exact Git ref into a new directory and smoke-tests
+it before switching the active release atomically. A failed check never prevents
+the installed runtime from starting.
+
+```sh
+tweed update
+```
+
+Set `TWEED_AUTO_UPDATE=0` to disable the daily check. Run `./tweed` directly
+when developing against a live checkout.
+
+Maintainers publish an update by pushing a stable tag such as `v0.2.0`. Configure
+the public repository to protect `v*` tags from modification. No release archive
+or package registry is required.
 
 ## Commands
 
