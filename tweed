@@ -8,11 +8,13 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import uuid
 from pathlib import Path
 
 MODEL = "gpt-5.6-sol"
 COORDINATOR_EFFORT = "high"
 SUBAGENT_EFFORT = "medium"
+PHASE_CHILD_ENV = "TWEED_PHASE_CHILD"
 
 RECEIPT_SCHEMA = {
     "type": "object",
@@ -117,7 +119,30 @@ def emit(receipt: dict) -> None:
     print(output)
 
 
-def run_phase(repository: Path, phase: str, phase_input: str) -> dict:
+def extract_session_id(events) -> str | None:
+    events.seek(0)
+    for line in events:
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if event.get("type") == "thread.started" and isinstance(
+            event.get("thread_id"), str
+        ):
+            return event["thread_id"]
+    return None
+
+
+def child_environment() -> dict[str, str]:
+    return {**os.environ, PHASE_CHILD_ENV: "1"}
+
+
+def run_phase(
+    repository: Path,
+    phase: str,
+    phase_input: str,
+    resume_session_id: str | None = None,
+) -> dict:
     workflow_name, assignment = WORKFLOWS[phase]
     workflow = (Path(__file__).resolve().parent / "workflows" / workflow_name).read_text()
     child_configs = {
@@ -132,29 +157,37 @@ def run_phase(repository: Path, phase: str, phase_input: str) -> dict:
         )
         for role, description in child_configs.items()
     }
-    prompt = (
-        f"{workflow}\n\n# Assignment\n\n{assignment}"
-        "Return only the requested JSON receipt. Populate every schema field "
-        "and use null when a field does not apply.\n\n"
-        "# Model policy\n\n"
-        f"This coordinator is pinned to {MODEL} at {COORDINATOR_EFFORT} "
-        f"reasoning. Spawn every child on {MODEL} at {SUBAGENT_EFFORT} "
-        "reasoning using only the built-in default, worker, or explorer roles. "
-        "Do not select or request a different child model, role, or reasoning "
-        "effort.\n\n"
-        f"Repository: {repository}\n\nInput:\n{phase_input}"
-    )
+    if resume_session_id:
+        prompt = (
+            f"Clarification answer for the pending {phase} phase:\n\n{phase_input}\n\n"
+            "Continue the same phase without restarting or invoking Tweed. Return only "
+            "the requested JSON receipt."
+        )
+    else:
+        prompt = (
+            f"{workflow}\n\n# Assignment\n\n{assignment}"
+            "Return only the requested JSON receipt. Populate every schema field and "
+            "use null when a field does not apply.\n\n"
+            "# Phase-child guard\n\n"
+            "You are already the Tweed phase coordinator. Execute this workflow "
+            "directly; do not invoke Tweed or delegate back to its skill.\n\n"
+            "# Model policy\n\n"
+            f"This coordinator is pinned to {MODEL} at {COORDINATOR_EFFORT} "
+            f"reasoning. Spawn every child on {MODEL} at {SUBAGENT_EFFORT} "
+            "reasoning using only the built-in default, worker, or explorer roles. "
+            "Do not select or request a different child model, role, or reasoning "
+            "effort.\n\n"
+            f"Repository: {repository}\n\nInput:\n{phase_input}"
+        )
     with tempfile.TemporaryDirectory(prefix=f"tweed-{phase}-") as temporary:
         temporary_path = Path(temporary)
         schema_path = temporary_path / "schema.json"
         receipt_path = temporary_path / "receipt.json"
         schema_path.write_text(json.dumps(RECEIPT_SCHEMA))
-        result = subprocess.run(
+        command = [find_codex(), "exec"]
+        command.extend(["resume"] if resume_session_id else ["-C", str(repository)])
+        command.extend(
             [
-                find_codex(),
-                "exec",
-                "-C",
-                str(repository),
                 "-m",
                 MODEL,
                 "-c",
@@ -166,20 +199,30 @@ def run_phase(repository: Path, phase: str, phase_input: str) -> dict:
                 "-c",
                 f"agents.explorer={child_configs['explorer']}",
                 "--dangerously-bypass-approvals-and-sandbox",
-                "--color",
-                "never",
                 "--output-schema",
                 str(schema_path),
                 "--output-last-message",
                 str(receipt_path),
-                "-",
-            ],
-            input=prompt,
-            text=True,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.PIPE,
-            check=False,
+                "--json",
+            ]
         )
+        command.extend(
+            [resume_session_id, "-"]
+            if resume_session_id
+            else ["--color", "never", "-"]
+        )
+        with tempfile.TemporaryFile(mode="w+", encoding="utf-8") as events:
+            result = subprocess.run(
+                command,
+                cwd=repository,
+                env=child_environment(),
+                input=prompt,
+                text=True,
+                stdout=events,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            session_id = extract_session_id(events) or resume_session_id
         if result.returncode:
             detail = result.stderr.strip().splitlines()
             raise RuntimeError(detail[-1][:800] if detail else f"{phase} failed")
@@ -199,6 +242,10 @@ def run_phase(repository: Path, phase: str, phase_input: str) -> dict:
         raise RuntimeError(f"completed {phase} returned the wrong result")
     if receipt["state"] == "needs-input" and not receipt["question"]:
         raise RuntimeError("phase requested input without a question")
+    if receipt["state"] == "needs-input":
+        receipt["resume_session_id"] = session_id
+    else:
+        receipt["resume_session_id"] = None
     if phase in {"implement", "review", "publish"} and receipt["state"] == "completed":
         if not receipt["branch"] or not receipt["commit"]:
             raise RuntimeError(f"completed {phase} is missing Git provenance")
@@ -209,11 +256,11 @@ def run_phase(repository: Path, phase: str, phase_input: str) -> dict:
     return receipt
 
 
-def parse() -> tuple[Path, str, str]:
+def parse() -> tuple[Path, str, str, str | None]:
     parser = argparse.ArgumentParser(
         prog="tweed",
         description="Run one isolated Linear-backed software delivery phase.",
-        epilog="phases: create bug|feature, RCA, scope, implement, review, publish",
+        epilog="phases: create bug|feature, RCA, scope, implement, review, publish; resume",
     )
     parser.add_argument("--repo", default=".")
     parser.add_argument("command")
@@ -222,6 +269,7 @@ def parse() -> tuple[Path, str, str]:
     command = args.command.casefold()
     values = args.input
     request_kind = None
+    resume_session_id = None
     if command == "create":
         if not values or (request_kind := values.pop(0).casefold()) not in {
             "bug",
@@ -229,6 +277,16 @@ def parse() -> tuple[Path, str, str]:
         }:
             raise RuntimeError("use: tweed create bug|feature <request>")
         phase = "create"
+    elif command == "resume":
+        if len(values) < 3 or values[0].casefold() not in WORKFLOWS:
+            raise RuntimeError("use: tweed resume <phase> <session-id> <answer>")
+        phase = values.pop(0).casefold()
+        resume_session_id = values.pop(0).casefold()
+        try:
+            if str(uuid.UUID(resume_session_id)) != resume_session_id:
+                raise ValueError
+        except ValueError as error:
+            raise RuntimeError("resume requires a canonical session ID") from error
     elif command in WORKFLOWS and command != "create":
         phase = command
     else:
@@ -244,7 +302,7 @@ def parse() -> tuple[Path, str, str]:
     repository = Path(args.repo).resolve()
     if not repository.is_dir() or not phase_input:
         raise RuntimeError("phase requires a repository and input")
-    return repository, phase, phase_input
+    return repository, phase, phase_input, resume_session_id
 
 
 def fail(summary: str) -> dict:
@@ -260,13 +318,16 @@ def fail(summary: str) -> dict:
         "branch": None,
         "commit": None,
         "pull_request_url": None,
+        "resume_session_id": None,
     }
 
 
 if __name__ == "__main__":
     try:
-        repo, selected_phase, supplied_input = parse()
-        emit(run_phase(repo, selected_phase, supplied_input))
+        if os.environ.get(PHASE_CHILD_ENV) == "1":
+            raise RuntimeError("nested Tweed invocation blocked")
+        repo, selected_phase, supplied_input, session_id = parse()
+        emit(run_phase(repo, selected_phase, supplied_input, session_id))
     except KeyboardInterrupt:
         emit(fail("Tweed was interrupted."))
         raise SystemExit(130) from None

@@ -5,6 +5,11 @@ description: Take a software bug or feature from standardized Linear intake thro
 
 # Use Tweed
 
+If `TWEED_PHASE_CHILD=1`, execute the supplied phase workflow directly. Do not
+invoke `tweed` or hand the assignment back to this skill; the CLI blocks nested
+invocation as a fail-safe. Stop following this skill after this paragraph. The
+instructions below apply only to the invoking task.
+
 Keep this invoking task thin. Do not inspect the repository, read Linear,
 investigate, or spawn subagents here. Each phase is exactly one command.
 Invoke the bare `tweed` executable from `PATH`; the repository installer owns
@@ -46,7 +51,13 @@ The runner calls the first working local `codex` on `PATH`, using its existing
 Linear MCP, and installs nothing. Treat each command's stdout as one JSON receipt
 of at most 4 KiB. Do not open coordinator/subagent tasks, Linear, or logs.
 
-On `needs-input`, ask only `question`, then rerun that same phase once with its
-original input plus `Question: <question> Answer: <answer>`. Stop on `blocked`
-or `failed` and return the receipt directly. Never bypass, reorder, or retry a
+On `needs-input`, ask only `question`. If `resume_session_id` is present,
+continue the same coordinator once:
+
+```sh
+tweed --repo <repository> resume <receipt.phase> <receipt.resume_session_id> <answer>
+```
+
+If it is null, rerun the phase once with its original input plus the question
+and answer. Stop on `blocked` or `failed`; never reorder or otherwise retry a
 phase automatically.
