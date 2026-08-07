@@ -11,8 +11,10 @@ request, deploy, or perform remote delivery actions.
 
 - Require solution scope and implementation comments. A bug also requires an
   established RCA; a feature does not. Extract the recorded branch and commit.
-  If a review comment already exists, verify its branch and commit locally and
-  return it without duplicating the phase.
+  If a review comment already exists, validate it under the current gate and
+  comment schema, then verify its branch and commit locally. Return it without
+  duplicating the phase only when both checks pass; otherwise return `blocked`
+  and name the missing or stale fact.
 - Treat the scope, non-goals, acceptance criteria, and validation as the
   contract. Use the implementation comment as provenance, not as proof of
   quality.
@@ -107,31 +109,43 @@ passes.
 
 After the reviewed commit exists, publish exactly one:
 
+After writing, re-read the comment and return `completed` only if it matches
+this schema and contains the evidence required by the completion gate.
+
 ```markdown
 ## Tweed · Implementation Review
 
 **Verdict:** Ready to publish
 
+### Review basis
+- Approved contract: [scope comment and RCA when applicable]
+- Implementation reviewed: [branch and full implementation commit]
+- Review target: [changed files, boundaries, interfaces, and consumers]
+
 ### Final axis results
-- Simplicity and scope fidelity: [clean]
-- Correctness and robustness: [clean]
-- Compatibility and integration: [clean]
-- Performance and resource use: [clean]
-- Verification quality: [clean]
+| Axis | Result | Evidence | Remaining concern |
+|---|---|---|---|
+| Simplicity and scope fidelity | [clean/finding] | [diff/repository evidence] | [None or concern] |
+| Correctness and robustness | [clean/finding] | [runtime/test evidence] | [None or concern] |
+| Compatibility and integration | [clean/finding] | [caller/consumer evidence] | [None or concern] |
+| Performance and resource use | [clean/finding] | [path/measurement evidence] | [None or concern] |
+| Verification quality | [clean/finding] | [criterion/check mapping] | [None or concern] |
 
 ### Findings
-| ID | Axis | Evidence | Disposition | Fix | Re-review |
-|---|---|---|---|---|---|
-| [ID or None] | [axis] | [evidence] | [accepted/rejected] | [result] | [result] |
+| ID | Axis | Material consequence/contract | Evidence | Disposition | Fix | Re-review |
+|---|---|---|---|---|---|---|
+| [ID or None] | [axis] | [consequence and violated contract] | [`file:line` or diagnostic] | [accepted/rejected and why] | [commit/file result or None] | [independent proof] |
 
 ### Changes made
 - [Finding ID and minimum correction, or “None.”]
 
 ### Verification
-- `[exact command]` → [result and contract proved]
+| Exact command or diagnostic | Result | Contract/finding proved | Coverage boundary |
+|---|---|---|---|
+| `[command]` | [pass/fail and salient counts] | [criterion/finding] | [files/interface] |
 
-### Remaining findings
-None.
+### Remaining concerns
+[Non-blocking operational or CI caveat, or “None.”]
 
 ### Git handoff
 - Branch: `[branch]`
@@ -140,8 +154,12 @@ None.
 - Worktree: clean
 
 ### Review map
-- [Reviewer/fixer role] — [reviewed/fixed/challenged]: [one-line result]
-- Final clean pass — reviewed: zero unresolved material findings
+| Role | Material conclusion | Evidence | Affected surface | Confidence | Relationship |
+|---|---|---|---|---|---|
+| [Reviewer/fixer role] | [substantive finding or fix result] | [`file:line` or diagnostic] | [files/boundary] | [high/medium/low and why] | [reviewed/fixed/challenged] |
+
+**Final clean pass:** [Evidence-backed result across the whole diff and why
+zero unresolved material findings remain.]
 ```
 
 Include every reviewer, specialist, and fixer once. Do not include transcripts,

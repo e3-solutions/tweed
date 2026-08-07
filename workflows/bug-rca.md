@@ -86,8 +86,13 @@ will do so, report `not-established` and name the smallest next diagnostic.
 ## First Tweed comment
 
 For terminal `established` or `not-established` results, check whether an
-existing comment begins with `## Tweed · Root Cause Analysis`. Reuse that result
-instead of duplicating it. Otherwise add exactly one comment in this form:
+existing comment begins with `## Tweed · Root Cause Analysis`. Reuse it only if
+it satisfies the current completion gate and comment schema; otherwise return
+`blocked` and name the missing handoff facts. Otherwise add exactly one comment
+in this form:
+
+After writing, re-read the comment and return `completed` only if it matches
+this schema and contains the evidence required by the completion gate.
 
 ```markdown
 ## Tweed · Root Cause Analysis
@@ -101,16 +106,26 @@ instead of duplicating it. Otherwise add exactly one comment in this form:
 [Observed behavior, expected behavior, affected surface, and triggering
 conditions now known.]
 
-### Failure chain
+### Causal chain
 1. [Trigger]
 2. [Responsible boundary and mechanism]
 3. [Observed failure]
 
 ### Evidence
-- [Diagnostic, runtime, history, configuration, or `file:line` evidence]
 
-### Alternative checked
-- [Strongest credible alternative and why it does or does not fit]
+#### Reproduction and runtime
+- [Reproduction, diagnostic, trace, log, or runtime result and what it proves]
+
+#### Repository, configuration, and history
+- [`file:line`, configuration, dependency, or history evidence and what it proves]
+
+### Affected boundaries and files
+- [`path` or external boundary]: [failure contribution and affected consumers]
+
+### Alternatives checked
+| Alternative | Evidence tested | Result | Why weaker than the conclusion |
+|---|---|---|---|
+| [Credible alternative] | [diagnostic or repository evidence] | [rejected/unresolved] | [reason] |
 
 ### Remaining uncertainty
 [Material unknowns, or “None.”]
@@ -121,8 +136,12 @@ conditions now known.]
 - Worktree: [clean or relevant dirty/untracked state]
 
 ### Investigation map
-- [Agent role] — [supports/challenges/unresolved]: [one-line conclusion]
-- Synthesis — [established/not established]: [why the gate passed or failed]
+| Role | Material conclusion | Evidence | Affected surface | Confidence | Relationship |
+|---|---|---|---|---|---|
+| [Agent role] | [substantive finding] | [diagnostic and `file:line`] | [files/boundary] | [high/medium/low and why] | [supports/challenges/unresolved] |
+
+**Synthesis:** [Reconciled causal chain, why the gate passed or failed, and how
+conflicting evidence was resolved.]
 ```
 
 Include every investigator and targeted follow-up once in the map. Keep claims
