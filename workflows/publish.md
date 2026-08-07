@@ -64,8 +64,8 @@ existing PR's metadata, readiness, and final Linear comment.
    - [Issue identifier and URL]
    ```
 
-5. Mark that exact draft ready for review. Never change the readiness or metadata
-   of another PR.
+5. If the exact PR is still draft, mark it ready for review. Never change the
+   readiness or metadata of another PR.
 6. Verify the PR is open, non-draft, targets the discovered base, uses the exact
    canonical head repository, reviewed branch, and reviewed commit, and reports
    no immediately visible update error. Do not claim CI has passed unless GitHub

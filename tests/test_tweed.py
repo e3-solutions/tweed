@@ -137,7 +137,9 @@ class TweedRunnerTests(unittest.TestCase):
         self.assertIn("- Draft PR: `[URL]`", implementation)
         self.assertIn("same draft PR", review)
         self.assertIn("- Draft PR: `[URL]`", review)
-        self.assertIn("Mark that exact draft ready for review", publish)
+        self.assertIn(
+            "If the exact PR is still draft, mark it ready for review", publish
+        )
         self.assertIn(
             "Do not spawn implementation agents, change code, push commits", publish
         )
