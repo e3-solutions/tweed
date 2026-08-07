@@ -66,7 +66,7 @@ WORKFLOWS = {
     ),
     "implement": (
         "implement.md",
-        "Implement the approved scope, commit it locally, and publish the handoff. ",
+        "Implement the approved scope on its draft PR and publish the handoff. ",
     ),
     "review": (
         "review.md",
@@ -74,7 +74,7 @@ WORKFLOWS = {
     ),
     "publish": (
         "publish.md",
-        "Push the reviewed commit, open or recover its PR, and record it in Linear. ",
+        "Finalize the reviewed draft PR and record it in Linear. ",
     ),
 }
 
@@ -343,6 +343,15 @@ def child_environment() -> dict[str, str]:
     return {**os.environ, PHASE_CHILD_ENV: "1"}
 
 
+def require_pull_request(receipt: dict, phase: str) -> None:
+    if (
+        phase in {"implement", "review", "publish"}
+        and receipt["state"] == "completed"
+        and not receipt["pull_request_url"]
+    ):
+        raise RuntimeError(f"completed {phase} is missing its pull request")
+
+
 def run_phase(
     repository: Path,
     phase: str,
@@ -492,10 +501,7 @@ def run_phase(
         and receipt["branch"] != expected_branch
     ):
         raise RuntimeError("completed implementation did not use Linear's branch name")
-    if phase == "publish" and receipt["state"] == "completed" and not receipt[
-        "pull_request_url"
-    ]:
-        raise RuntimeError("completed publish is missing its pull request")
+    require_pull_request(receipt, phase)
     return receipt
 
 

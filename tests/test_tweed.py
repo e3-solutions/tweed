@@ -51,6 +51,22 @@ def linear_issue():
     }
 
 
+def delivery_receipt(phase, pull_request_url="https://github.example/pr/1"):
+    return {
+        "phase": phase,
+        "state": "completed",
+        "issue": "COR-1",
+        "linear_url": "https://linear.example/COR-1",
+        "result": RUNNER.COMPLETED_RESULTS[phase],
+        "summary": "done",
+        "question": None,
+        "next_action": None,
+        "branch": "arya/cor-1-example",
+        "commit": "a" * 40,
+        "pull_request_url": pull_request_url,
+    }
+
+
 class TweedRunnerTests(unittest.TestCase):
     def test_coordinator_reasoning_is_medium(self):
         self.assertEqual(RUNNER.COORDINATOR_EFFORT, "medium")
@@ -104,6 +120,27 @@ class TweedRunnerTests(unittest.TestCase):
         implementation = (ROOT / "workflows/implement.md").read_text()
         self.assertIn("issue.git_branch_name", implementation)
         self.assertNotIn("tweed/<issue-id>", implementation)
+
+    def test_delivery_phases_require_the_draft_pr_handoff(self):
+        for phase in ("implement", "review", "publish"):
+            with self.subTest(phase=phase):
+                with self.assertRaisesRegex(RuntimeError, "missing its pull request"):
+                    RUNNER.require_pull_request(delivery_receipt(phase, None), phase)
+                RUNNER.require_pull_request(delivery_receipt(phase), phase)
+
+    def test_workflows_keep_one_pr_current_until_publish(self):
+        implementation = (ROOT / "workflows/implement.md").read_text()
+        review = (ROOT / "workflows/review.md").read_text()
+        publish = (ROOT / "workflows/publish.md").read_text()
+
+        self.assertIn("push it normally\n   to the draft PR", implementation)
+        self.assertIn("- Draft PR: `[URL]`", implementation)
+        self.assertIn("same draft PR", review)
+        self.assertIn("- Draft PR: `[URL]`", review)
+        self.assertIn("Mark that exact draft ready for review", publish)
+        self.assertIn(
+            "Do not spawn implementation agents, change code, push commits", publish
+        )
 
     def test_phase_child_guard_stops_before_invoking_instructions(self):
         skill = (ROOT / "skills/use-tweed/SKILL.md").read_text()

@@ -4,13 +4,16 @@ Implement the approved Tweed scope from the supplied deterministic Linear
 handoff using bounded Codex subagents. The runner supplies only the latest scope
 or existing implementation result plus issue metadata. Use Linear only to
 publish and verify the final handoff. Children must not use Linear. Work only in
-the supplied local repository. Stop after a verified local commit: do not push,
-open a pull request, merge, deploy, or mutate remote services or data.
+the supplied local repository. Create or recover one draft pull request for the
+official Linear branch and push only verified implementation commits to it. Do
+not mark it ready, merge, deploy, or mutate other remote services or data.
 
 ## Contract and safety
 
-- Require a complete `## Tweed · Solution Scope`; it is the complete
-  implementation contract. Otherwise return `blocked` before editing.
+- A new implementation requires a complete `## Tweed · Solution Scope`; it is
+  the complete implementation contract. An `existing` implementation must
+  instead carry the complete current implementation schema. Otherwise return
+  `blocked` before editing or publishing remote state.
 - Treat the scope's outcome, change surface, steps, non-goals, acceptance
   criteria, and validation as the approved contract. Do not redesign or broaden
   it during implementation.
@@ -20,17 +23,24 @@ open a pull request, merge, deploy, or mutate remote services or data.
 - Never overwrite, discard, stash, reset, clean, or attribute pre-existing user
   work to Tweed. Never use destructive Git commands.
 - Local file edits, local validation, branch creation, staging, and committing
-  are allowed. Linear may be written only after a passing commit exists.
-- External delivery, credentials, live migrations, production checks, pushes,
-  PR creation, and deployment belong to later phases.
+  are allowed. Linear may be written only after a passing final implementation
+  commit exists on the verified draft PR.
+- The only allowed GitHub writes are ordinary non-force pushes of the official
+  issue branch and creation or update of its one draft PR. Reuse that branch and
+  PR on retries. Credentials, live migrations, production checks, PR readiness,
+  merging, and deployment belong to later phases.
 
 ## Preflight
 
 1. Read the supplied handoff. If it contains an `existing` implementation,
-   validate it under the current gate and comment schema, then verify its branch
-   and commit still exist locally. Return it without reimplementing only when
-   both checks pass; otherwise return `blocked` and name the missing or stale
-   fact.
+   validate its evidence and comment schema, then verify its branch, commit, and
+   recorded PR. Return it without reimplementing only when the commit exists
+   locally and the PR belongs to the repository derived from `origin`, is open,
+   uses the exact branch and base, and points at that commit or a later reviewed
+   descendant. A PR already marked ready is valid only as later publish state.
+   If only the PR handoff is missing, recover or create it from the verified
+   existing branch and commit, then publish one refreshed implementation
+   handoff; otherwise return `blocked` with the stale fact.
 2. Record repository identity, current branch, `HEAD`, staged, unstaged, and
    untracked paths. Require `issue.git_branch_name` in the supplied metadata and
    validate it with `git check-ref-format --branch`. Use that exact Linear branch
@@ -44,7 +54,29 @@ open a pull request, merge, deploy, or mutate remote services or data.
    unrelated dirty state blocks automatic implementation.
 5. Verify that the scoped files, interfaces, dependencies, and tests still
    match current repository behavior. Return `blocked` when the scope is
-   materially stale or requires an external action to pass.
+   materially stale or requires an external action beyond the permitted draft
+   PR workflow.
+6. Require a configured GitHub `origin`, authenticated `gh`, and an identifiable
+   default base branch. Derive one canonical `[host/]owner/repository` selector
+   from `origin`; never use ambient `GH_REPO` or infer a repository from the
+   working directory. Scope every `gh` read and write explicitly to that
+   selector. Require the issue branch to descend from the current remote base and
+   reject unrelated commits before pushing.
+7. Search all PR states for the exact head branch and inspect every match. Reuse
+   exactly one only when its host, head repository, head branch, and base match
+   the canonical repository and expected refs. Before implementation completes,
+   it must be open and draft. A duplicate, closed, merged, cross-repository, or
+   otherwise mismatched PR is ambiguous; return `blocked` without changing it.
+8. If no matching PR exists, ensure the issue branch differs from the base. When
+   no meaningful implementation commit exists yet, create one verified empty
+   kickoff commit containing the issue ID with `git commit --allow-empty --only`
+   so staged user work is not consumed. Prove its tree equals its parent, push
+   the exact branch with an ordinary upstream push, and create one draft with
+   `gh pr create --draft` using explicit `--repo`, `--base`, and `--head`
+   arguments. Give it a concise issue-derived title and a body with the Linear
+   URL, approved outcome, work-in-progress status, and pending verification.
+   Verify its repository, refs, draft state, and URL before any implementation
+   wave continues.
 
 ## Implementation workflow
 
@@ -59,9 +91,11 @@ open a pull request, merge, deploy, or mutate remote services or data.
    only: completed scope items, files changed, checks and results, blocker, and
    deviation. Writers may not create new product or architecture decisions.
 4. After every wave, inspect the actual diff, map every hunk to an approved
-   step, rerun focused checks when feasible, and only then unlock dependents. If
-   a writer fails, inspect the workspace before reassigning; never assume it
-   made no changes.
+   step, and rerun focused checks. When the wave forms a coherent bounded unit,
+   stage only its owned files, commit it with the issue ID, and push it normally
+   to the draft PR before unlocking dependents. Keep an incomplete wave local
+   until it is coherent; do not manufacture commits. If a writer fails, inspect
+   the workspace before reassigning and never assume it made no changes.
 5. After integration, spawn independent non-authoring reviewers for:
    - **Simplicity, clarity, reuse, and performance:** find code to delete,
      flatten, or replace with verified existing capabilities; reject subjective
@@ -77,9 +111,10 @@ open a pull request, merge, deploy, or mutate remote services or data.
 7. Run the smallest checks proving each acceptance criterion, then relevant
    repository-supported build, type, lint, and test checks. For a bug fix, add a
    regression check that fails for the original mechanism when feasible.
-8. Reinspect the final diff and Git status. Stage only implementation-owned
-   files and create one commit with a concise message containing the issue ID.
-   Do not amend unrelated commits. Require a clean worktree after committing.
+8. Reinspect the final diff and Git status. Commit any remaining coherent
+   implementation-owned changes with the issue ID and push normally. Never amend
+   the kickoff, an earlier implementation commit, or unrelated history. Require
+   a clean worktree and verify the draft PR head equals the final passing commit.
 
 ## Completion gate
 
@@ -95,15 +130,19 @@ Call the phase implemented only when:
 - no unnecessary custom code, abstraction, duplication, or evidenced
   performance regression remains when a simpler verified capability exists;
 - no unauthorized dependency, interface, migration, cleanup, or external side
-  effect occurred;
+  effect beyond the exact branch pushes and draft PR occurred;
 - independent reviewers have no unresolved material finding; and
-- the issue branch has a clean, passing commit.
+- the issue branch has a clean, passing final commit; and
+- one verified open PR contains that exact commit. It is draft for a new
+  implementation; an idempotent retry may observe a later reviewed head or
+  published readiness only when those facts are already recorded downstream.
 
 If no edit was made and work cannot proceed, return `blocked`. If implementation
 changes exist but a blocker, failed check, interruption, deviation, or finding
 prevents a safe commit, preserve the actual changes and return `blocked` with
 `result: partial`. Do not publish a Linear implementation comment until the
-completion gate passes.
+completion gate passes. If a draft was created before a later block, preserve it
+and report its URL and current head so a retry can resume without duplication.
 
 ## Linear comment
 
@@ -148,6 +187,7 @@ this schema and contains the evidence required by the completion gate.
 ### Git handoff
 - Branch: `[branch]`
 - Commit: `[full commit]`
+- Draft PR: `[URL]`
 - Worktree: clean
 
 ### Implementation map
@@ -166,6 +206,6 @@ hash manifests, or unrelated refactoring ideas.
 
 Return only the runner-provided JSON receipt with `phase: implement`. Success
 uses `state: completed`, `result: implemented`, the issue identifier and URL,
-and the exact branch and full commit; the PR field is null. Clarification uses
+the exact branch, full commit, and draft PR URL. Clarification uses
 `needs-input`. All other incomplete outcomes use `state: blocked`, with
 `result: blocked` or `partial` and the safest next action.
