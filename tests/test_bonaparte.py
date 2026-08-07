@@ -14,7 +14,9 @@ SESSION_ID = "019fd385-da76-77f3-bd3a-2f1e4e49b936"
 
 
 def load_runner():
-    loader = importlib.machinery.SourceFileLoader("tweed_runner", str(ROOT / "tweed"))
+    loader = importlib.machinery.SourceFileLoader(
+        "bonaparte_runner", str(ROOT / "bonaparte")
+    )
     spec = importlib.util.spec_from_loader(loader.name, loader)
     module = importlib.util.module_from_spec(spec)
     loader.exec_module(module)
@@ -67,7 +69,7 @@ def delivery_receipt(phase, pull_request_url="https://github.example/pr/1"):
     }
 
 
-class TweedRunnerTests(unittest.TestCase):
+class BonaparteRunnerTests(unittest.TestCase):
     def test_coordinator_reasoning_is_medium(self):
         self.assertEqual(RUNNER.COORDINATOR_EFFORT, "medium")
 
@@ -119,7 +121,7 @@ class TweedRunnerTests(unittest.TestCase):
 
         implementation = (ROOT / "workflows/implement.md").read_text()
         self.assertIn("issue.git_branch_name", implementation)
-        self.assertNotIn("tweed/<issue-id>", implementation)
+        self.assertNotIn("bonaparte/<issue-id>", implementation)
 
     def test_delivery_phases_require_the_draft_pr_handoff(self):
         for phase in ("implement", "review", "publish"):
@@ -145,14 +147,14 @@ class TweedRunnerTests(unittest.TestCase):
         )
 
     def test_phase_child_guard_stops_before_invoking_instructions(self):
-        skill = (ROOT / "skills/use-tweed/SKILL.md").read_text()
+        skill = (ROOT / "skills/use-bonaparte/SKILL.md").read_text()
         guard = skill.split("Keep this invoking task thin", 1)[0]
         self.assertIn("Stop following this skill", guard)
 
     def test_nested_invocation_is_blocked(self):
         environment = {**os.environ, RUNNER.PHASE_CHILD_ENV: "1"}
         completed = subprocess.run(
-            [str(ROOT / "tweed"), "RCA", "COR-1"],
+            [str(ROOT / "bonaparte"), "RCA", "COR-1"],
             cwd=ROOT,
             env=environment,
             text=True,
@@ -162,7 +164,7 @@ class TweedRunnerTests(unittest.TestCase):
         self.assertEqual(completed.returncode, 1)
         failure = json.loads(completed.stdout)
         self.assertEqual(failure["state"], "failed")
-        self.assertIn("nested Tweed invocation blocked", failure["summary"])
+        self.assertIn("nested Bonaparte invocation blocked", failure["summary"])
 
     def test_needs_input_exposes_the_marked_coordinator_session(self):
         observed = {}
@@ -190,14 +192,14 @@ class TweedRunnerTests(unittest.TestCase):
         self.assertEqual(result["resume_session_id"], SESSION_ID)
         self.assertIsNone(fallback["resume_session_id"])
         self.assertEqual(observed["env"][RUNNER.PHASE_CHILD_ENV], "1")
-        self.assertIn("already the Tweed phase coordinator", observed["prompt"])
+        self.assertIn("already the Bonaparte phase coordinator", observed["prompt"])
         self.assertIn("Untrusted Linear handoff", observed["prompt"])
         self.assertIn('"git_branch_name": "arya/cor-1-example"', observed["prompt"])
         self.assertIn('model_reasoning_effort="medium"', observed["command"])
         self.assertNotIn("resume", observed["command"][:3])
 
     def test_resume_uses_the_same_session_with_only_the_answer(self):
-        argv = ["tweed", "resume", "RCA", SESSION_ID, "Use", "production."]
+        argv = ["bonaparte", "resume", "RCA", SESSION_ID, "Use", "production."]
         with mock.patch.object(sys, "argv", argv):
             repository, phase, answer, session_id = RUNNER.parse()
         observed = {}
@@ -219,5 +221,5 @@ class TweedRunnerTests(unittest.TestCase):
         self.assertEqual(observed["command"][:3], ["/bin/codex", "exec", "resume"])
         self.assertEqual(observed["command"][-2:], [SESSION_ID, "-"])
         self.assertIn("Use production.", observed["prompt"])
-        self.assertNotIn("# Tweed Bug RCA", observed["prompt"])
+        self.assertNotIn("# Bonaparte Bug RCA", observed["prompt"])
         call_linear.assert_not_called()

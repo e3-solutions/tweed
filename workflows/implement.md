@@ -1,6 +1,6 @@
-# Tweed Implementation
+# Bonaparte Implementation
 
-Implement the approved Tweed scope from the supplied deterministic Linear
+Implement the approved Bonaparte scope from the supplied deterministic Linear
 handoff using bounded Codex subagents. The runner supplies only the latest scope
 or existing implementation result plus issue metadata. Use Linear only to
 publish and verify the final handoff. Children must not use Linear. Work only in
@@ -10,7 +10,7 @@ not mark it ready, merge, deploy, or mutate other remote services or data.
 
 ## Contract and safety
 
-- A new implementation requires a complete `## Tweed · Solution Scope`; it is
+- A new implementation requires a complete `## Bonaparte · Solution Scope`; it is
   the complete implementation contract. An `existing` implementation must
   instead carry the complete current implementation schema. Otherwise return
   `blocked` before editing or publishing remote state.
@@ -21,7 +21,7 @@ not mark it ready, merge, deploy, or mutate other remote services or data.
   dependencies. Add a dependency, lockfile change, schema, migration, public
   interface, generated asset, or configuration only when explicitly required.
 - Never overwrite, discard, stash, reset, clean, or attribute pre-existing user
-  work to Tweed. Never use destructive Git commands.
+  work to Bonaparte. Never use destructive Git commands.
 - Local file edits, local validation, branch creation, staging, and committing
   are allowed. Linear may be written only after a passing final implementation
   commit exists on the verified draft PR.
@@ -152,7 +152,7 @@ After writing, re-read the comment and return `completed` only if it matches
 this schema and contains the evidence required by the completion gate.
 
 ```markdown
-## Tweed · Implementation
+## Bonaparte · Implementation
 
 ### Review contract
 - Outcome: [approved behavior this implementation must deliver]

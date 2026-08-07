@@ -1,4 +1,4 @@
-# Tweed Implementation Review
+# Bonaparte Implementation Review
 
 Independently review the supplied latest implementation handoff. It carries the
 approved outcome, acceptance criteria, non-goals, risks, implementation, and
@@ -132,7 +132,7 @@ After writing, re-read the comment and return `completed` only if it matches
 this schema and contains the evidence required by the completion gate.
 
 ```markdown
-## Tweed · Implementation Review
+## Bonaparte · Implementation Review
 
 **Verdict:** Ready to publish
 

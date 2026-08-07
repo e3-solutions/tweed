@@ -1,4 +1,4 @@
-# Tweed Solution Scope
+# Bonaparte Solution Scope
 
 Turn the supplied Linear request into the smallest implementation-ready solution
 scope. For a bug, start from its established RCA. For a feature, start from the
@@ -11,7 +11,7 @@ or perform any other external write.
 ## Boundaries
 
 - Use the supplied issue kind. A bug requires an established
-  `## Tweed · Root Cause Analysis` handoff. A feature receives its intake and
+  `## Bonaparte · Root Cause Analysis` handoff. A feature receives its intake and
   must not invent or require an RCA. If the kind is missing or a bug lacks its
   RCA handoff, return `needs-input` or `blocked`.
 - Treat the supplied feature intake or bug RCA as the durable request contract.
@@ -105,7 +105,7 @@ After writing, re-read the comment and return `completed` only if it matches
 this schema and contains the evidence required by the completion gate.
 
 ```markdown
-## Tweed · Solution Scope
+## Bonaparte · Solution Scope
 
 ### Handoff basis
 - RCA basis: [causal chain and responsible boundary, or “Not applicable — feature”]
