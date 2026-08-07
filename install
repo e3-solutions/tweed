@@ -2,10 +2,10 @@
 set -eu
 
 repo_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-bin_dir=${TWEED_BIN_DIR:-"$HOME/.local/bin"}
+bin_dir=${BONAPARTE_BIN_DIR:-"$HOME/.local/bin"}
 codex_dir=${CODEX_HOME:-"$HOME/.codex"}
 data_root=${XDG_DATA_HOME:-"$HOME/.local/share"}
-tweed_home=${TWEED_HOME:-"$data_root/tweed"}
+bonaparte_home=${BONAPARTE_HOME:-"$data_root/bonaparte"}
 
 if [ "$#" -ne 0 ]; then
     echo "usage: ./install" >&2
@@ -26,34 +26,34 @@ atomic_link() {
     python3 -c 'import os,sys; s,t=sys.argv[1:]; p=f"{t}.tmp.{os.getpid()}"; os.symlink(s,p); os.replace(p,t)' "$source_path" "$target_path"
 }
 
-mkdir -p "$bin_dir" "$codex_dir/skills" "$tweed_home/releases"
-refuse_regular_target "$bin_dir/tweed"
-refuse_regular_target "$codex_dir/skills/use-tweed"
-refuse_regular_target "$tweed_home/current"
+mkdir -p "$bin_dir" "$codex_dir/skills" "$bonaparte_home/releases"
+refuse_regular_target "$bin_dir/bonaparte"
+refuse_regular_target "$codex_dir/skills/use-bonaparte"
+refuse_regular_target "$bonaparte_home/current"
 
-staging=$(mktemp -d "$tweed_home/.install.XXXXXX")
+staging=$(mktemp -d "$bonaparte_home/.install.XXXXXX")
 trap 'rm -rf "$staging"' EXIT HUP INT TERM
 baseline=$(git -C "$repo_dir" tag --merged HEAD --sort=-version:refname | sed -nE '/^v[0-9]+\.[0-9]+\.[0-9]+$/ {p;q;}')
 runtime_id="local-${baseline:-v0.0.0}-$(git -C "$repo_dir" rev-parse --short=12 HEAD)"
-release_dir="$tweed_home/releases/$runtime_id"
+release_dir="$bonaparte_home/releases/$runtime_id"
 
 if [ ! -e "$release_dir" ]; then
     mkdir "$staging/bundle"
     git -C "$repo_dir" archive --format=tar -o "$staging/source.tar" HEAD
     tar -xf "$staging/source.tar" -C "$staging/bundle"
-    python3 -m py_compile "$staging/bundle/tweed" "$staging/bundle/tweed-launcher"
-    TWEED_AUTO_UPDATE=0 python3 "$staging/bundle/tweed" --help >/dev/null
+    python3 -m py_compile "$staging/bundle/bonaparte" "$staging/bundle/bonaparte-launcher"
+    BONAPARTE_AUTO_UPDATE=0 python3 "$staging/bundle/bonaparte" --help >/dev/null
     rm -rf "$staging/bundle/__pycache__"
     mv "$staging/bundle" "$release_dir"
 fi
 
-atomic_link "releases/$runtime_id" "$tweed_home/current"
-atomic_link "$tweed_home/current/tweed-launcher" "$bin_dir/tweed"
-atomic_link "$tweed_home/current/skills/use-tweed" "$codex_dir/skills/use-tweed"
-rm -f "$tweed_home/last-check"
+atomic_link "releases/$runtime_id" "$bonaparte_home/current"
+atomic_link "$bonaparte_home/current/bonaparte-launcher" "$bin_dir/bonaparte"
+atomic_link "$bonaparte_home/current/skills/use-bonaparte" "$codex_dir/skills/use-bonaparte"
+rm -f "$bonaparte_home/last-check"
 
 trap - EXIT HUP INT TERM
 rm -rf "$staging"
-echo "Installed Tweed runtime: $runtime_id"
-echo "Installed Tweed CLI: $bin_dir/tweed"
-echo "Installed Tweed skill: $codex_dir/skills/use-tweed"
+echo "Installed Bonaparte runtime: $runtime_id"
+echo "Installed Bonaparte CLI: $bin_dir/bonaparte"
+echo "Installed Bonaparte skill: $codex_dir/skills/use-bonaparte"

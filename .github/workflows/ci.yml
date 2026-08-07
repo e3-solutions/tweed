@@ -22,9 +22,9 @@ jobs:
           fetch-depth: 0
       - name: Smoke-test runner
         run: |
-          python -m py_compile tweed tweed-launcher
+          python -m py_compile bonaparte bonaparte-launcher
           sh -n install
-          ./tweed --help
+          ./bonaparte --help
       - name: Test versioned installation and updates
         run: python -m unittest discover -s tests -v
       - name: Reject whitespace errors in the PR diff

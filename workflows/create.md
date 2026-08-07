@@ -1,4 +1,4 @@
-# Tweed Create Request
+# Bonaparte Create Request
 
 Create one standardized Linear issue for the supplied `Kind: bug` or
 `Kind: feature`. Use Linear MCP yourself. Do not inspect repository code, spawn
@@ -35,7 +35,7 @@ implementation.]
 
 Preserve useful specifics and rewrite for clarity. Use `Unknown` for missing
 facts. Never fabricate behavior, impact, reproduction, requirements, cause, or
-solution. Add no comments: RCA owns the first Tweed comment for a bug, while
+solution. Add no comments: RCA owns the first Bonaparte comment for a bug, while
 scope owns it for a feature.
 
 Return only the provided receipt with `phase: create`, `result: created`, the

@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 
 
-RUNNER = runpy.run_path(str(Path(__file__).resolve().parents[1] / "tweed"))
+RUNNER = runpy.run_path(str(Path(__file__).resolve().parents[1] / "bonaparte"))
 HEADERS = RUNNER["PHASE_HEADERS"]
 select_handoff = RUNNER["select_handoff"]
 
