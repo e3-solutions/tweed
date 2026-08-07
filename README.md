@@ -30,15 +30,19 @@ Prerequisites:
 - a working local `codex` command
 - the GitHub CLI (`gh`) for draft and published pull requests
 
-Clone Bonaparte and run its installer:
+Copy and run this installer:
 
 ```sh
-git clone https://github.com/e3-solutions/tweed.git bonaparte
-cd bonaparte
-./install
+#!/bin/sh
+set -eu
+checkout=$(mktemp -d)
+trap 'rm -rf "$checkout"' 0
+git clone -q https://github.com/e3-solutions/tweed.git "$checkout"
+"$checkout/install"
 ```
 
-The installer copies committed `HEAD` into a versioned snapshot under
+The temporary checkout is removed after installation. The installer copies
+committed `HEAD` into a versioned snapshot under
 `~/.local/share/bonaparte/releases/`. Two stable links select that snapshot:
 
 - `~/.local/bin/bonaparte` → the active release's launcher
