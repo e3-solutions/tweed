@@ -1,7 +1,7 @@
-# Tweed Bug RCA
+# Bonaparte Bug RCA
 
 Investigate the bug from the supplied deterministic Linear handoff and publish
-one evidence-backed root cause analysis as its first Tweed comment. The runner
+one evidence-backed root cause analysis as its first Bonaparte comment. The runner
 has already selected the issue intake or latest existing RCA. Keep repository
 investigation in isolated subagents so the invoking task receives only the
 bounded receipt.
@@ -83,7 +83,7 @@ concrete options or an evidence-backed recommendation. Do not write a Linear
 comment yet. If repository work cannot establish the cause and no single answer
 will do so, report `not-established` and name the smallest next diagnostic.
 
-## First Tweed comment
+## First Bonaparte comment
 
 For terminal `established` or `not-established` results, reuse a supplied
 `existing` RCA only if it satisfies the current completion gate and comment
@@ -94,7 +94,7 @@ After writing, re-read the comment and return `completed` only if it matches
 this schema and contains the evidence required by the completion gate.
 
 ```markdown
-## Tweed · Root Cause Analysis
+## Bonaparte · Root Cause Analysis
 
 **Status:** Established | Not established
 

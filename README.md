@@ -1,6 +1,6 @@
-# Tweed
+# Bonaparte
 
-Tweed takes one software request from a human-readable Linear issue to a
+Bonaparte takes one software request from a human-readable Linear issue to a
 reviewed, ready-to-merge GitHub pull request. Each phase starts a fresh local
 Codex task; Linear is the durable handoff, and the invoking task sees only a
 bounded JSON receipt.
@@ -18,7 +18,7 @@ Feature: create → scope → implement → review → publish
 
 ## Install
 
-Tweed uses your local Codex installation and its authenticated Linear MCP. The
+Bonaparte uses your local Codex installation and its authenticated Linear MCP. The
 implement, review, and publish phases also use your existing Git and GitHub CLI
 authentication.
 Every phase coordinator is pinned to `gpt-5.6-sol` with medium reasoning, and
@@ -30,19 +30,19 @@ Prerequisites:
 - a working local `codex` command
 - the GitHub CLI (`gh`) for draft and published pull requests
 
-Clone Tweed and run its installer:
+Clone Bonaparte and run its installer:
 
 ```sh
-git clone https://github.com/e3-solutions/tweed.git
-cd tweed
+git clone https://github.com/e3-solutions/tweed.git bonaparte
+cd bonaparte
 ./install
 ```
 
 The installer copies committed `HEAD` into a versioned snapshot under
-`~/.local/share/tweed/releases/`. Two stable links select that snapshot:
+`~/.local/share/bonaparte/releases/`. Two stable links select that snapshot:
 
-- `~/.local/bin/tweed` → the active release's launcher
-- `~/.codex/skills/use-tweed` → the active release's Codex skill
+- `~/.local/bin/bonaparte` → the active release's launcher
+- `~/.codex/skills/use-bonaparte` → the active release's Codex skill
 
 The checkout can then move between branches or be deleted without changing the
 installed behavior. If `~/.local/bin` is not already on `PATH`, add it to your
@@ -65,26 +65,26 @@ If those integrations are already configured, the add/login commands can be
 skipped. Verify the installation without creating external work:
 
 ```sh
-tweed --help
+bonaparte --help
 codex mcp list
 gh auth status
 ```
 
-For a non-default location, set `TWEED_BIN_DIR`, `TWEED_HOME`, or `CODEX_HOME`
+For a non-default location, set `BONAPARTE_BIN_DIR`, `BONAPARTE_HOME`, or `CODEX_HOME`
 when running `./install`.
 
 ## Updates
 
-At most once per day, Tweed checks the public repository for the highest stable
+At most once per day, Bonaparte checks the public repository for the highest stable
 `vX.Y.Z` tag. It fetches that exact Git ref into a new directory and smoke-tests
 it before switching the active release atomically. A failed check never prevents
 the installed runtime from starting.
 
 ```sh
-tweed update
+bonaparte update
 ```
 
-Set `TWEED_AUTO_UPDATE=0` to disable the daily check. Run `./tweed` directly
+Set `BONAPARTE_AUTO_UPDATE=0` to disable the daily check. Run `./bonaparte` directly
 when developing against a live checkout.
 
 Maintainers publish an update by pushing a stable tag such as `v0.2.0`. Configure
@@ -94,20 +94,20 @@ or package registry is required.
 ## Commands
 
 ```sh
-tweed create bug "problem given by user"
-tweed create feature "capability requested by user"
-tweed RCA LIN-123
-tweed scope LIN-123
-tweed implement LIN-123
-tweed review LIN-123
-tweed publish LIN-123
-tweed resume RCA <session-id> "clarification answer"
+bonaparte create bug "problem given by user"
+bonaparte create feature "capability requested by user"
+bonaparte RCA LIN-123
+bonaparte scope LIN-123
+bonaparte implement LIN-123
+bonaparte review LIN-123
+bonaparte publish LIN-123
+bonaparte resume RCA <session-id> "clarification answer"
 ```
 
 - **Create** writes a human title and a `What`/`Why`/`How` description for a bug
   or feature. It adds no comment.
 - **RCA** delegates independent reproduction, tracing, and falsification work,
-  then writes the first Tweed comment.
+  then writes the first Bonaparte comment.
 - **Scope** turns an established bug cause or feature outcome into the smallest
   implementation-ready plan after independent reuse, simplicity, and
   robustness analysis.
@@ -119,7 +119,7 @@ tweed resume RCA <session-id> "clarification answer"
 - **Publish** verifies and finalizes that draft, marks it ready for review, and
   records its URL in Linear. It never merges or deploys.
 
-When a user asks an agent to use Tweed, the skill selects the bug or feature
+When a user asks an agent to use Bonaparte, the skill selects the bug or feature
 route, runs the commands in sequence, and passes only the Linear issue identifier
 between them. Any `needs-input`, `blocked`, or failed phase stops the chain.
 After `needs-input`, `resume` continues the same coordinator session with the

@@ -1,6 +1,6 @@
-# Tweed Publish
+# Bonaparte Publish
 
-Finalize the reviewed Tweed draft pull request, mark it ready for review, and
+Finalize the reviewed Bonaparte draft pull request, mark it ready for review, and
 record it in Linear. The runner supplies only the latest review or existing
 publish result plus issue metadata. Use Linear only to publish and verify the
 final comment, and use the installed authenticated `git` and `gh` CLIs for
@@ -12,7 +12,7 @@ existing PR's metadata, readiness, and final Linear comment.
 
 - If an `existing` publish result was supplied, validate its complete delivery
   state and matching open PR before returning it. Otherwise require a complete
-  `## Tweed · Implementation Review`; it is the complete publish handoff.
+  `## Bonaparte · Implementation Review`; it is the complete publish handoff.
 - Extract the exact reviewed branch and commit. Require a clean local worktree
   on that branch, with `HEAD` equal to the reviewed commit.
 - Require a configured GitHub `origin`, a working authenticated `gh`, and an
@@ -76,7 +76,7 @@ existing PR's metadata, readiness, and final Linear comment.
    this schema and contains the delivery facts required above.
 
    ```markdown
-   ## Tweed · Pull Request
+   ## Bonaparte · Pull Request
 
    **Status:** Ready to merge
 
@@ -91,7 +91,7 @@ existing PR's metadata, readiness, and final Linear comment.
    ### Final delivery state
    - Delivered contract: [concise issue outcome from the reviewed handoff]
    - Remaining conditions: [CI, approvals, or “None observed”]
-   - Not performed by Tweed: Merge and deployment
+   - Not performed by Bonaparte: Merge and deployment
    ```
 
 If PR finalization succeeds but the Linear write fails, a retry must recover the

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run one isolated Tweed phase and emit one bounded receipt."""
+"""Run one isolated Bonaparte phase and emit one bounded receipt."""
 
 import argparse
 import json
@@ -15,7 +15,7 @@ from pathlib import Path
 MODEL = "gpt-5.6-sol"
 COORDINATOR_EFFORT = "medium"
 SUBAGENT_EFFORT = "medium"
-PHASE_CHILD_ENV = "TWEED_PHASE_CHILD"
+PHASE_CHILD_ENV = "BONAPARTE_PHASE_CHILD"
 
 RECEIPT_SCHEMA = {
     "type": "object",
@@ -58,7 +58,7 @@ WORKFLOWS = {
     ),
     "rca": (
         "bug-rca.md",
-        "Use the supplied intake, run the RCA, and publish its first Tweed comment. ",
+        "Use the supplied intake, run the RCA, and publish its first Bonaparte comment. ",
     ),
     "scope": (
         "scope.md",
@@ -79,13 +79,12 @@ WORKFLOWS = {
 }
 
 PHASE_HEADERS = {
-    "rca": "## Tweed · Root Cause Analysis",
-    "scope": "## Tweed · Solution Scope",
-    "implement": "## Tweed · Implementation",
-    "review": "## Tweed · Implementation Review",
-    "publish": "## Tweed · Pull Request",
+    "rca": "## Bonaparte · Root Cause Analysis",
+    "scope": "## Bonaparte · Solution Scope",
+    "implement": "## Bonaparte · Implementation",
+    "review": "## Bonaparte · Implementation Review",
+    "publish": "## Bonaparte · Pull Request",
 }
-
 PHASE_INPUTS = {
     "rca": ("intake",),
     "scope:bug": ("rca",),
@@ -162,7 +161,7 @@ def call_linear(repository: Path, issue_identifier: str) -> tuple[dict, list[dic
             raise RuntimeError(f"Codex app-server timed out during {method}")
 
         if signal.getitimer(signal.ITIMER_REAL)[0]:
-            raise RuntimeError("Tweed cannot share an existing process alarm")
+            raise RuntimeError("Bonaparte cannot share an existing process alarm")
         previous = signal.signal(signal.SIGALRM, timed_out)
         signal.alarm(45)
         try:
@@ -216,7 +215,7 @@ def call_linear(repository: Path, issue_identifier: str) -> tuple[dict, list[dic
         return content
 
     try:
-        send("initialize", {"clientInfo": {"name": "tweed", "version": "1"}})
+        send("initialize", {"clientInfo": {"name": "bonaparte", "version": "1"}})
         stdin.write('{"method":"initialized","params":{}}\n')
         stdin.flush()
         started = send("thread/start", {"cwd": str(repository), "ephemeral": True})
@@ -361,9 +360,9 @@ def run_phase(
     workflow_name, assignment = WORKFLOWS[phase]
     workflow = (Path(__file__).resolve().parent / "workflows" / workflow_name).read_text()
     child_configs = {
-        "default": "General-purpose Tweed subagent",
-        "worker": "Tweed implementation and correction worker",
-        "explorer": "Read-only Tweed repository investigator",
+        "default": "General-purpose Bonaparte subagent",
+        "worker": "Bonaparte implementation and correction worker",
+        "explorer": "Read-only Bonaparte repository investigator",
     }
     child_configs = {
         role: (
@@ -376,7 +375,7 @@ def run_phase(
     if resume_session_id:
         prompt = (
             f"Clarification answer for the pending {phase} phase:\n\n{phase_input}\n\n"
-            "Continue the same phase without restarting or invoking Tweed. Return only "
+            "Continue the same phase without restarting or invoking Bonaparte. Return only "
             "the requested JSON receipt."
         )
     else:
@@ -414,8 +413,8 @@ def run_phase(
             "Return only the requested JSON receipt. Populate every schema field and "
             "use null when a field does not apply.\n\n"
             "# Phase-child guard\n\n"
-            "You are already the Tweed phase coordinator. Execute this workflow "
-            "directly; do not invoke Tweed or delegate back to its skill.\n\n"
+            "You are already the Bonaparte phase coordinator. Execute this workflow "
+            "directly; do not invoke Bonaparte or delegate back to its skill.\n\n"
             "# Model policy\n\n"
             f"This coordinator is pinned to {MODEL} at {COORDINATOR_EFFORT} "
             f"reasoning. Spawn every child on {MODEL} at {SUBAGENT_EFFORT} "
@@ -424,7 +423,7 @@ def run_phase(
             "effort.\n\n"
             f"Repository: {repository}\n\n{input_label}:\n{phase_input}{context_end}"
         )
-    with tempfile.TemporaryDirectory(prefix=f"tweed-{phase}-") as temporary:
+    with tempfile.TemporaryDirectory(prefix=f"bonaparte-{phase}-") as temporary:
         temporary_path = Path(temporary)
         schema_path = temporary_path / "schema.json"
         receipt_path = temporary_path / "receipt.json"
@@ -507,7 +506,7 @@ def run_phase(
 
 def parse() -> tuple[Path, str, str, str | None]:
     parser = argparse.ArgumentParser(
-        prog="tweed",
+        prog="bonaparte",
         description="Run one isolated Linear-backed software delivery phase.",
         epilog="phases: create bug|feature, RCA, scope, implement, review, publish; resume",
     )
@@ -524,11 +523,11 @@ def parse() -> tuple[Path, str, str, str | None]:
             "bug",
             "feature",
         }:
-            raise RuntimeError("use: tweed create bug|feature <request>")
+            raise RuntimeError("use: bonaparte create bug|feature <request>")
         phase = "create"
     elif command == "resume":
         if len(values) < 3 or values[0].casefold() not in WORKFLOWS:
-            raise RuntimeError("use: tweed resume <phase> <session-id> <answer>")
+            raise RuntimeError("use: bonaparte resume <phase> <session-id> <answer>")
         phase = values.pop(0).casefold()
         resume_session_id = values.pop(0).casefold()
         try:
@@ -540,7 +539,7 @@ def parse() -> tuple[Path, str, str, str | None]:
         phase = command
     else:
         raise RuntimeError(
-            "use: tweed create bug|feature <request> | "
+            "use: bonaparte create bug|feature <request> | "
             "RCA|scope|implement|review|publish <issue>"
         )
     phase_input = " ".join(values).strip() or (
@@ -574,11 +573,11 @@ def fail(summary: str) -> dict:
 if __name__ == "__main__":
     try:
         if os.environ.get(PHASE_CHILD_ENV) == "1":
-            raise RuntimeError("nested Tweed invocation blocked")
+            raise RuntimeError("nested Bonaparte invocation blocked")
         repo, selected_phase, supplied_input, session_id = parse()
         emit(run_phase(repo, selected_phase, supplied_input, session_id))
     except KeyboardInterrupt:
-        emit(fail("Tweed was interrupted."))
+        emit(fail("Bonaparte was interrupted."))
         raise SystemExit(130) from None
     except Exception as error:  # noqa: BLE001
         emit(fail(str(error).replace("\n", " ")[:800]))

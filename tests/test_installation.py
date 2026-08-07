@@ -27,16 +27,16 @@ class InstallationTests(unittest.TestCase):
         )
         self.environment = {
             **os.environ,
-            "TWEED_HOME": str(self.home),
-            "TWEED_BIN_DIR": str(self.bin),
+            "BONAPARTE_HOME": str(self.home),
+            "BONAPARTE_BIN_DIR": str(self.bin),
             "CODEX_HOME": str(self.codex),
-            "TWEED_REPOSITORY": str(self.source),
-            "TWEED_AUTO_UPDATE": "0",
+            "BONAPARTE_REPOSITORY": str(self.source),
+            "BONAPARTE_AUTO_UPDATE": "0",
         }
         for arguments in (
             ("init", "-q"),
-            ("config", "user.name", "Tweed Test"),
-            ("config", "user.email", "tweed@example.com"),
+            ("config", "user.name", "Bonaparte Test"),
+            ("config", "user.email", "bonaparte@example.com"),
             ("add", "."),
             ("commit", "-qm", "initial"),
             ("tag", "v1.0.0"),
@@ -72,25 +72,29 @@ class InstallationTests(unittest.TestCase):
         old_skill = self.root / "old-skill"
         old_skill.mkdir()
         (self.codex / "skills").mkdir(parents=True)
-        (self.codex / "skills/use-tweed").symlink_to(old_skill)
+        (self.codex / "skills/use-bonaparte").symlink_to(old_skill)
         self.install()
         current = (self.home / "current").resolve()
-        self.assertEqual((self.bin / "tweed").resolve(), current / "tweed-launcher")
         self.assertEqual(
-            (self.codex / "skills/use-tweed").resolve(),
-            current / "skills/use-tweed",
+            (self.bin / "bonaparte").resolve(), current / "bonaparte-launcher"
+        )
+        self.assertEqual(
+            (self.codex / "skills/use-bonaparte").resolve(),
+            current / "skills/use-bonaparte",
         )
         shutil.rmtree(self.source)
         result = self.run_command(
-            str(self.bin / "tweed"), "--help", environment=self.environment
+            str(self.bin / "bonaparte"), "--help", environment=self.environment
         )
-        self.assertIn("usage: tweed", result.stdout)
+        self.assertIn("usage: bonaparte", result.stdout)
 
     def test_update_switches_to_a_complete_snapshot(self):
         self.install()
         self.publish("v1.1.0")
-        environment = {**self.environment, "TWEED_AUTO_UPDATE": "1"}
-        self.run_command(str(self.bin / "tweed"), "--help", environment=environment)
+        environment = {**self.environment, "BONAPARTE_AUTO_UPDATE": "1"}
+        self.run_command(
+            str(self.bin / "bonaparte"), "--help", environment=environment
+        )
         self.assertEqual((self.home / "current").resolve().name, "v1.1.0")
 
     def test_failed_update_keeps_the_current_runtime_usable(self):
@@ -99,13 +103,13 @@ class InstallationTests(unittest.TestCase):
         self.git("add", "-u")
         self.git("commit", "-qm", "incomplete")
         self.git("tag", "v1.1.0")
-        result = self.run_command(str(self.bin / "tweed"), "update", check=False)
+        result = self.run_command(str(self.bin / "bonaparte"), "update", check=False)
         self.assertNotEqual(result.returncode, 0)
         self.assertEqual((self.home / "current").resolve().name, original)
 
-        environment = {**self.environment, "TWEED_AUTO_UPDATE": "1"}
+        environment = {**self.environment, "BONAPARTE_AUTO_UPDATE": "1"}
         result = self.run_command(
-            str(self.bin / "tweed"), "--help", environment=environment
+            str(self.bin / "bonaparte"), "--help", environment=environment
         )
-        self.assertIn("usage: tweed", result.stdout)
+        self.assertIn("usage: bonaparte", result.stdout)
         self.assertEqual((self.home / "current").resolve().name, original)

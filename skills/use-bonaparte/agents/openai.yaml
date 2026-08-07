@@ -1,7 +1,7 @@
 interface:
-  display_name: "Use Tweed"
+  display_name: "Use Bonaparte"
   short_description: "Take bugs and features from intake to PR"
-  default_prompt: "Use $use-tweed to take this bug or feature through isolated delivery phases to a reviewed pull request."
+  default_prompt: "Use $use-bonaparte to take this bug or feature through isolated delivery phases to a reviewed pull request."
 dependencies:
   tools:
     - type: "mcp"
