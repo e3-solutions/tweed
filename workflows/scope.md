@@ -98,11 +98,19 @@ smallest missing investigation. Never fill gaps with speculative architecture.
 ## Linear comment
 
 If a comment already begins with `## Tweed · Solution Scope`, validate it is
-complete and return it instead of duplicating the phase. Otherwise publish one
-terminal `scoped` comment:
+complete under the current gate and comment schema before returning it. If it
+is incomplete, return `blocked` and identify the missing handoff facts.
+Otherwise publish one terminal `scoped` comment:
+
+After writing, re-read the comment and return `completed` only if it matches
+this schema and contains the evidence required by the completion gate.
 
 ```markdown
 ## Tweed · Solution Scope
+
+### Handoff basis
+- RCA basis: [causal chain and responsible boundary, or “Not applicable — feature”]
+- Constraints carried forward: [material issue/RCA constraints]
 
 ### Outcome
 [Smallest complete outcome and how it resolves the bug or delivers the feature.]
@@ -115,7 +123,9 @@ terminal `scoped` comment:
 - Custom code required: [narrow uncovered gap, or “None.”]
 
 ### Change surface
-- [Component/path]: [exact responsibility to change]
+| File or boundary | Current evidence | Exact responsibility | Interface/caller effect |
+|---|---|---|---|
+| [`path` or boundary] | [`file:line` or repository result] | [bounded change] | [consumer effect or None] |
 
 ### Implementation steps
 1. **[Step]**
@@ -131,7 +141,9 @@ terminal `scoped` comment:
 - [Observable behavior proving the fix]
 
 ### Risks and safeguards
-- [Evidence-backed risk]: [proportional safeguard]
+| Risk | Evidence and affected boundary | Safeguard | Proving check |
+|---|---|---|---|
+| [Evidence-backed risk] | [repository fact and surface] | [proportional safeguard] | [validation] |
 
 ### Validation
 - [Regression, focused, and broader project checks]
@@ -140,7 +152,9 @@ terminal `scoped` comment:
 - [External rollout/live validation, or “None.”]
 
 ### Alternatives considered
-- [Alternative and evidence-backed rejection]
+| Alternative | Evidence | Decision and reason |
+|---|---|---|
+| [Alternative] | [repository or dependency evidence] | [rejected/partially reused and why] |
 
 ### Decisions and assumptions
 - Decision: [direction] — Basis: [evidence]
@@ -153,8 +167,15 @@ terminal `scoped` comment:
 - Worktree: [clean or relevant dirty state]
 
 ### Debate map
-- [Agent axis] — [supports/challenges/unresolved]: [one-line conclusion]
-- Synthesis — scoped: [why the gate passed]
+| Axis/role | Material conclusion | Evidence | Affected surface | Confidence | Relationship |
+|---|---|---|---|---|---|
+| [Agent axis] | [substantive finding] | [`file:line`, version, or diagnostic] | [files/boundary] | [high/medium/low and why] | [supports/challenges/resolved] |
+
+**Adversarial review:** [Material objection, evidence, and minimum correction,
+or “No material objection after evidence review.”]
+
+**Synthesis:** [Why this is the smallest complete scope, how supported
+objections were resolved, and why the completion gate passed.]
 ```
 
 Include every agent used once. Do not include transcripts, tool logs, hashes,

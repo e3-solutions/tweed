@@ -18,7 +18,9 @@ comment.
   identifiable default base branch. Ask one question only if the correct base
   branch cannot be discovered.
 - If a final Tweed publish comment and matching open PR already exist, return
-  that completed result without creating or commenting again.
+  that completed result without creating or commenting again only after its
+  delivery state and all GitHub facts are re-verified. Otherwise return
+  `blocked` and name the missing or stale fact.
 - Never force-push, rewrite history, change code, rerun implementation, merge,
   mark a draft PR ready, deploy, or close another PR.
 
@@ -59,16 +61,26 @@ comment.
    error. Do not claim CI has passed unless GitHub shows it.
 7. Add exactly one Linear comment after the PR is verified:
 
+   After writing, re-read the comment and return `completed` only if it matches
+   this schema and contains the delivery facts required above.
+
    ```markdown
    ## Tweed · Pull Request
 
    **Status:** Ready to merge
 
+   ### Delivery
    - Pull request: [URL]
+   - Pull request state: Open and non-draft
    - Branch: `[branch]`
    - Reviewed commit: `[full commit]`
    - Base: `[base branch]`
    - CI: [observed status, or “Pending/not observed”]
+
+   ### Final delivery state
+   - Delivered contract: [concise issue outcome from the reviewed handoff]
+   - Remaining conditions: [CI, approvals, or “None observed”]
+   - Not performed by Tweed: Merge and deployment
    ```
 
 If the push or PR succeeds but the Linear write fails, a retry must recover the
