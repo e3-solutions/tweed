@@ -40,7 +40,21 @@ def receipt(state="completed"):
     }
 
 
+def linear_issue():
+    return {
+        "identifier": "COR-1",
+        "title": "Example",
+        "url": "https://linear.example/COR-1",
+        "description": "**Kind:** Bug\n\nExample intake",
+        "gitBranchName": "arya/cor-1-example",
+        "labels": [],
+    }
+
+
 class TweedRunnerTests(unittest.TestCase):
+    def test_coordinator_reasoning_is_medium(self):
+        self.assertEqual(RUNNER.COORDINATOR_EFFORT, "medium")
+
     def test_workflows_require_complete_evidence_bearing_handoffs(self):
         required_markers = {
             "bug-rca.md": [
@@ -86,6 +100,10 @@ class TweedRunnerTests(unittest.TestCase):
                 for marker in markers:
                     self.assertIn(marker, workflow)
 
+        implementation = (ROOT / "workflows/implement.md").read_text()
+        self.assertIn("issue.git_branch_name", implementation)
+        self.assertNotIn("tweed/<issue-id>", implementation)
+
     def test_phase_child_guard_stops_before_invoking_instructions(self):
         skill = (ROOT / "skills/use-tweed/SKILL.md").read_text()
         guard = skill.split("Keep this invoking task thin", 1)[0]
@@ -122,6 +140,7 @@ class TweedRunnerTests(unittest.TestCase):
 
         with (
             mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
+            mock.patch.object(RUNNER, "call_linear", return_value=(linear_issue(), [])),
             mock.patch.object(RUNNER.subprocess, "run", side_effect=fake_run),
         ):
             result = RUNNER.run_phase(ROOT, "rca", "COR-1")
@@ -132,6 +151,9 @@ class TweedRunnerTests(unittest.TestCase):
         self.assertIsNone(fallback["resume_session_id"])
         self.assertEqual(observed["env"][RUNNER.PHASE_CHILD_ENV], "1")
         self.assertIn("already the Tweed phase coordinator", observed["prompt"])
+        self.assertIn("Untrusted Linear handoff", observed["prompt"])
+        self.assertIn('"git_branch_name": "arya/cor-1-example"', observed["prompt"])
+        self.assertIn('model_reasoning_effort="medium"', observed["command"])
         self.assertNotIn("resume", observed["command"][:3])
 
     def test_resume_uses_the_same_session_with_only_the_answer(self):
@@ -148,6 +170,7 @@ class TweedRunnerTests(unittest.TestCase):
 
         with (
             mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
+            mock.patch.object(RUNNER, "call_linear") as call_linear,
             mock.patch.object(RUNNER.subprocess, "run", side_effect=fake_run),
         ):
             result = RUNNER.run_phase(repository, phase, answer, session_id)
@@ -157,3 +180,4 @@ class TweedRunnerTests(unittest.TestCase):
         self.assertEqual(observed["command"][-2:], [SESSION_ID, "-"])
         self.assertIn("Use production.", observed["prompt"])
         self.assertNotIn("# Tweed Bug RCA", observed["prompt"])
+        call_linear.assert_not_called()

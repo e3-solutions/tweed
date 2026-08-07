@@ -5,6 +5,12 @@ reviewed, ready-to-merge GitHub pull request. Each phase starts a fresh local
 Codex task; Linear is the durable handoff, and the invoking task sees only a
 bounded JSON receipt.
 
+Before each non-create phase, the runner deterministically fetches Linear and
+passes only the latest phase-specific handoff: intake to RCA, RCA or feature
+intake to scope, scope to implementation, scope plus implementation to review,
+and review to publish. The issue's official `gitBranchName` is preserved as
+metadata for implementation.
+
 ```text
 Bug:     create → RCA → scope → implement → review → publish
 Feature: create → scope → implement → review → publish
@@ -14,7 +20,7 @@ Feature: create → scope → implement → review → publish
 
 Tweed uses your local Codex installation and its authenticated Linear MCP. The
 publish phase also uses your existing Git and GitHub CLI authentication.
-Every phase coordinator is pinned to `gpt-5.6-sol` with high reasoning, and
+Every phase coordinator is pinned to `gpt-5.6-sol` with medium reasoning, and
 every spawned subagent is pinned to `gpt-5.6-sol` with medium reasoning.
 
 Prerequisites:

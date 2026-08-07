@@ -1,0 +1,86 @@
+import runpy
+import unittest
+from pathlib import Path
+
+
+RUNNER = runpy.run_path(str(Path(__file__).resolve().parents[1] / "tweed"))
+HEADERS = RUNNER["PHASE_HEADERS"]
+select_handoff = RUNNER["select_handoff"]
+
+
+def issue(kind="Bug"):
+    return {
+        "identifier": "LIN-1",
+        "title": "Example",
+        "url": "https://linear.test/LIN-1",
+        "description": f"**Kind:** {kind}\n\nIntake",
+        "gitBranchName": "arya/lin-1-example",
+        "labels": [],
+    }
+
+
+def comment(phase, marker, date, **extra):
+    return {
+        "id": marker,
+        "body": f"{HEADERS.get(phase, phase)}\n\n{marker}",
+        "createdAt": date,
+        "parentId": None,
+    } | extra
+
+
+class HandoffTests(unittest.TestCase):
+    def test_phase_matrix_passes_only_required_context(self):
+        rca = comment("rca", "RCA", "1")
+        scope = comment("scope", "SCOPE", "2")
+        implementation = comment("implement", "CODE", "3")
+        review = comment("review", "REVIEW", "4")
+        unrelated = comment("other", "UNRELATED", "9")
+        cases = [
+            ("rca", issue(), [], {"intake"}),
+            ("scope", issue(), [rca, unrelated], {"rca"}),
+            ("scope", issue("Feature"), [unrelated], {"intake"}),
+            ("implement", issue(), [rca, scope, unrelated], {"scope"}),
+            ("review", issue(), [scope, implementation], {"scope", "implement"}),
+            ("publish", issue(), [review], {"review"}),
+        ]
+        for phase, linear_issue, comments, expected in cases:
+            with self.subTest(phase=phase):
+                handoff = select_handoff(linear_issue, comments, phase)
+                self.assertEqual(set(handoff["context"]), expected)
+                self.assertEqual(
+                    handoff["issue"]["git_branch_name"], "arya/lin-1-example"
+                )
+                self.assertNotIn("UNRELATED", str(handoff))
+
+    def test_latest_exact_top_level_result_wins(self):
+        comments = [
+            comment("scope", "OLD", "3", id="a"),
+            comment("scope", "NEW", "3", id="z"),
+            comment("scope", "REPLY", "4", parentId="parent"),
+            comment("scope", "INLINE", "5", quotedText="anchor"),
+            comment(HEADERS["scope"] + " ", "NEAR", "6"),
+        ]
+        handoff = select_handoff(issue(), comments, "implement")
+        self.assertEqual(handoff["context"], {"scope": f"{HEADERS['scope']}\n\nNEW"})
+
+        existing = select_handoff(
+            issue(), comments + [comment("implement", "CURRENT", "7")], "implement"
+        )
+        self.assertEqual(set(existing["context"]), {"existing"})
+        self.assertIn("CURRENT", existing["context"]["existing"])
+
+    def test_missing_or_ambiguous_input_fails_closed(self):
+        ambiguous = issue()
+        ambiguous["description"] += "\n**Kind:** Feature"
+        self.assertEqual(
+            select_handoff(ambiguous, [], "scope")["context"],
+            {"missing": "**Kind:** Bug | Feature"},
+        )
+        self.assertEqual(
+            select_handoff(issue(), [], "implement")["context"],
+            {"missing": HEADERS["scope"]},
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

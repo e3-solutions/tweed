@@ -1,17 +1,16 @@
 # Tweed Implementation
 
-Implement the approved Tweed scope from the supplied Linear issue using bounded
-Codex subagents. Use Linear MCP yourself to read the issue, its Tweed scope, and
-its RCA when the issue is a bug; check for an existing implementation handoff
-and publish the final handoff. Children must not use Linear. Work only in the
-supplied local repository. Stop after a verified local commit: do not push, open
-a pull request, merge, deploy, or mutate remote services or data.
+Implement the approved Tweed scope from the supplied deterministic Linear
+handoff using bounded Codex subagents. The runner supplies only the latest scope
+or existing implementation result plus issue metadata. Use Linear only to
+publish and verify the final handoff. Children must not use Linear. Work only in
+the supplied local repository. Stop after a verified local commit: do not push,
+open a pull request, merge, deploy, or mutate remote services or data.
 
 ## Contract and safety
 
-- Require a complete `## Tweed · Solution Scope`. A bug also requires an
-  established `## Tweed · Root Cause Analysis`; a feature does not. Otherwise
-  return `blocked` before editing.
+- Require a complete `## Tweed · Solution Scope`; it is the complete
+  implementation contract. Otherwise return `blocked` before editing.
 - Treat the scope's outcome, change surface, steps, non-goals, acceptance
   criteria, and validation as the approved contract. Do not redesign or broaden
   it during implementation.
@@ -27,14 +26,15 @@ a pull request, merge, deploy, or mutate remote services or data.
 
 ## Preflight
 
-1. Read the durable Linear handoff. If a comment already begins with
-   `## Tweed · Implementation`, validate it under the current gate and comment
-   schema, then verify its branch and commit still exist locally. Return it
-   without reimplementing only when both checks pass; otherwise return `blocked`
-   and name the missing or stale fact.
+1. Read the supplied handoff. If it contains an `existing` implementation,
+   validate it under the current gate and comment schema, then verify its branch
+   and commit still exist locally. Return it without reimplementing only when
+   both checks pass; otherwise return `blocked` and name the missing or stale
+   fact.
 2. Record repository identity, current branch, `HEAD`, staged, unstaged, and
-   untracked paths. Derive a human branch named
-   `tweed/<issue-id>-<short-title-slug>`.
+   untracked paths. Require `issue.git_branch_name` in the supplied metadata and
+   validate it with `git check-ref-format --branch`. Use that exact Linear branch
+   name; do not generate or substitute another branch name.
 3. If the worktree is clean, create or switch to that issue branch without
    rewriting history. Reuse an existing issue branch only when its ancestry and
    contents are consistent with this issue.
