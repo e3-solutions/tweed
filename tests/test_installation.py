@@ -109,36 +109,56 @@ class InstallationTests(unittest.TestCase):
 
     def test_update_switches_to_a_complete_snapshot(self):
         self.install()
-        # Model a pre-autoresearch release selected by the legacy two-link layout.
-        ((self.home / "current").resolve() / "autoresearch").unlink()
-        (self.bin / "autoresearch").unlink()
-        bonaparte_link = (self.bin / "bonaparte").readlink()
-        skill_link = (self.codex / "skills/use-bonaparte").readlink()
         self.publish("v1.1.0")
         environment = {**self.environment, "BONAPARTE_AUTO_UPDATE": "1"}
         self.run_command(
             str(self.bin / "bonaparte"), "--help", environment=environment
         )
-        current = (self.home / "current").resolve()
-        self.assertEqual(current.name, "v1.1.0")
-        self.assertEqual(
-            (self.bin / "autoresearch").resolve(), current / "autoresearch"
-        )
-        self.assertEqual((self.bin / "bonaparte").readlink(), bonaparte_link)
-        self.assertEqual(
-            (self.codex / "skills/use-bonaparte").readlink(), skill_link
-        )
+        self.assertEqual((self.home / "current").resolve().name, "v1.1.0")
 
-        # A legacy launcher may have switched current and recently checked for
-        # updates without creating the new CLI link. Startup still migrates it.
-        (self.bin / "autoresearch").unlink()
-        (self.home / "last-check").touch()
-        self.run_command(
-            str(self.bin / "bonaparte"), "--help", environment=environment
+    def test_legacy_launcher_bootstraps_autoresearch_on_second_invocation(self):
+        legacy = self.root / "legacy-source"
+        installer_revisions = self.run_command(
+            "git", "-C", str(ROOT), "rev-list", "origin/main", "--", "install"
+        ).stdout.splitlines()
+        legacy_revision = next(
+            revision
+            for revision in installer_revisions
+            if self.run_command(
+                "git",
+                "-C",
+                str(ROOT),
+                "cat-file",
+                "-e",
+                f"{revision}:autoresearch",
+                check=False,
+            ).returncode
+            != 0
         )
+        self.run_command(
+            "git", "clone", "-q", "--no-hardlinks", str(ROOT), str(legacy)
+        )
+        self.run_command(
+            "git", "-C", str(legacy), "checkout", "-q", "--detach", legacy_revision
+        )
+        self.assertFalse((legacy / "autoresearch").exists())
+        self.run_command(str(legacy / "install"))
+        self.assertFalse((self.bin / "autoresearch").exists())
+
+        result = self.run_command(str(self.bin / "bonaparte"), "update")
+
+        self.assertIn("Updated Bonaparte to v1.0.0", result.stdout)
+        current = (self.home / "current").resolve()
+        self.assertEqual(current.name, "v1.0.0")
+        self.assertFalse((self.bin / "autoresearch").exists())
+
+        result = self.run_command(str(self.bin / "bonaparte"), "--help")
+        self.assertIn("usage: bonaparte", result.stdout)
         self.assertEqual(
             (self.bin / "autoresearch").resolve(), current / "autoresearch"
         )
+        result = self.run_command(str(self.bin / "autoresearch"), "--help")
+        self.assertIn("usage: autoresearch", result.stdout)
 
     def test_update_refuses_a_non_symlink_autoresearch_target(self):
         original = self.install()

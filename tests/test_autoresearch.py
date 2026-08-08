@@ -158,6 +158,44 @@ class ReceiptAndReplayTests(unittest.TestCase):
             with self.assertRaisesRegex(AR.ValidationError, "patch artifact tamper"):
                 AR.reconstruct_state(log.replay(), root, spec)
 
+    def test_batch_outcome_is_atomic_after_promotion_or_objection_critic(self):
+        for supported in (False, True):
+            with self.subTest(supported=supported), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary); patch = root / "evidence/00000001.patch"; patch.parent.mkdir()
+                patch_digest = AR.exclusive_bytes(patch, b"candidate")
+                spec = valid_spec(); log = AR.EventLog(root, "run")
+                log.append("run-started", {"spec_digest": AR.digest_json(spec), "started_epoch": time.time()})
+                log.append("baseline-evaluated", {"metric": 10.0, "constraints": {"tests": True}, "immutable_digest": "d", "tree": OID})
+                binding = self.binding(); log.append("lease-started", binding, 1)
+                record = {"attempt_id": 1, "direction": "a", "metric": 5.0, "constraints": {"tests": True}, "immutable_digest": "d", "tree": TREE, "changed": ["src/x"], "patch": str(patch), "patch_digest": patch_digest, "binding": binding}
+                log.append("attempt-verified", record, 1)
+                replay = AR.reconstruct_state(log.replay(), root, spec)
+                critic = {"schema_version": 1, "run_id": "run", "attempt_id": 1, "lease": "lease", "supported": supported, "objection": "material" if supported else "", "summary": "review"}
+                original_append = log.append
+
+                def crash_before_outcome(kind, payload, attempt_id=None):
+                    if kind == "batch-outcome":
+                        raise RuntimeError("crash before atomic outcome")
+                    return original_append(kind, payload, attempt_id)
+
+                budget = AR.RunBudget(time.time(), 10, 100000, root)
+                with mock.patch.object(AR, "run_critic", return_value=critic), mock.patch.object(log, "append", side_effect=crash_before_outcome):
+                    with self.assertRaisesRegex(RuntimeError, "crash before atomic outcome"):
+                        AR._promote_batch(spec, root, log, replay, [record], budget)
+                crashed = AR.reconstruct_state(log.replay(), root, spec)
+                self.assertNotIn(1, crashed["decided"])
+                with mock.patch.object(AR, "run_critic") as rerun:
+                    AR._promote_batch(spec, root, log, crashed, [record], budget)
+                rerun.assert_not_called()
+                recovered = AR.reconstruct_state(log.replay(), root, spec)
+                self.assertIn(1, recovered["decided"])
+                if supported:
+                    self.assertEqual(recovered["correction"]["attempt_id"], 1)
+                    self.assertEqual(recovered["failures"], 1)
+                else:
+                    self.assertEqual(recovered["best_attempt_id"], 1)
+                    self.assertEqual(recovered["best_metric"], 5.0)
+
     def test_double_lock_fails(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -251,10 +289,13 @@ class SetupTests(unittest.TestCase):
         self.assertIn("# Autoresearch Worker", AR.workflow_prompt("worker"))
         self.assertIn("# Autoresearch Critic", AR.workflow_prompt("critic"))
 
-    def test_codex_environment_preserves_only_explicit_auth_home(self):
-        environment = AR.codex_environment()
+    def test_codex_environment_preserves_only_supported_credentials(self):
+        with mock.patch.dict(os.environ, {"OPENAI_API_KEY": "openai-secret", "AWS_SECRET_ACCESS_KEY": "aws-secret", "GITHUB_TOKEN": "github-secret"}):
+            environment = AR.codex_environment()
         self.assertEqual(environment["CODEX_HOME"], AR.ORIGINAL_CODEX_HOME)
+        self.assertEqual(environment["OPENAI_API_KEY"], "openai-secret")
         self.assertEqual(environment["HOME"], tempfile.gettempdir())
+        self.assertNotIn("AWS_SECRET_ACCESS_KEY", environment)
         self.assertNotIn("GITHUB_TOKEN", environment)
 
     def test_generated_schema_matches_runtime_boundaries(self):
@@ -382,7 +423,7 @@ class ControllerIntegrationTests(unittest.TestCase):
         promotions = []
         for state in (first, second):
             events = AR.EventLog(state, json.loads((state / "events/00000001.json").read_text())["run_id"]).replay()
-            promotions.append([event["attempt_id"] for event in events if event["kind"] == "promotion"])
+            promotions.append([event["attempt_id"] for event in events if event["kind"] == "batch-outcome" and event["payload"]["outcome"] == "promotion"])
             kinds = [event["kind"] for event in events]
             self.assertIn("final-critic", kinds); self.assertEqual(kinds[-1], "run-completed")
             self.assertEqual(AR.file_digest(Path(json.loads((state / "result.json").read_text())["patch"])), json.loads((state / "result.json").read_text())["patch_digest"])
@@ -433,8 +474,8 @@ class ControllerIntegrationTests(unittest.TestCase):
         run_id = json.loads((state / "events/00000001.json").read_text())["run_id"]
         replay = AR.reconstruct_state(AR.EventLog(state, run_id).replay(), state, spec)
         self.assertGreater(replay["failures"], 0)
-        decisions = [event for event in AR.EventLog(state, run_id).replay() if event["kind"] == "batch-decision"]
-        self.assertEqual(decisions[-1]["payload"]["reason"], "no-eligible-promotion")
+        decisions = [event for event in AR.EventLog(state, run_id).replay() if event["kind"] == "batch-outcome"]
+        self.assertEqual(decisions[-1]["payload"]["outcome"], "none")
         resume_calls = []
         with (
             mock.patch.object(AR, "capability_probe"),

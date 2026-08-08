@@ -265,8 +265,11 @@ def minimal_environment(extra: Mapping[str, str] | None = None) -> dict[str, str
 
 
 def codex_environment() -> dict[str, str]:
-    """Minimal environment plus only the explicit Codex authentication home."""
-    return minimal_environment({"CODEX_HOME": ORIGINAL_CODEX_HOME})
+    """Minimal environment plus explicitly supported Codex credentials only."""
+    allowed = {"CODEX_HOME": ORIGINAL_CODEX_HOME}
+    if "OPENAI_API_KEY" in os.environ:
+        allowed["OPENAI_API_KEY"] = os.environ["OPENAI_API_KEY"]
+    return minimal_environment(allowed)
 
 
 def _kill_group(process: subprocess.Popen[bytes]) -> None:
@@ -836,6 +839,23 @@ def reconstruct_state(events: Sequence[Mapping[str, Any]], state: Path, spec: Ma
             if not isinstance(attempt_ids, list) or any(type(value) is not int for value in attempt_ids) or type(failure_delta) is not int or failure_delta < 0:
                 raise ValidationError("invalid immutable batch decision")
             result["decided"].update(attempt_ids); result["failures"] += failure_delta
+        elif kind == "batch-outcome":
+            if set(payload) != {"attempt_ids", "outcome", "winner", "failure_delta"}:
+                raise ValidationError("invalid immutable batch outcome keys")
+            attempt_ids, outcome, winner, failure_delta = payload["attempt_ids"], payload["outcome"], payload["winner"], payload["failure_delta"]
+            if not isinstance(attempt_ids, list) or any(type(value) is not int for value in attempt_ids) or outcome not in {"none", "promotion", "correction"} or type(failure_delta) is not int or failure_delta < 0:
+                raise ValidationError("invalid immutable batch outcome")
+            result["decided"].update(attempt_ids)
+            if outcome == "promotion":
+                if not isinstance(winner, dict): raise ValidationError("promotion batch outcome lacks winner")
+                verify_artifact(winner, state)
+                result.update(best_metric=winner["metric"], best_attempt_id=winner["attempt_id"], best_tree=winner["tree"], best_patch=Path(winner["patch"]), best_patch_digest=winner["patch_digest"], winner_direction=winner["direction"], failures=0, correction=None)
+            elif outcome == "correction":
+                if not isinstance(winner, dict): raise ValidationError("correction batch outcome lacks winner")
+                verify_artifact(winner, state); result["correction"] = winner; result["failures"] += failure_delta
+            else:
+                if winner is not None: raise ValidationError("no-promotion batch outcome has winner")
+                result["failures"] += failure_delta
         elif kind == "promotion":
             verify_artifact(payload, state); result["decided"].add(attempt_id); result.update(best_metric=payload["metric"], best_attempt_id=attempt_id, best_tree=payload["tree"], best_patch=Path(payload["patch"]), best_patch_digest=payload["patch_digest"], winner_direction=payload["direction"], failures=0, correction=None)
         elif kind == "run-completed":
@@ -852,7 +872,7 @@ def _promote_batch(spec: Mapping[str, Any], state: Path, log: EventLog, replay: 
     attempt_ids = sorted(int(record["attempt_id"]) for record in records)
     eligible = [r for r in records if all(r["constraints"].values()) and is_better(r["metric"], replay["best_metric"], spec["evaluator"]["direction"], spec["search"]["min_improvement"])]
     if not eligible:
-        log.append("batch-decision", {"attempt_ids": attempt_ids, "promoted_attempt_id": None, "failure_delta": len(records), "reason": "no-eligible-promotion"})
+        log.append("batch-outcome", {"attempt_ids": attempt_ids, "outcome": "none", "winner": None, "failure_delta": len(records)})
         return replay
     winner = stable_rank(eligible, spec["evaluator"]["direction"])[0]
     critic = replay["critics"].get(winner["attempt_id"])
@@ -860,11 +880,9 @@ def _promote_batch(spec: Mapping[str, Any], state: Path, log: EventLog, replay: 
         critic = run_critic(spec, state, budget, winner["binding"], winner)
         log.append("critic-completed", critic, winner["attempt_id"])
     if critic["supported"]:
-        log.append("correction-requested", {"patch": winner["patch"], "patch_digest": winner["patch_digest"], "tree": winner["tree"], "direction": winner["direction"]}, winner["attempt_id"])
-        log.append("batch-decision", {"attempt_ids": attempt_ids, "promoted_attempt_id": None, "failure_delta": 1, "reason": "critic-objection"})
+        log.append("batch-outcome", {"attempt_ids": attempt_ids, "outcome": "correction", "winner": dict(winner), "failure_delta": 1}, winner["attempt_id"])
         return replay
-    log.append("promotion", dict(winner), winner["attempt_id"])
-    log.append("batch-decision", {"attempt_ids": attempt_ids, "promoted_attempt_id": winner["attempt_id"], "failure_delta": 0, "reason": "promoted"})
+    log.append("batch-outcome", {"attempt_ids": attempt_ids, "outcome": "promotion", "winner": dict(winner), "failure_delta": 0}, winner["attempt_id"])
     return replay
 
 
@@ -1019,7 +1037,7 @@ def run_controller(spec_path: Path, state: Path, *, resume: bool = False) -> dic
                     critic = run_critic(spec, state, budget, binding, record, final=True); log.append("critic-completed", critic, attempt_id)
                     if critic["supported"]:
                         raise ValidationError("final correction retained a supported objection")
-                    log.append("promotion", record, attempt_id); replay = reconstruct_state(log.replay(), state, spec)
+                    log.append("batch-outcome", {"attempt_ids": [attempt_id], "outcome": "promotion", "winner": dict(record), "failure_delta": 0}, attempt_id); replay = reconstruct_state(log.replay(), state, spec)
                 except Exception as exc:
                     log.append("attempt-rejected", {"reason": str(exc)}, attempt_id)
                     raise

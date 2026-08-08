@@ -90,6 +90,19 @@ the installed runtime from starting.
 bonaparte update
 ```
 
+When upgrading an installation from before the `autoresearch` CLI was shipped,
+the first command above runs the old launcher: it switches the active release
+but cannot create a link it does not know about. Invoke Bonaparte once more so
+the now-current launcher safely creates the missing link, then verify it:
+
+```sh
+bonaparte --help
+autoresearch --help
+```
+
+The migration replaces only a missing link or an existing symlink. It refuses
+and preserves a non-symlink at the autoresearch target path.
+
 Set `BONAPARTE_AUTO_UPDATE=0` to disable the daily check. Run `./bonaparte` directly
 when developing against a live checkout.
 
