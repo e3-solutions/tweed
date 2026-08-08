@@ -42,6 +42,7 @@ CRITIC_KEYS = frozenset({"schema_version", "run_id", "attempt_id", "lease", "sup
 EVENT_KEYS = frozenset({"schema_version", "sequence", "kind", "run_id", "attempt_id", "time", "payload", "previous_digest", "digest"})
 RESULT_KEYS = frozenset({"schema_version", "run_id", "status", "baseline_metric", "best_metric", "best_attempt_id", "baseline_oid", "best_tree", "patch", "patch_digest", "evidence", "knowledge"})
 REQUIRED_CAPABILITIES = frozenset({"filesystem-contained", "process-contained", "network-denied"})
+MAX_EVENT_BYTES = 512 * 1024
 TERMINAL_ATTEMPT_EVENTS = frozenset({"attempt-verified", "attempt-rejected", "lease-abandoned"})
 GIT_ENV = {"GIT_CONFIG_NOSYSTEM": "1", "GIT_TERMINAL_PROMPT": "0", "GIT_OPTIONAL_LOCKS": "0", "GIT_CONFIG_COUNT": "1", "GIT_CONFIG_KEY_0": "core.hooksPath", "GIT_CONFIG_VALUE_0": os.devnull}
 ORIGINAL_CODEX_HOME = os.environ.get("CODEX_HOME", str(Path.home() / ".codex"))
@@ -389,10 +390,34 @@ def digest_json(value: Any) -> str:
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()).hexdigest()
 
 
-def file_digest(path: Path) -> str:
+def read_bytes_bounded(path: Path, max_bytes: int, budget: Any = None) -> bytes:
+    if budget is not None: budget.remaining()
+    data = bytearray()
+    with path.open("rb") as stream:
+        while True:
+            if budget is not None: budget.remaining()
+            chunk = stream.read(min(64 * 1024, max_bytes + 1 - len(data)))
+            if not chunk: break
+            data.extend(chunk)
+            if len(data) > max_bytes: raise BudgetExceeded(f"bounded read exceeded {max_bytes} bytes: {path}")
+    return bytes(data)
+
+
+def read_json_bounded(path: Path, max_bytes: int, budget: Any = None) -> Any:
+    try:
+        return json.loads(read_bytes_bounded(path, max_bytes, budget).decode("utf-8", "strict"))
+    except UnicodeError as exc:
+        raise ValidationError(f"JSON is not UTF-8: {path}") from exc
+
+
+def file_digest(path: Path, budget: Any = None) -> str:
+    if budget is not None: budget.remaining()
     digest = hashlib.sha256()
     with path.open("rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+        while True:
+            if budget is not None: budget.remaining()
+            chunk = stream.read(1024 * 1024)
+            if not chunk: break
             digest.update(chunk)
     return digest.hexdigest()
 
@@ -426,23 +451,42 @@ class EventLog:
     def __init__(self, directory: Path, run_id: str):
         self.directory = directory / "events"; self.directory.mkdir(parents=True, exist_ok=True); self.run_id = run_id; self.budget: Any = None
     def append(self, kind: str, payload: Any, attempt_id: int | None = None) -> dict[str, Any]:
-        existing = sorted(self.directory.glob("*.json")); sequence = len(existing) + 1
-        previous = "0" * 64 if not existing else json.loads(existing[-1].read_text())["digest"]
+        if self.budget is not None: self.budget.remaining()
+        existing: dict[int, Path] = {}
+        with os.scandir(self.directory) as entries:
+            for entry in entries:
+                if self.budget is not None: self.budget.remaining()
+                if not entry.name.endswith(".json") or len(entry.name) != 13 or not entry.name[:8].isdigit(): raise ValidationError("event filename is not canonical")
+                existing[int(entry.name[:8])] = Path(entry.path)
+        sequence = len(existing) + 1
+        if set(existing) != set(range(1, sequence)): raise ValidationError("event sequence is not canonical")
+        previous = "0" * 64 if not existing else read_json_bounded(existing[sequence - 1], MAX_EVENT_BYTES, self.budget)["digest"]
         event = {"schema_version": VERSION, "sequence": sequence, "kind": kind, "run_id": self.run_id, "attempt_id": attempt_id, "time": dt.datetime.now(dt.timezone.utc).isoformat(), "payload": payload, "previous_digest": previous}
         event["digest"] = digest_json(event)
         _object(event, EVENT_KEYS, "event")
         path = self.directory / f"{sequence:08d}.json"
         encoded = json.dumps(event, sort_keys=True, separators=(",", ":")).encode() + b"\n"
+        if len(encoded) > MAX_EVENT_BYTES: raise BudgetExceeded("event exceeds canonical size bound")
         reservation = self.budget.reserve_artifact(len(encoded)) if self.budget is not None else contextlib.nullcontext()
         with reservation:
             exclusive_bytes(path, encoded)
         return event
-    def replay(self) -> list[dict[str, Any]]:
+    def replay(self, budget: Any = None) -> list[dict[str, Any]]:
         result, previous = [], "0" * 64
-        for sequence, path in enumerate(sorted(self.directory.glob("*.json")), 1):
+        if budget is not None: budget.remaining()
+        files: dict[int, Path] = {}
+        with os.scandir(self.directory) as entries:
+            for entry in entries:
+                if budget is not None: budget.remaining()
+                if not entry.name.endswith(".json") or len(entry.name) != 13 or not entry.name[:8].isdigit(): raise ValidationError("event filename is not canonical")
+                files[int(entry.name[:8])] = Path(entry.path)
+        if set(files) != set(range(1, len(files) + 1)): raise ValidationError("event sequence is not canonical")
+        for sequence in range(1, len(files) + 1):
+            path = files[sequence]
+            if budget is not None: budget.remaining()
             if path.name != f"{sequence:08d}.json":
                 raise ValidationError("event sequence is not canonical")
-            event = json.loads(path.read_text()); _object(event, EVENT_KEYS, "event")
+            event = read_json_bounded(path, MAX_EVENT_BYTES, budget); _object(event, EVENT_KEYS, "event")
             digest = event.pop("digest", None); expected = digest_json(event); event["digest"] = digest
             if event["sequence"] != sequence or event["run_id"] != self.run_id or event["previous_digest"] != previous or digest != expected:
                 raise ValidationError(f"event log tamper at sequence {sequence}")
@@ -544,13 +588,17 @@ def tree_digest(path: Path, budget: Any = None) -> str:
     return digest.hexdigest()
 
 
-def artifact_usage(path: Path) -> int:
+def artifact_usage(path: Path, budget: Any = None) -> int:
     total = 0
     for name in ("events", "evidence", "schemas"):
+        if budget is not None: budget.remaining()
         directory = path / name
         if directory.exists():
-            total += sum(p.stat().st_size for p in directory.rglob("*") if p.is_file() and not p.is_symlink())
+            for entry in directory.rglob("*"):
+                if budget is not None: budget.remaining()
+                if entry.is_file() and not entry.is_symlink(): total += entry.stat().st_size
     for name in ("spec.json", "knowledge.json", "result.json", "checkpoint.json", "final.patch"):
+        if budget is not None: budget.remaining()
         target = path / name
         if target.is_file():
             total += target.stat().st_size
@@ -569,12 +617,12 @@ class RunBudget:
         return max(0.001, min(requested, self.remaining()))
     def check_artifacts(self, additional: int = 0) -> None:
         with self._lock:
-            if artifact_usage(self.state) + self._reserved + additional > self.artifact_bytes:
+            if artifact_usage(self.state, self) + self._reserved + additional > self.artifact_bytes:
                 raise BudgetExceeded("artifact budget exceeded")
     @contextlib.contextmanager
     def reserve_artifact(self, amount: int):
         with self._lock:
-            if artifact_usage(self.state) + self._reserved + amount > self.artifact_bytes:
+            if artifact_usage(self.state, self) + self._reserved + amount > self.artifact_bytes:
                 raise BudgetExceeded("artifact budget exceeded")
             self._reserved += amount
         try:
@@ -799,18 +847,21 @@ def execute_attempt(spec: Mapping[str, Any], state: Path, baseline_export: Path,
         receipt.unlink(missing_ok=True); shutil.rmtree(control, ignore_errors=True); shutil.rmtree(candidate, ignore_errors=True)
 
 
-def verify_artifact(record: Mapping[str, Any], state: Path) -> Path:
+def verify_artifact(record: Mapping[str, Any], state: Path, budget: Any = None) -> Path:
+    if budget is not None: budget.remaining()
     path = Path(record["patch"])
     try:
         path.resolve().relative_to((state / "evidence").resolve())
     except ValueError as exc:
         raise ValidationError("patch path escaped evidence directory") from exc
-    if not path.is_file() or file_digest(path) != record["patch_digest"]:
+    if budget is not None: budget.remaining()
+    if not path.is_file() or file_digest(path, budget) != record["patch_digest"]:
         raise ValidationError(f"patch artifact tamper for attempt {record.get('attempt_id', 'final')}")
     return path
 
 
-def reconstruct_state(events: Sequence[Mapping[str, Any]], state: Path, spec: Mapping[str, Any]) -> dict[str, Any]:
+def reconstruct_state(events: Sequence[Mapping[str, Any]], state: Path, spec: Mapping[str, Any], budget: Any = None) -> dict[str, Any]:
+    if budget is not None: budget.remaining()
     if not events or events[0]["kind"] != "run-started":
         raise ValidationError("event log lacks canonical run-started event")
     start = events[0]["payload"]
@@ -818,13 +869,14 @@ def reconstruct_state(events: Sequence[Mapping[str, Any]], state: Path, spec: Ma
         raise ValidationError("spec differs from immutable run binding")
     result = {"run_id": events[0]["run_id"], "started_epoch": start["started_epoch"], "baseline": None, "best_metric": None, "best_attempt_id": None, "best_tree": spec["repository"]["baseline_oid"], "best_patch": None, "best_patch_digest": hashlib.sha256(b"").hexdigest(), "winner_direction": None, "failures": 0, "leased": {}, "terminal": set(), "verified": {}, "critics": {}, "final_critics": {}, "decided": set(), "correction": None, "completed": None}
     for event in events[1:]:
+        if budget is not None: budget.remaining()
         kind, payload, attempt_id = event["kind"], event["payload"], event["attempt_id"]
         if kind == "baseline-evaluated":
             result["baseline"] = payload; result["best_metric"] = payload["metric"]; result["best_tree"] = payload["tree"]
         elif kind == "lease-started":
             result["leased"][attempt_id] = payload
         elif kind == "attempt-verified":
-            verify_artifact(payload, state); result["terminal"].add(attempt_id); result["verified"][attempt_id] = payload
+            verify_artifact(payload, state, budget); result["terminal"].add(attempt_id); result["verified"][attempt_id] = payload
         elif kind in {"attempt-rejected", "lease-abandoned"}:
             result["terminal"].add(attempt_id); result["failures"] += 1
         elif kind == "critic-completed":
@@ -832,7 +884,7 @@ def reconstruct_state(events: Sequence[Mapping[str, Any]], state: Path, spec: Ma
         elif kind == "final-critic":
             result["final_critics"][attempt_id] = payload
         elif kind == "correction-requested":
-            verify_artifact({**payload, "attempt_id": attempt_id}, state); result["decided"].add(attempt_id); result["correction"] = {**result["verified"].get(attempt_id, {}), **payload, "attempt_id": attempt_id}
+            verify_artifact({**payload, "attempt_id": attempt_id}, state, budget); result["decided"].add(attempt_id); result["correction"] = {**result["verified"].get(attempt_id, {}), **payload, "attempt_id": attempt_id}
         elif kind == "batch-decision":
             attempt_ids = payload.get("attempt_ids")
             failure_delta = payload.get("failure_delta")
@@ -848,18 +900,18 @@ def reconstruct_state(events: Sequence[Mapping[str, Any]], state: Path, spec: Ma
             result["decided"].update(attempt_ids)
             if outcome == "promotion":
                 if not isinstance(winner, dict): raise ValidationError("promotion batch outcome lacks winner")
-                verify_artifact(winner, state)
+                verify_artifact(winner, state, budget)
                 result.update(best_metric=winner["metric"], best_attempt_id=winner["attempt_id"], best_tree=winner["tree"], best_patch=Path(winner["patch"]), best_patch_digest=winner["patch_digest"], winner_direction=winner["direction"], failures=0, correction=None)
             elif outcome == "correction":
                 if not isinstance(winner, dict): raise ValidationError("correction batch outcome lacks winner")
-                verify_artifact(winner, state); result["correction"] = winner; result["failures"] += failure_delta
+                verify_artifact(winner, state, budget); result["correction"] = winner; result["failures"] += failure_delta
             else:
                 if winner is not None: raise ValidationError("no-promotion batch outcome has winner")
                 result["failures"] += failure_delta
         elif kind == "promotion":
-            verify_artifact(payload, state); result["decided"].add(attempt_id); result.update(best_metric=payload["metric"], best_attempt_id=attempt_id, best_tree=payload["tree"], best_patch=Path(payload["patch"]), best_patch_digest=payload["patch_digest"], winner_direction=payload["direction"], failures=0, correction=None)
+            verify_artifact(payload, state, budget); result["decided"].add(attempt_id); result.update(best_metric=payload["metric"], best_attempt_id=attempt_id, best_tree=payload["tree"], best_patch=Path(payload["patch"]), best_patch_digest=payload["patch_digest"], winner_direction=payload["direction"], failures=0, correction=None)
         elif kind == "run-completed":
-            verify_artifact(payload, state); result["completed"] = payload
+            verify_artifact(payload, state, budget); result["completed"] = payload
     return result
 
 
@@ -892,7 +944,7 @@ def _finalize(spec: Mapping[str, Any], state: Path, log: EventLog, replay: dict[
         materialize(Path(spec["repository"]["path"]), control, spec["repository"]["baseline_oid"], budget)
         patch = replay["best_patch"]
         if patch is not None and patch.stat().st_size:
-            verify_artifact({"patch": str(patch), "patch_digest": replay["best_patch_digest"], "attempt_id": replay["best_attempt_id"]}, state)
+            verify_artifact({"patch": str(patch), "patch_digest": replay["best_patch_digest"], "attempt_id": replay["best_attempt_id"]}, state, budget)
             applied = git(control, "apply", "--index", "--binary", str(patch), check=False, timeout=budget.remaining())
             if applied.returncode:
                 raise ValidationError("final cumulative patch no longer applies")
@@ -906,7 +958,7 @@ def _finalize(spec: Mapping[str, Any], state: Path, log: EventLog, replay: dict[
         if binding is None:
             # Baseline-only run still receives a bound final critic.
             binding = _attempt_binding(replay["run_id"], max(replay["leased"], default=0) + 1, "baseline-final", spec["repository"]["baseline_oid"], replay["best_tree"], time.time() + budget.remaining())
-        evidence = {**score, "tree": tree, "patch_digest": file_digest(patch) if patch else hashlib.sha256(b"").hexdigest(), "final_replay": True}
+        evidence = {**score, "tree": tree, "patch_digest": file_digest(patch, budget) if patch else hashlib.sha256(b"").hexdigest(), "final_replay": True}
         critic = replay["final_critics"].get(binding["attempt_id"])
         if critic is None:
             critic = run_critic(spec, state, budget, binding, evidence, final=True)
@@ -915,12 +967,12 @@ def _finalize(spec: Mapping[str, Any], state: Path, log: EventLog, replay: dict[
             raise FinalObjection("final critic raised a supported objection")
         budget.check_artifacts()
         final_patch = state / "evidence" / "final.patch"
-        patch_data = patch.read_bytes() if patch else b""
+        patch_data = read_bytes_bounded(patch, budget.artifact_bytes, budget) if patch else b""
         if not final_patch.exists():
             with budget.reserve_artifact(len(patch_data)):
                 patch_digest = exclusive_bytes(final_patch, patch_data)
         else:
-            patch_digest = file_digest(final_patch)
+            patch_digest = file_digest(final_patch, budget)
             if patch_digest != hashlib.sha256(patch_data).hexdigest():
                 raise ValidationError("torn/tampered final patch")
         result = {"schema_version": VERSION, "run_id": replay["run_id"], "status": "completed", "baseline_metric": replay["baseline"]["metric"], "best_metric": score["metric"], "best_attempt_id": replay["best_attempt_id"], "baseline_oid": spec["repository"]["baseline_oid"], "best_tree": tree, "patch": str(final_patch), "patch_digest": patch_digest, "evidence": str(state / "events"), "knowledge": str(state / "knowledge.json")}
@@ -931,16 +983,23 @@ def _finalize(spec: Mapping[str, Any], state: Path, log: EventLog, replay: dict[
 
 def run_controller(spec_path: Path, state: Path, *, resume: bool = False) -> dict[str, Any]:
     invocation_started = time.time()
-    spec_path = spec_path.resolve(); spec = validate_spec(json.loads(spec_path.read_text()), spec_path=spec_path)
+    spec_path = spec_path.resolve(); spec = validate_spec(read_json_bounded(spec_path, 256 * 1024), spec_path=spec_path)
     source = Path(spec["repository"]["path"]).resolve()
     state = state.resolve()
     if state == source or source in state.parents:
         raise ValidationError("state must not be inside source")
     state.mkdir(parents=True, exist_ok=True)
     with RunLock(state):
-        event_files = sorted((state / "events").glob("*.json")) if (state / "events").exists() else []
-        if event_files:
-            first = json.loads(event_files[0].read_text()); run_id = first["run_id"]; log = EventLog(state, run_id); events = log.replay(); replay = reconstruct_state(events, state, spec)
+        event_directory = state / "events"; first_path = event_directory / "00000001.json"
+        has_event_state = first_path.exists() or (event_directory.exists() and any(event_directory.iterdir()))
+        if has_event_state:
+            if not first_path.is_file(): raise ValidationError("event log lacks canonical first event")
+            first = read_json_bounded(first_path, 16 * 1024)
+            if not isinstance(first, dict) or first.get("kind") != "run-started" or first.get("sequence") != 1 or not isinstance(first.get("payload"), dict): raise ValidationError("invalid canonical first event")
+            run_id = _string(first.get("run_id"), "first event run_id"); started = _number(first["payload"].get("started_epoch"), "first event started_epoch", 0)
+            budget = RunBudget(started, spec["budgets"]["wall_seconds"], spec["budgets"]["artifact_bytes"], state)
+            budget.remaining()
+            log = EventLog(state, run_id); log.budget = budget; events = log.replay(budget); replay = reconstruct_state(events, state, spec, budget)
             if not resume:
                 raise RuntimeError("state already contains a run; use resume")
         else:
@@ -951,8 +1010,7 @@ def run_controller(spec_path: Path, state: Path, *, resume: bool = False) -> dic
             spec_size = len(json.dumps(spec, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()) + 1
             initial_budget.check_artifacts(spec_size + 1024)
             log.append("run-started", {"spec_digest": digest_json(spec), "started_epoch": started}); atomic_json(state / "spec.json", spec, initial_budget)
-            replay = reconstruct_state(log.replay(), state, spec)
-        budget = RunBudget(replay["started_epoch"], spec["budgets"]["wall_seconds"], spec["budgets"]["artifact_bytes"], state)
+            budget = initial_budget; replay = reconstruct_state(log.replay(budget), state, spec, budget)
         log.budget = budget
         budget.check_artifacts()
         source_oid, _ = repository_facts(source, budget)
@@ -962,12 +1020,12 @@ def run_controller(spec_path: Path, state: Path, *, resume: bool = False) -> dic
         (state / "checkpoint.json").unlink(missing_ok=True)
         if replay["completed"] is not None:
             result = replay["completed"]
-            verify_artifact(result, state); atomic_json(state / "result.json", result, budget); return result
+            verify_artifact(result, state, budget); atomic_json(state / "result.json", result, budget); return result
         incomplete = sorted(set(replay["leased"]) - replay["terminal"])
         for attempt_id in incomplete:
             log.append("lease-abandoned", {"reason": "resume never restores model sessions"}, attempt_id)
         if incomplete:
-            replay = reconstruct_state(log.replay(), state, spec)
+            replay = reconstruct_state(log.replay(budget), state, spec, budget)
         capability_probe(spec, state, budget)
         baseline_control = state / "temporary" / f"baseline-control-{uuid.uuid4().hex}"; baseline_export = state / "temporary" / f"baseline-export-{uuid.uuid4().hex}"; baseline_control.parent.mkdir(exist_ok=True)
         materialize(source, baseline_control, spec["repository"]["baseline_oid"], budget); export_index(baseline_control, baseline_export, budget)
@@ -977,7 +1035,7 @@ def run_controller(spec_path: Path, state: Path, *, resume: bool = False) -> dic
                 baseline["tree"] = git(baseline_control, "write-tree", timeout=budget.remaining()).stdout.strip()
                 if not all(baseline["constraints"].values()):
                     raise ValidationError("baseline violates declared constraints")
-                log.append("baseline-evaluated", baseline); replay = reconstruct_state(log.replay(), state, spec)
+                log.append("baseline-evaluated", baseline); replay = reconstruct_state(log.replay(budget), state, spec, budget)
             else:
                 # Resume verifies the immutable baseline decision freshly.
                 fresh = evaluate_tree(spec, baseline_control, baseline_export, state, budget, baseline=True)
@@ -987,7 +1045,7 @@ def run_controller(spec_path: Path, state: Path, *, resume: bool = False) -> dic
             pending = [record for attempt_id, record in sorted(replay["verified"].items()) if attempt_id not in replay["decided"]]
             if pending:
                 replay = _promote_batch(spec, state, log, replay, pending, budget)
-                replay = reconstruct_state(log.replay(), state, spec)
+                replay = reconstruct_state(log.replay(budget), state, spec, budget)
             used = max(replay["leased"], default=0)
             # Reserve one correction slot; the adversarial direction remains the last search slot.
             search_limit = max(0, spec["budgets"]["attempts"] - 1)
@@ -1008,17 +1066,17 @@ def run_controller(spec_path: Path, state: Path, *, resume: bool = False) -> dic
                         except Exception as exc:
                             log.append("attempt-rejected", {"reason": str(exc)}, binding["attempt_id"])
                 # Completion order is discarded before the serialized decision.
-                records.sort(key=lambda item: item["attempt_id"]); replay = reconstruct_state(log.replay(), state, spec); replay = _promote_batch(spec, state, log, replay, records, budget); replay = reconstruct_state(log.replay(), state, spec)
-                used += batch_size; atomic_json(state / "checkpoint.json", {"event_digest": log.replay()[-1]["digest"]}, budget)
+                records.sort(key=lambda item: item["attempt_id"]); replay = reconstruct_state(log.replay(budget), state, spec, budget); replay = _promote_batch(spec, state, log, replay, records, budget); replay = reconstruct_state(log.replay(budget), state, spec, budget)
+                used += batch_size; atomic_json(state / "checkpoint.json", {"event_digest": log.replay(budget)[-1]["digest"]}, budget)
             # A supported promotion objection gets exactly the reserved correction attempt.
             correction = replay.get("correction")
             if correction and used < spec["budgets"]["attempts"]:
                 attempt_id = used + 1; binding = _attempt_binding(run_id, attempt_id, f"correction:{correction['attempt_id']}", spec["repository"]["baseline_oid"], correction["tree"], time.time() + budget.remaining()); log.append("lease-started", binding, attempt_id)
                 try:
-                    record = execute_attempt(spec, state, baseline_export, budget, binding, Path(correction["patch"])); log.append("attempt-verified", record, attempt_id); replay = reconstruct_state(log.replay(), state, spec); replay = _promote_batch(spec, state, log, replay, [record], budget)
+                    record = execute_attempt(spec, state, baseline_export, budget, binding, Path(correction["patch"])); log.append("attempt-verified", record, attempt_id); replay = reconstruct_state(log.replay(budget), state, spec, budget); replay = _promote_batch(spec, state, log, replay, [record], budget)
                 except Exception as exc:
                     log.append("attempt-rejected", {"reason": str(exc)}, attempt_id)
-                replay = reconstruct_state(log.replay(), state, spec)
+                replay = reconstruct_state(log.replay(budget), state, spec, budget)
             budget.check_artifacts()
             try:
                 return _finalize(spec, state, log, replay, baseline_export, budget)
@@ -1037,7 +1095,7 @@ def run_controller(spec_path: Path, state: Path, *, resume: bool = False) -> dic
                     critic = run_critic(spec, state, budget, binding, record, final=True); log.append("critic-completed", critic, attempt_id)
                     if critic["supported"]:
                         raise ValidationError("final correction retained a supported objection")
-                    log.append("batch-outcome", {"attempt_ids": [attempt_id], "outcome": "promotion", "winner": dict(record), "failure_delta": 0}, attempt_id); replay = reconstruct_state(log.replay(), state, spec)
+                    log.append("batch-outcome", {"attempt_ids": [attempt_id], "outcome": "promotion", "winner": dict(record), "failure_delta": 0}, attempt_id); replay = reconstruct_state(log.replay(budget), state, spec, budget)
                 except Exception as exc:
                     log.append("attempt-rejected", {"reason": str(exc)}, attempt_id)
                     raise

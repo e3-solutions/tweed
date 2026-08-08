@@ -1,5 +1,6 @@
 import importlib.machinery
 import importlib.util
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -484,6 +485,20 @@ class ControllerIntegrationTests(unittest.TestCase):
             result = AR.run_controller(state / "spec.json", state, resume=True)
         self.assertEqual(result["best_metric"], 10.0)
         self.assertFalse(any(call[0] == "worker" for call in resume_calls), resume_calls)
+
+    def test_expired_resume_stops_before_reading_large_valid_patch(self):
+        state = self.root / "expired"; state.mkdir(); spec = self.spec(); spec["budgets"]["wall_seconds"] = 0.05
+        (state / "spec.json").write_text(json.dumps(spec))
+        patch = state / "evidence/00000001.patch"; patch.parent.mkdir(); data = b"x" * (8 * 1024 * 1024); patch.write_bytes(data)
+        log = AR.EventLog(state, "run")
+        log.append("run-started", {"spec_digest": AR.digest_json(spec), "started_epoch": time.time() - 10})
+        log.append("attempt-verified", {"attempt_id": 1, "patch": str(patch), "patch_digest": hashlib.sha256(data).hexdigest()})
+        started = time.monotonic()
+        with mock.patch.object(AR, "file_digest", side_effect=AssertionError("large patch must not be opened")) as digest:
+            with self.assertRaisesRegex(AR.BudgetExceeded, "wall budget"):
+                AR.run_controller(state / "spec.json", state, resume=True)
+        digest.assert_not_called()
+        self.assertLess(time.monotonic() - started, 0.2)
 
 
 if __name__ == "__main__":
