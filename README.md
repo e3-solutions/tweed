@@ -114,10 +114,10 @@ autoresearch setup \
 ```
 
 Setup writes `spec.json` and its schema in the output directory. Review the spec
-before running it, especially every path, budget, evaluator argv, and sandbox
-wrapper argv. Those arrays are the execution authority: autoresearch invokes
-the reviewed entries directly, without treating them as shell text or allowing
-a worker to substitute another evaluator. A v1 spec has this shape:
+before running it, especially every path, budget, evaluator argv array, and
+sandbox wrapper argv. Those arrays are the execution authority: autoresearch
+invokes the reviewed entries directly, without treating them as shell text or
+allowing a worker to substitute another evaluator. A v1 spec has this shape:
 
 ```json
 {
@@ -134,17 +134,25 @@ a worker to substitute another evaluator. A v1 spec has this shape:
   },
   "evaluator": {
     "argv": ["python", "benchmarks/parser.py", "--json"],
+    "baseline_argv": ["python", "benchmarks/parser.py", "--json", "--baseline"],
+    "check_argv": ["python", "benchmarks/parser_check.py", "--json"],
+    "constraint_names": ["tests_pass", "accepted_syntax_unchanged"],
+    "immutable_inputs": ["tests/fixtures"],
     "direction": "max",
     "timeout_seconds": 60,
     "max_output_bytes": 65536
   },
   "sandbox": {
     "wrapper_argv": ["approved-sandbox", "--network=none", "--"],
-    "capabilities": ["filesystem", "process", "network-denied"]
+    "capabilities": [
+      "filesystem-contained",
+      "process-contained",
+      "network-denied"
+    ]
   },
   "budgets": {
     "attempts": 12,
-    "concurrency": 1,
+    "concurrency": 3,
     "wall_seconds": 3600,
     "process_seconds": 300,
     "artifact_bytes": 104857600
@@ -171,8 +179,12 @@ autoresearch run /absolute/path/to/research/setup/spec.json \
   --state /absolute/path/to/research/run-001
 ```
 
-The evaluator must print exactly one JSON object containing a numeric `metric`
-and its declared boolean constraints. For example:
+The baseline command (`baseline_argv`), candidate command (`argv`), and
+independent check (`check_argv`) must each print exactly one JSON object
+containing a finite numeric `metric` and the boolean keys declared by
+`constraint_names`—no missing, extra, or non-boolean constraints. The applicable
+primary result (baseline or candidate) and independent check must be identical.
+For example:
 
 ```json
 {
@@ -184,22 +196,37 @@ and its declared boolean constraints. For example:
 }
 ```
 
+Every `immutable_inputs` path must sit under a protected path. Before each
+evaluation, autoresearch replaces those paths with baseline-owned copies and
+rejects the evaluation if their content changes. This keeps fixtures and other
+objective inputs outside worker and evaluator authority.
+
+Attempts execute in deterministic, bounded batches of at most `concurrency`.
+Every member of a batch starts from the same promoted parent; direction
+allocation and the final adversarial search slot are deterministic. Completion
+timing does not decide the winner: verified records are ordered by attempt ID,
+ranked by metric with a stable attempt-ID tie-break, and promoted serially.
+Attempts, wall time, per-process time, captured output, and artifact bytes all
+remain subject to the reviewed budgets.
+
 Each state directory is one run. It pins a copy of the reviewed spec and keeps
-its checkpoint, isolated candidates, receipts, candidate patches, knowledge,
-and final result together. Its numbered event records are append-only and
-hash-chained. `run` refuses to replace existing run state; use a new directory
-for a new run. If a process stops, resume that exact run instead of starting
-over (in-flight model sessions are abandoned, not restored):
+its schemas, candidate and final patches, knowledge, and result together. Its
+numbered event records are append-only and hash-chained. Checkpoint and result
+files are caches, never resume authority. `run` refuses to replace existing run
+state; use a new directory for a new run. If a process stops, `resume`
+reconstructs decisions from the event log, verifies referenced patch digests,
+freshly replays the pinned baseline evaluation, and marks incomplete leases
+abandoned instead of restoring model sessions:
 
 ```text
 run-001/
 ├── spec.json
 ├── checkpoint.json
 ├── events/
-├── candidates/
-├── receipts/
 ├── evidence/
-├── best.patch
+│   ├── 00000001.patch
+│   └── final.patch
+├── schemas/
 ├── knowledge.json
 └── result.json
 ```
@@ -209,8 +236,11 @@ autoresearch resume /absolute/path/to/research/run-001
 ```
 
 The final result is bounded so it can be inspected and handed to a later,
-explicit Bonaparte request without loading the whole experiment history. For
-example:
+explicit Bonaparte request without loading the whole experiment history. Before
+writing it, autoresearch reconstructs the winning tree from the pinned baseline
+and patch, performs a fresh objective evaluation including the independent
+check and immutable-input verification, and requires a fresh bound critic to
+raise no supported objection. For example:
 
 ```json
 {
@@ -222,7 +252,8 @@ example:
   "best_attempt_id": 7,
   "baseline_oid": "1111111111111111111111111111111111111111",
   "best_tree": "2222222222222222222222222222222222222222",
-  "patch": "/absolute/path/to/research/run-001/best.patch",
+  "patch": "/absolute/path/to/research/run-001/evidence/final.patch",
+  "patch_digest": "3333333333333333333333333333333333333333333333333333333333333333",
   "evidence": "/absolute/path/to/research/run-001/events",
   "knowledge": "/absolute/path/to/research/run-001/knowledge.json"
 }
@@ -236,11 +267,11 @@ real OS-level sandbox or disposable environment, including network denial, for
 untrusted evaluation. The source repository must be clean and pinned, remains
 unchanged, and must not contain the setup or run directories.
 
-Autoresearch produces a candidate `best.patch`, compact event evidence, and
-reusable `knowledge.json`. A human can review that bounded result and explicitly
-hand it to a later Bonaparte request. Autoresearch itself does not apply the
-patch or start an implementation, review, or publish phase, and grants no
-authority to mutate the source checkout or external systems.
+Autoresearch produces a candidate `evidence/final.patch`, compact event
+evidence, and reusable `knowledge.json`. A human can review that bounded result
+and explicitly hand it to a later Bonaparte request. Autoresearch itself does
+not apply the patch or start an implementation, review, or publish phase, and
+grants no authority to mutate the source checkout or external systems.
 
 ## Commands
 

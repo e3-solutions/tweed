@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
-"""Autoresearch: bounded, reproducible local optimization with Codex workers.
-
-The module intentionally uses only the Python 3.10 standard library.  It is also
-loadable with SourceFileLoader; public helpers form the small testing surface.
-"""
+"""Bounded, reproducible, local Autoresearch controller (Python 3.10+)."""
 
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import contextlib
 import datetime as dt
 import errno
@@ -17,22 +14,25 @@ import json
 import math
 import os
 from pathlib import Path, PurePosixPath
+import selectors
 import shutil
 import signal
+import socket
 import stat
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import uuid
-from typing import Any, Iterable, Iterator, Mapping, Sequence
+from typing import Any, Iterable, Mapping, Sequence
 
 
 VERSION = 1
 SPEC_KEYS = frozenset({"schema_version", "goal", "repository", "paths", "evaluator", "sandbox", "budgets", "search", "provenance"})
 REPOSITORY_KEYS = frozenset({"path", "source_oid", "baseline_oid"})
 PATH_KEYS = frozenset({"allowed", "protected"})
-EVALUATOR_KEYS = frozenset({"argv", "direction", "timeout_seconds", "max_output_bytes"})
+EVALUATOR_KEYS = frozenset({"argv", "baseline_argv", "check_argv", "constraint_names", "immutable_inputs", "direction", "timeout_seconds", "max_output_bytes"})
 SANDBOX_KEYS = frozenset({"wrapper_argv", "capabilities"})
 BUDGET_KEYS = frozenset({"attempts", "concurrency", "wall_seconds", "process_seconds", "artifact_bytes"})
 SEARCH_KEYS = frozenset({"directions", "adversarial_direction", "target", "patience", "min_improvement"})
@@ -40,8 +40,9 @@ PROVENANCE_KEYS = frozenset({"created_by", "created_at"})
 WORKER_KEYS = frozenset({"schema_version", "run_id", "attempt_id", "direction", "generation", "baseline_oid", "parent_tree", "lease", "deadline", "status", "summary"})
 CRITIC_KEYS = frozenset({"schema_version", "run_id", "attempt_id", "lease", "supported", "objection", "summary"})
 EVENT_KEYS = frozenset({"schema_version", "sequence", "kind", "run_id", "attempt_id", "time", "payload", "previous_digest", "digest"})
-RESULT_KEYS = frozenset({"schema_version", "run_id", "status", "baseline_metric", "best_metric", "best_attempt_id", "baseline_oid", "best_tree", "patch", "evidence", "knowledge"})
-REQUIRED_CAPABILITIES = frozenset({"filesystem", "process", "network-denied"})
+RESULT_KEYS = frozenset({"schema_version", "run_id", "status", "baseline_metric", "best_metric", "best_attempt_id", "baseline_oid", "best_tree", "patch", "patch_digest", "evidence", "knowledge"})
+REQUIRED_CAPABILITIES = frozenset({"filesystem-contained", "process-contained", "network-denied"})
+TERMINAL_ATTEMPT_EVENTS = frozenset({"attempt-verified", "attempt-rejected", "lease-abandoned"})
 GIT_ENV = {"GIT_CONFIG_NOSYSTEM": "1", "GIT_TERMINAL_PROMPT": "0", "GIT_OPTIONAL_LOCKS": "0", "GIT_CONFIG_COUNT": "1", "GIT_CONFIG_KEY_0": "core.hooksPath", "GIT_CONFIG_VALUE_0": os.devnull}
 
 
@@ -49,19 +50,26 @@ class ValidationError(ValueError):
     pass
 
 
+class BudgetExceeded(RuntimeError):
+    pass
+
+
+class FinalObjection(ValidationError):
+    pass
+
+
 def _object(value: Any, keys: frozenset[str], where: str) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ValidationError(f"{where} must be an object")
-    unknown = set(value) - keys
-    missing = keys - set(value)
-    if unknown or missing:
+    missing, unknown = keys - set(value), set(value) - keys
+    if missing or unknown:
         raise ValidationError(f"{where} keys invalid; missing={sorted(missing)}, unknown={sorted(unknown)}")
     return value
 
 
 def _string(value: Any, where: str, *, empty: bool = False) -> str:
-    if not isinstance(value, str) or (not empty and not value.strip()):
-        raise ValidationError(f"{where} must be a non-empty string")
+    if not isinstance(value, str) or (not empty and not value.strip()) or "\x00" in value:
+        raise ValidationError(f"{where} must be {'a string' if empty else 'a non-empty string'} without NUL")
     return value
 
 
@@ -77,69 +85,84 @@ def _number(value: Any, where: str, low: float = -math.inf) -> float:
     return float(value)
 
 
-def validate_argv(value: Any, where: str = "argv", *, allow_empty: bool = False) -> list[str]:
-    if not isinstance(value, list) or (not value and not allow_empty):
+def _oid(value: Any, where: str) -> str:
+    value = _string(value, where)
+    if len(value) != 40 or any(c not in "0123456789abcdef" for c in value):
+        raise ValidationError(f"{where} must be a lowercase 40-character Git OID")
+    return value
+
+
+def validate_argv(value: Any, where: str = "argv") -> list[str]:
+    if not isinstance(value, list) or not value:
         raise ValidationError(f"{where} must be a non-empty argv array")
-    if any(not isinstance(part, str) or not part or "\x00" in part for part in value):
-        raise ValidationError(f"{where} entries must be non-empty strings without NUL")
+    for index, part in enumerate(value):
+        _string(part, f"{where}[{index}]")
     return list(value)
 
 
 def normalize_prefix(value: Any, where: str = "path") -> str:
     text = _string(value, where)
-    if "\\" in text or text.startswith("/"):
-        raise ValidationError(f"{where} must be a relative POSIX path prefix")
+    if text.startswith("/") or "\\" in text or text.endswith("/"):
+        raise ValidationError(f"{where} must be a canonical relative POSIX prefix")
     path = PurePosixPath(text)
-    if text in {".", ""} or any(part in {"", ".", ".."} for part in path.parts):
+    if text in {"", "."} or any(part in {"", ".", ".."} for part in path.parts):
         raise ValidationError(f"{where} contains traversal or a non-canonical component")
-    return path.as_posix().rstrip("/")
+    return path.as_posix()
 
 
 def _prefix_contains(prefix: str, path: str) -> bool:
-    return path == prefix or path.startswith(prefix + "/")
+    return prefix == path or path.startswith(prefix + "/")
 
 
 def validate_prefixes(allowed: Any, protected: Any) -> tuple[list[str], list[str]]:
-    if not isinstance(allowed, list) or not allowed or not isinstance(protected, list):
-        raise ValidationError("paths.allowed must be non-empty and paths.protected must be an array")
-    a = [normalize_prefix(v, f"paths.allowed[{i}]") for i, v in enumerate(allowed)]
-    p = [normalize_prefix(v, f"paths.protected[{i}]") for i, v in enumerate(protected)]
-    if len(set(a)) != len(a) or len(set(p)) != len(p):
-        raise ValidationError("path prefixes must be unique")
-    for collection in (a, p):
-        for index, left in enumerate(collection):
-            for right in collection[index + 1:]:
+    if not isinstance(allowed, list) or not allowed or not isinstance(protected, list) or not protected:
+        raise ValidationError("paths.allowed and paths.protected must be non-empty arrays")
+    groups = ([normalize_prefix(v, f"paths.allowed[{i}]") for i, v in enumerate(allowed)], [normalize_prefix(v, f"paths.protected[{i}]") for i, v in enumerate(protected)])
+    for group in groups:
+        if len(group) != len(set(group)):
+            raise ValidationError("path prefixes must be unique")
+        for index, left in enumerate(group):
+            for right in group[index + 1:]:
                 if _prefix_contains(left, right) or _prefix_contains(right, left):
                     raise ValidationError(f"path prefixes overlap: {left!r}, {right!r}")
-    for left in a:
-        for right in p:
+    for left in groups[0]:
+        for right in groups[1]:
             if _prefix_contains(left, right) or _prefix_contains(right, left):
                 raise ValidationError(f"allowed/protected prefixes overlap: {left!r}, {right!r}")
-    return a, p
-
-
-def _oid(value: Any, where: str) -> str:
-    text = _string(value, where)
-    if len(text) != 40 or any(c not in "0123456789abcdef" for c in text):
-        raise ValidationError(f"{where} must be a lowercase 40-character Git OID")
-    return text
+    return groups
 
 
 def validate_spec(value: Any, *, spec_path: Path | None = None) -> dict[str, Any]:
+    try:
+        if len(json.dumps(value, separators=(",", ":"), ensure_ascii=False).encode()) > 256 * 1024:
+            raise ValidationError("spec exceeds the closed 256 KiB bound")
+    except (TypeError, ValueError) as exc:
+        raise ValidationError("spec is not JSON-serializable") from exc
     spec = _object(value, SPEC_KEYS, "spec")
     if spec["schema_version"] != VERSION:
         raise ValidationError("spec.schema_version must be 1")
     _string(spec["goal"], "spec.goal")
-    repo = _object(spec["repository"], REPOSITORY_KEYS, "spec.repository")
-    source = Path(_string(repo["path"], "spec.repository.path")).expanduser().resolve()
-    if not source.is_absolute():
-        raise ValidationError("repository.path must resolve to an absolute path")
-    _oid(repo["source_oid"], "spec.repository.source_oid")
-    _oid(repo["baseline_oid"], "spec.repository.baseline_oid")
+    repository = _object(spec["repository"], REPOSITORY_KEYS, "spec.repository")
+    source = Path(_string(repository["path"], "spec.repository.path")).expanduser().resolve()
+    _oid(repository["source_oid"], "spec.repository.source_oid")
+    _oid(repository["baseline_oid"], "spec.repository.baseline_oid")
     paths = _object(spec["paths"], PATH_KEYS, "spec.paths")
-    validate_prefixes(paths["allowed"], paths["protected"])
+    allowed, protected = validate_prefixes(paths["allowed"], paths["protected"])
     evaluator = _object(spec["evaluator"], EVALUATOR_KEYS, "spec.evaluator")
-    validate_argv(evaluator["argv"], "spec.evaluator.argv")
+    for name in ("argv", "baseline_argv", "check_argv"):
+        validate_argv(evaluator[name], f"spec.evaluator.{name}")
+    names = evaluator["constraint_names"]
+    if not isinstance(names, list) or not names or len(names) != len(set(names)):
+        raise ValidationError("spec.evaluator.constraint_names must be a non-empty unique string array")
+    for index, name in enumerate(names):
+        _string(name, f"spec.evaluator.constraint_names[{index}]")
+    inputs = evaluator["immutable_inputs"]
+    if not isinstance(inputs, list) or not inputs or len(inputs) != len(set(inputs)):
+        raise ValidationError("spec.evaluator.immutable_inputs must be a non-empty unique path array")
+    normalized_inputs = [normalize_prefix(path, f"spec.evaluator.immutable_inputs[{i}]") for i, path in enumerate(inputs)]
+    for path in normalized_inputs:
+        if not any(_prefix_contains(prefix, path) for prefix in protected):
+            raise ValidationError(f"immutable evaluator input is not protected: {path}")
     if evaluator["direction"] not in {"min", "max"}:
         raise ValidationError("spec.evaluator.direction must be 'min' or 'max'")
     _number(evaluator["timeout_seconds"], "spec.evaluator.timeout_seconds", 0.001)
@@ -147,32 +170,33 @@ def validate_spec(value: Any, *, spec_path: Path | None = None) -> dict[str, Any
     sandbox = _object(spec["sandbox"], SANDBOX_KEYS, "spec.sandbox")
     validate_argv(sandbox["wrapper_argv"], "spec.sandbox.wrapper_argv")
     caps = sandbox["capabilities"]
-    if not isinstance(caps, list) or any(not isinstance(v, str) for v in caps) or not REQUIRED_CAPABILITIES <= set(caps):
-        raise ValidationError(f"spec.sandbox.capabilities must include {sorted(REQUIRED_CAPABILITIES)}")
+    if not isinstance(caps, list) or set(caps) != REQUIRED_CAPABILITIES:
+        raise ValidationError(f"spec.sandbox.capabilities must be exactly {sorted(REQUIRED_CAPABILITIES)}")
     budgets = _object(spec["budgets"], BUDGET_KEYS, "spec.budgets")
-    _integer(budgets["attempts"], "spec.budgets.attempts", 1, 10000)
-    _integer(budgets["concurrency"], "spec.budgets.concurrency", 1, min(256, budgets["attempts"]))
+    attempts = _integer(budgets["attempts"], "spec.budgets.attempts", 1, 10000)
+    _integer(budgets["concurrency"], "spec.budgets.concurrency", 1, min(256, attempts))
     _number(budgets["wall_seconds"], "spec.budgets.wall_seconds", 0.001)
     _number(budgets["process_seconds"], "spec.budgets.process_seconds", 0.001)
     _integer(budgets["artifact_bytes"], "spec.budgets.artifact_bytes", 1024, 1024 ** 4)
     search = _object(spec["search"], SEARCH_KEYS, "spec.search")
     directions = search["directions"]
-    if not isinstance(directions, list) or not directions or any(not isinstance(v, str) or not v.strip() for v in directions) or len(set(directions)) != len(directions):
+    if not isinstance(directions, list) or not directions or len(directions) != len(set(directions)):
         raise ValidationError("spec.search.directions must be a non-empty unique string array")
+    for index, direction in enumerate(directions):
+        _string(direction, f"spec.search.directions[{index}]")
     adversarial = _string(search["adversarial_direction"], "spec.search.adversarial_direction")
     if adversarial in directions:
         raise ValidationError("adversarial_direction must be reserved and independent")
     if search["target"] is not None:
         _number(search["target"], "spec.search.target")
-    _integer(search["patience"], "spec.search.patience", 0, budgets["attempts"])
+    _integer(search["patience"], "spec.search.patience", 0, attempts)
     _number(search["min_improvement"], "spec.search.min_improvement", 0)
     provenance = _object(spec["provenance"], PROVENANCE_KEYS, "spec.provenance")
     _string(provenance["created_by"], "spec.provenance.created_by")
     _string(provenance["created_at"], "spec.provenance.created_at")
     if spec_path is not None:
-        state = spec_path.resolve().parent
         try:
-            state.relative_to(source)
+            spec_path.resolve().parent.relative_to(source)
         except ValueError:
             pass
         else:
@@ -180,42 +204,52 @@ def validate_spec(value: Any, *, spec_path: Path | None = None) -> dict[str, Any
     return spec
 
 
-def parse_evaluator_output(data: str | bytes) -> dict[str, Any]:
+def parse_evaluator_output(data: str | bytes, constraint_names: Sequence[str] | None = None) -> dict[str, Any]:
     if isinstance(data, bytes):
-        data = data.decode("utf-8", "strict")
+        try:
+            data = data.decode("utf-8", "strict")
+        except UnicodeError as exc:
+            raise ValidationError("evaluator output is not UTF-8") from exc
     try:
-        value = json.loads(data)
-    except (json.JSONDecodeError, UnicodeError) as exc:
+        value = json.loads(data, parse_constant=lambda value: (_ for _ in ()).throw(ValueError(value)))
+    except (json.JSONDecodeError, ValueError) as exc:
         raise ValidationError(f"evaluator output is not exact JSON: {exc}") from exc
     if not isinstance(value, dict) or set(value) != {"metric", "constraints"}:
         raise ValidationError("evaluator output must contain exactly metric and constraints")
     metric = _number(value["metric"], "evaluator.metric")
     constraints = value["constraints"]
-    if not isinstance(constraints, dict) or not constraints or any(not isinstance(k, str) or not k or type(v) is not bool for k, v in constraints.items()):
-        raise ValidationError("evaluator.constraints must be a non-empty object of declared booleans")
+    if not isinstance(constraints, dict) or not constraints or any(not isinstance(k, str) or type(v) is not bool for k, v in constraints.items()):
+        raise ValidationError("evaluator.constraints must be a non-empty boolean object")
+    if constraint_names is not None and set(constraints) != set(constraint_names):
+        raise ValidationError("evaluator constraint keys/order do not exactly match declaration")
     return {"metric": metric, "constraints": constraints}
 
 
 def is_better(candidate: float, incumbent: float, direction: str, minimum: float) -> bool:
-    delta = candidate - incumbent if direction == "max" else incumbent - candidate
-    return delta >= minimum and delta > 0
+    improvement = candidate - incumbent if direction == "max" else incumbent - candidate
+    return improvement > 0 and improvement >= minimum
 
 
 def stable_rank(attempts: Iterable[Mapping[str, Any]], direction: str) -> list[Mapping[str, Any]]:
-    multiplier = -1 if direction == "max" else 1
-    return sorted(attempts, key=lambda item: (multiplier * float(item["metric"]), int(item["attempt_id"])))
+    sign = -1 if direction == "max" else 1
+    return sorted(attempts, key=lambda item: (sign * float(item["metric"]), int(item["attempt_id"])))
 
 
-def schedule_directions(spec: Mapping[str, Any]) -> list[str]:
-    attempts = spec["budgets"]["attempts"]
+def schedule_directions(spec: Mapping[str, Any], *, winner_direction: str | None = None, used: int = 0, count: int | None = None, limit: int | None = None) -> list[str]:
+    """Return deterministic allocation: independent first, reallocate, reserve last."""
+    total = spec["budgets"]["attempts"] if limit is None else limit
+    if count is None:
+        count = total - used
+    normal_end = max(0, total - 1)
     independent = list(spec["search"]["directions"])
-    reserved = spec["search"]["adversarial_direction"]
-    result: list[str] = []
-    if attempts:
-        normal_slots = attempts - 1 if attempts > 1 else 0
-        for i in range(normal_slots):
-            result.append(independent[i % len(independent)])
-        result.append(reserved)
+    result = []
+    for attempt_index in range(used, min(total, used + count)):
+        if attempt_index == total - 1:
+            result.append(spec["search"]["adversarial_direction"])
+        elif attempt_index < min(len(independent), normal_end):
+            result.append(independent[attempt_index])
+        else:
+            result.append(winner_direction or independent[attempt_index % len(independent)])
     return result
 
 
@@ -226,18 +260,61 @@ def minimal_environment(extra: Mapping[str, str] | None = None) -> dict[str, str
     return env
 
 
-def run_bounded(argv: Sequence[str], *, cwd: Path, timeout: float, max_output: int, env: Mapping[str, str] | None = None, input_text: str | None = None) -> subprocess.CompletedProcess[bytes]:
-    command = validate_argv(list(argv))
-    process = subprocess.Popen(command, cwd=cwd, env=dict(env or minimal_environment()), stdin=subprocess.PIPE if input_text is not None else subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
-    try:
-        stdout, stderr = process.communicate(None if input_text is None else input_text.encode(), timeout=timeout)
-    except subprocess.TimeoutExpired:
+def _kill_group(process: subprocess.Popen[bytes]) -> None:
+    with contextlib.suppress(OSError):
         os.killpg(process.pid, signal.SIGKILL)
-        stdout, stderr = process.communicate()
-        raise TimeoutError(f"process exceeded {timeout} seconds")
-    if len(stdout) > max_output or len(stderr) > max_output:
-        raise RuntimeError("process output budget exceeded")
-    return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
+
+
+def run_bounded(argv: Sequence[str], *, cwd: Path, timeout: float, max_output: int, env: Mapping[str, str] | None = None, input_text: str | None = None) -> subprocess.CompletedProcess[bytes]:
+    """Run without a shell, streaming-capping each output and killing immediately."""
+    command = validate_argv(list(argv))
+    if timeout <= 0:
+        raise TimeoutError("process has no wall budget remaining")
+    process = subprocess.Popen(command, cwd=cwd, env=dict(env or minimal_environment()), stdin=subprocess.PIPE if input_text is not None else subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
+    if input_text is not None:
+        try:
+            process.stdin.write(input_text.encode())
+            process.stdin.close()
+        except BrokenPipeError:
+            pass
+    selector = selectors.DefaultSelector()
+    buffers: dict[Any, bytearray] = {process.stdout: bytearray(), process.stderr: bytearray()}
+    for stream in buffers:
+        os.set_blocking(stream.fileno(), False)
+        selector.register(stream, selectors.EVENT_READ)
+    deadline = time.monotonic() + timeout
+    try:
+        while selector.get_map():
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                _kill_group(process)
+                raise TimeoutError(f"process exceeded {timeout} seconds")
+            for key, _ in selector.select(min(0.05, remaining)):
+                chunk = os.read(key.fileobj.fileno(), 8192)
+                if not chunk:
+                    selector.unregister(key.fileobj)
+                    continue
+                target = buffers[key.fileobj]
+                target.extend(chunk)
+                if len(target) > max_output:
+                    _kill_group(process)
+                    raise BudgetExceeded("process output budget exceeded")
+            if process.poll() is not None and not selector.get_map():
+                break
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            _kill_group(process)
+            raise TimeoutError(f"process exceeded {timeout} seconds")
+        process.wait(timeout=remaining)
+        return subprocess.CompletedProcess(command, process.returncode, bytes(buffers[process.stdout]), bytes(buffers[process.stderr]))
+    finally:
+        selector.close()
+        if process.poll() is None:
+            _kill_group(process)
+            with contextlib.suppress(Exception):
+                process.wait(timeout=1)
+        for stream in (process.stdout, process.stderr):
+            stream.close()
 
 
 def git(repo: Path, *args: str, check: bool = True, text: bool = True) -> subprocess.CompletedProcess[Any]:
@@ -254,9 +331,7 @@ def repository_facts(repo: Path) -> tuple[str, str]:
         raise ValidationError("source repository must be clean")
     source_oid = git(repo, "rev-parse", "HEAD").stdout.strip()
     baseline_oid = git(repo, "rev-parse", "HEAD^{commit}").stdout.strip()
-    _oid(source_oid, "source OID")
-    _oid(baseline_oid, "baseline OID")
-    return source_oid, baseline_oid
+    return _oid(source_oid, "source OID"), _oid(baseline_oid, "baseline OID")
 
 
 def atomic_json(path: Path, value: Any) -> None:
@@ -268,23 +343,41 @@ def atomic_json(path: Path, value: Any) -> None:
             stream.write(data); stream.flush(); os.fsync(stream.fileno())
         os.replace(temporary, path)
     finally:
-        with contextlib.suppress(FileNotFoundError): os.unlink(temporary)
+        with contextlib.suppress(FileNotFoundError):
+            os.unlink(temporary)
 
 
 def digest_json(value: Any) -> str:
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()).hexdigest()
 
 
+def file_digest(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def exclusive_bytes(path: Path, data: bytes) -> str:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(fd, "wb") as stream:
+        stream.write(data); stream.flush(); os.fsync(stream.fileno())
+    return hashlib.sha256(data).hexdigest()
+
+
 class RunLock:
     def __init__(self, directory: Path):
         self.path = directory / "run.lock"; self.stream: Any = None
     def __enter__(self) -> "RunLock":
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.stream = self.path.open("a+")
-        try: fcntl.flock(self.stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        self.path.parent.mkdir(parents=True, exist_ok=True); self.stream = self.path.open("a+")
+        try:
+            fcntl.flock(self.stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except OSError as exc:
             self.stream.close()
-            if exc.errno in {errno.EACCES, errno.EAGAIN}: raise RuntimeError("run is already locked") from exc
+            if exc.errno in {errno.EACCES, errno.EAGAIN}:
+                raise RuntimeError("run is already locked") from exc
             raise
         return self
     def __exit__(self, *_: Any) -> None:
@@ -293,7 +386,7 @@ class RunLock:
 
 class EventLog:
     def __init__(self, directory: Path, run_id: str):
-        self.directory = directory / "events"; self.directory.mkdir(parents=True, exist_ok=True); self.run_id = run_id
+        self.directory = directory / "events"; self.directory.mkdir(parents=True, exist_ok=True); self.run_id = run_id; self.budget: Any = None
     def append(self, kind: str, payload: Any, attempt_id: int | None = None) -> dict[str, Any]:
         existing = sorted(self.directory.glob("*.json")); sequence = len(existing) + 1
         previous = "0" * 64 if not existing else json.loads(existing[-1].read_text())["digest"]
@@ -301,118 +394,92 @@ class EventLog:
         event["digest"] = digest_json(event)
         _object(event, EVENT_KEYS, "event")
         path = self.directory / f"{sequence:08d}.json"
-        fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-        with os.fdopen(fd, "w") as stream: json.dump(event, stream, sort_keys=True, separators=(",", ":")); stream.write("\n"); stream.flush(); os.fsync(stream.fileno())
+        encoded = json.dumps(event, sort_keys=True, separators=(",", ":")).encode() + b"\n"
+        reservation = self.budget.reserve_artifact(len(encoded)) if self.budget is not None else contextlib.nullcontext()
+        with reservation:
+            exclusive_bytes(path, encoded)
         return event
     def replay(self) -> list[dict[str, Any]]:
-        result: list[dict[str, Any]] = []; previous = "0" * 64
-        files = sorted(self.directory.glob("*.json"))
-        for sequence, path in enumerate(files, 1):
-            if path.name != f"{sequence:08d}.json": raise ValidationError("event sequence is not canonical")
+        result, previous = [], "0" * 64
+        for sequence, path in enumerate(sorted(self.directory.glob("*.json")), 1):
+            if path.name != f"{sequence:08d}.json":
+                raise ValidationError("event sequence is not canonical")
             event = json.loads(path.read_text()); _object(event, EVENT_KEYS, "event")
             digest = event.pop("digest", None); expected = digest_json(event); event["digest"] = digest
-            if event["sequence"] != sequence or event["run_id"] != self.run_id or event["previous_digest"] != previous or digest != expected: raise ValidationError(f"event log tamper at sequence {sequence}")
+            if event["sequence"] != sequence or event["run_id"] != self.run_id or event["previous_digest"] != previous or digest != expected:
+                raise ValidationError(f"event log tamper at sequence {sequence}")
             previous = digest; result.append(event)
         return result
 
 
 def validate_binding(record: Mapping[str, Any], expected: Mapping[str, Any], *, critic: bool = False) -> dict[str, Any]:
-    keys = CRITIC_KEYS if critic else WORKER_KEYS
-    obj = _object(dict(record), keys, "critic receipt" if critic else "worker receipt")
-    if obj["schema_version"] != VERSION: raise ValidationError("receipt schema_version must be 1")
-    _string(obj["run_id"], "receipt.run_id")
-    _integer(obj["attempt_id"], "receipt.attempt_id", 1, 10 ** 9)
-    _string(obj["lease"], "receipt.lease")
+    obj = _object(dict(record), CRITIC_KEYS if critic else WORKER_KEYS, "critic receipt" if critic else "worker receipt")
+    if obj["schema_version"] != VERSION:
+        raise ValidationError("receipt schema_version must be 1")
+    _string(obj["run_id"], "receipt.run_id"); _integer(obj["attempt_id"], "receipt.attempt_id", 1, 10 ** 9); _string(obj["lease"], "receipt.lease")
     for key in ("run_id", "attempt_id", "lease"):
-        if obj[key] != expected[key]: raise ValidationError(f"stale or wrong receipt binding: {key}")
-    if not critic:
-        _string(obj["direction"], "worker.direction")
-        _integer(obj["generation"], "worker.generation", 1, 10 ** 9)
-        _oid(obj["baseline_oid"], "worker.baseline_oid")
-        _oid(obj["parent_tree"], "worker.parent_tree")
-        _number(obj["deadline"], "worker.deadline", 0)
-        _string(obj["summary"], "worker.summary", empty=True)
-        for key in ("generation", "baseline_oid", "parent_tree", "direction", "deadline"):
-            if obj[key] != expected[key]: raise ValidationError(f"stale or wrong receipt binding: {key}")
-        if obj["status"] not in {"completed", "failed"}: raise ValidationError("worker status invalid")
+        if obj[key] != expected[key]:
+            raise ValidationError(f"stale or wrong receipt binding: {key}")
+    if critic:
+        if type(obj["supported"]) is not bool:
+            raise ValidationError("critic supported must be boolean")
+        _string(obj["objection"], "critic.objection", empty=True); _string(obj["summary"], "critic.summary", empty=True)
+        if obj["supported"] != bool(obj["objection"].strip()):
+            raise ValidationError("critic objection must be non-empty exactly when supported")
     else:
-        if type(obj["supported"]) is not bool: raise ValidationError("critic supported must be boolean")
-        _string(obj["objection"], "critic.objection", empty=True)
-        _string(obj["summary"], "critic.summary", empty=True)
-        if obj["supported"] and not obj["objection"].strip(): raise ValidationError("supported critic objection must be non-empty")
+        _string(obj["direction"], "worker.direction"); _integer(obj["generation"], "worker.generation", 1, 10 ** 9); _oid(obj["baseline_oid"], "worker.baseline_oid"); _oid(obj["parent_tree"], "worker.parent_tree"); _number(obj["deadline"], "worker.deadline", 0); _string(obj["summary"], "worker.summary", empty=True)
+        for key in ("direction", "generation", "baseline_oid", "parent_tree", "deadline"):
+            if obj[key] != expected[key]:
+                raise ValidationError(f"stale or wrong receipt binding: {key}")
+        if obj["status"] not in {"completed", "failed"}:
+            raise ValidationError("worker status invalid")
     return obj
 
 
-def inspect_candidate(repo: Path, baseline: str, allowed: Sequence[str], protected: Sequence[str], *, cached: bool = False) -> list[str]:
-    option = ["--cached"] if cached else []
-    raw = git(repo, "diff", *option, "--name-status", "-z", baseline, "--", text=False).stdout
-    fields = raw.split(b"\0"); changed: list[str] = []
-    i = 0
-    while i < len(fields) and fields[i]:
-        status_code = fields[i].decode(); i += 1
-        if status_code.startswith(("R", "C")):
-            i += 1
-        path = fields[i].decode("utf-8", "strict"); i += 1
-        norm = normalize_prefix(path, "candidate path")
-        if any(_prefix_contains(prefix, norm) for prefix in protected): raise ValidationError(f"protected path changed: {norm}")
-        if not any(_prefix_contains(prefix, norm) for prefix in allowed): raise ValidationError(f"out-of-scope path changed: {norm}")
-        target = repo / norm
-        if target.exists() or target.is_symlink():
-            mode = target.lstat().st_mode
-            if stat.S_ISLNK(mode) or not stat.S_ISREG(mode): raise ValidationError(f"symlink/special candidate rejected: {norm}")
-        changed.append(norm)
-    return changed
-
-
 def materialize(source: Path, destination: Path, oid: str) -> None:
-    git(source, "clone", "--no-hardlinks", "--quiet", str(source), str(destination))
-    git(destination, "checkout", "--quiet", "--detach", oid)
-    git(destination, "clean", "-ffdx")
+    git(source, "clone", "--no-hardlinks", "--quiet", str(source), str(destination)); git(destination, "checkout", "--quiet", "--detach", oid); git(destination, "clean", "-ffdx")
 
 
 def export_index(repository: Path, destination: Path) -> None:
-    """Export the controller-owned index to a metadata-free directory."""
     destination.mkdir(parents=True, exist_ok=False)
-    prefix = str(destination.resolve()) + os.sep
-    git(repository, "checkout-index", "--all", "--force", f"--prefix={prefix}")
+    git(repository, "checkout-index", "--all", "--force", f"--prefix={destination.resolve()}{os.sep}")
 
 
 def capture_workspace(workspace: Path, repository: Path) -> None:
-    """Safely copy a metadata-free worker workspace into a controller clone."""
     for entry in workspace.rglob("*"):
         mode = entry.lstat().st_mode
-        if stat.S_ISLNK(mode) or not (stat.S_ISREG(mode) or stat.S_ISDIR(mode)):
-            raise ValidationError(f"symlink/special candidate rejected: {entry.relative_to(workspace)}")
-        if entry.name == ".git":
-            raise ValidationError("worker created forbidden Git metadata")
-    for entry in sorted((p for p in repository.iterdir() if p.name != ".git"), reverse=True):
-        if entry.is_dir(): shutil.rmtree(entry)
-        else: entry.unlink()
-    shutil.copytree(workspace, repository, dirs_exist_ok=True)
-    git(repository, "add", "-A")
+        if entry.name == ".git" or stat.S_ISLNK(mode) or not (stat.S_ISREG(mode) or stat.S_ISDIR(mode)):
+            raise ValidationError(f"symlink/special/metadata candidate rejected: {entry.relative_to(workspace)}")
+    for entry in (p for p in repository.iterdir() if p.name != ".git"):
+        shutil.rmtree(entry) if entry.is_dir() else entry.unlink()
+    shutil.copytree(workspace, repository, dirs_exist_ok=True); git(repository, "add", "-A")
 
 
-def evaluate(spec: Mapping[str, Any], treeish: str, root: Path) -> dict[str, Any]:
-    control = root / f"eval-control-{uuid.uuid4().hex}"
-    work = root / f"eval-{uuid.uuid4().hex}"
-    materialize(Path(spec["repository"]["path"]), control, treeish)
-    export_index(control, work)
-    try:
-        protected_hashes = {p: tree_digest(work / p) for p in spec["paths"]["protected"]}
-        ev = spec["evaluator"]; sandbox = spec["sandbox"]
-        result = run_bounded([*sandbox["wrapper_argv"], *ev["argv"]], cwd=work, timeout=min(ev["timeout_seconds"], spec["budgets"]["process_seconds"]), max_output=ev["max_output_bytes"])
-        if result.returncode: raise RuntimeError(f"evaluator failed ({result.returncode}): {result.stderr.decode('utf-8', 'replace')}")
-        parsed = parse_evaluator_output(result.stdout)
-        if protected_hashes != {p: tree_digest(work / p) for p in spec["paths"]["protected"]}: raise ValidationError("evaluator modified protected inputs")
-        return parsed
-    finally:
-        shutil.rmtree(work, ignore_errors=True)
-        shutil.rmtree(control, ignore_errors=True)
+def inspect_candidate(repo: Path, baseline: str, allowed: Sequence[str], protected: Sequence[str], *, cached: bool = False) -> list[str]:
+    raw = git(repo, "diff", *(["--cached"] if cached else []), "--name-status", "-z", baseline, "--", text=False).stdout
+    fields, changed, index = raw.split(b"\0"), [], 0
+    while index < len(fields) and fields[index]:
+        status_code = fields[index].decode(); index += 1
+        if status_code.startswith(("R", "C")):
+            index += 1
+        path = normalize_prefix(fields[index].decode("utf-8", "strict"), "candidate path"); index += 1
+        if any(_prefix_contains(prefix, path) for prefix in protected):
+            raise ValidationError(f"protected path changed: {path}")
+        if not any(_prefix_contains(prefix, path) for prefix in allowed):
+            raise ValidationError(f"out-of-scope path changed: {path}")
+        target = repo / path
+        if target.exists() or target.is_symlink():
+            mode = target.lstat().st_mode
+            if stat.S_ISLNK(mode) or not stat.S_ISREG(mode):
+                raise ValidationError(f"symlink/special candidate rejected: {path}")
+        changed.append(path)
+    return changed
 
 
 def tree_digest(path: Path) -> str:
     digest = hashlib.sha256()
-    if not path.exists(): return digest.hexdigest()
+    if not path.exists():
+        return digest.hexdigest()
     entries = [path] if path.is_file() else sorted(path.rglob("*"))
     for entry in entries:
         relative = entry.relative_to(path.parent if path.is_file() else path).as_posix().encode(); digest.update(relative)
@@ -421,189 +488,433 @@ def tree_digest(path: Path) -> str:
     return digest.hexdigest()
 
 
-def setup_command(repo: Path, output: Path, goal: str, codex: str = "codex") -> list[str]:
-    schema = output / "spec-schema.json"; receipt = output / "spec.json"
-    return [codex, "exec", "--ephemeral", "--ignore-user-config", "--ignore-rules", "--sandbox", "read-only", "--cwd", str(repo), "--output-schema", str(schema), "--output-last-message", str(receipt), "-"]
+def artifact_usage(path: Path) -> int:
+    total = 0
+    for name in ("events", "evidence", "schemas"):
+        directory = path / name
+        if directory.exists():
+            total += sum(p.stat().st_size for p in directory.rglob("*") if p.is_file() and not p.is_symlink())
+    for name in ("spec.json", "knowledge.json", "result.json", "final.patch"):
+        target = path / name
+        if target.is_file():
+            total += target.stat().st_size
+    return total
+
+
+class RunBudget:
+    def __init__(self, started_epoch: float, wall_seconds: float, artifact_bytes: int, state: Path):
+        self.deadline_epoch = started_epoch + wall_seconds; self.artifact_bytes = artifact_bytes; self.state = state; self._lock = threading.Lock(); self._reserved = 0
+    def remaining(self) -> float:
+        value = self.deadline_epoch - time.time()
+        if value <= 0:
+            raise BudgetExceeded("whole-run wall budget exhausted")
+        return value
+    def timeout(self, requested: float) -> float:
+        return max(0.001, min(requested, self.remaining()))
+    def check_artifacts(self, additional: int = 0) -> None:
+        with self._lock:
+            if artifact_usage(self.state) + self._reserved + additional > self.artifact_bytes:
+                raise BudgetExceeded("artifact budget exceeded")
+    @contextlib.contextmanager
+    def reserve_artifact(self, amount: int):
+        with self._lock:
+            if artifact_usage(self.state) + self._reserved + amount > self.artifact_bytes:
+                raise BudgetExceeded("artifact budget exceeded")
+            self._reserved += amount
+        try:
+            yield
+        finally:
+            with self._lock:
+                self._reserved -= amount
+
+
+def _copy_immutable(baseline: Path, work: Path, inputs: Sequence[str]) -> dict[str, str]:
+    hashes = {}
+    for relative in inputs:
+        source, destination = baseline / relative, work / relative
+        if not source.exists() or source.is_symlink():
+            raise ValidationError(f"immutable evaluator input missing or symlinked: {relative}")
+        if destination.exists():
+            shutil.rmtree(destination) if destination.is_dir() else destination.unlink()
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copytree(source, destination) if source.is_dir() else shutil.copy2(source, destination)
+        hashes[relative] = tree_digest(destination)
+    return hashes
+
+
+def _run_score(spec: Mapping[str, Any], work: Path, argv: Sequence[str], budget: RunBudget) -> dict[str, Any]:
+    evaluator = spec["evaluator"]
+    result = run_bounded([*spec["sandbox"]["wrapper_argv"], *argv], cwd=work, timeout=budget.timeout(min(evaluator["timeout_seconds"], spec["budgets"]["process_seconds"])), max_output=evaluator["max_output_bytes"])
+    if result.returncode:
+        raise RuntimeError(f"evaluator failed ({result.returncode}): {result.stderr.decode('utf-8', 'replace')}")
+    return parse_evaluator_output(result.stdout, evaluator["constraint_names"])
+
+
+def evaluate_tree(spec: Mapping[str, Any], controller_repo: Path, baseline_export: Path, state: Path, budget: RunBudget, *, baseline: bool = False) -> dict[str, Any]:
+    work = state / "temporary" / f"eval-{uuid.uuid4().hex}"; work.parent.mkdir(exist_ok=True)
+    budget.check_artifacts(); export_index(controller_repo, work)
+    try:
+        immutable = _copy_immutable(baseline_export, work, spec["evaluator"]["immutable_inputs"])
+        primary = _run_score(spec, work, spec["evaluator"]["baseline_argv"] if baseline else spec["evaluator"]["argv"], budget)
+        check = _run_score(spec, work, spec["evaluator"]["check_argv"], budget)
+        if primary != check:
+            raise ValidationError("primary evaluator and independent check disagree")
+        if immutable != {path: tree_digest(work / path) for path in spec["evaluator"]["immutable_inputs"]}:
+            raise ValidationError("evaluator modified immutable baseline-owned inputs")
+        return {**primary, "immutable_digest": digest_json(immutable)}
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
+def workflow_prompt(name: str) -> str:
+    path = Path(__file__).resolve().parent / "workflows" / f"autoresearch-{name}.md"
+    if not path.is_file():
+        raise RuntimeError(f"canonical workflow prompt missing: {path}")
+    return path.read_text()
+
+
+def bounded_prompt(value: str) -> str:
+    if len(value.encode()) > 256 * 1024:
+        raise BudgetExceeded("model prompt exceeds 256 KiB bound")
+    return value
 
 
 def receipt_json_schema(kind: str) -> dict[str, Any]:
-    if kind == "critic":
-        properties = {"schema_version": {"const": 1}, "run_id": {"type": "string"}, "attempt_id": {"type": "integer"}, "lease": {"type": "string"}, "supported": {"type": "boolean"}, "objection": {"type": "string"}, "summary": {"type": "string"}}
-    elif kind == "worker":
+    if kind == "worker":
         properties = {"schema_version": {"const": 1}, "run_id": {"type": "string"}, "attempt_id": {"type": "integer"}, "direction": {"type": "string"}, "generation": {"type": "integer"}, "baseline_oid": {"type": "string"}, "parent_tree": {"type": "string"}, "lease": {"type": "string"}, "deadline": {"type": "number"}, "status": {"enum": ["completed", "failed"]}, "summary": {"type": "string"}}
+    elif kind == "critic":
+        properties = {"schema_version": {"const": 1}, "run_id": {"type": "string"}, "attempt_id": {"type": "integer"}, "lease": {"type": "string"}, "supported": {"type": "boolean"}, "objection": {"type": "string"}, "summary": {"type": "string"}}
     else:
         raise ValidationError("unknown receipt schema")
     return {"type": "object", "additionalProperties": False, "required": list(properties), "properties": properties}
 
 
-def run_critic(spec: Mapping[str, Any], workspace: Path, state: Path, binding: Mapping[str, Any], evidence: Mapping[str, Any]) -> dict[str, Any]:
-    schema = state / "schemas/critic-v1.json"; atomic_json(schema, receipt_json_schema("critic"))
-    receipt = state / "critics" / f"{binding['attempt_id']:08d}.json"; receipt.parent.mkdir(exist_ok=True)
-    prompt = json.dumps({"task": "Adversarially inspect this candidate read-only. Set supported true only for an evidence-supported objection that must block promotion.", "goal": spec["goal"], "binding": {k: binding[k] for k in ("run_id", "attempt_id", "lease")}, "evidence": evidence}, sort_keys=True)
-    command = ["codex", "exec", "--ephemeral", "--ignore-user-config", "--ignore-rules", "--sandbox", "read-only", "--cwd", str(workspace), "--output-schema", str(schema), "--output-last-message", str(receipt), "-"]
-    result = run_bounded(command, cwd=workspace, timeout=min(120, spec["budgets"]["process_seconds"]), max_output=256 * 1024, input_text=prompt)
-    if result.returncode or not receipt.exists(): raise RuntimeError("critic failed or omitted receipt")
-    return validate_binding(json.loads(receipt.read_text()), binding, critic=True)
-
-
 def spec_json_schema() -> dict[str, Any]:
-    def closed(properties: dict[str, Any]) -> dict[str, Any]: return {"type": "object", "additionalProperties": False, "required": list(properties), "properties": properties}
-    string = {"type": "string", "minLength": 1}; integer = {"type": "integer", "minimum": 1}; number = {"type": "number"}
-    return closed({
-        "schema_version": {"const": 1},
-        "goal": string,
-        "repository": closed({"path": string, "source_oid": string, "baseline_oid": string}),
-        "paths": closed({
-            "allowed": {"type": "array", "items": string, "minItems": 1},
-            "protected": {"type": "array", "items": string},
-        }),
-        "evaluator": closed({
-            "argv": {"type": "array", "items": string, "minItems": 1},
-            "direction": {"enum": ["min", "max"]},
-            "timeout_seconds": number,
-            "max_output_bytes": integer,
-        }),
-        "sandbox": closed({
-            "wrapper_argv": {"type": "array", "items": string, "minItems": 1},
-            "capabilities": {"type": "array", "items": string},
-        }),
-        "budgets": closed({"attempts": integer, "concurrency": integer, "wall_seconds": number, "process_seconds": number, "artifact_bytes": integer}),
-        "search": closed({
-            "directions": {"type": "array", "items": string, "minItems": 1},
-            "adversarial_direction": string,
-            "target": {"type": ["number", "null"]},
-            "patience": {"type": "integer", "minimum": 0},
-            "min_improvement": number,
-        }),
-        "provenance": closed({"created_by": string, "created_at": string}),
-    })
+    def closed(properties: dict[str, Any]) -> dict[str, Any]:
+        return {"type": "object", "additionalProperties": False, "required": list(properties), "properties": properties}
+    string, number, integer = {"type": "string", "minLength": 1}, {"type": "number"}, {"type": "integer", "minimum": 1}
+    strings = {"type": "array", "items": string, "minItems": 1, "uniqueItems": True}
+    return closed({"schema_version": {"const": 1}, "goal": string, "repository": closed({"path": string, "source_oid": string, "baseline_oid": string}), "paths": closed({"allowed": strings, "protected": strings}), "evaluator": closed({"argv": strings, "baseline_argv": strings, "check_argv": strings, "constraint_names": strings, "immutable_inputs": strings, "direction": {"enum": ["min", "max"]}, "timeout_seconds": number, "max_output_bytes": integer}), "sandbox": closed({"wrapper_argv": strings, "capabilities": strings}), "budgets": closed({"attempts": integer, "concurrency": integer, "wall_seconds": number, "process_seconds": number, "artifact_bytes": integer}), "search": closed({"directions": strings, "adversarial_direction": string, "target": {"type": ["number", "null"]}, "patience": {"type": "integer", "minimum": 0}, "min_improvement": number}), "provenance": closed({"created_by": string, "created_at": string})})
+
+
+def setup_command(repo: Path, output: Path, goal: str, codex: str = "codex") -> list[str]:
+    return [codex, "exec", "--ephemeral", "--ignore-user-config", "--ignore-rules", "--sandbox", "read-only", "--cwd", str(repo), "--output-schema", str(output / "spec-schema.json"), "--output-last-message", str(output / "spec.json"), "-"]
 
 
 def command_setup(args: argparse.Namespace) -> int:
-    repo = args.repo.expanduser().resolve(); output = args.output.expanduser().resolve()
-    if output == repo or repo in output.parents: raise ValidationError("state/output must not be inside source repository")
+    repo, output = args.repo.expanduser().resolve(), args.output.expanduser().resolve()
+    if output == repo or repo in output.parents:
+        raise ValidationError("state/output must not be inside source repository")
     source_oid, baseline_oid = repository_facts(repo); output.mkdir(parents=True, exist_ok=False)
     atomic_json(output / "spec-schema.json", spec_json_schema())
-    prompt = f"Create a strict Autoresearch v1 spec for this clean pinned repository. Goal: {args.goal}\nRepository path: {repo}\nsource_oid={source_oid}\nbaseline_oid={baseline_oid}\nUse argv arrays only, declare required sandbox capabilities, realistic finite budgets, independent directions, and exact evaluator JSON protocol. Return only the schema JSON."
-    result = run_bounded(setup_command(repo, output, args.goal, args.codex), cwd=repo, timeout=args.timeout, max_output=256 * 1024, env=minimal_environment(), input_text=prompt)
-    if result.returncode: raise RuntimeError(result.stderr.decode("utf-8", "replace"))
+    prompt = bounded_prompt(workflow_prompt("setup") + "\n\n# Controller addendum (authoritative)\nThe evaluator object additionally and exactly requires baseline_argv, check_argv, constraint_names, and immutable_inputs. Both score commands must return identical exact JSON and immutable inputs must be protected baseline-owned paths.\n\n" + json.dumps({"goal": args.goal, "repository": str(repo), "source_oid": source_oid, "baseline_oid": baseline_oid}, sort_keys=True))
+    result = run_bounded(setup_command(repo, output, args.goal, args.codex), cwd=repo, timeout=args.timeout, max_output=256 * 1024, input_text=prompt)
+    if result.returncode:
+        raise RuntimeError(result.stderr.decode("utf-8", "replace"))
     spec_path = output / "spec.json"; spec = validate_spec(json.loads(spec_path.read_text()), spec_path=spec_path)
-    if Path(spec["repository"]["path"]).resolve() != repo or spec["repository"]["source_oid"] != source_oid or spec["repository"]["baseline_oid"] != baseline_oid: raise ValidationError("generated spec changed pinned repository provenance")
+    if Path(spec["repository"]["path"]).resolve() != repo or spec["repository"]["source_oid"] != source_oid or spec["repository"]["baseline_oid"] != baseline_oid:
+        raise ValidationError("generated spec changed pinned repository provenance")
     atomic_json(spec_path, spec); print(spec_path); return 0
 
 
-def capability_probe(spec: Mapping[str, Any], root: Path) -> None:
-    result = run_bounded([*spec["sandbox"]["wrapper_argv"], sys.executable, "-c", "print('probe')"], cwd=root, timeout=min(10, spec["budgets"]["process_seconds"]), max_output=1024)
-    if result.returncode or result.stdout != b"probe\n": raise RuntimeError("sandbox capability probe failed")
+def capability_probe(spec: Mapping[str, Any], state: Path, budget: RunBudget) -> None:
+    """Actively prove local escape/network denial and controller process containment."""
+    root = state / "temporary" / f"probe-{uuid.uuid4().hex}"; inside = root / "inside"; outside = root / "outside"; inside.mkdir(parents=True); outside.mkdir()
+    sentinel = outside / "sentinel"; sentinel.write_text("secret")
+    listener = socket.socket(); listener.bind(("127.0.0.1", 0)); listener.listen(); listener.settimeout(0.1)
+    script = "import pathlib,socket,sys\np=pathlib.Path(sys.argv[1]); port=int(sys.argv[2])\nok=[]\ntry:p.read_text();ok.append('read')\nexcept Exception:pass\ntry:p.write_text('changed');ok.append('write')\nexcept Exception:pass\ntry:s=socket.create_connection(('127.0.0.1',port),.2);ok.append('network');s.close()\nexcept Exception:pass\nprint(','.join(ok))\nsys.exit(1 if ok else 0)"
+    try:
+        result = run_bounded([*spec["sandbox"]["wrapper_argv"], sys.executable, "-c", script, str(sentinel), str(listener.getsockname()[1])], cwd=inside, timeout=budget.timeout(min(5, spec["budgets"]["process_seconds"])), max_output=1024)
+        accepted = False
+        try:
+            connection, _ = listener.accept(); accepted = True; connection.close()
+        except TimeoutError:
+            pass
+        if result.returncode or result.stdout != b"\n" or accepted or sentinel.read_text() != "secret":
+            raise ValidationError("sandbox capability probe did not deny filesystem escape and local network")
+        # A timed child proves process-group kill containment without external effects.
+        child_script = "import subprocess,sys,time\np=subprocess.Popen([sys.executable,'-c','import time;time.sleep(30)']);print(p.pid,flush=True);time.sleep(30)"
+        try:
+            process_result = run_bounded([*spec["sandbox"]["wrapper_argv"], sys.executable, "-c", child_script], cwd=inside, timeout=budget.timeout(0.2), max_output=1024)
+            if process_result.returncode == 0:
+                raise ValidationError("sandbox process probe unexpectedly completed")
+        except TimeoutError:
+            pass
+    finally:
+        listener.close(); shutil.rmtree(root, ignore_errors=True)
 
 
-def artifact_usage(path: Path) -> int:
-    return sum(p.stat().st_size for p in path.rglob("*") if p.is_file() and not p.is_symlink())
+def run_critic(spec: Mapping[str, Any], state: Path, budget: RunBudget, binding: Mapping[str, Any], evidence: Mapping[str, Any], *, final: bool = False) -> dict[str, Any]:
+    schema = state / "schemas/critic-v1.json"; atomic_json(schema, receipt_json_schema("critic"))
+    suffix = "final" if final else "promotion"; receipt = state / "temporary" / f"critic-{binding['attempt_id']:08d}-{suffix}-{uuid.uuid4().hex}.json"
+    closed_spec = {"goal": spec["goal"], "paths": spec["paths"], "evaluator": spec["evaluator"], "search": spec["search"]}
+    prompt = bounded_prompt(workflow_prompt("critic") + "\n\n# Closed controller evidence\n" + json.dumps({"spec": closed_spec, "binding": {k: binding[k] for k in ("run_id", "attempt_id", "lease")}, "evidence": evidence, "final": final}, sort_keys=True))
+    critic_cwd = state / "temporary" / f"critic-cwd-{uuid.uuid4().hex}"; critic_cwd.mkdir(parents=True)
+    try:
+        command = ["codex", "exec", "--ephemeral", "--ignore-user-config", "--ignore-rules", "--sandbox", "read-only", "--cwd", str(critic_cwd), "--output-schema", str(schema), "--output-last-message", str(receipt), "-"]
+        result = run_bounded(command, cwd=critic_cwd, timeout=budget.timeout(min(120, spec["budgets"]["process_seconds"])), max_output=256 * 1024, input_text=prompt)
+        if result.returncode or not receipt.exists():
+            raise RuntimeError("critic failed or omitted receipt")
+        return validate_binding(json.loads(receipt.read_text()), binding, critic=True)
+    finally:
+        receipt.unlink(missing_ok=True); shutil.rmtree(critic_cwd, ignore_errors=True)
+
+
+def _attempt_binding(run_id: str, attempt_id: int, direction: str, baseline_oid: str, parent_tree: str, deadline: float) -> dict[str, Any]:
+    return {"run_id": run_id, "attempt_id": attempt_id, "direction": direction, "generation": attempt_id, "baseline_oid": baseline_oid, "parent_tree": parent_tree, "lease": uuid.uuid4().hex, "deadline": deadline}
+
+
+def execute_attempt(spec: Mapping[str, Any], state: Path, baseline_export: Path, budget: RunBudget, binding: Mapping[str, Any], parent_patch: Path | None) -> dict[str, Any]:
+    attempt_id = binding["attempt_id"]; control = state / "temporary" / f"repo-{attempt_id:08d}-{binding['lease']}"; candidate = state / "temporary" / f"candidate-{attempt_id:08d}-{binding['lease']}"
+    receipt = state / "temporary" / f"worker-{attempt_id:08d}-{binding['lease']}.json"
+    try:
+        budget.check_artifacts(); materialize(Path(spec["repository"]["path"]), control, spec["repository"]["baseline_oid"])
+        if parent_patch is not None and parent_patch.stat().st_size:
+            if git(control, "apply", "--index", "--binary", str(parent_patch), check=False).returncode:
+                raise ValidationError("parent patch no longer applies to pinned baseline")
+        export_index(control, candidate)
+        schema = state / "schemas/worker-v1.json"; atomic_json(schema, receipt_json_schema("worker"))
+        supplied_spec = {"goal": spec["goal"], "paths": spec["paths"], "direction": binding["direction"], "budgets": {"process_seconds": spec["budgets"]["process_seconds"]}}
+        prompt = bounded_prompt(workflow_prompt("worker") + "\n\n# Controller assignment\n" + json.dumps({"spec": supplied_spec, "binding": binding}, sort_keys=True))
+        command = ["codex", "exec", "--ephemeral", "--ignore-user-config", "--ignore-rules", "--sandbox", "workspace-write", "--cwd", str(candidate), "--output-schema", str(schema), "--output-last-message", str(receipt), "-"]
+        result = run_bounded(command, cwd=candidate, timeout=budget.timeout(min(spec["budgets"]["process_seconds"], binding["deadline"] - time.time())), max_output=256 * 1024, input_text=prompt)
+        if result.returncode or not receipt.exists():
+            raise RuntimeError("worker failed or omitted receipt")
+        worker = validate_binding(json.loads(receipt.read_text()), binding)
+        if worker["status"] != "completed":
+            raise ValidationError("worker reported failed status")
+        capture_workspace(candidate, control)
+        changed = inspect_candidate(control, spec["repository"]["baseline_oid"], spec["paths"]["allowed"], spec["paths"]["protected"], cached=True)
+        if not changed:
+            raise ValidationError("worker produced no scoped change")
+        tree = git(control, "write-tree").stdout.strip(); patch = git(control, "diff", "--cached", "--binary", spec["repository"]["baseline_oid"], "--", text=False).stdout
+        patch_path = state / "evidence" / f"{attempt_id:08d}.patch"
+        with budget.reserve_artifact(len(patch)):
+            patch_digest = exclusive_bytes(patch_path, patch)
+        score = evaluate_tree(spec, control, baseline_export, state, budget)
+        return {**score, "attempt_id": attempt_id, "direction": binding["direction"], "tree": tree, "changed": changed, "patch": str(patch_path), "patch_digest": patch_digest, "binding": dict(binding)}
+    finally:
+        receipt.unlink(missing_ok=True); shutil.rmtree(control, ignore_errors=True); shutil.rmtree(candidate, ignore_errors=True)
+
+
+def verify_artifact(record: Mapping[str, Any], state: Path) -> Path:
+    path = Path(record["patch"])
+    try:
+        path.resolve().relative_to((state / "evidence").resolve())
+    except ValueError as exc:
+        raise ValidationError("patch path escaped evidence directory") from exc
+    if not path.is_file() or file_digest(path) != record["patch_digest"]:
+        raise ValidationError(f"patch artifact tamper for attempt {record.get('attempt_id', 'final')}")
+    return path
+
+
+def reconstruct_state(events: Sequence[Mapping[str, Any]], state: Path, spec: Mapping[str, Any]) -> dict[str, Any]:
+    if not events or events[0]["kind"] != "run-started":
+        raise ValidationError("event log lacks canonical run-started event")
+    start = events[0]["payload"]
+    if start.get("spec_digest") != digest_json(spec):
+        raise ValidationError("spec differs from immutable run binding")
+    result = {"run_id": events[0]["run_id"], "started_epoch": start["started_epoch"], "baseline": None, "best_metric": None, "best_attempt_id": None, "best_tree": spec["repository"]["baseline_oid"], "best_patch": None, "best_patch_digest": hashlib.sha256(b"").hexdigest(), "winner_direction": None, "failures": 0, "leased": {}, "terminal": set(), "verified": {}, "critics": {}, "final_critics": {}, "decided": set(), "correction": None, "completed": None}
+    for event in events[1:]:
+        kind, payload, attempt_id = event["kind"], event["payload"], event["attempt_id"]
+        if kind == "baseline-evaluated":
+            result["baseline"] = payload; result["best_metric"] = payload["metric"]
+        elif kind == "lease-started":
+            result["leased"][attempt_id] = payload
+        elif kind == "attempt-verified":
+            verify_artifact(payload, state); result["terminal"].add(attempt_id); result["verified"][attempt_id] = payload
+        elif kind in {"attempt-rejected", "lease-abandoned"}:
+            result["terminal"].add(attempt_id); result["failures"] += 1
+        elif kind == "critic-completed":
+            result["critics"][attempt_id] = payload
+        elif kind == "final-critic":
+            result["final_critics"][attempt_id] = payload
+        elif kind == "correction-requested":
+            verify_artifact({**payload, "attempt_id": attempt_id}, state); result["decided"].add(attempt_id); result["correction"] = {**result["verified"].get(attempt_id, {}), **payload, "attempt_id": attempt_id}
+        elif kind == "promotion":
+            verify_artifact(payload, state); result["decided"].add(attempt_id); result.update(best_metric=payload["metric"], best_attempt_id=attempt_id, best_tree=payload["tree"], best_patch=Path(payload["patch"]), best_patch_digest=payload["patch_digest"], winner_direction=payload["direction"], failures=0, correction=None)
+        elif kind == "run-completed":
+            verify_artifact(payload, state); result["completed"] = payload
+    return result
+
+
+def _target_met(spec: Mapping[str, Any], metric: float) -> bool:
+    target = spec["search"]["target"]
+    return target is not None and (metric >= target if spec["evaluator"]["direction"] == "max" else metric <= target)
+
+
+def _promote_batch(spec: Mapping[str, Any], state: Path, log: EventLog, replay: dict[str, Any], records: Sequence[Mapping[str, Any]], budget: RunBudget) -> dict[str, Any]:
+    eligible = [r for r in records if all(r["constraints"].values()) and is_better(r["metric"], replay["best_metric"], spec["evaluator"]["direction"], spec["search"]["min_improvement"])]
+    if not eligible:
+        replay["failures"] += len(records); return replay
+    winner = stable_rank(eligible, spec["evaluator"]["direction"])[0]
+    critic = replay["critics"].get(winner["attempt_id"])
+    if critic is None:
+        critic = run_critic(spec, state, budget, winner["binding"], winner)
+        log.append("critic-completed", critic, winner["attempt_id"])
+    if critic["supported"]:
+        replay["failures"] += 1; replay["correction"] = winner
+        log.append("correction-requested", {"patch": winner["patch"], "patch_digest": winner["patch_digest"], "tree": winner["tree"], "direction": winner["direction"]}, winner["attempt_id"])
+        return replay
+    log.append("promotion", dict(winner), winner["attempt_id"])
+    replay.update(best_metric=winner["metric"], best_attempt_id=winner["attempt_id"], best_tree=winner["tree"], best_patch=Path(winner["patch"]), winner_direction=winner["direction"], failures=0)
+    return replay
+
+
+def _finalize(spec: Mapping[str, Any], state: Path, log: EventLog, replay: dict[str, Any], baseline_export: Path, budget: RunBudget) -> dict[str, Any]:
+    control = state / "temporary" / f"final-{uuid.uuid4().hex}"
+    try:
+        materialize(Path(spec["repository"]["path"]), control, spec["repository"]["baseline_oid"])
+        patch = replay["best_patch"]
+        if patch is not None and patch.stat().st_size:
+            verify_artifact({"patch": str(patch), "patch_digest": replay["best_patch_digest"], "attempt_id": replay["best_attempt_id"]}, state)
+            applied = git(control, "apply", "--index", "--binary", str(patch), check=False)
+            if applied.returncode:
+                raise ValidationError("final cumulative patch no longer applies")
+        tree = git(control, "write-tree").stdout.strip()
+        if tree != replay["best_tree"]:
+            raise ValidationError("final reconstructed tree differs from promoted tree")
+        score = evaluate_tree(spec, control, baseline_export, state, budget)
+        if score["metric"] != replay["best_metric"] or not all(score["constraints"].values()):
+            raise ValidationError("final fresh objective replay differs from promotion")
+        binding = replay["leased"].get(replay["best_attempt_id"])
+        if binding is None:
+            # Baseline-only run still receives a bound final critic.
+            binding = _attempt_binding(replay["run_id"], max(replay["leased"], default=0) + 1, "baseline-final", spec["repository"]["baseline_oid"], replay["best_tree"], time.time() + budget.remaining())
+        evidence = {**score, "tree": tree, "patch_digest": file_digest(patch) if patch else hashlib.sha256(b"").hexdigest(), "final_replay": True}
+        critic = replay["final_critics"].get(binding["attempt_id"])
+        if critic is None:
+            critic = run_critic(spec, state, budget, binding, evidence, final=True)
+            log.append("final-critic", critic, binding["attempt_id"])
+        if critic["supported"]:
+            raise FinalObjection("final critic raised a supported objection")
+        budget.check_artifacts()
+        final_patch = state / "evidence" / "final.patch"
+        patch_data = patch.read_bytes() if patch else b""
+        if not final_patch.exists():
+            with budget.reserve_artifact(len(patch_data)):
+                patch_digest = exclusive_bytes(final_patch, patch_data)
+        else:
+            patch_digest = file_digest(final_patch)
+            if patch_digest != hashlib.sha256(patch_data).hexdigest():
+                raise ValidationError("torn/tampered final patch")
+        result = {"schema_version": VERSION, "run_id": replay["run_id"], "status": "completed", "baseline_metric": replay["baseline"]["metric"], "best_metric": score["metric"], "best_attempt_id": replay["best_attempt_id"], "baseline_oid": spec["repository"]["baseline_oid"], "best_tree": tree, "patch": str(final_patch), "patch_digest": patch_digest, "evidence": str(state / "events"), "knowledge": str(state / "knowledge.json")}
+        _object(result, RESULT_KEYS, "result"); atomic_json(state / "knowledge.json", {"best_attempt_id": replay["best_attempt_id"], "metric": score["metric"]}); atomic_json(state / "result.json", result); budget.check_artifacts(); log.append("run-completed", result); return result
+    finally:
+        shutil.rmtree(control, ignore_errors=True)
 
 
 def run_controller(spec_path: Path, state: Path, *, resume: bool = False) -> dict[str, Any]:
     spec_path = spec_path.resolve(); spec = validate_spec(json.loads(spec_path.read_text()), spec_path=spec_path)
     source = Path(spec["repository"]["path"]).resolve(); source_oid, _ = repository_facts(source)
-    if source_oid != spec["repository"]["source_oid"]: raise ValidationError("source repository no longer matches pinned OID")
-    state = state.resolve();
-    if state == source or source in state.parents: raise ValidationError("state must not be inside source")
+    if source_oid != spec["repository"]["source_oid"]:
+        raise ValidationError("source repository no longer matches pinned OID")
+    state = state.resolve()
+    if state == source or source in state.parents:
+        raise ValidationError("state must not be inside source")
     state.mkdir(parents=True, exist_ok=True)
-    checkpoint_path = state / "checkpoint.json"
     with RunLock(state):
-        if resume:
-            checkpoint = json.loads(checkpoint_path.read_text()); run_id = checkpoint["run_id"]
-            log = EventLog(state, run_id); events = log.replay()
-            for event in events:
-                if event["kind"] == "lease-started" and not any(e["kind"] in {"attempt-completed", "attempt-rejected", "lease-abandoned"} and e["attempt_id"] == event["attempt_id"] for e in events): log.append("lease-abandoned", {"reason": "resume never restores model sessions"}, event["attempt_id"])
-            if (state / "result.json").exists(): return json.loads((state / "result.json").read_text())
+        event_files = sorted((state / "events").glob("*.json")) if (state / "events").exists() else []
+        if event_files:
+            first = json.loads(event_files[0].read_text()); run_id = first["run_id"]; log = EventLog(state, run_id); events = log.replay(); replay = reconstruct_state(events, state, spec)
+            if not resume:
+                raise RuntimeError("state already contains a run; use resume")
         else:
-            if checkpoint_path.exists(): raise RuntimeError("state already contains a run; use resume")
-            run_id = uuid.uuid4().hex; log = EventLog(state, run_id)
-            checkpoint = {"schema_version": VERSION, "run_id": run_id, "spec_digest": digest_json(spec), "next_attempt": 1, "best_attempt_id": None, "best_tree": spec["repository"]["baseline_oid"], "failures": 0}
-            atomic_json(state / "spec.json", spec); log.append("run-started", {"spec_digest": checkpoint["spec_digest"]})
-        if checkpoint["spec_digest"] != digest_json(spec): raise ValidationError("spec differs from checkpoint")
-        capability_probe(spec, state)
-        baseline_eval = evaluate(spec, spec["repository"]["baseline_oid"], state)
-        if not all(baseline_eval["constraints"].values()): raise ValidationError("baseline violates declared constraints")
-        log.append("baseline-evaluated", baseline_eval)
-        best_metric = checkpoint.get("best_metric", baseline_eval["metric"]); best_tree = checkpoint["best_tree"]
-        checkpoint["best_metric"] = best_metric
-        atomic_json(checkpoint_path, checkpoint)
-        directions = schedule_directions(spec); start = time.monotonic()
-        for attempt_id in range(checkpoint["next_attempt"], spec["budgets"]["attempts"] + 1):
-            if time.monotonic() - start >= spec["budgets"]["wall_seconds"] or artifact_usage(state) >= spec["budgets"]["artifact_bytes"]: log.append("budget-exhausted", {}, attempt_id); break
-            correction = checkpoint.pop("correction", None)
-            direction = f"correction:{correction['attempt_id']}" if correction else directions[attempt_id - 1]
-            lease = uuid.uuid4().hex; deadline = time.time() + min(spec["budgets"]["process_seconds"], spec["budgets"]["wall_seconds"] - (time.monotonic() - start))
-            parent_tree = correction["tree"] if correction else best_tree; binding = {"run_id": run_id, "attempt_id": attempt_id, "direction": direction, "generation": attempt_id, "baseline_oid": spec["repository"]["baseline_oid"], "parent_tree": parent_tree, "lease": lease, "deadline": deadline}
-            log.append("lease-started", binding, attempt_id)
-            control = state / "repositories" / f"{attempt_id:08d}"; control.parent.mkdir(exist_ok=True)
-            materialize(source, control, spec["repository"]["baseline_oid"])
-            best_patch = state / "best.patch"
-            input_patch = Path(correction["patch"]) if correction else best_patch
-            if input_patch.exists() and input_patch.stat().st_size:
-                applied = git(control, "apply", "--index", "--binary", str(input_patch), check=False)
-                if applied.returncode: raise RuntimeError(f"could not materialize parent patch: {applied.stderr.strip()}")
-            candidate = state / "candidates" / f"{attempt_id:08d}"; candidate.parent.mkdir(exist_ok=True)
-            export_index(control, candidate)
-            receipt_path = state / "receipts" / f"{attempt_id:08d}.json"; receipt_path.parent.mkdir(exist_ok=True)
-            worker_schema = state / "schemas/worker-v1.json"; atomic_json(worker_schema, receipt_json_schema("worker"))
-            prompt = json.dumps({"task": "Improve the repository for the goal and direction. Modify only allowed paths. Do not commit. Return only the exact worker receipt.", "goal": spec["goal"], "allowed": spec["paths"]["allowed"], "protected": spec["paths"]["protected"], "binding": binding}, sort_keys=True)
-            command = ["codex", "exec", "--ephemeral", "--ignore-user-config", "--ignore-rules", "--sandbox", "workspace-write", "--cwd", str(candidate), "--output-schema", str(worker_schema), "--output-last-message", str(receipt_path), "-"]
+            if resume:
+                raise ValidationError("run directory has no immutable event log")
+            run_id = uuid.uuid4().hex; log = EventLog(state, run_id); started = time.time()
+            initial_budget = RunBudget(started, spec["budgets"]["wall_seconds"], spec["budgets"]["artifact_bytes"], state); log.budget = initial_budget
+            spec_size = len(json.dumps(spec, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()) + 1
+            initial_budget.check_artifacts(spec_size + 1024)
+            log.append("run-started", {"spec_digest": digest_json(spec), "started_epoch": started}); atomic_json(state / "spec.json", spec)
+            replay = reconstruct_state(log.replay(), state, spec)
+        budget = RunBudget(replay["started_epoch"], spec["budgets"]["wall_seconds"], spec["budgets"]["artifact_bytes"], state)
+        log.budget = budget
+        budget.check_artifacts()
+        # Mutable files are caches only; never trust them on resume.
+        (state / "checkpoint.json").unlink(missing_ok=True)
+        if replay["completed"] is not None:
+            result = replay["completed"]
+            verify_artifact(result, state); atomic_json(state / "result.json", result); return result
+        incomplete = sorted(set(replay["leased"]) - replay["terminal"])
+        for attempt_id in incomplete:
+            log.append("lease-abandoned", {"reason": "resume never restores model sessions"}, attempt_id)
+        if incomplete:
+            replay = reconstruct_state(log.replay(), state, spec)
+        capability_probe(spec, state, budget)
+        baseline_control = state / "temporary" / f"baseline-control-{uuid.uuid4().hex}"; baseline_export = state / "temporary" / f"baseline-export-{uuid.uuid4().hex}"; baseline_control.parent.mkdir(exist_ok=True)
+        materialize(source, baseline_control, spec["repository"]["baseline_oid"]); export_index(baseline_control, baseline_export)
+        try:
+            if replay["baseline"] is None:
+                baseline = evaluate_tree(spec, baseline_control, baseline_export, state, budget, baseline=True)
+                if not all(baseline["constraints"].values()):
+                    raise ValidationError("baseline violates declared constraints")
+                log.append("baseline-evaluated", baseline); replay = reconstruct_state(log.replay(), state, spec)
+            else:
+                # Resume verifies the immutable baseline decision freshly.
+                fresh = evaluate_tree(spec, baseline_control, baseline_export, state, budget, baseline=True)
+                if fresh != replay["baseline"]:
+                    raise ValidationError("baseline replay differs from immutable event")
+            pending = [record for attempt_id, record in sorted(replay["verified"].items()) if attempt_id not in replay["decided"]]
+            if pending:
+                replay = _promote_batch(spec, state, log, replay, pending, budget)
+                replay = reconstruct_state(log.replay(), state, spec)
+            used = max(replay["leased"], default=0)
+            # Reserve one correction slot; the adversarial direction remains the last search slot.
+            search_limit = max(0, spec["budgets"]["attempts"] - 1)
+            while used < search_limit and replay["failures"] <= spec["search"]["patience"] and not _target_met(spec, replay["best_metric"]):
+                batch_size = min(spec["budgets"]["concurrency"], search_limit - used)
+                directions = schedule_directions(spec, winner_direction=replay["winner_direction"], used=used, count=batch_size, limit=search_limit)
+                parent_patch, parent_tree = replay["best_patch"], replay["best_tree"]
+                bindings = []
+                for offset, direction in enumerate(directions, 1):
+                    attempt_id = used + offset; binding = _attempt_binding(run_id, attempt_id, direction, spec["repository"]["baseline_oid"], parent_tree, time.time() + budget.remaining()); bindings.append(binding); log.append("lease-started", binding, attempt_id)
+                records = []
+                with concurrent.futures.ThreadPoolExecutor(max_workers=batch_size) as executor:
+                    futures = {executor.submit(execute_attempt, spec, state, baseline_export, budget, binding, parent_patch): binding for binding in bindings}
+                    for future in concurrent.futures.as_completed(futures):
+                        binding = futures[future]
+                        try:
+                            record = future.result(); log.append("attempt-verified", record, binding["attempt_id"]); records.append(record)
+                        except Exception as exc:
+                            log.append("attempt-rejected", {"reason": str(exc)}, binding["attempt_id"])
+                # Completion order is discarded before the serialized decision.
+                records.sort(key=lambda item: item["attempt_id"]); replay = reconstruct_state(log.replay(), state, spec); replay = _promote_batch(spec, state, log, replay, records, budget); replay = reconstruct_state(log.replay(), state, spec)
+                used += batch_size; atomic_json(state / "checkpoint.json", {"event_digest": log.replay()[-1]["digest"]})
+            # A supported promotion objection gets exactly the reserved correction attempt.
+            correction = replay.get("correction")
+            if correction and used < spec["budgets"]["attempts"]:
+                attempt_id = used + 1; binding = _attempt_binding(run_id, attempt_id, f"correction:{correction['attempt_id']}", spec["repository"]["baseline_oid"], correction["tree"], time.time() + budget.remaining()); log.append("lease-started", binding, attempt_id)
+                try:
+                    record = execute_attempt(spec, state, baseline_export, budget, binding, Path(correction["patch"])); log.append("attempt-verified", record, attempt_id); replay = reconstruct_state(log.replay(), state, spec); replay = _promote_batch(spec, state, log, replay, [record], budget)
+                except Exception as exc:
+                    log.append("attempt-rejected", {"reason": str(exc)}, attempt_id)
+                replay = reconstruct_state(log.replay(), state, spec)
+            budget.check_artifacts()
             try:
-                result = run_bounded(command, cwd=candidate, timeout=max(0.001, deadline - time.time()), max_output=256 * 1024, input_text=prompt)
-                if result.returncode or not receipt_path.exists(): raise RuntimeError("worker failed or omitted receipt")
-                validate_binding(json.loads(receipt_path.read_text()), binding)
-                capture_workspace(candidate, control)
-                changed = inspect_candidate(control, spec["repository"]["baseline_oid"], spec["paths"]["allowed"], spec["paths"]["protected"], cached=True)
-                if not changed: raise ValidationError("worker produced no scoped change")
-                tree = git(control, "write-tree").stdout.strip()
-                # Make tree reachable in the pinned source without touching its worktree/ref.
-                pack = git(control, "diff", "--cached", "--binary", spec["repository"]["baseline_oid"], "--", text=False).stdout
-                patch_path = state / "evidence" / f"{attempt_id:08d}.patch"; patch_path.parent.mkdir(exist_ok=True); patch_path.write_bytes(pack)
-                eval_result = evaluate_candidate(spec, control, tree, state)
-                record = {**eval_result, "attempt_id": attempt_id, "tree": tree, "changed": changed, "patch": str(patch_path), "patch_digest": hashlib.sha256(pack).hexdigest()}
-                accepted = all(eval_result["constraints"].values()) and is_better(eval_result["metric"], best_metric, spec["evaluator"]["direction"], spec["search"]["min_improvement"])
-                critic = None
-                if accepted:
-                    critic = run_critic(spec, candidate, state, binding, record)
-                    log.append("critic-completed", critic, attempt_id)
+                return _finalize(spec, state, log, replay, baseline_export, budget)
+            except FinalObjection:
+                used = max(replay["leased"], default=0)
+                if replay["best_patch"] is None or used >= spec["budgets"]["attempts"]:
+                    raise
+                attempt_id = used + 1
+                binding = _attempt_binding(run_id, attempt_id, f"correction-final:{replay['best_attempt_id']}", spec["repository"]["baseline_oid"], replay["best_tree"], time.time() + budget.remaining())
+                log.append("lease-started", binding, attempt_id)
+                try:
+                    record = execute_attempt(spec, state, baseline_export, budget, binding, replay["best_patch"])
+                    if not all(record["constraints"].values()) or not is_better(record["metric"], replay["baseline"]["metric"], spec["evaluator"]["direction"], spec["search"]["min_improvement"]):
+                        raise ValidationError("final correction no longer satisfies promotion gate")
+                    log.append("attempt-verified", record, attempt_id)
+                    critic = run_critic(spec, state, budget, binding, record, final=True); log.append("critic-completed", critic, attempt_id)
                     if critic["supported"]:
-                        accepted = False
-                        if not correction and attempt_id < spec["budgets"]["attempts"]:
-                            checkpoint["correction"] = {"attempt_id": attempt_id, "tree": tree, "patch": str(patch_path)}
-                if accepted:
-                    best_metric = eval_result["metric"]; best_tree = tree; checkpoint["best_attempt_id"] = attempt_id; checkpoint["best_tree"] = tree; checkpoint["failures"] = 0
-                    checkpoint["best_metric"] = best_metric
-                    log.append("attempt-completed", {**record, "promoted": True}, attempt_id)
-                    best_patch.write_bytes(pack)
-                else:
-                    checkpoint["failures"] += 1; log.append("attempt-completed", {**record, "promoted": False}, attempt_id)
-            except Exception as exc:
-                checkpoint["failures"] += 1; log.append("attempt-rejected", {"reason": str(exc)}, attempt_id)
-            checkpoint["next_attempt"] = attempt_id + 1; atomic_json(checkpoint_path, checkpoint)
-            if checkpoint["failures"] > spec["search"]["patience"]: log.append("patience-exhausted", {}, attempt_id); break
-            target = spec["search"]["target"]
-            if target is not None and ((spec["evaluator"]["direction"] == "max" and best_metric >= target) or (spec["evaluator"]["direction"] == "min" and best_metric <= target)): break
-        patch = state / "best.patch"
-        if checkpoint["best_attempt_id"] is None: patch.write_bytes(b"")
-        else: patch.write_bytes((state / "evidence" / f"{checkpoint['best_attempt_id']:08d}.patch").read_bytes())
-        result = {"schema_version": VERSION, "run_id": run_id, "status": "completed", "baseline_metric": baseline_eval["metric"], "best_metric": best_metric, "best_attempt_id": checkpoint["best_attempt_id"], "baseline_oid": spec["repository"]["baseline_oid"], "best_tree": best_tree, "patch": str(patch), "evidence": str(state / "events"), "knowledge": str(state / "knowledge.json")}
-        _object(result, RESULT_KEYS, "result"); atomic_json(state / "knowledge.json", {"attempts": checkpoint["next_attempt"] - 1, "failures": checkpoint["failures"]}); log.append("run-completed", result); atomic_json(state / "result.json", result); return result
-
-
-def evaluate_candidate(spec: Mapping[str, Any], candidate: Path, tree: str, state: Path) -> dict[str, Any]:
-    # Candidate objects need not be copied into the source; clone candidate and checkout its tree.
-    work = state / f"eval-{uuid.uuid4().hex}"
-    export_index(candidate, work)
-    try:
-        protected_hashes = {p: tree_digest(work / p) for p in spec["paths"]["protected"]}
-        ev = spec["evaluator"]; result = run_bounded([*spec["sandbox"]["wrapper_argv"], *ev["argv"]], cwd=work, timeout=min(ev["timeout_seconds"], spec["budgets"]["process_seconds"]), max_output=ev["max_output_bytes"])
-        if result.returncode: raise RuntimeError("candidate evaluator failed")
-        parsed = parse_evaluator_output(result.stdout)
-        if protected_hashes != {p: tree_digest(work / p) for p in spec["paths"]["protected"]}: raise ValidationError("evaluator modified protected inputs")
-        return parsed
-    finally: shutil.rmtree(work, ignore_errors=True)
+                        raise ValidationError("final correction retained a supported objection")
+                    log.append("promotion", record, attempt_id); replay = reconstruct_state(log.replay(), state, spec)
+                except Exception as exc:
+                    log.append("attempt-rejected", {"reason": str(exc)}, attempt_id)
+                    raise
+                return _finalize(spec, state, log, replay, baseline_export, budget)
+        finally:
+            shutil.rmtree(baseline_control, ignore_errors=True); shutil.rmtree(baseline_export, ignore_errors=True); shutil.rmtree(state / "temporary", ignore_errors=True)
 
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -617,11 +928,11 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 def main(argv: Sequence[str] | None = None) -> int:
     try:
         args = parse_args(argv)
-        if args.command == "setup": return command_setup(args)
-        if args.command == "run": result = run_controller(args.spec, args.state)
-        else: result = run_controller(args.run_dir / "spec.json", args.run_dir, resume=True)
+        if args.command == "setup":
+            return command_setup(args)
+        result = run_controller(args.spec, args.state) if args.command == "run" else run_controller(args.run_dir / "spec.json", args.run_dir, resume=True)
         print(json.dumps(result, sort_keys=True)); return 0
-    except (ValidationError, RuntimeError, TimeoutError, OSError, json.JSONDecodeError) as exc:
+    except (ValidationError, BudgetExceeded, RuntimeError, TimeoutError, OSError, json.JSONDecodeError) as exc:
         print(json.dumps({"schema_version": VERSION, "status": "failed", "error": str(exc)}, sort_keys=True), file=sys.stderr); return 1
 
 
