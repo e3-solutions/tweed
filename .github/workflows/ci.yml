@@ -22,9 +22,10 @@ jobs:
           fetch-depth: 0
       - name: Smoke-test runner
         run: |
-          python -m py_compile bonaparte bonaparte-launcher
+          python -m py_compile bonaparte bonaparte-launcher autoresearch
           sh -n install
           ./bonaparte --help
+          ./autoresearch --help
       - name: Test versioned installation and updates
         run: python -m unittest discover -s tests -v
       - name: Reject whitespace errors in the PR diff

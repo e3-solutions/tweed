@@ -79,6 +79,9 @@ class InstallationTests(unittest.TestCase):
             (self.bin / "bonaparte").resolve(), current / "bonaparte-launcher"
         )
         self.assertEqual(
+            (self.bin / "autoresearch").resolve(), current / "autoresearch"
+        )
+        self.assertEqual(
             (self.codex / "skills/use-bonaparte").resolve(),
             current / "skills/use-bonaparte",
         )
@@ -87,6 +90,22 @@ class InstallationTests(unittest.TestCase):
             str(self.bin / "bonaparte"), "--help", environment=self.environment
         )
         self.assertIn("usage: bonaparte", result.stdout)
+        result = self.run_command(
+            str(self.bin / "autoresearch"), "--help", environment=self.environment
+        )
+        self.assertIn("usage: autoresearch", result.stdout)
+
+    def test_install_refuses_a_non_symlink_autoresearch_target(self):
+        self.bin.mkdir()
+        target = self.bin / "autoresearch"
+        target.write_text("keep me")
+
+        result = self.run_command(str(self.source / "install"), check=False)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("refusing to replace non-symlink", result.stderr)
+        self.assertEqual(target.read_text(), "keep me")
+        self.assertFalse((self.home / "current").exists())
 
     def test_update_switches_to_a_complete_snapshot(self):
         self.install()
@@ -99,7 +118,7 @@ class InstallationTests(unittest.TestCase):
 
     def test_failed_update_keeps_the_current_runtime_usable(self):
         original = self.install()
-        (self.source / "workflows/scope.md").unlink()
+        (self.source / "workflows/autoresearch-critic.md").unlink()
         self.git("add", "-u")
         self.git("commit", "-qm", "incomplete")
         self.git("tag", "v1.1.0")
@@ -112,4 +131,9 @@ class InstallationTests(unittest.TestCase):
             str(self.bin / "bonaparte"), "--help", environment=environment
         )
         self.assertIn("usage: bonaparte", result.stdout)
+        self.assertEqual((self.home / "current").resolve().name, original)
+        result = self.run_command(
+            str(self.bin / "autoresearch"), "--help", environment=environment
+        )
+        self.assertIn("usage: autoresearch", result.stdout)
         self.assertEqual((self.home / "current").resolve().name, original)

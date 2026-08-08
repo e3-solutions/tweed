@@ -28,6 +28,7 @@ atomic_link() {
 
 mkdir -p "$bin_dir" "$codex_dir/skills" "$bonaparte_home/releases"
 refuse_regular_target "$bin_dir/bonaparte"
+refuse_regular_target "$bin_dir/autoresearch"
 refuse_regular_target "$codex_dir/skills/use-bonaparte"
 refuse_regular_target "$bonaparte_home/current"
 
@@ -41,14 +42,16 @@ if [ ! -e "$release_dir" ]; then
     mkdir "$staging/bundle"
     git -C "$repo_dir" archive --format=tar -o "$staging/source.tar" HEAD
     tar -xf "$staging/source.tar" -C "$staging/bundle"
-    python3 -m py_compile "$staging/bundle/bonaparte" "$staging/bundle/bonaparte-launcher"
+    python3 -m py_compile "$staging/bundle/bonaparte" "$staging/bundle/bonaparte-launcher" "$staging/bundle/autoresearch"
     BONAPARTE_AUTO_UPDATE=0 python3 "$staging/bundle/bonaparte" --help >/dev/null
+    python3 "$staging/bundle/autoresearch" --help >/dev/null
     rm -rf "$staging/bundle/__pycache__"
     mv "$staging/bundle" "$release_dir"
 fi
 
 atomic_link "releases/$runtime_id" "$bonaparte_home/current"
 atomic_link "$bonaparte_home/current/bonaparte-launcher" "$bin_dir/bonaparte"
+atomic_link "$bonaparte_home/current/autoresearch" "$bin_dir/autoresearch"
 atomic_link "$bonaparte_home/current/skills/use-bonaparte" "$codex_dir/skills/use-bonaparte"
 rm -f "$bonaparte_home/last-check"
 
@@ -56,4 +59,5 @@ trap - EXIT HUP INT TERM
 rm -rf "$staging"
 echo "Installed Bonaparte runtime: $runtime_id"
 echo "Installed Bonaparte CLI: $bin_dir/bonaparte"
+echo "Installed autoresearch CLI: $bin_dir/autoresearch"
 echo "Installed Bonaparte skill: $codex_dir/skills/use-bonaparte"
