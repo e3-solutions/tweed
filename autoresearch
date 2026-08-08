@@ -44,6 +44,7 @@ RESULT_KEYS = frozenset({"schema_version", "run_id", "status", "baseline_metric"
 REQUIRED_CAPABILITIES = frozenset({"filesystem-contained", "process-contained", "network-denied"})
 TERMINAL_ATTEMPT_EVENTS = frozenset({"attempt-verified", "attempt-rejected", "lease-abandoned"})
 GIT_ENV = {"GIT_CONFIG_NOSYSTEM": "1", "GIT_TERMINAL_PROMPT": "0", "GIT_OPTIONAL_LOCKS": "0", "GIT_CONFIG_COUNT": "1", "GIT_CONFIG_KEY_0": "core.hooksPath", "GIT_CONFIG_VALUE_0": os.devnull}
+ORIGINAL_CODEX_HOME = os.environ.get("CODEX_HOME", str(Path.home() / ".codex"))
 
 
 class ValidationError(ValueError):
@@ -143,7 +144,10 @@ def validate_spec(value: Any, *, spec_path: Path | None = None) -> dict[str, Any
         raise ValidationError("spec.schema_version must be 1")
     _string(spec["goal"], "spec.goal")
     repository = _object(spec["repository"], REPOSITORY_KEYS, "spec.repository")
-    source = Path(_string(repository["path"], "spec.repository.path")).expanduser().resolve()
+    source_value = Path(_string(repository["path"], "spec.repository.path")).expanduser()
+    if not source_value.is_absolute():
+        raise ValidationError("spec.repository.path must be absolute")
+    source = source_value.resolve()
     _oid(repository["source_oid"], "spec.repository.source_oid")
     _oid(repository["baseline_oid"], "spec.repository.baseline_oid")
     paths = _object(spec["paths"], PATH_KEYS, "spec.paths")
@@ -170,7 +174,7 @@ def validate_spec(value: Any, *, spec_path: Path | None = None) -> dict[str, Any
     sandbox = _object(spec["sandbox"], SANDBOX_KEYS, "spec.sandbox")
     validate_argv(sandbox["wrapper_argv"], "spec.sandbox.wrapper_argv")
     caps = sandbox["capabilities"]
-    if not isinstance(caps, list) or set(caps) != REQUIRED_CAPABILITIES:
+    if not isinstance(caps, list) or len(caps) != len(REQUIRED_CAPABILITIES) or any(not isinstance(value, str) for value in caps) or set(caps) != REQUIRED_CAPABILITIES:
         raise ValidationError(f"spec.sandbox.capabilities must be exactly {sorted(REQUIRED_CAPABILITIES)}")
     budgets = _object(spec["budgets"], BUDGET_KEYS, "spec.budgets")
     attempts = _integer(budgets["attempts"], "spec.budgets.attempts", 1, 10000)
@@ -260,6 +264,11 @@ def minimal_environment(extra: Mapping[str, str] | None = None) -> dict[str, str
     return env
 
 
+def codex_environment() -> dict[str, str]:
+    """Minimal environment plus only the explicit Codex authentication home."""
+    return minimal_environment({"CODEX_HOME": ORIGINAL_CODEX_HOME})
+
+
 def _kill_group(process: subprocess.Popen[bytes]) -> None:
     with contextlib.suppress(OSError):
         os.killpg(process.pid, signal.SIGKILL)
@@ -271,17 +280,16 @@ def run_bounded(argv: Sequence[str], *, cwd: Path, timeout: float, max_output: i
     if timeout <= 0:
         raise TimeoutError("process has no wall budget remaining")
     process = subprocess.Popen(command, cwd=cwd, env=dict(env or minimal_environment()), stdin=subprocess.PIPE if input_text is not None else subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
-    if input_text is not None:
-        try:
-            process.stdin.write(input_text.encode())
-            process.stdin.close()
-        except BrokenPipeError:
-            pass
+    input_data = memoryview(input_text.encode() if input_text is not None else b"")
+    input_offset = 0
     selector = selectors.DefaultSelector()
     buffers: dict[Any, bytearray] = {process.stdout: bytearray(), process.stderr: bytearray()}
     for stream in buffers:
         os.set_blocking(stream.fileno(), False)
         selector.register(stream, selectors.EVENT_READ)
+    if input_text is not None:
+        os.set_blocking(process.stdin.fileno(), False)
+        selector.register(process.stdin, selectors.EVENT_WRITE)
     deadline = time.monotonic() + timeout
     try:
         while selector.get_map():
@@ -290,6 +298,17 @@ def run_bounded(argv: Sequence[str], *, cwd: Path, timeout: float, max_output: i
                 _kill_group(process)
                 raise TimeoutError(f"process exceeded {timeout} seconds")
             for key, _ in selector.select(min(0.05, remaining)):
+                if key.fileobj is process.stdin:
+                    try:
+                        written = os.write(process.stdin.fileno(), input_data[input_offset:input_offset + 8192])
+                        input_offset += written
+                    except BlockingIOError:
+                        continue
+                    except (BrokenPipeError, OSError):
+                        input_offset = len(input_data)
+                    if input_offset >= len(input_data):
+                        selector.unregister(process.stdin); process.stdin.close()
+                    continue
                 chunk = os.read(key.fileobj.fileno(), 8192)
                 if not chunk:
                     selector.unregister(key.fileobj)
@@ -313,38 +332,54 @@ def run_bounded(argv: Sequence[str], *, cwd: Path, timeout: float, max_output: i
             _kill_group(process)
             with contextlib.suppress(Exception):
                 process.wait(timeout=1)
-        for stream in (process.stdout, process.stderr):
-            stream.close()
+        for stream in (process.stdin, process.stdout, process.stderr):
+            if stream is not None and not stream.closed:
+                stream.close()
 
 
-def git(repo: Path, *args: str, check: bool = True, text: bool = True) -> subprocess.CompletedProcess[Any]:
-    result = subprocess.run(["git", "-c", f"core.hooksPath={os.devnull}", *args], cwd=repo, env=minimal_environment(), capture_output=True, text=text, check=False)
+def git(repo: Path, *args: str, check: bool = True, text: bool = True, timeout: float | None = None, max_output: int = 64 * 1024 * 1024) -> subprocess.CompletedProcess[Any]:
+    command = ["git", "-c", f"core.hooksPath={os.devnull}", *args]
+    if timeout is None:
+        result = subprocess.run(command, cwd=repo, env=minimal_environment(), capture_output=True, text=text, check=False)
+    else:
+        bounded = run_bounded(command, cwd=repo, env=minimal_environment(), timeout=timeout, max_output=max_output)
+        result = subprocess.CompletedProcess(command, bounded.returncode, bounded.stdout.decode("utf-8", "strict") if text else bounded.stdout, bounded.stderr.decode("utf-8", "replace") if text else bounded.stderr)
     if check and result.returncode:
         stderr = result.stderr if text else result.stderr.decode("utf-8", "replace")
         raise RuntimeError(f"git {' '.join(args)} failed: {stderr.strip()}")
     return result
 
 
-def repository_facts(repo: Path) -> tuple[str, str]:
+def repository_facts(repo: Path, budget: Any = None) -> tuple[str, str]:
     repo = repo.resolve()
-    if git(repo, "status", "--porcelain=v1", "--untracked-files=normal").stdout:
+    timeout = lambda: budget.remaining() if budget is not None else None
+    if git(repo, "status", "--porcelain=v1", "--untracked-files=normal", timeout=timeout()).stdout:
         raise ValidationError("source repository must be clean")
-    source_oid = git(repo, "rev-parse", "HEAD").stdout.strip()
-    baseline_oid = git(repo, "rev-parse", "HEAD^{commit}").stdout.strip()
+    source_oid = git(repo, "rev-parse", "HEAD", timeout=timeout()).stdout.strip()
+    baseline_oid = git(repo, "rev-parse", "HEAD^{commit}", timeout=timeout()).stdout.strip()
     return _oid(source_oid, "source OID"), _oid(baseline_oid, "baseline OID")
 
 
-def atomic_json(path: Path, value: Any) -> None:
+def encode_json(value: Any) -> bytes:
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode() + b"\n"
+
+
+def atomic_json(path: Path, value: Any, budget: Any = None) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    data = json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode() + b"\n"
-    fd, temporary = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
-    try:
-        with os.fdopen(fd, "wb") as stream:
-            stream.write(data); stream.flush(); os.fsync(stream.fileno())
-        os.replace(temporary, path)
-    finally:
-        with contextlib.suppress(FileNotFoundError):
-            os.unlink(temporary)
+    data = encode_json(value); old_size = path.stat().st_size if path.is_file() else 0
+    reservation = budget.reserve_artifact(max(0, len(data) - old_size)) if budget is not None else contextlib.nullcontext()
+    with reservation:
+        temporary_dir = path.parent
+        if budget is not None:
+            temporary_dir = budget.state / "temporary"; temporary_dir.mkdir(parents=True, exist_ok=True)
+        fd, temporary = tempfile.mkstemp(prefix=f".{path.name}.", dir=temporary_dir)
+        try:
+            with os.fdopen(fd, "wb") as stream:
+                stream.write(data); stream.flush(); os.fsync(stream.fileno())
+            os.replace(temporary, path)
+        finally:
+            with contextlib.suppress(FileNotFoundError):
+                os.unlink(temporary)
 
 
 def digest_json(value: Any) -> str:
@@ -436,27 +471,37 @@ def validate_binding(record: Mapping[str, Any], expected: Mapping[str, Any], *, 
     return obj
 
 
-def materialize(source: Path, destination: Path, oid: str) -> None:
-    git(source, "clone", "--no-hardlinks", "--quiet", str(source), str(destination)); git(destination, "checkout", "--quiet", "--detach", oid); git(destination, "clean", "-ffdx")
+def materialize(source: Path, destination: Path, oid: str, budget: Any = None) -> None:
+    remaining = (lambda: budget.remaining()) if budget is not None else (lambda: None)
+    git(source, "clone", "--no-hardlinks", "--quiet", str(source), str(destination), timeout=remaining()); git(destination, "checkout", "--quiet", "--detach", oid, timeout=remaining()); git(destination, "clean", "-ffdx", timeout=remaining())
 
 
-def export_index(repository: Path, destination: Path) -> None:
+def export_index(repository: Path, destination: Path, budget: Any = None) -> None:
     destination.mkdir(parents=True, exist_ok=False)
-    git(repository, "checkout-index", "--all", "--force", f"--prefix={destination.resolve()}{os.sep}")
+    git(repository, "checkout-index", "--all", "--force", f"--prefix={destination.resolve()}{os.sep}", timeout=budget.remaining() if budget is not None else None)
 
 
-def capture_workspace(workspace: Path, repository: Path) -> None:
+def capture_workspace(workspace: Path, repository: Path, budget: Any = None) -> None:
     for entry in workspace.rglob("*"):
+        if budget is not None: budget.remaining()
         mode = entry.lstat().st_mode
         if entry.name == ".git" or stat.S_ISLNK(mode) or not (stat.S_ISREG(mode) or stat.S_ISDIR(mode)):
             raise ValidationError(f"symlink/special/metadata candidate rejected: {entry.relative_to(workspace)}")
     for entry in (p for p in repository.iterdir() if p.name != ".git"):
+        if budget is not None: budget.remaining()
         shutil.rmtree(entry) if entry.is_dir() else entry.unlink()
-    shutil.copytree(workspace, repository, dirs_exist_ok=True); git(repository, "add", "-A")
+    repository.mkdir(parents=True, exist_ok=True)
+    for source in sorted(workspace.rglob("*")):
+        if budget is not None: budget.remaining()
+        relative, destination = source.relative_to(workspace), repository / source.relative_to(workspace)
+        if source.is_dir(): destination.mkdir(parents=True, exist_ok=True)
+        elif budget is not None: _copy_regular_tree(source, destination, budget)
+        else: destination.parent.mkdir(parents=True, exist_ok=True); shutil.copy2(source, destination)
+    git(repository, "add", "-A", timeout=budget.remaining() if budget is not None else None)
 
 
-def inspect_candidate(repo: Path, baseline: str, allowed: Sequence[str], protected: Sequence[str], *, cached: bool = False) -> list[str]:
-    raw = git(repo, "diff", *(["--cached"] if cached else []), "--name-status", "-z", baseline, "--", text=False).stdout
+def inspect_candidate(repo: Path, baseline: str, allowed: Sequence[str], protected: Sequence[str], *, cached: bool = False, budget: Any = None) -> list[str]:
+    raw = git(repo, "diff", *(["--cached"] if cached else []), "--name-status", "-z", baseline, "--", text=False, timeout=budget.remaining() if budget is not None else None).stdout
     fields, changed, index = raw.split(b"\0"), [], 0
     while index < len(fields) and fields[index]:
         status_code = fields[index].decode(); index += 1
@@ -476,15 +521,23 @@ def inspect_candidate(repo: Path, baseline: str, allowed: Sequence[str], protect
     return changed
 
 
-def tree_digest(path: Path) -> str:
+def tree_digest(path: Path, budget: Any = None) -> str:
     digest = hashlib.sha256()
     if not path.exists():
         return digest.hexdigest()
     entries = [path] if path.is_file() else sorted(path.rglob("*"))
     for entry in entries:
+        if budget is not None: budget.remaining()
         relative = entry.relative_to(path.parent if path.is_file() else path).as_posix().encode(); digest.update(relative)
         if entry.is_symlink(): digest.update(b"L" + os.readlink(entry).encode())
-        elif entry.is_file(): digest.update(b"F" + entry.read_bytes())
+        elif entry.is_file():
+            digest.update(b"F")
+            with entry.open("rb") as stream:
+                while True:
+                    if budget is not None: budget.remaining()
+                    chunk = stream.read(1024 * 1024)
+                    if not chunk: break
+                    digest.update(chunk)
     return digest.hexdigest()
 
 
@@ -494,7 +547,7 @@ def artifact_usage(path: Path) -> int:
         directory = path / name
         if directory.exists():
             total += sum(p.stat().st_size for p in directory.rglob("*") if p.is_file() and not p.is_symlink())
-    for name in ("spec.json", "knowledge.json", "result.json", "final.patch"):
+    for name in ("spec.json", "knowledge.json", "result.json", "checkpoint.json", "final.patch"):
         target = path / name
         if target.is_file():
             total += target.stat().st_size
@@ -528,17 +581,45 @@ class RunBudget:
                 self._reserved -= amount
 
 
-def _copy_immutable(baseline: Path, work: Path, inputs: Sequence[str]) -> dict[str, str]:
+def _validate_regular_tree(path: Path, budget: RunBudget, relative: str) -> None:
+    budget.remaining()
+    mode = path.lstat().st_mode
+    if stat.S_ISLNK(mode) or not (stat.S_ISREG(mode) or stat.S_ISDIR(mode)):
+        raise ValidationError(f"immutable evaluator input contains symlink/special file: {relative}")
+    if stat.S_ISDIR(mode):
+        with os.scandir(path) as entries:
+            for entry in entries:
+                _validate_regular_tree(Path(entry.path), budget, f"{relative}/{entry.name}")
+
+
+def _copy_regular_tree(source: Path, destination: Path, budget: RunBudget) -> None:
+    budget.remaining()
+    if stat.S_ISDIR(source.lstat().st_mode):
+        destination.mkdir(parents=True, exist_ok=True)
+        with os.scandir(source) as entries:
+            for entry in entries:
+                _copy_regular_tree(Path(entry.path), destination / entry.name, budget)
+    else:
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        with source.open("rb") as source_stream, destination.open("wb") as destination_stream:
+            while True:
+                budget.remaining(); chunk = source_stream.read(1024 * 1024)
+                if not chunk: break
+                destination_stream.write(chunk)
+        shutil.copystat(source, destination)
+
+
+def _copy_immutable(baseline: Path, work: Path, inputs: Sequence[str], budget: RunBudget) -> dict[str, str]:
     hashes = {}
     for relative in inputs:
         source, destination = baseline / relative, work / relative
-        if not source.exists() or source.is_symlink():
-            raise ValidationError(f"immutable evaluator input missing or symlinked: {relative}")
-        if destination.exists():
+        if not source.exists() and not source.is_symlink():
+            raise ValidationError(f"immutable evaluator input missing: {relative}")
+        _validate_regular_tree(source, budget, relative)
+        if destination.exists() or destination.is_symlink():
             shutil.rmtree(destination) if destination.is_dir() else destination.unlink()
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copytree(source, destination) if source.is_dir() else shutil.copy2(source, destination)
-        hashes[relative] = tree_digest(destination)
+        _copy_regular_tree(source, destination, budget)
+        hashes[relative] = tree_digest(destination, budget)
     return hashes
 
 
@@ -552,14 +633,14 @@ def _run_score(spec: Mapping[str, Any], work: Path, argv: Sequence[str], budget:
 
 def evaluate_tree(spec: Mapping[str, Any], controller_repo: Path, baseline_export: Path, state: Path, budget: RunBudget, *, baseline: bool = False) -> dict[str, Any]:
     work = state / "temporary" / f"eval-{uuid.uuid4().hex}"; work.parent.mkdir(exist_ok=True)
-    budget.check_artifacts(); export_index(controller_repo, work)
+    budget.check_artifacts(); export_index(controller_repo, work, budget)
     try:
-        immutable = _copy_immutable(baseline_export, work, spec["evaluator"]["immutable_inputs"])
+        immutable = _copy_immutable(baseline_export, work, spec["evaluator"]["immutable_inputs"], budget)
         primary = _run_score(spec, work, spec["evaluator"]["baseline_argv"] if baseline else spec["evaluator"]["argv"], budget)
         check = _run_score(spec, work, spec["evaluator"]["check_argv"], budget)
         if primary != check:
             raise ValidationError("primary evaluator and independent check disagree")
-        if immutable != {path: tree_digest(work / path) for path in spec["evaluator"]["immutable_inputs"]}:
+        if immutable != {path: tree_digest(work / path, budget) for path in spec["evaluator"]["immutable_inputs"]}:
             raise ValidationError("evaluator modified immutable baseline-owned inputs")
         return {**primary, "immutable_digest": digest_json(immutable)}
     finally:
@@ -590,11 +671,29 @@ def receipt_json_schema(kind: str) -> dict[str, Any]:
 
 
 def spec_json_schema() -> dict[str, Any]:
-    def closed(properties: dict[str, Any]) -> dict[str, Any]:
-        return {"type": "object", "additionalProperties": False, "required": list(properties), "properties": properties}
-    string, number, integer = {"type": "string", "minLength": 1}, {"type": "number"}, {"type": "integer", "minimum": 1}
-    strings = {"type": "array", "items": string, "minItems": 1, "uniqueItems": True}
-    return closed({"schema_version": {"const": 1}, "goal": string, "repository": closed({"path": string, "source_oid": string, "baseline_oid": string}), "paths": closed({"allowed": strings, "protected": strings}), "evaluator": closed({"argv": strings, "baseline_argv": strings, "check_argv": strings, "constraint_names": strings, "immutable_inputs": strings, "direction": {"enum": ["min", "max"]}, "timeout_seconds": number, "max_output_bytes": integer}), "sandbox": closed({"wrapper_argv": strings, "capabilities": strings}), "budgets": closed({"attempts": integer, "concurrency": integer, "wall_seconds": number, "process_seconds": number, "artifact_bytes": integer}), "search": closed({"directions": strings, "adversarial_direction": string, "target": {"type": ["number", "null"]}, "patience": {"type": "integer", "minimum": 0}, "min_improvement": number}), "provenance": closed({"created_by": string, "created_at": string})})
+    def closed(properties: dict[str, Any], description: str | None = None) -> dict[str, Any]:
+        result = {"type": "object", "additionalProperties": False, "required": list(properties), "properties": properties}
+        if description: result["description"] = description
+        return result
+    string = {"type": "string", "minLength": 1, "pattern": "^[^\\u0000]+$"}
+    argv = {"type": "array", "items": string, "minItems": 1}
+    unique_strings = {"type": "array", "items": string, "minItems": 1, "uniqueItems": True}
+    path = {"type": "string", "minLength": 1, "pattern": r"^(?!.*\x00)(?!/)(?!.*\\)(?!.*(?:^|/)\.\.?(?:/|$))(?!.*//)(?!.*\/$).+$"}
+    paths = {"type": "array", "items": path, "minItems": 1, "uniqueItems": True}
+    oid = {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+    positive = {"type": "number", "exclusiveMinimum": 0}
+    capabilities = {"type": "array", "items": {"enum": sorted(REQUIRED_CAPABILITIES)}, "minItems": 3, "maxItems": 3, "uniqueItems": True}
+    description = "Cross-field constraints enforced after JSON Schema: concurrency <= attempts; patience <= attempts; allowed/protected prefixes must not overlap; immutable_inputs must be protected; adversarial_direction must differ from directions."
+    return closed({
+        "schema_version": {"const": 1}, "goal": string,
+        "repository": closed({"path": {"type": "string", "pattern": "^/"}, "source_oid": oid, "baseline_oid": oid}),
+        "paths": closed({"allowed": paths, "protected": paths}),
+        "evaluator": closed({"argv": argv, "baseline_argv": argv, "check_argv": argv, "constraint_names": unique_strings, "immutable_inputs": paths, "direction": {"enum": ["min", "max"]}, "timeout_seconds": positive, "max_output_bytes": {"type": "integer", "minimum": 64, "maximum": 64 * 1024 * 1024}}),
+        "sandbox": closed({"wrapper_argv": argv, "capabilities": capabilities}),
+        "budgets": closed({"attempts": {"type": "integer", "minimum": 1, "maximum": 10000}, "concurrency": {"type": "integer", "minimum": 1, "maximum": 256}, "wall_seconds": positive, "process_seconds": positive, "artifact_bytes": {"type": "integer", "minimum": 1024, "maximum": 1024 ** 4}}),
+        "search": closed({"directions": unique_strings, "adversarial_direction": string, "target": {"type": ["number", "null"]}, "patience": {"type": "integer", "minimum": 0, "maximum": 10000}, "min_improvement": {"type": "number", "minimum": 0}}),
+        "provenance": closed({"created_by": string, "created_at": string}),
+    }, description)
 
 
 def setup_command(repo: Path, output: Path, goal: str, codex: str = "codex") -> list[str]:
@@ -608,7 +707,7 @@ def command_setup(args: argparse.Namespace) -> int:
     source_oid, baseline_oid = repository_facts(repo); output.mkdir(parents=True, exist_ok=False)
     atomic_json(output / "spec-schema.json", spec_json_schema())
     prompt = bounded_prompt(workflow_prompt("setup") + "\n\n# Controller addendum (authoritative)\nThe evaluator object additionally and exactly requires baseline_argv, check_argv, constraint_names, and immutable_inputs. Both score commands must return identical exact JSON and immutable inputs must be protected baseline-owned paths.\n\n" + json.dumps({"goal": args.goal, "repository": str(repo), "source_oid": source_oid, "baseline_oid": baseline_oid}, sort_keys=True))
-    result = run_bounded(setup_command(repo, output, args.goal, args.codex), cwd=repo, timeout=args.timeout, max_output=256 * 1024, input_text=prompt)
+    result = run_bounded(setup_command(repo, output, args.goal, args.codex), cwd=repo, timeout=args.timeout, max_output=256 * 1024, input_text=prompt, env=codex_environment())
     if result.returncode:
         raise RuntimeError(result.stderr.decode("utf-8", "replace"))
     spec_path = output / "spec.json"; spec = validate_spec(json.loads(spec_path.read_text()), spec_path=spec_path)
@@ -645,14 +744,14 @@ def capability_probe(spec: Mapping[str, Any], state: Path, budget: RunBudget) ->
 
 
 def run_critic(spec: Mapping[str, Any], state: Path, budget: RunBudget, binding: Mapping[str, Any], evidence: Mapping[str, Any], *, final: bool = False) -> dict[str, Any]:
-    schema = state / "schemas/critic-v1.json"; atomic_json(schema, receipt_json_schema("critic"))
+    schema = state / "schemas/critic-v1.json"; atomic_json(schema, receipt_json_schema("critic"), budget)
     suffix = "final" if final else "promotion"; receipt = state / "temporary" / f"critic-{binding['attempt_id']:08d}-{suffix}-{uuid.uuid4().hex}.json"
     closed_spec = {"goal": spec["goal"], "paths": spec["paths"], "evaluator": spec["evaluator"], "search": spec["search"]}
     prompt = bounded_prompt(workflow_prompt("critic") + "\n\n# Closed controller evidence\n" + json.dumps({"spec": closed_spec, "binding": {k: binding[k] for k in ("run_id", "attempt_id", "lease")}, "evidence": evidence, "final": final}, sort_keys=True))
     critic_cwd = state / "temporary" / f"critic-cwd-{uuid.uuid4().hex}"; critic_cwd.mkdir(parents=True)
     try:
         command = ["codex", "exec", "--ephemeral", "--ignore-user-config", "--ignore-rules", "--sandbox", "read-only", "--cwd", str(critic_cwd), "--output-schema", str(schema), "--output-last-message", str(receipt), "-"]
-        result = run_bounded(command, cwd=critic_cwd, timeout=budget.timeout(min(120, spec["budgets"]["process_seconds"])), max_output=256 * 1024, input_text=prompt)
+        result = run_bounded(command, cwd=critic_cwd, timeout=budget.timeout(min(120, spec["budgets"]["process_seconds"])), max_output=256 * 1024, input_text=prompt, env=codex_environment())
         if result.returncode or not receipt.exists():
             raise RuntimeError("critic failed or omitted receipt")
         return validate_binding(json.loads(receipt.read_text()), binding, critic=True)
@@ -668,26 +767,26 @@ def execute_attempt(spec: Mapping[str, Any], state: Path, baseline_export: Path,
     attempt_id = binding["attempt_id"]; control = state / "temporary" / f"repo-{attempt_id:08d}-{binding['lease']}"; candidate = state / "temporary" / f"candidate-{attempt_id:08d}-{binding['lease']}"
     receipt = state / "temporary" / f"worker-{attempt_id:08d}-{binding['lease']}.json"
     try:
-        budget.check_artifacts(); materialize(Path(spec["repository"]["path"]), control, spec["repository"]["baseline_oid"])
+        budget.check_artifacts(); materialize(Path(spec["repository"]["path"]), control, spec["repository"]["baseline_oid"], budget)
         if parent_patch is not None and parent_patch.stat().st_size:
-            if git(control, "apply", "--index", "--binary", str(parent_patch), check=False).returncode:
+            if git(control, "apply", "--index", "--binary", str(parent_patch), check=False, timeout=budget.remaining()).returncode:
                 raise ValidationError("parent patch no longer applies to pinned baseline")
-        export_index(control, candidate)
-        schema = state / "schemas/worker-v1.json"; atomic_json(schema, receipt_json_schema("worker"))
+        export_index(control, candidate, budget)
+        schema = state / "schemas/worker-v1.json"; atomic_json(schema, receipt_json_schema("worker"), budget)
         supplied_spec = {"goal": spec["goal"], "paths": spec["paths"], "direction": binding["direction"], "budgets": {"process_seconds": spec["budgets"]["process_seconds"]}}
         prompt = bounded_prompt(workflow_prompt("worker") + "\n\n# Controller assignment\n" + json.dumps({"spec": supplied_spec, "binding": binding}, sort_keys=True))
         command = ["codex", "exec", "--ephemeral", "--ignore-user-config", "--ignore-rules", "--sandbox", "workspace-write", "--cwd", str(candidate), "--output-schema", str(schema), "--output-last-message", str(receipt), "-"]
-        result = run_bounded(command, cwd=candidate, timeout=budget.timeout(min(spec["budgets"]["process_seconds"], binding["deadline"] - time.time())), max_output=256 * 1024, input_text=prompt)
+        result = run_bounded(command, cwd=candidate, timeout=budget.timeout(min(spec["budgets"]["process_seconds"], binding["deadline"] - time.time())), max_output=256 * 1024, input_text=prompt, env=codex_environment())
         if result.returncode or not receipt.exists():
             raise RuntimeError("worker failed or omitted receipt")
         worker = validate_binding(json.loads(receipt.read_text()), binding)
         if worker["status"] != "completed":
             raise ValidationError("worker reported failed status")
-        capture_workspace(candidate, control)
-        changed = inspect_candidate(control, spec["repository"]["baseline_oid"], spec["paths"]["allowed"], spec["paths"]["protected"], cached=True)
+        capture_workspace(candidate, control, budget)
+        changed = inspect_candidate(control, spec["repository"]["baseline_oid"], spec["paths"]["allowed"], spec["paths"]["protected"], cached=True, budget=budget)
         if not changed:
             raise ValidationError("worker produced no scoped change")
-        tree = git(control, "write-tree").stdout.strip(); patch = git(control, "diff", "--cached", "--binary", spec["repository"]["baseline_oid"], "--", text=False).stdout
+        tree = git(control, "write-tree", timeout=budget.remaining()).stdout.strip(); patch = git(control, "diff", "--cached", "--binary", spec["repository"]["baseline_oid"], "--", text=False, timeout=budget.remaining(), max_output=min(64 * 1024 * 1024, budget.artifact_bytes)).stdout
         patch_path = state / "evidence" / f"{attempt_id:08d}.patch"
         with budget.reserve_artifact(len(patch)):
             patch_digest = exclusive_bytes(patch_path, patch)
@@ -718,7 +817,7 @@ def reconstruct_state(events: Sequence[Mapping[str, Any]], state: Path, spec: Ma
     for event in events[1:]:
         kind, payload, attempt_id = event["kind"], event["payload"], event["attempt_id"]
         if kind == "baseline-evaluated":
-            result["baseline"] = payload; result["best_metric"] = payload["metric"]
+            result["baseline"] = payload; result["best_metric"] = payload["metric"]; result["best_tree"] = payload["tree"]
         elif kind == "lease-started":
             result["leased"][attempt_id] = payload
         elif kind == "attempt-verified":
@@ -731,6 +830,12 @@ def reconstruct_state(events: Sequence[Mapping[str, Any]], state: Path, spec: Ma
             result["final_critics"][attempt_id] = payload
         elif kind == "correction-requested":
             verify_artifact({**payload, "attempt_id": attempt_id}, state); result["decided"].add(attempt_id); result["correction"] = {**result["verified"].get(attempt_id, {}), **payload, "attempt_id": attempt_id}
+        elif kind == "batch-decision":
+            attempt_ids = payload.get("attempt_ids")
+            failure_delta = payload.get("failure_delta")
+            if not isinstance(attempt_ids, list) or any(type(value) is not int for value in attempt_ids) or type(failure_delta) is not int or failure_delta < 0:
+                raise ValidationError("invalid immutable batch decision")
+            result["decided"].update(attempt_ids); result["failures"] += failure_delta
         elif kind == "promotion":
             verify_artifact(payload, state); result["decided"].add(attempt_id); result.update(best_metric=payload["metric"], best_attempt_id=attempt_id, best_tree=payload["tree"], best_patch=Path(payload["patch"]), best_patch_digest=payload["patch_digest"], winner_direction=payload["direction"], failures=0, correction=None)
         elif kind == "run-completed":
@@ -744,34 +849,36 @@ def _target_met(spec: Mapping[str, Any], metric: float) -> bool:
 
 
 def _promote_batch(spec: Mapping[str, Any], state: Path, log: EventLog, replay: dict[str, Any], records: Sequence[Mapping[str, Any]], budget: RunBudget) -> dict[str, Any]:
+    attempt_ids = sorted(int(record["attempt_id"]) for record in records)
     eligible = [r for r in records if all(r["constraints"].values()) and is_better(r["metric"], replay["best_metric"], spec["evaluator"]["direction"], spec["search"]["min_improvement"])]
     if not eligible:
-        replay["failures"] += len(records); return replay
+        log.append("batch-decision", {"attempt_ids": attempt_ids, "promoted_attempt_id": None, "failure_delta": len(records), "reason": "no-eligible-promotion"})
+        return replay
     winner = stable_rank(eligible, spec["evaluator"]["direction"])[0]
     critic = replay["critics"].get(winner["attempt_id"])
     if critic is None:
         critic = run_critic(spec, state, budget, winner["binding"], winner)
         log.append("critic-completed", critic, winner["attempt_id"])
     if critic["supported"]:
-        replay["failures"] += 1; replay["correction"] = winner
         log.append("correction-requested", {"patch": winner["patch"], "patch_digest": winner["patch_digest"], "tree": winner["tree"], "direction": winner["direction"]}, winner["attempt_id"])
+        log.append("batch-decision", {"attempt_ids": attempt_ids, "promoted_attempt_id": None, "failure_delta": 1, "reason": "critic-objection"})
         return replay
     log.append("promotion", dict(winner), winner["attempt_id"])
-    replay.update(best_metric=winner["metric"], best_attempt_id=winner["attempt_id"], best_tree=winner["tree"], best_patch=Path(winner["patch"]), winner_direction=winner["direction"], failures=0)
+    log.append("batch-decision", {"attempt_ids": attempt_ids, "promoted_attempt_id": winner["attempt_id"], "failure_delta": 0, "reason": "promoted"})
     return replay
 
 
 def _finalize(spec: Mapping[str, Any], state: Path, log: EventLog, replay: dict[str, Any], baseline_export: Path, budget: RunBudget) -> dict[str, Any]:
     control = state / "temporary" / f"final-{uuid.uuid4().hex}"
     try:
-        materialize(Path(spec["repository"]["path"]), control, spec["repository"]["baseline_oid"])
+        materialize(Path(spec["repository"]["path"]), control, spec["repository"]["baseline_oid"], budget)
         patch = replay["best_patch"]
         if patch is not None and patch.stat().st_size:
             verify_artifact({"patch": str(patch), "patch_digest": replay["best_patch_digest"], "attempt_id": replay["best_attempt_id"]}, state)
-            applied = git(control, "apply", "--index", "--binary", str(patch), check=False)
+            applied = git(control, "apply", "--index", "--binary", str(patch), check=False, timeout=budget.remaining())
             if applied.returncode:
                 raise ValidationError("final cumulative patch no longer applies")
-        tree = git(control, "write-tree").stdout.strip()
+        tree = git(control, "write-tree", timeout=budget.remaining()).stdout.strip()
         if tree != replay["best_tree"]:
             raise ValidationError("final reconstructed tree differs from promoted tree")
         score = evaluate_tree(spec, control, baseline_export, state, budget)
@@ -799,16 +906,15 @@ def _finalize(spec: Mapping[str, Any], state: Path, log: EventLog, replay: dict[
             if patch_digest != hashlib.sha256(patch_data).hexdigest():
                 raise ValidationError("torn/tampered final patch")
         result = {"schema_version": VERSION, "run_id": replay["run_id"], "status": "completed", "baseline_metric": replay["baseline"]["metric"], "best_metric": score["metric"], "best_attempt_id": replay["best_attempt_id"], "baseline_oid": spec["repository"]["baseline_oid"], "best_tree": tree, "patch": str(final_patch), "patch_digest": patch_digest, "evidence": str(state / "events"), "knowledge": str(state / "knowledge.json")}
-        _object(result, RESULT_KEYS, "result"); atomic_json(state / "knowledge.json", {"best_attempt_id": replay["best_attempt_id"], "metric": score["metric"]}); atomic_json(state / "result.json", result); budget.check_artifacts(); log.append("run-completed", result); return result
+        _object(result, RESULT_KEYS, "result"); atomic_json(state / "knowledge.json", {"best_attempt_id": replay["best_attempt_id"], "metric": score["metric"]}, budget); atomic_json(state / "result.json", result, budget); budget.check_artifacts(); log.append("run-completed", result); return result
     finally:
         shutil.rmtree(control, ignore_errors=True)
 
 
 def run_controller(spec_path: Path, state: Path, *, resume: bool = False) -> dict[str, Any]:
+    invocation_started = time.time()
     spec_path = spec_path.resolve(); spec = validate_spec(json.loads(spec_path.read_text()), spec_path=spec_path)
-    source = Path(spec["repository"]["path"]).resolve(); source_oid, _ = repository_facts(source)
-    if source_oid != spec["repository"]["source_oid"]:
-        raise ValidationError("source repository no longer matches pinned OID")
+    source = Path(spec["repository"]["path"]).resolve()
     state = state.resolve()
     if state == source or source in state.parents:
         raise ValidationError("state must not be inside source")
@@ -822,20 +928,23 @@ def run_controller(spec_path: Path, state: Path, *, resume: bool = False) -> dic
         else:
             if resume:
                 raise ValidationError("run directory has no immutable event log")
-            run_id = uuid.uuid4().hex; log = EventLog(state, run_id); started = time.time()
+            run_id = uuid.uuid4().hex; log = EventLog(state, run_id); started = invocation_started
             initial_budget = RunBudget(started, spec["budgets"]["wall_seconds"], spec["budgets"]["artifact_bytes"], state); log.budget = initial_budget
             spec_size = len(json.dumps(spec, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()) + 1
             initial_budget.check_artifacts(spec_size + 1024)
-            log.append("run-started", {"spec_digest": digest_json(spec), "started_epoch": started}); atomic_json(state / "spec.json", spec)
+            log.append("run-started", {"spec_digest": digest_json(spec), "started_epoch": started}); atomic_json(state / "spec.json", spec, initial_budget)
             replay = reconstruct_state(log.replay(), state, spec)
         budget = RunBudget(replay["started_epoch"], spec["budgets"]["wall_seconds"], spec["budgets"]["artifact_bytes"], state)
         log.budget = budget
         budget.check_artifacts()
+        source_oid, _ = repository_facts(source, budget)
+        if source_oid != spec["repository"]["source_oid"]:
+            raise ValidationError("source repository no longer matches pinned OID")
         # Mutable files are caches only; never trust them on resume.
         (state / "checkpoint.json").unlink(missing_ok=True)
         if replay["completed"] is not None:
             result = replay["completed"]
-            verify_artifact(result, state); atomic_json(state / "result.json", result); return result
+            verify_artifact(result, state); atomic_json(state / "result.json", result, budget); return result
         incomplete = sorted(set(replay["leased"]) - replay["terminal"])
         for attempt_id in incomplete:
             log.append("lease-abandoned", {"reason": "resume never restores model sessions"}, attempt_id)
@@ -843,16 +952,18 @@ def run_controller(spec_path: Path, state: Path, *, resume: bool = False) -> dic
             replay = reconstruct_state(log.replay(), state, spec)
         capability_probe(spec, state, budget)
         baseline_control = state / "temporary" / f"baseline-control-{uuid.uuid4().hex}"; baseline_export = state / "temporary" / f"baseline-export-{uuid.uuid4().hex}"; baseline_control.parent.mkdir(exist_ok=True)
-        materialize(source, baseline_control, spec["repository"]["baseline_oid"]); export_index(baseline_control, baseline_export)
+        materialize(source, baseline_control, spec["repository"]["baseline_oid"], budget); export_index(baseline_control, baseline_export, budget)
         try:
             if replay["baseline"] is None:
                 baseline = evaluate_tree(spec, baseline_control, baseline_export, state, budget, baseline=True)
+                baseline["tree"] = git(baseline_control, "write-tree", timeout=budget.remaining()).stdout.strip()
                 if not all(baseline["constraints"].values()):
                     raise ValidationError("baseline violates declared constraints")
                 log.append("baseline-evaluated", baseline); replay = reconstruct_state(log.replay(), state, spec)
             else:
                 # Resume verifies the immutable baseline decision freshly.
                 fresh = evaluate_tree(spec, baseline_control, baseline_export, state, budget, baseline=True)
+                fresh["tree"] = git(baseline_control, "write-tree", timeout=budget.remaining()).stdout.strip()
                 if fresh != replay["baseline"]:
                     raise ValidationError("baseline replay differs from immutable event")
             pending = [record for attempt_id, record in sorted(replay["verified"].items()) if attempt_id not in replay["decided"]]
@@ -880,7 +991,7 @@ def run_controller(spec_path: Path, state: Path, *, resume: bool = False) -> dic
                             log.append("attempt-rejected", {"reason": str(exc)}, binding["attempt_id"])
                 # Completion order is discarded before the serialized decision.
                 records.sort(key=lambda item: item["attempt_id"]); replay = reconstruct_state(log.replay(), state, spec); replay = _promote_batch(spec, state, log, replay, records, budget); replay = reconstruct_state(log.replay(), state, spec)
-                used += batch_size; atomic_json(state / "checkpoint.json", {"event_digest": log.replay()[-1]["digest"]})
+                used += batch_size; atomic_json(state / "checkpoint.json", {"event_digest": log.replay()[-1]["digest"]}, budget)
             # A supported promotion objection gets exactly the reserved correction attempt.
             correction = replay.get("correction")
             if correction and used < spec["budgets"]["attempts"]:

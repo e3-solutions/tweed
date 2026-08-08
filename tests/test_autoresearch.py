@@ -3,6 +3,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import shutil
 import tempfile
@@ -206,6 +207,16 @@ class RepositoryTests(unittest.TestCase):
         score = AR.evaluate_tree(spec, control, baseline, self.root, budget)
         self.assertEqual(score["metric"], 1.0)
 
+    def test_nested_immutable_symlink_is_rejected_before_copy(self):
+        baseline, work = self.root / "baseline", self.root / "work"
+        (baseline / "fixtures/assets").mkdir(parents=True); work.mkdir()
+        outside = self.root / "outside"; outside.write_text("secret")
+        (baseline / "fixtures/assets/link").symlink_to(outside)
+        budget = AR.RunBudget(time.time(), 10, 100000, self.root)
+        with self.assertRaisesRegex(AR.ValidationError, "symlink/special"):
+            AR._copy_immutable(baseline, work, ["fixtures/assets"], budget)
+        self.assertFalse((work / "fixtures/assets/link").exists())
+
 
 class SetupTests(unittest.TestCase):
     def test_setup_command_has_fresh_read_only_flags(self):
@@ -224,10 +235,43 @@ class SetupTests(unittest.TestCase):
             self.assertLess(time.monotonic() - started, 1)
             with self.assertRaises(TimeoutError): AR.run_bounded(["python3", "-c", "import time; time.sleep(2)"], cwd=root, timeout=.05, max_output=10)
 
+    def test_bounded_process_times_out_when_child_never_reads_max_prompt(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            started = time.monotonic()
+            with self.assertRaises(TimeoutError):
+                AR.run_bounded(
+                    ["python3", "-c", "import time;time.sleep(30)"],
+                    cwd=Path(temporary), timeout=.1, max_output=1024,
+                    input_text="x" * (256 * 1024),
+                )
+            self.assertLess(time.monotonic() - started, 1)
+
     def test_canonical_prompts_are_loaded(self):
         self.assertIn("# Autoresearch Setup", AR.workflow_prompt("setup"))
         self.assertIn("# Autoresearch Worker", AR.workflow_prompt("worker"))
         self.assertIn("# Autoresearch Critic", AR.workflow_prompt("critic"))
+
+    def test_codex_environment_preserves_only_explicit_auth_home(self):
+        environment = AR.codex_environment()
+        self.assertEqual(environment["CODEX_HOME"], AR.ORIGINAL_CODEX_HOME)
+        self.assertEqual(environment["HOME"], tempfile.gettempdir())
+        self.assertNotIn("GITHUB_TOKEN", environment)
+
+    def test_generated_schema_matches_runtime_boundaries(self):
+        schema = AR.spec_json_schema(); properties = schema["properties"]
+        repository = properties["repository"]["properties"]
+        self.assertTrue(re.fullmatch(repository["source_oid"]["pattern"], OID))
+        self.assertFalse(re.fullmatch(repository["source_oid"]["pattern"], "A" * 40))
+        path_pattern = properties["paths"]["properties"]["allowed"]["items"]["pattern"]
+        self.assertTrue(re.fullmatch(path_pattern, "src/code.py"))
+        for invalid in ("/src", "../src", "src/../x", "src\\x", "src/"):
+            self.assertFalse(re.fullmatch(path_pattern, invalid), invalid)
+        evaluator = properties["evaluator"]["properties"]
+        self.assertEqual((evaluator["max_output_bytes"]["minimum"], evaluator["max_output_bytes"]["maximum"]), (64, 64 * 1024 * 1024))
+        capabilities = properties["sandbox"]["properties"]["capabilities"]
+        self.assertEqual(set(capabilities["items"]["enum"]), AR.REQUIRED_CAPABILITIES)
+        self.assertEqual(capabilities["minItems"], capabilities["maxItems"])
+        self.assertIn("concurrency <= attempts", schema["description"])
 
     def test_persisted_wall_and_artifact_budgets_fail_closed(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -236,6 +280,23 @@ class SetupTests(unittest.TestCase):
             with self.assertRaises(AR.BudgetExceeded): expired.remaining()
             (root / "events").mkdir(); (root / "events/a").write_bytes(b"x" * 20)
             with self.assertRaises(AR.BudgetExceeded): AR.RunBudget(time.time(), 10, 10, root).check_artifacts()
+
+    def test_every_budgeted_json_and_event_write_stays_under_hard_cap(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary); budget = AR.RunBudget(time.time(), 10, 1200, root)
+            AR.atomic_json(root / "schemas/schema.json", {"value": "x" * 80}, budget)
+            AR.atomic_json(root / "checkpoint.json", {"value": "x" * 80}, budget)
+            AR.atomic_json(root / "knowledge.json", {"value": "x" * 80}, budget)
+            AR.atomic_json(root / "result.json", {"value": "x" * 80}, budget)
+            log = AR.EventLog(root, "run"); log.budget = budget; log.append("small", {"value": "x"})
+            before = (root / "result.json").read_bytes()
+            with self.assertRaises(AR.BudgetExceeded):
+                AR.atomic_json(root / "result.json", {"value": "y" * 2000}, budget)
+            self.assertEqual((root / "result.json").read_bytes(), before)
+            with self.assertRaises(AR.BudgetExceeded):
+                log.append("oversized", {"value": "z" * 2000})
+            self.assertEqual(len(list((root / "events").glob("*.json"))), 1)
+            self.assertLessEqual(AR.artifact_usage(root), budget.artifact_bytes)
 
     def test_capability_probe_rejects_claim_without_active_denial(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -273,7 +334,7 @@ class ControllerIntegrationTests(unittest.TestCase):
     def _assignment(prompt, marker):
         return json.loads(prompt.split(marker, 1)[1])
 
-    def fake_processes(self, reverse=False, failed_attempt=None, calls=None):
+    def fake_processes(self, reverse=False, failed_attempt=None, calls=None, no_improvement=False):
         original = AR.run_bounded
         calls = calls if calls is not None else []
 
@@ -291,7 +352,8 @@ class ControllerIntegrationTests(unittest.TestCase):
                 if (attempt == 1) == reverse:
                     time.sleep(0.08)
                 status = "failed" if attempt == failed_attempt else "completed"
-                (Path(kwargs["cwd"]) / "src/value.txt").write_text(f"{max(1, 10 - attempt)}\n")
+                value = 10 + attempt if no_improvement else max(1, 10 - attempt)
+                (Path(kwargs["cwd"]) / "src/value.txt").write_text(f"{value}\n")
                 receipt = {"schema_version": 1, **binding, "status": status, "summary": status}
             else:
                 assignment = self._assignment(prompt, "# Closed controller evidence\n")
@@ -357,6 +419,30 @@ class ControllerIntegrationTests(unittest.TestCase):
             resumed = AR.run_controller(state / "spec.json", state, resume=True)
         self.assertEqual(resumed["status"], "completed")
         self.assertFalse(any(call[0] == "critic" for call in calls), calls)
+
+    def test_no_promotion_batch_persists_patience_zero_across_resume(self):
+        state = self.root / "patience"; spec_path = self.root / "patience.json"; spec = self.spec(); spec["search"]["patience"] = 0; spec_path.write_text(json.dumps(spec))
+        first_calls = []
+        with (
+            mock.patch.object(AR, "capability_probe"),
+            mock.patch.object(AR, "run_bounded", side_effect=self.fake_processes(calls=first_calls, no_improvement=True)),
+            mock.patch.object(AR, "_finalize", side_effect=RuntimeError("simulated crash")),
+        ):
+            with self.assertRaisesRegex(RuntimeError, "simulated crash"):
+                AR.run_controller(spec_path, state)
+        run_id = json.loads((state / "events/00000001.json").read_text())["run_id"]
+        replay = AR.reconstruct_state(AR.EventLog(state, run_id).replay(), state, spec)
+        self.assertGreater(replay["failures"], 0)
+        decisions = [event for event in AR.EventLog(state, run_id).replay() if event["kind"] == "batch-decision"]
+        self.assertEqual(decisions[-1]["payload"]["reason"], "no-eligible-promotion")
+        resume_calls = []
+        with (
+            mock.patch.object(AR, "capability_probe"),
+            mock.patch.object(AR, "run_bounded", side_effect=self.fake_processes(calls=resume_calls, no_improvement=True)),
+        ):
+            result = AR.run_controller(state / "spec.json", state, resume=True)
+        self.assertEqual(result["best_metric"], 10.0)
+        self.assertFalse(any(call[0] == "worker" for call in resume_calls), resume_calls)
 
 
 if __name__ == "__main__":

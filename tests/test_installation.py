@@ -109,12 +109,56 @@ class InstallationTests(unittest.TestCase):
 
     def test_update_switches_to_a_complete_snapshot(self):
         self.install()
+        # Model a pre-autoresearch release selected by the legacy two-link layout.
+        ((self.home / "current").resolve() / "autoresearch").unlink()
+        (self.bin / "autoresearch").unlink()
+        bonaparte_link = (self.bin / "bonaparte").readlink()
+        skill_link = (self.codex / "skills/use-bonaparte").readlink()
         self.publish("v1.1.0")
         environment = {**self.environment, "BONAPARTE_AUTO_UPDATE": "1"}
         self.run_command(
             str(self.bin / "bonaparte"), "--help", environment=environment
         )
-        self.assertEqual((self.home / "current").resolve().name, "v1.1.0")
+        current = (self.home / "current").resolve()
+        self.assertEqual(current.name, "v1.1.0")
+        self.assertEqual(
+            (self.bin / "autoresearch").resolve(), current / "autoresearch"
+        )
+        self.assertEqual((self.bin / "bonaparte").readlink(), bonaparte_link)
+        self.assertEqual(
+            (self.codex / "skills/use-bonaparte").readlink(), skill_link
+        )
+
+        # A legacy launcher may have switched current and recently checked for
+        # updates without creating the new CLI link. Startup still migrates it.
+        (self.bin / "autoresearch").unlink()
+        (self.home / "last-check").touch()
+        self.run_command(
+            str(self.bin / "bonaparte"), "--help", environment=environment
+        )
+        self.assertEqual(
+            (self.bin / "autoresearch").resolve(), current / "autoresearch"
+        )
+
+    def test_update_refuses_a_non_symlink_autoresearch_target(self):
+        original = self.install()
+        target = self.bin / "autoresearch"
+        target.unlink()
+        target.write_text("keep me")
+        bonaparte_link = (self.bin / "bonaparte").readlink()
+        skill_link = (self.codex / "skills/use-bonaparte").readlink()
+        self.publish("v1.1.0")
+
+        result = self.run_command(str(self.bin / "bonaparte"), "update", check=False)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("refusing to replace non-symlink", result.stderr)
+        self.assertEqual(target.read_text(), "keep me")
+        self.assertEqual((self.home / "current").resolve().name, original)
+        self.assertEqual((self.bin / "bonaparte").readlink(), bonaparte_link)
+        self.assertEqual(
+            (self.codex / "skills/use-bonaparte").readlink(), skill_link
+        )
 
     def test_failed_update_keeps_the_current_runtime_usable(self):
         original = self.install()

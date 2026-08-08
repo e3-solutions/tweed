@@ -37,6 +37,16 @@ def atomic_link(target: str, link: Path) -> None:
     os.replace(temporary, link)
 
 
+def migrate_autoresearch_link(home: Path) -> None:
+    bin_dir = Path(os.environ.get("BONAPARTE_BIN_DIR", Path.home() / ".local/bin"))
+    link = bin_dir / "autoresearch"
+    if link.exists() and not link.is_symlink():
+        raise RuntimeError(f"refusing to replace non-symlink: {link}")
+    if not (current_release(home) / "autoresearch").is_file():
+        return
+    atomic_link(str(home / "current" / "autoresearch"), link)
+
+
 def current_release(home: Path) -> Path:
     current = home / "current"
     if not current.is_symlink():
@@ -128,6 +138,7 @@ def fetch_release(home: Path, tag: str, expected_oid: str) -> Path:
 
 
 def update(home: Path) -> str | None:
+    migrate_autoresearch_link(home)
     tag, oid = latest_tag()
     current = current_release(home)
     current_version = tag_version(current.name)
@@ -138,6 +149,7 @@ def update(home: Path) -> str | None:
     if current_version and current_version >= tag_version(tag):
         return None
     atomic_link(f"releases/{release.name}", home / "current")
+    migrate_autoresearch_link(home)
     return tag
 
 
@@ -157,6 +169,7 @@ def automatic_update(home: Path) -> None:
 def main() -> int:
     home = bonaparte_home()
     try:
+        migrate_autoresearch_link(home)
         if sys.argv[1:] == ["update"]:
             tag = update(home)
             print(
