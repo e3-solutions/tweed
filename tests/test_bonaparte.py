@@ -593,6 +593,9 @@ class BonaparteRunnerTests(unittest.TestCase):
                     exit_code = RUNNER.main()
 
                 coordinator.assert_called_once()
+                self.assertIs(
+                    coordinator.call_args.kwargs["stderr"], subprocess.DEVNULL
+                )
                 self.assertEqual(exit_code, 1)
                 final_receipt = json.loads(stdout.getvalue())
                 self.assertEqual(final_receipt["state"], "failed")
@@ -686,6 +689,46 @@ class BonaparteRunnerTests(unittest.TestCase):
 
                 self.assertEqual(completed.returncode, 1)
                 self.assertEqual(final_receipt["state"], "failed")
+                self.assertEqual(
+                    [event["state"] for event in events],
+                    ["started", "finalizing", "failed"],
+                )
+                self.assertNotIn(private_canary, completed.stdout)
+
+    def test_review_cli_rejects_receipts_violating_declared_schema(self):
+        cases = (
+            (
+                "summary maxLength",
+                "summary",
+                lambda canary: canary + "x" * (801 - len(canary)),
+            ),
+            ("wrong field type", "issue", lambda canary: 42),
+            ("invalid null", "summary", lambda canary: None),
+            (
+                "identifier maxLength",
+                "issue",
+                lambda canary: canary + "x" * (101 - len(canary)),
+            ),
+            ("invalid enum", "state", lambda canary: "invalid"),
+        )
+        for name, field, malformed_value_for in cases:
+            private_canary = f"private-{name.replace(' ', '-')}-canary"
+            invalid = delivery_receipt("review")
+            malformed_value = malformed_value_for(private_canary)
+            invalid[field] = malformed_value
+            if private_canary not in str(malformed_value):
+                invalid["next_action"] = private_canary
+
+            with self.subTest(case=name):
+                completed, events = run_review_cli(invalid)
+                final_receipt = json.loads(completed.stdout)
+
+                self.assertEqual(completed.returncode, 1)
+                self.assertEqual(completed.stdout.count("\n"), 1)
+                self.assertEqual(final_receipt["state"], "failed")
+                self.assertLessEqual(
+                    len(completed.stdout.encode()), RUNNER.RECEIPT_MAX_BYTES
+                )
                 self.assertEqual(
                     [event["state"] for event in events],
                     ["started", "finalizing", "failed"],

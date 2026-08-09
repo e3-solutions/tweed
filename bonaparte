@@ -78,6 +78,39 @@ RECEIPT_SCHEMA = {
     },
 }
 
+
+def validate_schema(value, schema: dict) -> None:
+    """Validate the JSON Schema constraints used by coordinator receipts."""
+    json_types = {
+        "object": lambda candidate: isinstance(candidate, dict),
+        "array": lambda candidate: isinstance(candidate, list),
+        "string": lambda candidate: isinstance(candidate, str),
+        "number": lambda candidate: isinstance(candidate, (int, float))
+        and not isinstance(candidate, bool),
+        "integer": lambda candidate: isinstance(candidate, int)
+        and not isinstance(candidate, bool),
+        "boolean": lambda candidate: isinstance(candidate, bool),
+        "null": lambda candidate: candidate is None,
+    }
+    allowed_types = schema.get("type")
+    if isinstance(allowed_types, str):
+        allowed_types = [allowed_types]
+    if allowed_types and not any(json_types[name](value) for name in allowed_types):
+        raise RuntimeError("Codex returned an invalid receipt")
+    if "enum" in schema and value not in schema["enum"]:
+        raise RuntimeError("Codex returned an invalid receipt")
+    if isinstance(value, str) and len(value) > schema.get("maxLength", len(value)):
+        raise RuntimeError("Codex returned an invalid receipt")
+    if isinstance(value, dict):
+        properties = schema.get("properties", {})
+        if not set(schema.get("required", ())).issubset(value):
+            raise RuntimeError("Codex returned an invalid receipt")
+        if schema.get("additionalProperties") is False and set(value) - set(properties):
+            raise RuntimeError("Codex returned an invalid receipt")
+        for name in value.keys() & properties.keys():
+            validate_schema(value[name], properties[name])
+
+
 WORKFLOWS = {
     "create": (
         "create.md",
@@ -669,7 +702,7 @@ def run_phase(
                 input=prompt,
                 text=True,
                 stdout=events,
-                stderr=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
                 check=False,
             )
             session_id = extract_session_id(events) or resume_session_id
@@ -679,8 +712,7 @@ def run_phase(
             )
         receipt = json.loads(receipt_path.read_text())
 
-    if not isinstance(receipt, dict) or set(receipt) != set(RECEIPT_SCHEMA["required"]):
-        raise RuntimeError("Codex returned an invalid receipt")
+    validate_schema(receipt, RECEIPT_SCHEMA)
     if receipt["phase"] != phase:
         raise RuntimeError("Codex returned the wrong phase")
     if receipt["state"] not in RECEIPT_SCHEMA["properties"]["state"]["enum"]:
