@@ -1,6 +1,7 @@
 import errno
 import importlib.machinery
 import importlib.util
+import io
 import json
 import os
 import subprocess
@@ -69,6 +70,51 @@ def delivery_receipt(phase, pull_request_url="https://github.example/pr/1"):
         "commit": "a" * 40,
         "pull_request_url": pull_request_url,
     }
+
+
+def run_review_cli(fake_receipt):
+    with tempfile.TemporaryDirectory() as temporary:
+        fake_codex = Path(temporary) / "codex"
+        fake_codex.write_text(
+            "#!/usr/bin/env python3\n"
+            "import json, os, pathlib, sys\n"
+            "if '--version' in sys.argv:\n"
+            "    raise SystemExit(0)\n"
+            f"receipt = {fake_receipt!r}\n"
+            "if 'BONAPARTE_PROGRESS_FD' in os.environ:\n"
+            "    raise SystemExit(91)\n"
+            "target = sys.argv[sys.argv.index('--output-last-message') + 1]\n"
+            "pathlib.Path(target).write_text(json.dumps(receipt))\n"
+        )
+        fake_codex.chmod(0o755)
+        read_descriptor, write_descriptor = os.pipe()
+        environment = {
+            **os.environ,
+            "CODEX_BIN": str(fake_codex),
+            RUNNER.PROGRESS_FD_ENV: str(write_descriptor),
+        }
+        environment.pop(RUNNER.PHASE_CHILD_ENV, None)
+        completed = subprocess.run(
+            [
+                str(ROOT / "bonaparte"),
+                "--repo",
+                str(ROOT),
+                "resume",
+                "review",
+                SESSION_ID,
+                "Continue.",
+            ],
+            cwd=ROOT,
+            env=environment,
+            pass_fds=(write_descriptor,),
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        os.close(write_descriptor)
+        progress_output = os.read(read_descriptor, 16384)
+        os.close(read_descriptor)
+    return completed, [json.loads(line) for line in progress_output.splitlines()]
 
 
 class BonaparteRunnerTests(unittest.TestCase):
@@ -327,6 +373,83 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertIsNone(progress._descriptor)
         os.close(read_descriptor)
 
+    def test_heartbeat_loop_emits_active_until_stopped(self):
+        progress = RUNNER.ProgressReporter(None)
+        with (
+            mock.patch.object(progress._stop, "wait", side_effect=[False, True]) as wait,
+            mock.patch.object(progress, "report") as report,
+        ):
+            progress._heartbeat_loop()
+
+        self.assertEqual(wait.call_count, 2)
+        report.assert_called_once_with("active")
+
+    def test_thread_start_failures_do_not_mask_finalization(self):
+        class StartFailure:
+            ident = None
+            join_called = False
+
+            def start(self):
+                raise RuntimeError("thread start unavailable")
+
+            def join(self):
+                self.join_called = True
+
+        class InterruptedStart(StartFailure):
+            started = None
+
+            def start(self):
+                self.started.set()
+                raise KeyboardInterrupt
+
+        cases = (
+            (StartFailure(), RuntimeError, "failed", "progress reporter failed"),
+            (InterruptedStart(), KeyboardInterrupt, "interrupted", "interrupted"),
+        )
+        for heartbeat, error_type, terminal, summary in cases:
+            with self.subTest(terminal=terminal):
+                read_descriptor, write_descriptor = os.pipe()
+                progress = RUNNER.ProgressReporter(write_descriptor)
+                heartbeat.started = progress._heartbeat_running
+                with mock.patch.object(
+                    RUNNER.threading, "Thread", return_value=heartbeat
+                ) as thread_factory:
+                    with self.assertRaises(error_type):
+                        progress.start()
+                    progress.start()
+                thread_factory.assert_called_once()
+                progress.stop_heartbeat()
+                progress.stop_heartbeat()
+                progress.report("finalizing")
+                final_receipt = RUNNER.serialize_receipt(RUNNER.fail(summary))
+                progress.report(terminal)
+                progress.close()
+                output = os.read(read_descriptor, 16384)
+                os.close(read_descriptor)
+
+                self.assertEqual(json.loads(final_receipt)["state"], "failed")
+                self.assertEqual(
+                    [json.loads(line)["state"] for line in output.splitlines()],
+                    ["started", "finalizing", terminal],
+                )
+                self.assertEqual(
+                    heartbeat.join_called, isinstance(heartbeat, InterruptedStart)
+                )
+
+    def test_stdout_receipt_limit_includes_the_jsonl_terminator(self):
+        accepted = {"x": "a" * 4087}
+        serialized = RUNNER.serialize_receipt(accepted)
+        stdout = io.StringIO()
+        with mock.patch.object(sys, "stdout", stdout):
+            RUNNER.emit_serialized(serialized)
+
+        raw_output = stdout.getvalue().encode("utf-8")
+        self.assertEqual(len(raw_output), RUNNER.RECEIPT_MAX_BYTES)
+        self.assertTrue(raw_output.endswith(b"\n"))
+        self.assertEqual(json.loads(raw_output), accepted)
+        with self.assertRaisesRegex(RuntimeError, "receipt exceeded 4 KiB"):
+            RUNNER.serialize_receipt({"x": "a" * 4088})
+
     def test_coordinator_failure_does_not_project_child_stderr(self):
         canary = "private-child-detail-canary"
 
@@ -347,56 +470,47 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertEqual(run.call_count, 1)
 
     def test_review_cli_keeps_stdout_as_one_receipt(self):
-        completed_receipt = delivery_receipt("review")
-        with tempfile.TemporaryDirectory() as temporary:
-            fake_codex = Path(temporary) / "codex"
-            fake_codex.write_text(
-                "#!/usr/bin/env python3\n"
-                "import json, os, pathlib, sys\n"
-                "if '--version' in sys.argv:\n"
-                "    raise SystemExit(0)\n"
-                f"receipt = {completed_receipt!r}\n"
-                "if 'BONAPARTE_PROGRESS_FD' in os.environ:\n"
-                "    raise SystemExit(91)\n"
-                "target = sys.argv[sys.argv.index('--output-last-message') + 1]\n"
-                "pathlib.Path(target).write_text(json.dumps(receipt))\n"
-            )
-            fake_codex.chmod(0o755)
-            read_descriptor, write_descriptor = os.pipe()
-            environment = {
-                **os.environ,
-                "CODEX_BIN": str(fake_codex),
-                RUNNER.PROGRESS_FD_ENV: str(write_descriptor),
-            }
-            environment.pop(RUNNER.PHASE_CHILD_ENV, None)
-            completed = subprocess.run(
-                [
-                    str(ROOT / "bonaparte"),
-                    "--repo",
-                    str(ROOT),
-                    "resume",
-                    "review",
-                    SESSION_ID,
-                    "Continue.",
-                ],
-                cwd=ROOT,
-                env=environment,
-                pass_fds=(write_descriptor,),
-                text=True,
-                capture_output=True,
-                check=False,
-            )
-            os.close(write_descriptor)
-            progress_output = os.read(read_descriptor, 16384)
-            os.close(read_descriptor)
-
+        completed, events = run_review_cli(delivery_receipt("review"))
         self.assertEqual(completed.returncode, 0, completed.stderr + completed.stdout)
         stdout_lines = completed.stdout.splitlines()
         self.assertEqual(len(stdout_lines), 1)
         self.assertEqual(json.loads(stdout_lines[0])["state"], "completed")
-        self.assertLessEqual(len(completed.stdout.rstrip("\n").encode()), 4096)
-        events = [json.loads(line) for line in progress_output.splitlines()]
+        self.assertLessEqual(len(completed.stdout.encode()), RUNNER.RECEIPT_MAX_BYTES)
         self.assertEqual(
             [event["state"] for event in events],
             ["started", "finalizing", "completed"],
         )
+
+    def test_review_cli_reports_noncompleted_and_rejected_receipts(self):
+        needs_input = delivery_receipt("review")
+        needs_input.update(
+            state="needs-input",
+            result="needs-input",
+            question="Which environment?",
+            branch=None,
+            commit=None,
+            pull_request_url=None,
+        )
+        invalid = delivery_receipt("review")
+        invalid.update(state="not-a-state", summary="private-invalid-canary")
+        oversized = delivery_receipt("review")
+        oversized["summary"] = "x" * 5000
+
+        cases = (
+            (needs_input, 0, "needs-input", "needs-input"),
+            (invalid, 1, "failed", "failed"),
+            (oversized, 1, "failed", "failed"),
+        )
+        for child_receipt, returncode, receipt_state, progress_state in cases:
+            with self.subTest(child_state=child_receipt["state"]):
+                completed, events = run_review_cli(child_receipt)
+                self.assertEqual(completed.returncode, returncode)
+                self.assertEqual(json.loads(completed.stdout)["state"], receipt_state)
+                self.assertLessEqual(
+                    len(completed.stdout.encode()), RUNNER.RECEIPT_MAX_BYTES
+                )
+                self.assertEqual(
+                    [event["state"] for event in events],
+                    ["started", "finalizing", progress_state],
+                )
+                self.assertNotIn("private-invalid-canary", completed.stdout)

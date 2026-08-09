@@ -25,6 +25,7 @@ PROGRESS_FD_ENV = "BONAPARTE_PROGRESS_FD"
 PROGRESS_VERSION = 1
 PROGRESS_HEARTBEAT_SECONDS = 10.0
 PROGRESS_MAX_BYTES = 4096
+RECEIPT_MAX_BYTES = 4096
 PROGRESS_STATES = {
     "started",
     "active",
@@ -157,7 +158,7 @@ def find_codex() -> str:
 
 def serialize_receipt(receipt: dict) -> str:
     output = json.dumps(receipt, ensure_ascii=False, separators=(",", ":"))
-    if len(output.encode()) > 4096:
+    if len((output + "\n").encode("utf-8")) > RECEIPT_MAX_BYTES:
         raise RuntimeError("receipt exceeded 4 KiB")
     return output
 
@@ -182,6 +183,9 @@ class ProgressReporter:
         self._lock = threading.Lock()
         self._stop = threading.Event()
         self._heartbeat: threading.Thread | None = None
+        self._start_attempted = False
+        self._start_returned = False
+        self._heartbeat_running = threading.Event()
 
     def _disable_locked(self) -> None:
         descriptor, self._descriptor = self._descriptor, None
@@ -248,27 +252,34 @@ class ProgressReporter:
                 self._terminal = True
 
     def start(self) -> None:
-        if self._descriptor is None:
+        if self._descriptor is None or self._start_attempted:
             return
+        self._start_attempted = True
         self.report("started")
         if self._descriptor is None:
             return
-        self._heartbeat = threading.Thread(
+        heartbeat = threading.Thread(
             target=self._heartbeat_loop,
             name="bonaparte-review-progress",
             daemon=True,
         )
-        self._heartbeat.start()
+        self._heartbeat = heartbeat
+        heartbeat.start()
+        self._start_returned = True
 
     def _heartbeat_loop(self) -> None:
+        self._heartbeat_running.set()
         while not self._stop.wait(PROGRESS_HEARTBEAT_SECONDS):
             self.report("active")
 
     def stop_heartbeat(self) -> None:
         self._stop.set()
-        heartbeat, self._heartbeat = self._heartbeat, None
-        if heartbeat is not None:
+        heartbeat = self._heartbeat
+        if heartbeat is not None and (
+            self._start_returned or self._heartbeat_running.is_set()
+        ):
             heartbeat.join()
+        self._heartbeat = None
 
     def close(self) -> None:
         self.stop_heartbeat()
