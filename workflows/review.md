@@ -88,7 +88,23 @@ applied.
    axes, followed by the exact acceptance checks and relevant broader build,
    type, lint, contract, integration, and test suites. A new material finding
    re-enters the bounded fix and re-review loop.
-8. If fixes were made, stage only review-owned changes and create one additional
+8. Treat any repository-required native `codex review` as a separate serial
+   resource gate. Before invoking the trusted host-owned sanitized review runner:
+   - wait for every spawned reviewer and fixer to finish and do not start another
+     child;
+   - wait for build, test, type-check, lint, browser, formatter, and package-manager
+     processes to exit;
+   - run no repository check or child agent concurrently with native review;
+   - target the exact final reviewed commit and trusted base, and preserve the
+     native exit status independently from sanitizer or transport diagnostics.
+   On an idempotent retry of the same commit after native review alone was killed
+   with `SIGKILL`/137, reuse the recorded passing checks and completed whole-diff
+   review when their inputs and commit are unchanged. Run the sanitized native
+   review first and alone; do not recreate the preceding resource-heavy wave.
+   A changed commit, dependency state, base, or unexplained check result invalidates
+   that reuse and requires the affected checks again. Native review failure,
+   unavailability, or interruption is not a clean review.
+9. If fixes were made, stage only review-owned changes and create one additional
    commit containing the issue ID. Never rewrite the implementation commit.
    Rerun the proving checks, push the correction normally to the same draft PR,
    and verify its head is the final reviewed commit. If no fix was needed, verify

@@ -123,6 +123,20 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertIn("issue.git_branch_name", implementation)
         self.assertNotIn("bonaparte/<issue-id>", implementation)
 
+    def test_review_serializes_native_review_after_resource_heavy_work(self):
+        review = (ROOT / "workflows/review.md").read_text()
+        normalized = " ".join(review.split())
+
+        self.assertIn("separate serial resource gate", normalized)
+        self.assertIn("wait for every spawned reviewer and fixer to finish", normalized)
+        self.assertIn("run no repository check or child agent concurrently", normalized)
+        self.assertIn("`SIGKILL`/137", normalized)
+        self.assertIn("Run the sanitized native review first and alone", normalized)
+        self.assertIn(
+            "Native review failure, unavailability, or interruption is not a clean review",
+            normalized,
+        )
+
     def test_delivery_phases_require_the_draft_pr_handoff(self):
         for phase in ("implement", "review", "publish"):
             with self.subTest(phase=phase):
