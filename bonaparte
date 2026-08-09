@@ -674,12 +674,9 @@ def run_phase(
             )
             session_id = extract_session_id(events) or resume_session_id
         if result.returncode:
-            if phase == "review":
-                raise RuntimeError(
-                    f"review coordinator failed (exit status {result.returncode})"
-                )
-            detail = result.stderr.strip().splitlines()
-            raise RuntimeError(detail[-1][:800] if detail else f"{phase} failed")
+            raise RuntimeError(
+                f"{phase} coordinator failed (exit status {result.returncode})"
+            )
         receipt = json.loads(receipt_path.read_text())
 
     if not isinstance(receipt, dict) or set(receipt) != set(RECEIPT_SCHEMA["required"]):

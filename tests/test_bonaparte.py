@@ -556,7 +556,7 @@ class BonaparteRunnerTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "receipt exceeded 4 KiB"):
             RUNNER.serialize_receipt({"x": "a" * 4088})
 
-    def test_coordinator_failure_diagnostics_are_review_scoped(self):
+    def test_coordinator_failure_receipts_never_expose_stderr(self):
         canary = "private-child-detail-canary"
         final_line = "actionable final diagnostic"
 
@@ -567,32 +567,49 @@ class BonaparteRunnerTests(unittest.TestCase):
 
         for phase in RUNNER.WORKFLOWS:
             with self.subTest(phase=phase):
+                stdout = io.StringIO()
                 with (
+                    mock.patch.dict(
+                        os.environ, {RUNNER.PHASE_CHILD_ENV: ""}, clear=False
+                    ),
+                    mock.patch.object(
+                        RUNNER,
+                        "parse",
+                        return_value=(ROOT, phase, "Continue.", SESSION_ID),
+                    ),
+                    mock.patch.object(
+                        RUNNER,
+                        "acquire_progress_reporter",
+                        return_value=RUNNER.ProgressReporter(None),
+                    ),
                     mock.patch.object(
                         RUNNER, "find_codex", return_value="/bin/codex"
                     ),
-                    mock.patch.object(RUNNER.subprocess, "run", side_effect=fake_run),
+                    mock.patch.object(
+                        RUNNER.subprocess, "run", side_effect=fake_run
+                    ) as coordinator,
+                    mock.patch.object(sys, "stdout", stdout),
                 ):
-                    with self.assertRaises(RuntimeError) as raised:
-                        RUNNER.run_phase(ROOT, phase, "Continue.", SESSION_ID)
+                    exit_code = RUNNER.main()
 
-                if phase == "review":
-                    self.assertEqual(
-                        str(raised.exception),
-                        "review coordinator failed (exit status 23)",
-                    )
-                    self.assertNotIn(canary, str(raised.exception))
-                    self.assertNotIn(final_line, str(raised.exception))
-                else:
-                    self.assertEqual(str(raised.exception), final_line)
+                coordinator.assert_called_once()
+                self.assertEqual(exit_code, 1)
+                final_receipt = json.loads(stdout.getvalue())
+                self.assertEqual(final_receipt["state"], "failed")
+                self.assertEqual(
+                    final_receipt["summary"],
+                    f"{phase} coordinator failed (exit status 23)",
+                )
+                self.assertNotIn(canary, stdout.getvalue())
+                self.assertNotIn(final_line, stdout.getvalue())
 
-    def test_non_review_coordinator_failure_diagnostic_is_bounded_and_optional(self):
+    def test_coordinator_failure_diagnostic_is_independent_of_stderr(self):
         cases = [
-            ("\n\n", "scope failed"),
-            ("ignored\n" + "x" * 801, "x" * 800),
+            "\n\n",
+            "ignored\n" + "x" * 801,
         ]
 
-        for stderr, expected in cases:
+        for stderr in cases:
             with self.subTest(stderr_length=len(stderr)):
                 result = subprocess.CompletedProcess([], 1, stderr=stderr)
                 with (
@@ -604,7 +621,12 @@ class BonaparteRunnerTests(unittest.TestCase):
                     with self.assertRaises(RuntimeError) as raised:
                         RUNNER.run_phase(ROOT, "scope", "Continue.", SESSION_ID)
 
-                self.assertEqual(str(raised.exception), expected)
+                self.assertEqual(
+                    str(raised.exception),
+                    "scope coordinator failed (exit status 1)",
+                )
+                if stderr.strip():
+                    self.assertNotIn(stderr.strip(), str(raised.exception))
 
     def test_review_cli_keeps_stdout_as_one_receipt(self):
         completed, events = run_review_cli(delivery_receipt("review"))
