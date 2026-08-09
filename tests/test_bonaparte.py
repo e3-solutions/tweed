@@ -331,6 +331,19 @@ class BonaparteRunnerTests(unittest.TestCase):
                 self.assertNotIn(RUNNER.PROGRESS_FD_ENV, os.environ)
                 self.assertNotIn(RUNNER.PROGRESS_FD_ENV, RUNNER.child_environment())
                 progress.close()
+        os.fstat(2)
+
+        invalid_reader, invalid_writer = os.pipe()
+        with mock.patch.dict(
+            os.environ,
+            {RUNNER.PROGRESS_FD_ENV: f"+{invalid_writer}"},
+            clear=False,
+        ):
+            progress = RUNNER.acquire_progress_reporter(False)
+            os.fstat(invalid_writer)
+            progress.close()
+        os.close(invalid_writer)
+        os.close(invalid_reader)
 
         read_descriptor, write_descriptor = os.pipe()
         with mock.patch.dict(
@@ -340,9 +353,10 @@ class BonaparteRunnerTests(unittest.TestCase):
         ):
             progress = RUNNER.acquire_progress_reporter(False)
             self.assertNotIn(RUNNER.PROGRESS_FD_ENV, os.environ)
-            os.fstat(write_descriptor)
+            self.assertIsNone(progress._descriptor)
+            with self.assertRaises(OSError):
+                os.fstat(write_descriptor)
             progress.close()
-        os.close(write_descriptor)
         os.close(read_descriptor)
 
     def test_progress_write_failures_permanently_disable_reporting(self):
@@ -384,7 +398,7 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertEqual(wait.call_count, 2)
         report.assert_called_once_with("active")
 
-    def test_thread_start_failures_do_not_mask_finalization(self):
+    def test_thread_setup_failures_disable_progress_without_masking_review(self):
         class StartFailure:
             ident = None
             join_called = False
@@ -398,43 +412,135 @@ class BonaparteRunnerTests(unittest.TestCase):
         class InterruptedStart(StartFailure):
             started = None
 
+            def __init__(self, error):
+                self.error = error
+                self.join_called = False
+
             def start(self):
                 self.started.set()
-                raise KeyboardInterrupt
+                raise self.error
 
-        cases = (
-            (StartFailure(), RuntimeError, "failed", "progress reporter failed"),
-            (InterruptedStart(), KeyboardInterrupt, "interrupted", "interrupted"),
+        factories = (
+            mock.Mock(side_effect=RuntimeError("construction failed")),
+            mock.Mock(return_value=StartFailure()),
         )
-        for heartbeat, error_type, terminal, summary in cases:
-            with self.subTest(terminal=terminal):
+        for factory in factories:
+            with self.subTest(factory=factory):
+                read_descriptor, write_descriptor = os.pipe()
+                progress = RUNNER.ProgressReporter(write_descriptor)
+                with mock.patch.object(
+                    RUNNER.threading, "Thread", factory
+                ) as thread_factory:
+                    progress.start()
+                    progress.start()
+                thread_factory.assert_called_once()
+                self.assertIsNone(progress._descriptor)
+                self.assertIsNone(progress._heartbeat)
+                progress.stop_heartbeat()
+                progress.stop_heartbeat()
+                progress.close()
+                output = os.read(read_descriptor, 16384)
+                os.close(read_descriptor)
+
+                self.assertEqual(
+                    [json.loads(line)["state"] for line in output.splitlines()],
+                    ["started"],
+                )
+
+        for error in (KeyboardInterrupt(), SystemExit(12)):
+            with self.subTest(error=type(error).__name__):
+                heartbeat = InterruptedStart(error)
                 read_descriptor, write_descriptor = os.pipe()
                 progress = RUNNER.ProgressReporter(write_descriptor)
                 heartbeat.started = progress._heartbeat_running
                 with mock.patch.object(
                     RUNNER.threading, "Thread", return_value=heartbeat
-                ) as thread_factory:
-                    with self.assertRaises(error_type):
+                ):
+                    with self.assertRaises(type(error)):
                         progress.start()
-                    progress.start()
-                thread_factory.assert_called_once()
-                progress.stop_heartbeat()
-                progress.stop_heartbeat()
-                progress.report("finalizing")
-                final_receipt = RUNNER.serialize_receipt(RUNNER.fail(summary))
-                progress.report(terminal)
                 progress.close()
-                output = os.read(read_descriptor, 16384)
                 os.close(read_descriptor)
+                self.assertTrue(heartbeat.join_called)
 
-                self.assertEqual(json.loads(final_receipt)["state"], "failed")
-                self.assertEqual(
-                    [json.loads(line)["state"] for line in output.splitlines()],
-                    ["started", "finalizing", terminal],
-                )
-                self.assertEqual(
-                    heartbeat.join_called, isinstance(heartbeat, InterruptedStart)
-                )
+    def test_review_process_continues_when_started_heartbeat_raises(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            temporary_path = Path(temporary)
+            fake_codex = temporary_path / "codex"
+            coordinator_calls = temporary_path / "coordinator-calls"
+            heartbeat_joins = temporary_path / "heartbeat-joins"
+            fake_receipt = delivery_receipt("review")
+            fake_codex.write_text(
+                "#!/usr/bin/env python3\n"
+                "import json, os, pathlib, sys\n"
+                "if '--version' in sys.argv:\n"
+                "    raise SystemExit(0)\n"
+                "with pathlib.Path(os.environ['COORDINATOR_CALLS']).open('a') as calls:\n"
+                "    calls.write('called\\n')\n"
+                f"receipt = {fake_receipt!r}\n"
+                "target = sys.argv[sys.argv.index('--output-last-message') + 1]\n"
+                "pathlib.Path(target).write_text(json.dumps(receipt))\n"
+            )
+            fake_codex.chmod(0o755)
+            (temporary_path / "sitecustomize.py").write_text(
+                "import os, pathlib, threading\n"
+                "OriginalThread = threading.Thread\n"
+                "class StartRaisesAfterStarting(OriginalThread):\n"
+                "    def start(self):\n"
+                "        super().start()\n"
+                "        if self.name == 'bonaparte-review-progress':\n"
+                "            raise RuntimeError('thread start unavailable')\n"
+                "    def join(self, *args, **kwargs):\n"
+                "        result = super().join(*args, **kwargs)\n"
+                "        if self.name == 'bonaparte-review-progress':\n"
+                "            with pathlib.Path(os.environ['HEARTBEAT_JOINS']).open('a') as joins:\n"
+                "                joins.write('joined\\n')\n"
+                "        return result\n"
+                "threading.Thread = StartRaisesAfterStarting\n"
+            )
+            read_descriptor, write_descriptor = os.pipe()
+            environment = {
+                **os.environ,
+                "CODEX_BIN": str(fake_codex),
+                "COORDINATOR_CALLS": str(coordinator_calls),
+                "HEARTBEAT_JOINS": str(heartbeat_joins),
+                "PYTHONPATH": str(temporary_path),
+                RUNNER.PROGRESS_FD_ENV: str(write_descriptor),
+            }
+            environment.pop(RUNNER.PHASE_CHILD_ENV, None)
+            completed = subprocess.run(
+                [
+                    str(ROOT / "bonaparte"),
+                    "--repo",
+                    str(ROOT),
+                    "resume",
+                    "review",
+                    SESSION_ID,
+                    "Continue.",
+                ],
+                cwd=ROOT,
+                env=environment,
+                pass_fds=(write_descriptor,),
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            os.close(write_descriptor)
+            progress_output = os.read(read_descriptor, 16384)
+            os.close(read_descriptor)
+
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            self.assertEqual(completed.stderr, "")
+            expected_receipt = {**fake_receipt, "resume_session_id": None}
+            self.assertEqual(
+                completed.stdout.splitlines(),
+                [json.dumps(expected_receipt, separators=(",", ":"))],
+            )
+            self.assertEqual(coordinator_calls.read_text().splitlines(), ["called"])
+            self.assertEqual(heartbeat_joins.read_text().splitlines(), ["joined"])
+            self.assertEqual(
+                [json.loads(line)["state"] for line in progress_output.splitlines()],
+                ["started"],
+            )
 
     def test_stdout_receipt_limit_includes_the_jsonl_terminator(self):
         accepted = {"x": "a" * 4087}
@@ -450,24 +556,55 @@ class BonaparteRunnerTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "receipt exceeded 4 KiB"):
             RUNNER.serialize_receipt({"x": "a" * 4088})
 
-    def test_coordinator_failure_does_not_project_child_stderr(self):
+    def test_coordinator_failure_diagnostics_are_review_scoped(self):
         canary = "private-child-detail-canary"
+        final_line = "actionable final diagnostic"
 
         def fake_run(command, **kwargs):
-            return subprocess.CompletedProcess(command, 23, stderr=canary)
+            return subprocess.CompletedProcess(
+                command, 23, stderr=f"{canary}\n\n{final_line}"
+            )
 
-        with (
-            mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
-            mock.patch.object(RUNNER, "call_linear", return_value=(linear_issue(), [])),
-            mock.patch.object(RUNNER.subprocess, "run", side_effect=fake_run) as run,
-        ):
-            with self.assertRaisesRegex(
-                RuntimeError, "review coordinator failed .*exit status 23"
-            ) as raised:
-                RUNNER.run_phase(ROOT, "review", "COR-1")
+        for phase in RUNNER.WORKFLOWS:
+            with self.subTest(phase=phase):
+                with (
+                    mock.patch.object(
+                        RUNNER, "find_codex", return_value="/bin/codex"
+                    ),
+                    mock.patch.object(RUNNER.subprocess, "run", side_effect=fake_run),
+                ):
+                    with self.assertRaises(RuntimeError) as raised:
+                        RUNNER.run_phase(ROOT, phase, "Continue.", SESSION_ID)
 
-        self.assertNotIn(canary, str(raised.exception))
-        self.assertEqual(run.call_count, 1)
+                if phase == "review":
+                    self.assertEqual(
+                        str(raised.exception),
+                        "review coordinator failed (exit status 23)",
+                    )
+                    self.assertNotIn(canary, str(raised.exception))
+                    self.assertNotIn(final_line, str(raised.exception))
+                else:
+                    self.assertEqual(str(raised.exception), final_line)
+
+    def test_non_review_coordinator_failure_diagnostic_is_bounded_and_optional(self):
+        cases = [
+            ("\n\n", "scope failed"),
+            ("ignored\n" + "x" * 801, "x" * 800),
+        ]
+
+        for stderr, expected in cases:
+            with self.subTest(stderr_length=len(stderr)):
+                result = subprocess.CompletedProcess([], 1, stderr=stderr)
+                with (
+                    mock.patch.object(
+                        RUNNER, "find_codex", return_value="/bin/codex"
+                    ),
+                    mock.patch.object(RUNNER.subprocess, "run", return_value=result),
+                ):
+                    with self.assertRaises(RuntimeError) as raised:
+                        RUNNER.run_phase(ROOT, "scope", "Continue.", SESSION_ID)
+
+                self.assertEqual(str(raised.exception), expected)
 
     def test_review_cli_keeps_stdout_as_one_receipt(self):
         completed, events = run_review_cli(delivery_receipt("review"))
@@ -514,3 +651,255 @@ class BonaparteRunnerTests(unittest.TestCase):
                     ["started", "finalizing", progress_state],
                 )
                 self.assertNotIn("private-invalid-canary", completed.stdout)
+
+    def test_review_cli_rejects_progress_only_terminal_receipt_states(self):
+        for state in ("failed", "interrupted"):
+            private_canary = f"private-{state}-coordinator-payload"
+            invalid = delivery_receipt("review")
+            invalid.update(state=state, summary=private_canary)
+
+            with self.subTest(state=state):
+                completed, events = run_review_cli(invalid)
+                final_receipt = json.loads(completed.stdout)
+
+                self.assertEqual(completed.returncode, 1)
+                self.assertEqual(final_receipt["state"], "failed")
+                self.assertEqual(
+                    [event["state"] for event in events],
+                    ["started", "finalizing", "failed"],
+                )
+                self.assertNotIn(private_canary, completed.stdout)
+
+    def test_stdout_receipt_is_pipe_readable_before_terminal_progress(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            temporary_path = Path(temporary)
+            fake_codex = temporary_path / "codex"
+            observed_receipt = temporary_path / "observed-receipt"
+            fake_receipt = delivery_receipt("review")
+            fake_codex.write_text(
+                "#!/usr/bin/env python3\n"
+                "import json, pathlib, sys\n"
+                "if '--version' in sys.argv:\n"
+                "    raise SystemExit(0)\n"
+                f"receipt = {fake_receipt!r}\n"
+                "target = sys.argv[sys.argv.index('--output-last-message') + 1]\n"
+                "pathlib.Path(target).write_text(json.dumps(receipt))\n"
+            )
+            fake_codex.chmod(0o755)
+            (temporary_path / "sitecustomize.py").write_text(
+                "import os, pathlib\n"
+                "original_write = os.write\n"
+                "def observe_order(descriptor, payload):\n"
+                "    if b'\"state\":\"completed\"' in payload:\n"
+                "        try:\n"
+                "            receipt = os.read(int(os.environ['STDOUT_READER']), 4096)\n"
+                "        except BlockingIOError:\n"
+                "            receipt = b''\n"
+                "        pathlib.Path(os.environ['OBSERVED_RECEIPT']).write_bytes(receipt)\n"
+                "    return original_write(descriptor, payload)\n"
+                "os.write = observe_order\n"
+            )
+            stdout_reader, stdout_writer = os.pipe()
+            progress_reader, progress_writer = os.pipe()
+            os.set_blocking(stdout_reader, False)
+            environment = {
+                **os.environ,
+                "CODEX_BIN": str(fake_codex),
+                "PYTHONPATH": str(temporary_path),
+                "STDOUT_READER": str(stdout_reader),
+                "OBSERVED_RECEIPT": str(observed_receipt),
+                RUNNER.PROGRESS_FD_ENV: str(progress_writer),
+            }
+            environment.pop(RUNNER.PHASE_CHILD_ENV, None)
+            process = subprocess.Popen(
+                [
+                    str(ROOT / "bonaparte"),
+                    "--repo",
+                    str(ROOT),
+                    "resume",
+                    "review",
+                    SESSION_ID,
+                    "Continue.",
+                ],
+                cwd=ROOT,
+                env=environment,
+                stdout=stdout_writer,
+                stderr=subprocess.PIPE,
+                pass_fds=(stdout_reader, progress_writer),
+            )
+            os.close(stdout_writer)
+            os.close(progress_writer)
+            _, stderr = process.communicate(timeout=10)
+            remaining_stdout = os.read(stdout_reader, 4096)
+            os.close(stdout_reader)
+            progress_output = os.read(progress_reader, 16384)
+            os.close(progress_reader)
+            receipt_output = observed_receipt.read_bytes()
+
+        self.assertEqual(process.returncode, 0, stderr.decode())
+        self.assertEqual(remaining_stdout, b"")
+        self.assertTrue(receipt_output.endswith(b"\n"))
+        self.assertEqual(
+            json.loads(receipt_output),
+            {**fake_receipt, "resume_session_id": None},
+        )
+        self.assertEqual(
+            [json.loads(line)["state"] for line in progress_output.splitlines()],
+            ["started", "finalizing", "completed"],
+        )
+
+    def test_closed_stdout_reader_suppresses_terminal_progress_on_flush_failure(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            fake_codex = Path(temporary) / "codex"
+            fake_receipt = delivery_receipt("review")
+            fake_codex.write_text(
+                "#!/usr/bin/env python3\n"
+                "import json, pathlib, sys\n"
+                "if '--version' in sys.argv:\n"
+                "    raise SystemExit(0)\n"
+                f"receipt = {fake_receipt!r}\n"
+                "target = sys.argv[sys.argv.index('--output-last-message') + 1]\n"
+                "pathlib.Path(target).write_text(json.dumps(receipt))\n"
+            )
+            fake_codex.chmod(0o755)
+            stdout_reader, stdout_writer = os.pipe()
+            progress_reader, progress_writer = os.pipe()
+            os.close(stdout_reader)
+            environment = {
+                **os.environ,
+                "CODEX_BIN": str(fake_codex),
+                RUNNER.PROGRESS_FD_ENV: str(progress_writer),
+            }
+            environment.pop(RUNNER.PHASE_CHILD_ENV, None)
+            process = subprocess.Popen(
+                [
+                    str(ROOT / "bonaparte"),
+                    "--repo",
+                    str(ROOT),
+                    "resume",
+                    "review",
+                    SESSION_ID,
+                    "Continue.",
+                ],
+                cwd=ROOT,
+                env=environment,
+                stdout=stdout_writer,
+                stderr=subprocess.PIPE,
+                pass_fds=(progress_writer,),
+            )
+            os.close(stdout_writer)
+            os.close(progress_writer)
+            _, stderr = process.communicate(timeout=10)
+            progress_output = os.read(progress_reader, 16384)
+            os.close(progress_reader)
+
+        self.assertNotEqual(process.returncode, 0, stderr.decode())
+        self.assertEqual(
+            [json.loads(line)["state"] for line in progress_output.splitlines()],
+            ["started", "finalizing"],
+        )
+
+    def test_sigint_terminal_matches_failed_receipt(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            fake_codex = Path(temporary) / "codex"
+            fake_codex.write_text(
+                "#!/usr/bin/env python3\n"
+                "import os, signal, sys\n"
+                "if '--version' in sys.argv:\n"
+                "    raise SystemExit(0)\n"
+                "os.kill(os.getppid(), signal.SIGINT)\n"
+            )
+            fake_codex.chmod(0o755)
+            read_descriptor, write_descriptor = os.pipe()
+            environment = {
+                **os.environ,
+                "CODEX_BIN": str(fake_codex),
+                RUNNER.PROGRESS_FD_ENV: str(write_descriptor),
+            }
+            environment.pop(RUNNER.PHASE_CHILD_ENV, None)
+            completed = subprocess.run(
+                [
+                    str(ROOT / "bonaparte"),
+                    "--repo",
+                    str(ROOT),
+                    "resume",
+                    "review",
+                    SESSION_ID,
+                    "Continue.",
+                ],
+                cwd=ROOT,
+                env=environment,
+                pass_fds=(write_descriptor,),
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            os.close(write_descriptor)
+            progress_output = os.read(read_descriptor, 16384)
+            os.close(read_descriptor)
+
+        final_receipt = json.loads(completed.stdout)
+        progress_states = [
+            json.loads(line)["state"] for line in progress_output.splitlines()
+        ]
+        self.assertEqual(completed.returncode, 130, completed.stderr)
+        self.assertEqual(final_receipt["state"], "failed")
+        self.assertEqual(final_receipt["summary"], "Bonaparte was interrupted.")
+        self.assertEqual(progress_states, ["started", "finalizing", "failed"])
+        self.assertEqual(progress_states[-1], final_receipt["state"])
+
+    def test_partial_stdout_failure_is_not_retried_or_reported_terminal(self):
+        class TrackingProgress:
+            def __init__(self):
+                self.states = []
+                self.closed = False
+
+            def start(self):
+                self.states.append("started")
+
+            def stop_heartbeat(self):
+                pass
+
+            def report(self, state):
+                self.states.append(state)
+
+            def close(self):
+                self.closed = True
+
+        class PartialWriteFailure:
+            def __init__(self):
+                self.attempts = 0
+                self.partial = ""
+
+            def write(self, output):
+                self.attempts += 1
+                self.partial += output[: max(1, len(output) // 2)]
+                raise OSError("stdout failed after partial write")
+
+            def flush(self):
+                pass
+
+        progress = TrackingProgress()
+        stdout = PartialWriteFailure()
+        final_receipt = delivery_receipt("review")
+        with (
+            mock.patch.dict(
+                os.environ, {RUNNER.PHASE_CHILD_ENV: ""}, clear=False
+            ),
+            mock.patch.object(
+                RUNNER, "parse", return_value=(ROOT, "review", "x", None)
+            ),
+            mock.patch.object(
+                RUNNER, "acquire_progress_reporter", return_value=progress
+            ),
+            mock.patch.object(RUNNER, "run_phase", return_value=final_receipt),
+            mock.patch.object(sys, "stdout", stdout),
+        ):
+            with self.assertRaisesRegex(OSError, "stdout failed after partial write"):
+                RUNNER.main()
+
+        self.assertEqual(stdout.attempts, 1)
+        self.assertTrue(stdout.partial)
+        self.assertEqual(progress.states, ["started", "finalizing"])
+        self.assertNotIn(final_receipt["state"], progress.states)
+        self.assertTrue(progress.closed)

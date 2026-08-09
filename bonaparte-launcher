@@ -22,6 +22,14 @@ skills/use-bonaparte/agents/openai.yaml workflows/create.md workflows/bug-rca.md
 workflows/scope.md workflows/implement.md workflows/review.md workflows/publish.md""".split()
 
 
+def updater_environment() -> dict[str, str]:
+    """Keep the host progress channel private to the final runner exec."""
+
+    environment = os.environ.copy()
+    environment.pop("BONAPARTE_PROGRESS_FD", None)
+    return environment
+
+
 def bonaparte_home() -> Path:
     runtime = Path(__file__).resolve().parent
     if runtime.parent.name == "releases":
@@ -55,6 +63,7 @@ def tag_version(tag: str) -> tuple[int, int, int] | None:
 def latest_tag() -> tuple[str, str]:
     output = subprocess.check_output(
         ["git", "ls-remote", "--tags", "--refs", REPOSITORY],
+        env=updater_environment(),
         text=True,
         timeout=15,
     )
@@ -76,7 +85,7 @@ def validate_release(release: Path) -> None:
     for name in ("bonaparte", "bonaparte-launcher"):
         source = release / name
         compile(source.read_text(), str(source), "exec")
-    environment = os.environ.copy()
+    environment = updater_environment()
     environment["BONAPARTE_AUTO_UPDATE"] = "0"
     subprocess.run(
         [sys.executable, str(release / "bonaparte"), "--help"],
@@ -93,6 +102,7 @@ def git(directory: Path, *arguments: str, output: bool = False):
         ["git", "-C", directory, *arguments],
         check=True,
         capture_output=output,
+        env=updater_environment(),
         text=output,
         timeout=30,
     )

@@ -1,3 +1,5 @@
+import importlib.machinery
+import importlib.util
 import json
 import os
 import shutil
@@ -5,9 +7,23 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def load_launcher():
+    loader = importlib.machinery.SourceFileLoader(
+        "bonaparte_launcher", str(ROOT / "bonaparte-launcher")
+    )
+    spec = importlib.util.spec_from_loader(loader.name, loader)
+    module = importlib.util.module_from_spec(spec)
+    loader.exec_module(module)
+    return module
+
+
+LAUNCHER = load_launcher()
 
 
 class InstallationTests(unittest.TestCase):
@@ -115,6 +131,17 @@ class InstallationTests(unittest.TestCase):
         self.assertIn("usage: bonaparte", result.stdout)
         self.assertEqual((self.home / "current").resolve().name, original)
 
+    def test_release_validation_scrubs_the_host_progress_channel(self):
+        environment = {**os.environ, "BONAPARTE_PROGRESS_FD": "37"}
+        with (
+            mock.patch.dict(os.environ, environment, clear=True),
+            mock.patch.object(LAUNCHER.subprocess, "run") as run,
+        ):
+            LAUNCHER.validate_release(ROOT)
+
+        self.assertNotIn("BONAPARTE_PROGRESS_FD", run.call_args.kwargs["env"])
+        self.assertEqual(run.call_args.kwargs["env"]["BONAPARTE_AUTO_UPDATE"], "0")
+
     @unittest.skipUnless(os.name == "posix", "file-descriptor ABI requires POSIX")
     def test_launcher_preserves_only_the_host_progress_channel_for_the_runner(self):
         self.install()
@@ -142,13 +169,16 @@ class InstallationTests(unittest.TestCase):
         fake_git = fake_bin / "git"
         fake_git.write_text(
             "#!/usr/bin/env python3\n"
-            "import os, sys\n"
-            f"open({str(updater_called)!r}, 'w').close()\n"
-            "fd = int(os.environ['BONAPARTE_PROGRESS_FD'])\n"
+            "import json, os, pathlib\n"
+            "inherited = True\n"
             "try:\n"
-            "    os.write(fd, b'updater wrote to progress\\n')\n"
+            f"    os.write({progress_writer}, b'updater wrote to progress\\n')\n"
             "except OSError:\n"
-            "    pass\n"
+            "    inherited = False\n"
+            f"pathlib.Path({str(updater_called)!r}).write_text(json.dumps({{\n"
+            "    'env_present': 'BONAPARTE_PROGRESS_FD' in os.environ,\n"
+            "    'fd_inherited': inherited,\n"
+            "}))\n"
             "print('0' * 40, 'refs/tags/v1.0.0')\n"
         )
         fake_git.chmod(0o755)
@@ -174,6 +204,10 @@ class InstallationTests(unittest.TestCase):
 
         self.assertGreaterEqual(int(environment["BONAPARTE_PROGRESS_FD"]), 3)
         self.assertTrue(updater_called.exists())
+        self.assertEqual(
+            json.loads(updater_called.read_text()),
+            {"env_present": False, "fd_inherited": False},
+        )
         self.assertEqual(completed.stdout, "runner stdout\n")
         self.assertEqual(completed.stderr, "runner stderr\n")
         self.assertEqual(

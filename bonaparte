@@ -164,7 +164,8 @@ def serialize_receipt(receipt: dict) -> str:
 
 
 def emit_serialized(output: str) -> None:
-    print(output)
+    sys.stdout.write(output + "\n")
+    sys.stdout.flush()
 
 
 def emit(receipt: dict) -> None:
@@ -184,7 +185,6 @@ class ProgressReporter:
         self._stop = threading.Event()
         self._heartbeat: threading.Thread | None = None
         self._start_attempted = False
-        self._start_returned = False
         self._heartbeat_running = threading.Event()
 
     def _disable_locked(self) -> None:
@@ -258,14 +258,26 @@ class ProgressReporter:
         self.report("started")
         if self._descriptor is None:
             return
-        heartbeat = threading.Thread(
-            target=self._heartbeat_loop,
-            name="bonaparte-review-progress",
-            daemon=True,
-        )
-        self._heartbeat = heartbeat
-        heartbeat.start()
-        self._start_returned = True
+        heartbeat = None
+        try:
+            heartbeat = threading.Thread(
+                target=self._heartbeat_loop,
+                name="bonaparte-review-progress",
+                daemon=True,
+            )
+            self._heartbeat = heartbeat
+            heartbeat.start()
+        except Exception:  # noqa: BLE001 - optional progress is best effort
+            self._stop.set()
+            if heartbeat is not None:
+                try:
+                    heartbeat.join()
+                except Exception:  # noqa: BLE001 - preserve the coordinator path
+                    pass
+            self._heartbeat = None
+            with self._lock:
+                self._disable_locked()
+            return
 
     def _heartbeat_loop(self) -> None:
         self._heartbeat_running.set()
@@ -275,10 +287,11 @@ class ProgressReporter:
     def stop_heartbeat(self) -> None:
         self._stop.set()
         heartbeat = self._heartbeat
-        if heartbeat is not None and (
-            self._start_returned or self._heartbeat_running.is_set()
-        ):
-            heartbeat.join()
+        if heartbeat is not None:
+            try:
+                heartbeat.join()
+            except RuntimeError:
+                pass
         self._heartbeat = None
 
     def close(self) -> None:
@@ -292,8 +305,7 @@ def acquire_progress_reporter(enabled: bool) -> ProgressReporter:
 
     raw_descriptor = os.environ.pop(PROGRESS_FD_ENV, None)
     if (
-        not enabled
-        or raw_descriptor is None
+        raw_descriptor is None
         or not raw_descriptor.isascii()
         or not raw_descriptor.isdecimal()
     ):
@@ -303,6 +315,12 @@ def acquire_progress_reporter(enabled: bool) -> ProgressReporter:
     except ValueError:
         return ProgressReporter(None)
     if original < 3:
+        return ProgressReporter(None)
+    if not enabled:
+        try:
+            os.close(original)
+        except (OSError, OverflowError):
+            pass
         return ProgressReporter(None)
     duplicate = None
     try:
@@ -656,15 +674,20 @@ def run_phase(
             )
             session_id = extract_session_id(events) or resume_session_id
         if result.returncode:
-            raise RuntimeError(
-                f"{phase} coordinator failed (exit status {result.returncode})"
-            )
+            if phase == "review":
+                raise RuntimeError(
+                    f"review coordinator failed (exit status {result.returncode})"
+                )
+            detail = result.stderr.strip().splitlines()
+            raise RuntimeError(detail[-1][:800] if detail else f"{phase} failed")
         receipt = json.loads(receipt_path.read_text())
 
     if not isinstance(receipt, dict) or set(receipt) != set(RECEIPT_SCHEMA["required"]):
         raise RuntimeError("Codex returned an invalid receipt")
     if receipt["phase"] != phase:
         raise RuntimeError("Codex returned the wrong phase")
+    if receipt["state"] not in RECEIPT_SCHEMA["properties"]["state"]["enum"]:
+        raise RuntimeError("Codex returned an invalid receipt state")
     if receipt["state"] == "completed" and (
         not receipt["issue"] or not receipt["linear_url"]
     ):
@@ -759,36 +782,46 @@ def fail(summary: str) -> dict:
     }
 
 
-if __name__ == "__main__":
+def main() -> int:
     progress = ProgressReporter(None)
+    exit_code = 0
     try:
-        if os.environ.get(PHASE_CHILD_ENV) == "1":
-            raise RuntimeError("nested Bonaparte invocation blocked")
-        repo, selected_phase, supplied_input, session_id = parse()
-        progress = acquire_progress_reporter(selected_phase == "review")
-        progress.start()
-        result_receipt = run_phase(repo, selected_phase, supplied_input, session_id)
-        progress.stop_heartbeat()
-        progress.report("finalizing")
-        serialized_receipt = serialize_receipt(result_receipt)
-        terminal_state = result_receipt["state"]
+        try:
+            if os.environ.get(PHASE_CHILD_ENV) == "1":
+                raise RuntimeError("nested Bonaparte invocation blocked")
+            repo, selected_phase, supplied_input, session_id = parse()
+            progress = acquire_progress_reporter(selected_phase == "review")
+            progress.start()
+            result_receipt = run_phase(repo, selected_phase, supplied_input, session_id)
+            progress.stop_heartbeat()
+            progress.report("finalizing")
+            terminal_state = result_receipt["state"]
+            if terminal_state not in PROGRESS_TERMINAL_STATES:
+                raise ValueError("invalid progress state")
+            serialized_receipt = serialize_receipt(result_receipt)
+        except KeyboardInterrupt:
+            progress.stop_heartbeat()
+            progress.report("finalizing")
+            serialized_receipt = serialize_receipt(
+                fail("Bonaparte was interrupted.")
+            )
+            terminal_state = "failed"
+            exit_code = 130
+        except Exception as error:  # noqa: BLE001
+            progress.stop_heartbeat()
+            progress.report("finalizing")
+            serialized_receipt = serialize_receipt(
+                fail(str(error).replace("\n", " ")[:800])
+            )
+            terminal_state = "failed"
+            exit_code = 1
+
+        emit_serialized(serialized_receipt)
         progress.report(terminal_state)
-        emit_serialized(serialized_receipt)
-    except KeyboardInterrupt:
-        progress.stop_heartbeat()
-        progress.report("finalizing")
-        serialized_receipt = serialize_receipt(fail("Bonaparte was interrupted."))
-        progress.report("interrupted")
-        emit_serialized(serialized_receipt)
-        raise SystemExit(130) from None
-    except Exception as error:  # noqa: BLE001
-        progress.stop_heartbeat()
-        progress.report("finalizing")
-        serialized_receipt = serialize_receipt(
-            fail(str(error).replace("\n", " ")[:800])
-        )
-        progress.report("failed")
-        emit_serialized(serialized_receipt)
-        raise SystemExit(1) from None
+        return exit_code
     finally:
         progress.close()
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
