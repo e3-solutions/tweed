@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Launch the installed Bonaparte runtime and update it from stable Git tags."""
 
+from __future__ import annotations
+
 import os
 import re
 import shutil
