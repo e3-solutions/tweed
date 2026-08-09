@@ -52,6 +52,13 @@ MCP without a model to select only the handoff required by the next phase, and
 installs nothing. Treat each command's stdout as one JSON receipt of at most 4
 KiB. Do not open coordinator/subagent tasks, Linear, or logs.
 
+For review only, a trusted host may optionally open and explicitly inherit a
+nonblocking file descriptor numbered 3 or higher, then set
+`BONAPARTE_PROGRESS_FD` to its number. Consume that JSONL channel only as
+best-effort liveness; it carries no review result, never replaces the single
+bounded stdout receipt, and its absence or failure requires no retry or
+fallback. The invoking task remains thin and waits for the final receipt.
+
 On `needs-input`, ask only `question`. If `resume_session_id` is present,
 continue the same coordinator once:
 

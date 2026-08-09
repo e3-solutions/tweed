@@ -1,9 +1,11 @@
+import errno
 import importlib.machinery
 import importlib.util
 import json
 import os
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -237,3 +239,164 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertIn("Use production.", observed["prompt"])
         self.assertNotIn("# Bonaparte Bug RCA", observed["prompt"])
         call_linear.assert_not_called()
+
+    def test_review_progress_lifecycle_is_bounded_and_terminal(self):
+        read_descriptor, write_descriptor = os.pipe()
+        with mock.patch.dict(
+            os.environ,
+            {RUNNER.PROGRESS_FD_ENV: str(write_descriptor)},
+            clear=False,
+        ):
+            progress = RUNNER.acquire_progress_reporter(True)
+            self.assertNotIn(RUNNER.PROGRESS_FD_ENV, os.environ)
+            with self.assertRaises(OSError):
+                os.fstat(write_descriptor)
+            progress.start()
+            progress.report("active")
+            progress.stop_heartbeat()
+            progress.report("finalizing")
+            progress.report("completed")
+            progress.report("failed")
+            progress.close()
+
+        output = os.read(read_descriptor, 16384)
+        os.close(read_descriptor)
+        events = [json.loads(line) for line in output.splitlines()]
+        self.assertEqual(
+            [event["state"] for event in events],
+            ["started", "active", "finalizing", "completed"],
+        )
+        self.assertEqual([event["sequence"] for event in events], [1, 2, 3, 4])
+        for event in events:
+            self.assertEqual(
+                set(event),
+                {"version", "sequence", "phase", "state", "elapsed_seconds"},
+            )
+            self.assertEqual(event["version"], 1)
+            self.assertEqual(event["phase"], "review")
+            self.assertLessEqual(len(json.dumps(event).encode()), 4096)
+
+    def test_progress_fd_is_scrubbed_and_never_sent_to_children(self):
+        for value in ("", "2", "+3", "not-a-descriptor"):
+            with self.subTest(value=value), mock.patch.dict(
+                os.environ, {RUNNER.PROGRESS_FD_ENV: value}, clear=False
+            ):
+                progress = RUNNER.acquire_progress_reporter(True)
+                self.assertNotIn(RUNNER.PROGRESS_FD_ENV, os.environ)
+                self.assertNotIn(RUNNER.PROGRESS_FD_ENV, RUNNER.child_environment())
+                progress.close()
+
+        read_descriptor, write_descriptor = os.pipe()
+        with mock.patch.dict(
+            os.environ,
+            {RUNNER.PROGRESS_FD_ENV: str(write_descriptor)},
+            clear=False,
+        ):
+            progress = RUNNER.acquire_progress_reporter(False)
+            self.assertNotIn(RUNNER.PROGRESS_FD_ENV, os.environ)
+            os.fstat(write_descriptor)
+            progress.close()
+        os.close(write_descriptor)
+        os.close(read_descriptor)
+
+    def test_progress_write_failures_permanently_disable_reporting(self):
+        failures = (
+            OSError(errno.EBADF, "bad descriptor"),
+            OSError(errno.EPIPE, "closed reader"),
+            OSError(errno.EAGAIN, "backpressure"),
+        )
+        for failure in failures:
+            with self.subTest(error=failure.errno):
+                read_descriptor, write_descriptor = os.pipe()
+                progress = RUNNER.ProgressReporter(write_descriptor)
+                with mock.patch.object(
+                    RUNNER.os, "write", side_effect=failure
+                ) as write:
+                    progress.report("started")
+                    progress.report("active")
+                self.assertEqual(write.call_count, 1)
+                self.assertIsNone(progress._descriptor)
+                os.close(read_descriptor)
+
+        read_descriptor, write_descriptor = os.pipe()
+        progress = RUNNER.ProgressReporter(write_descriptor)
+        with mock.patch.object(RUNNER.os, "write", return_value=1) as write:
+            progress.report("started")
+            progress.report("active")
+        self.assertEqual(write.call_count, 1)
+        self.assertIsNone(progress._descriptor)
+        os.close(read_descriptor)
+
+    def test_coordinator_failure_does_not_project_child_stderr(self):
+        canary = "private-child-detail-canary"
+
+        def fake_run(command, **kwargs):
+            return subprocess.CompletedProcess(command, 23, stderr=canary)
+
+        with (
+            mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
+            mock.patch.object(RUNNER, "call_linear", return_value=(linear_issue(), [])),
+            mock.patch.object(RUNNER.subprocess, "run", side_effect=fake_run) as run,
+        ):
+            with self.assertRaisesRegex(
+                RuntimeError, "review coordinator failed .*exit status 23"
+            ) as raised:
+                RUNNER.run_phase(ROOT, "review", "COR-1")
+
+        self.assertNotIn(canary, str(raised.exception))
+        self.assertEqual(run.call_count, 1)
+
+    def test_review_cli_keeps_stdout_as_one_receipt(self):
+        completed_receipt = delivery_receipt("review")
+        with tempfile.TemporaryDirectory() as temporary:
+            fake_codex = Path(temporary) / "codex"
+            fake_codex.write_text(
+                "#!/usr/bin/env python3\n"
+                "import json, os, pathlib, sys\n"
+                "if '--version' in sys.argv:\n"
+                "    raise SystemExit(0)\n"
+                f"receipt = {completed_receipt!r}\n"
+                "if 'BONAPARTE_PROGRESS_FD' in os.environ:\n"
+                "    raise SystemExit(91)\n"
+                "target = sys.argv[sys.argv.index('--output-last-message') + 1]\n"
+                "pathlib.Path(target).write_text(json.dumps(receipt))\n"
+            )
+            fake_codex.chmod(0o755)
+            read_descriptor, write_descriptor = os.pipe()
+            environment = {
+                **os.environ,
+                "CODEX_BIN": str(fake_codex),
+                RUNNER.PROGRESS_FD_ENV: str(write_descriptor),
+            }
+            environment.pop(RUNNER.PHASE_CHILD_ENV, None)
+            completed = subprocess.run(
+                [
+                    str(ROOT / "bonaparte"),
+                    "--repo",
+                    str(ROOT),
+                    "resume",
+                    "review",
+                    SESSION_ID,
+                    "Continue.",
+                ],
+                cwd=ROOT,
+                env=environment,
+                pass_fds=(write_descriptor,),
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            os.close(write_descriptor)
+            progress_output = os.read(read_descriptor, 16384)
+            os.close(read_descriptor)
+
+        self.assertEqual(completed.returncode, 0, completed.stderr + completed.stdout)
+        stdout_lines = completed.stdout.splitlines()
+        self.assertEqual(len(stdout_lines), 1)
+        self.assertEqual(json.loads(stdout_lines[0])["state"], "completed")
+        self.assertLessEqual(len(completed.stdout.rstrip("\n").encode()), 4096)
+        events = [json.loads(line) for line in progress_output.splitlines()]
+        self.assertEqual(
+            [event["state"] for event in events],
+            ["started", "finalizing", "completed"],
+        )
