@@ -15,6 +15,19 @@ investigate, or spawn subagents here. Each phase is exactly one command.
 Invoke the bare `bonaparte` executable from `PATH`; the repository installer owns
 that link. Do not search for or expect a runner inside this skill directory.
 
+Honor model choices without choosing a model yourself. If the user selects one
+model for the whole Bonaparte run, add `--model <model>` before the command name
+on every phase and resume command. If the user selects models by phase, add the
+matching flag only to those phase and resume commands. A model supplied on resume
+may change the active coordinator's model. When the user makes no model choice,
+omit the flag so the runner can honor `BONAPARTE_MODEL` or Codex configuration.
+
+```sh
+bonaparte --model <model> --repo <repository> scope <receipt.issue>
+bonaparte --model <model> --repo <repository> resume \
+  <receipt.phase> <receipt.resume_session_id> <answer>
+```
+
 For a new request, classify it as a bug only when it reports incorrect existing
 behavior; classify a requested capability as a feature. Assemble a compact
 factual intake from the user's messages. Keep expected outcome, impact,

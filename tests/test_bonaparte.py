@@ -122,6 +122,22 @@ class BonaparteRunnerTests(unittest.TestCase):
     def test_coordinator_reasoning_is_medium(self):
         self.assertEqual(RUNNER.COORDINATOR_EFFORT, "medium")
 
+    def test_model_precedence_is_command_then_global_then_codex(self):
+        with mock.patch.dict(os.environ, {}, clear=True):
+            self.assertIsNone(RUNNER.resolve_model())
+
+        with mock.patch.dict(
+            os.environ, {"BONAPARTE_MODEL": "global-model"}, clear=True
+        ):
+            self.assertEqual(RUNNER.resolve_model(), "global-model")
+            self.assertEqual(
+                RUNNER.resolve_model("command-model"), "command-model"
+            )
+
+    def test_empty_model_is_rejected(self):
+        with self.assertRaisesRegex(RuntimeError, "non-empty model"):
+            RUNNER.resolve_model("  ")
+
     def test_workflows_require_complete_evidence_bearing_handoffs(self):
         required_markers = {
             "bug-rca.md": [
@@ -245,12 +261,53 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertIn("Untrusted Linear handoff", observed["prompt"])
         self.assertIn('"git_branch_name": "arya/cor-1-example"', observed["prompt"])
         self.assertIn('model_reasoning_effort="medium"', observed["command"])
+        self.assertNotIn("-m", observed["command"])
         self.assertNotIn("resume", observed["command"][:3])
 
-    def test_resume_uses_the_same_session_with_only_the_answer(self):
-        argv = ["bonaparte", "resume", "RCA", SESSION_ID, "Use", "production."]
-        with mock.patch.object(sys, "argv", argv):
-            repository, phase, answer, session_id = RUNNER.parse()
+    def test_phase_model_configures_coordinator_and_children(self):
+        observed = {}
+
+        def fake_run(command, **kwargs):
+            observed.update(command=command, prompt=kwargs["input"])
+            receipt_path = Path(command[command.index("--output-last-message") + 1])
+            receipt_path.write_text(json.dumps(receipt()))
+            return subprocess.CompletedProcess(command, 0, stderr="")
+
+        with (
+            mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
+            mock.patch.object(RUNNER, "call_linear", return_value=(linear_issue(), [])),
+            mock.patch.object(RUNNER.subprocess, "run", side_effect=fake_run),
+        ):
+            RUNNER.run_phase(ROOT, "rca", "COR-1", model="gpt-5.6-terra")
+
+        model_index = observed["command"].index("-m")
+        self.assertEqual(observed["command"][model_index + 1], "gpt-5.6-terra")
+        agent_overrides = [
+            value
+            for value in observed["command"]
+            if value.startswith("agents.")
+        ]
+        self.assertEqual(len(agent_overrides), 3)
+        for override in agent_overrides:
+            self.assertIn('model="gpt-5.6-terra"', override)
+
+    def test_resume_uses_the_same_session_and_can_switch_models(self):
+        argv = [
+            "bonaparte",
+            "--model",
+            "gpt-5.6-luna",
+            "resume",
+            "RCA",
+            SESSION_ID,
+            "Use",
+            "production.",
+        ]
+        with (
+            mock.patch.object(sys, "argv", argv),
+            mock.patch.dict(os.environ, {}, clear=True),
+        ):
+            repository, phase, answer, session_id, model = RUNNER.parse()
+        self.assertEqual(model, "gpt-5.6-luna")
         observed = {}
 
         def fake_run(command, **kwargs):
@@ -264,10 +321,12 @@ class BonaparteRunnerTests(unittest.TestCase):
             mock.patch.object(RUNNER, "call_linear") as call_linear,
             mock.patch.object(RUNNER.subprocess, "run", side_effect=fake_run),
         ):
-            result = RUNNER.run_phase(repository, phase, answer, session_id)
+            result = RUNNER.run_phase(repository, phase, answer, session_id, model)
 
         self.assertEqual(result["state"], "completed")
         self.assertEqual(observed["command"][:3], ["/bin/codex", "exec", "resume"])
+        model_index = observed["command"].index("-m")
+        self.assertEqual(observed["command"][model_index + 1], "gpt-5.6-luna")
         self.assertEqual(observed["command"][-2:], [SESSION_ID, "-"])
         self.assertIn("Use production.", observed["prompt"])
         self.assertNotIn("# Bonaparte Bug RCA", observed["prompt"])
@@ -638,7 +697,7 @@ class BonaparteRunnerTests(unittest.TestCase):
             mock.patch.object(
                 RUNNER,
                 "parse",
-                return_value=(ROOT, "review", "Continue.", SESSION_ID),
+                return_value=(ROOT, "review", "Continue.", SESSION_ID, None),
             ),
             mock.patch.object(
                 RUNNER,
@@ -679,7 +738,7 @@ class BonaparteRunnerTests(unittest.TestCase):
             mock.patch.object(
                 RUNNER,
                 "parse",
-                return_value=(ROOT, "review", "Continue.", SESSION_ID),
+                return_value=(ROOT, "review", "Continue.", SESSION_ID, None),
             ),
             mock.patch.object(
                 RUNNER,
@@ -1046,7 +1105,7 @@ class BonaparteRunnerTests(unittest.TestCase):
                 os.environ, {RUNNER.PHASE_CHILD_ENV: ""}, clear=False
             ),
             mock.patch.object(
-                RUNNER, "parse", return_value=(ROOT, "review", "x", None)
+                RUNNER, "parse", return_value=(ROOT, "review", "x", None, None)
             ),
             mock.patch.object(
                 RUNNER, "acquire_progress_reporter", return_value=progress

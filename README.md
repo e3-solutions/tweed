@@ -21,8 +21,9 @@ Feature: create → scope → implement → review → publish
 Bonaparte uses your local Codex installation and its authenticated Linear MCP. The
 implement, review, and publish phases also use your existing Git and GitHub CLI
 authentication.
-Every phase coordinator is pinned to `gpt-5.6-sol` with medium reasoning, and
-every spawned subagent is pinned to `gpt-5.6-sol` with medium reasoning.
+Bonaparte does not pin a model. With no Bonaparte model setting, coordinators and
+subagents use your normal Codex configuration. Bonaparte keeps reasoning effort at
+medium for both.
 
 Prerequisites:
 
@@ -107,6 +108,24 @@ bonaparte review LIN-123
 bonaparte publish LIN-123
 bonaparte resume RCA <session-id> "clarification answer"
 ```
+
+## Model selection
+
+Select a model for one phase or for a resumed phase with `--model`:
+
+```sh
+bonaparte --model gpt-5.6-terra scope LIN-123
+bonaparte --model gpt-5.6-luna resume scope <session-id> "clarification answer"
+```
+
+Set one model for every Bonaparte phase in the environment:
+
+```sh
+export BONAPARTE_MODEL=gpt-5.6-terra
+```
+
+Precedence is `--model`, then `BONAPARTE_MODEL`, then Codex's configured model.
+An explicit selection applies to the phase coordinator and all of its subagents.
 
 - **Create** writes a human title and a `What`/`Why`/`How` description for a bug
   or feature. It adds no comment.
