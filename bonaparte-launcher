@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import fcntl
+import json
 import os
 import re
 import shutil
@@ -10,6 +12,8 @@ import subprocess
 import sys
 import tempfile
 import time
+import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 
 REPOSITORY = os.environ.get(
@@ -17,17 +21,12 @@ REPOSITORY = os.environ.get(
 )
 TAG_PATTERN = re.compile(r"v(\d+)\.(\d+)\.(\d+)")
 CHECK_INTERVAL = 24 * 60 * 60
+ACTIVITY_VERSION = 1
+ACTIVITY_RETENTION = 50
+PHASES = {"create", "rca", "scope", "implement", "review", "publish"}
 REQUIRED = """bonaparte bonaparte-launcher skills/use-bonaparte/SKILL.md
 skills/use-bonaparte/agents/openai.yaml workflows/create.md workflows/bug-rca.md
 workflows/scope.md workflows/implement.md workflows/review.md workflows/publish.md""".split()
-
-
-def updater_environment() -> dict[str, str]:
-    """Keep the host progress channel private to the final runner exec."""
-
-    environment = os.environ.copy()
-    environment.pop("BONAPARTE_PROGRESS_FD", None)
-    return environment
 
 
 def bonaparte_home() -> Path:
@@ -43,6 +42,206 @@ def atomic_link(target: str, link: Path) -> None:
     temporary.unlink(missing_ok=True)
     temporary.symlink_to(target)
     os.replace(temporary, link)
+
+
+def utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace(
+        "+00:00", "Z"
+    )
+
+
+def phase_from_arguments(arguments: list[str]) -> str | None:
+    index = 0
+    while index < len(arguments) and arguments[index].startswith("-"):
+        index += 2 if arguments[index] in {"--repo", "--model"} else 1
+    if index >= len(arguments):
+        return None
+    command = arguments[index].casefold()
+    if command == "resume" and index + 1 < len(arguments):
+        command = arguments[index + 1].casefold()
+    return command if command in PHASES else None
+
+
+def activity_directory(home: Path) -> Path:
+    directory = home / "activity"
+    directory.mkdir(mode=0o700, parents=True, exist_ok=True)
+    os.chmod(directory, 0o700)
+    return directory
+
+
+def write_activity(path: Path, activity: dict) -> None:
+    directory = path.parent
+    with tempfile.NamedTemporaryFile(
+        mode="w",
+        encoding="utf-8",
+        prefix=".activity-",
+        dir=directory,
+        delete=False,
+    ) as temporary:
+        temporary_path = Path(temporary.name)
+        os.chmod(temporary_path, 0o600)
+        json.dump(activity, temporary, ensure_ascii=False, separators=(",", ":"))
+        temporary.write("\n")
+        temporary.flush()
+        os.fsync(temporary.fileno())
+    try:
+        os.replace(temporary_path, path)
+    finally:
+        temporary_path.unlink(missing_ok=True)
+
+
+def lock_is_held(path: Path) -> bool:
+    try:
+        with path.open("a+") as lock:
+            try:
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError:
+                return True
+            fcntl.flock(lock, fcntl.LOCK_UN)
+    except OSError:
+        return False
+    return False
+
+
+def prune_activity(directory: Path) -> None:
+    paths = sorted(
+        directory.glob("*.json"), key=lambda path: path.stat().st_mtime, reverse=True
+    )
+    for path in paths[ACTIVITY_RETENTION:]:
+        lock_path = path.with_suffix(".lock")
+        if not lock_is_held(lock_path):
+            path.unlink(missing_ok=True)
+            lock_path.unlink(missing_ok=True)
+
+
+def elapsed_seconds(activity: dict) -> float:
+    started = datetime.fromisoformat(activity["started_at"].replace("Z", "+00:00"))
+    finished_at = activity.get("finished_at")
+    finished = (
+        datetime.fromisoformat(finished_at.replace("Z", "+00:00"))
+        if finished_at
+        else datetime.now(timezone.utc)
+    )
+    return round(max(0.0, (finished - started).total_seconds()), 3)
+
+
+def read_activity(home: Path, run_id: str | None = None) -> dict:
+    directory = activity_directory(home)
+    if run_id is not None and str(uuid.UUID(run_id)) != run_id:
+        raise RuntimeError("status requires a canonical run ID")
+    paths = (
+        [directory / f"{run_id}.json"]
+        if run_id
+        else list(directory.glob("*.json"))
+    )
+    activities = []
+    for path in paths:
+        try:
+            activity = json.loads(path.read_text())
+            if activity.get("version") != ACTIVITY_VERSION:
+                continue
+            if activity.get("state") == "running" and not lock_is_held(
+                path.with_suffix(".lock")
+            ):
+                activity["state"] = "unknown"
+            activity["elapsed_seconds"] = elapsed_seconds(activity)
+            activities.append(activity)
+        except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError):
+            continue
+    if not activities:
+        return {"version": ACTIVITY_VERSION, "state": "idle"}
+    running = [activity for activity in activities if activity["state"] == "running"]
+    return max(running or activities, key=lambda activity: activity["started_at"])
+
+
+def terminal_state(stdout: str, returncode: int) -> str:
+    if returncode:
+        return "interrupted" if returncode == 130 else "failed"
+    try:
+        receipt = json.loads(stdout)
+    except json.JSONDecodeError:
+        receipt = None
+    if isinstance(receipt, dict) and receipt.get("state") in {
+        "completed",
+        "needs-input",
+        "blocked",
+        "failed",
+    }:
+        return receipt["state"]
+    return "failed"
+
+
+def run_child(command: list[str]) -> tuple[str, int]:
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, text=True)
+    interrupted = False
+    try:
+        stdout, _ = process.communicate()
+    except KeyboardInterrupt:
+        interrupted = True
+        try:
+            stdout, _ = process.communicate(timeout=5)
+        except subprocess.TimeoutExpired:
+            process.terminate()
+            try:
+                stdout, _ = process.communicate(timeout=5)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                stdout, _ = process.communicate()
+    return stdout, 130 if interrupted else process.returncode
+
+
+def run_tracked(home: Path, runner: Path, arguments: list[str], phase: str) -> int:
+    command = [sys.executable, str(runner), *arguments]
+    try:
+        directory = activity_directory(home)
+        prune_activity(directory)
+    except OSError:
+        os.execv(sys.executable, command)
+    run_id = str(uuid.uuid4())
+    activity_path = directory / f"{run_id}.json"
+    lock_path = activity_path.with_suffix(".lock")
+    started_at = utc_now()
+    activity = {
+        "version": ACTIVITY_VERSION,
+        "run_id": run_id,
+        "phase": phase,
+        "state": "running",
+        "started_at": started_at,
+        "finished_at": None,
+        "exit_code": None,
+    }
+    lock = None
+    try:
+        lock = lock_path.open("x+")
+        os.chmod(lock_path, 0o600)
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        write_activity(activity_path, activity)
+    except OSError:
+        if lock is not None:
+            lock.close()
+        os.execv(sys.executable, command)
+    with lock:
+        try:
+            stdout, returncode = run_child(command)
+        except Exception:
+            activity.update(state="failed", finished_at=utc_now(), exit_code=1)
+            try:
+                write_activity(activity_path, activity)
+            except OSError:
+                pass
+            raise
+        activity.update(
+            state=terminal_state(stdout, returncode),
+            finished_at=utc_now(),
+            exit_code=returncode,
+        )
+        try:
+            write_activity(activity_path, activity)
+        except OSError:
+            pass
+        sys.stdout.write(stdout)
+        sys.stdout.flush()
+        return returncode
 
 
 def current_release(home: Path) -> Path:
@@ -63,7 +262,6 @@ def tag_version(tag: str) -> tuple[int, int, int] | None:
 def latest_tag() -> tuple[str, str]:
     output = subprocess.check_output(
         ["git", "ls-remote", "--tags", "--refs", REPOSITORY],
-        env=updater_environment(),
         text=True,
         timeout=15,
     )
@@ -85,7 +283,7 @@ def validate_release(release: Path) -> None:
     for name in ("bonaparte", "bonaparte-launcher"):
         source = release / name
         compile(source.read_text(), str(source), "exec")
-    environment = updater_environment()
+    environment = os.environ.copy()
     environment["BONAPARTE_AUTO_UPDATE"] = "0"
     subprocess.run(
         [sys.executable, str(release / "bonaparte"), "--help"],
@@ -102,7 +300,6 @@ def git(directory: Path, *arguments: str, output: bool = False):
         ["git", "-C", directory, *arguments],
         check=True,
         capture_output=output,
-        env=updater_environment(),
         text=output,
         timeout=30,
     )
@@ -168,9 +365,19 @@ def main() -> int:
                 else "Bonaparte is already current."
             )
             return 0
+        if sys.argv[1:2] == ["status"]:
+            run_id = sys.argv[2] if len(sys.argv) == 3 else None
+            if len(sys.argv) > 3:
+                raise RuntimeError("use: bonaparte status [run-id]")
+            print(json.dumps(read_activity(home, run_id), separators=(",", ":")))
+            return 0
         automatic_update(home)
         runner = current_release(home) / "bonaparte"
-        os.execv(sys.executable, [sys.executable, str(runner), *sys.argv[1:]])
+        arguments = sys.argv[1:]
+        phase = phase_from_arguments(arguments)
+        if phase is None:
+            os.execv(sys.executable, [sys.executable, str(runner), *arguments])
+        return run_tracked(home, runner, arguments, phase)
     except Exception as error:
         print(f"bonaparte: {error}", file=sys.stderr)
         return 1

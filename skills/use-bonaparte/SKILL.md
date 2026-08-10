@@ -65,12 +65,10 @@ MCP without a model to select only the handoff required by the next phase, and
 installs nothing. Treat each command's stdout as one JSON receipt of at most 4
 KiB. Do not open coordinator/subagent tasks, Linear, or logs.
 
-For review only, a trusted host may optionally open and explicitly inherit a
-nonblocking file descriptor numbered 3 or higher, then set
-`BONAPARTE_PROGRESS_FD` to its number. Consume that JSONL channel only as
-best-effort liveness; it carries no review result, never replaces the single
-bounded stdout receipt, and its absence or failure requires no retry or
-fallback. The invoking task remains thin and waits for the final receipt.
+Do not poll or inject activity updates while a phase runs. If the user asks for
+progress, run `bonaparte status` separately and report only its compact phase,
+state, and elapsed time. The launcher owns that external snapshot; reading it on
+demand does not wake the coordinator or add recurring content to this task.
 
 On `needs-input`, ask only `question`. If `resume_session_id` is present,
 continue the same coordinator once:

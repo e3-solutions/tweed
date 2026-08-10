@@ -148,37 +148,19 @@ between them. Any `needs-input`, `blocked`, or failed phase stops the chain.
 After `needs-input`, `resume` continues the same coordinator session with the
 answer instead of restarting its investigation.
 
-## Review liveness for trusted hosts
+## Activity status
 
-Review has an optional, host-controlled liveness channel. Before launching
-Bonaparte, a trusted host may open a writable file descriptor numbered 3 or
-higher, configure it as nonblocking, explicitly inherit it into the launcher,
-and set
-`BONAPARTE_PROGRESS_FD` to that descriptor number. The launcher preserves the
-descriptor when it replaces itself with the runner. Update subprocesses do not
-inherit it. This ABI is review-only: other phases emit no progress events.
+The launcher records one private, host-owned status snapshot when a phase starts
+and overwrites it when the phase exits. It performs no heartbeat writes and does
+not add progress messages to agent context. Check the current run from another
+terminal, or on demand from an invoking agent:
 
-The channel is UTF-8 JSON Lines. Every line has exactly these fields:
-`version`, `sequence`, `phase`, `state`, and `elapsed_seconds`. `version` is `1`,
-`sequence` is a monotonically increasing integer, `phase` is `"review"`, and
-`elapsed_seconds` is a nonnegative number measured from the start of review and
-rounded to milliseconds.
-`state` is one of `started`, `active`, `finalizing`, `completed`, `needs-input`,
-`blocked`, `failed`, or `interrupted`.
+```sh
+bonaparte status
+bonaparte status <run-id>
+```
 
-Emission is best effort: `started` is immediate, `active` is a periodic
-heartbeat every 10 seconds while the coordinator runs, and `finalizing` follows
-heartbeat shutdown and join. At most one terminal event follows, and it matches
-the validated final receipt. The channel contains no prompts, model events,
-issue or customer data, repository contents or paths, command output, secrets,
-URLs, or contact details.
-
-The host-supplied descriptor must already be nonblocking; Bonaparte rejects a
-blocking descriptor without changing its blocking mode. An invalid descriptor
-or any encoding, size, partial write, or write error permanently disables
-progress for that process. Bonaparte does not retry and never falls back to
-stdout, stderr, a file, or a service.
-Regardless of progress availability, stdout remains exactly one final JSON
-receipt of at most 4 KiB; stderr remains the diagnostic channel. Progress only
-proves process liveness. It does not mean that native review ran successfully,
-that findings were resolved, or that the review receipt will be `completed`.
+Status contains only a run ID, phase, factual state, timestamps, exit code, and
+elapsed time calculated when read. It never stores the command input, prompt,
+repository, issue, receipt, or model output. A `running` record whose launcher
+lock is no longer held is reported as `unknown` rather than assumed active.
