@@ -133,7 +133,8 @@ answer instead of restarting its investigation.
 
 Review has an optional, host-controlled liveness channel. Before launching
 Bonaparte, a trusted host may open a writable file descriptor numbered 3 or
-higher, explicitly inherit it into the launcher, and set
+higher, configure it as nonblocking, explicitly inherit it into the launcher,
+and set
 `BONAPARTE_PROGRESS_FD` to that descriptor number. The launcher preserves the
 descriptor when it replaces itself with the runner. Update subprocesses do not
 inherit it. This ABI is review-only: other phases emit no progress events.
@@ -153,9 +154,11 @@ the validated final receipt. The channel contains no prompts, model events,
 issue or customer data, repository contents or paths, command output, secrets,
 URLs, or contact details.
 
-Writes are nonblocking. An invalid descriptor or any encoding, size, partial
-write, or write error permanently disables progress for that process. Bonaparte
-does not retry and never falls back to stdout, stderr, a file, or a service.
+The host-supplied descriptor must already be nonblocking; Bonaparte rejects a
+blocking descriptor without changing its blocking mode. An invalid descriptor
+or any encoding, size, partial write, or write error permanently disables
+progress for that process. Bonaparte does not retry and never falls back to
+stdout, stderr, a file, or a service.
 Regardless of progress availability, stdout remains exactly one final JSON
 receipt of at most 4 KiB; stderr remains the diagnostic channel. Progress only
 proves process liveness. It does not mean that native review ran successfully,

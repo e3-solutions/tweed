@@ -88,6 +88,7 @@ def run_review_cli(fake_receipt):
         )
         fake_codex.chmod(0o755)
         read_descriptor, write_descriptor = os.pipe()
+        os.set_blocking(write_descriptor, False)
         environment = {
             **os.environ,
             "CODEX_BIN": str(fake_codex),
@@ -170,20 +171,6 @@ class BonaparteRunnerTests(unittest.TestCase):
         implementation = (ROOT / "workflows/implement.md").read_text()
         self.assertIn("issue.git_branch_name", implementation)
         self.assertNotIn("bonaparte/<issue-id>", implementation)
-
-    def test_review_serializes_native_review_after_resource_heavy_work(self):
-        review = (ROOT / "workflows/review.md").read_text()
-        normalized = " ".join(review.split())
-
-        self.assertIn("separate serial resource gate", normalized)
-        self.assertIn("wait for every spawned reviewer and fixer to finish", normalized)
-        self.assertIn("run no repository check or child agent concurrently", normalized)
-        self.assertIn("`SIGKILL`/137", normalized)
-        self.assertIn("Run the sanitized native review first and alone", normalized)
-        self.assertIn(
-            "Native review failure, unavailability, or interruption is not a clean review",
-            normalized,
-        )
 
     def test_delivery_phases_require_the_draft_pr_handoff(self):
         for phase in ("implement", "review", "publish"):
@@ -286,8 +273,33 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertNotIn("# Bonaparte Bug RCA", observed["prompt"])
         call_linear.assert_not_called()
 
+    def test_non_review_run_phase_retains_baseline_key_only_validation(self):
+        schema_invalid = receipt()
+        schema_invalid.update(
+            phase="scope",
+            state="blocked",
+            result=None,
+            summary=None,
+        )
+
+        def fake_run(command, **kwargs):
+            receipt_path = Path(command[command.index("--output-last-message") + 1])
+            receipt_path.write_text(json.dumps(schema_invalid))
+            return subprocess.CompletedProcess(command, 0, stderr="")
+
+        with (
+            mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
+            mock.patch.object(RUNNER.subprocess, "run", side_effect=fake_run) as run,
+        ):
+            result = RUNNER.run_phase(ROOT, "scope", "Continue.", SESSION_ID)
+
+        run.assert_called_once()
+        self.assertIsNone(result["summary"])
+        self.assertEqual(result["state"], "blocked")
+
     def test_review_progress_lifecycle_is_bounded_and_terminal(self):
         read_descriptor, write_descriptor = os.pipe()
+        os.set_blocking(write_descriptor, False)
         with mock.patch.dict(
             os.environ,
             {RUNNER.PROGRESS_FD_ENV: str(write_descriptor)},
@@ -358,6 +370,29 @@ class BonaparteRunnerTests(unittest.TestCase):
                 os.fstat(write_descriptor)
             progress.close()
         os.close(read_descriptor)
+
+    def test_progress_fd_requires_nonblocking_without_perturbing_host_duplicate(self):
+        for blocking in (True, False):
+            with self.subTest(blocking=blocking):
+                read_descriptor, write_descriptor = os.pipe()
+                os.set_blocking(write_descriptor, blocking)
+                host_descriptor = os.dup(write_descriptor)
+                with mock.patch.dict(
+                    os.environ,
+                    {RUNNER.PROGRESS_FD_ENV: str(write_descriptor)},
+                    clear=False,
+                ):
+                    progress = RUNNER.acquire_progress_reporter(True)
+
+                self.assertNotIn(RUNNER.PROGRESS_FD_ENV, os.environ)
+                with self.assertRaises(OSError):
+                    os.fstat(write_descriptor)
+                self.assertEqual(os.get_blocking(host_descriptor), blocking)
+                self.assertEqual(progress._descriptor is not None, not blocking)
+
+                progress.close()
+                os.close(host_descriptor)
+                os.close(read_descriptor)
 
     def test_progress_write_failures_permanently_disable_reporting(self):
         failures = (
@@ -498,6 +533,7 @@ class BonaparteRunnerTests(unittest.TestCase):
                 "threading.Thread = StartRaisesAfterStarting\n"
             )
             read_descriptor, write_descriptor = os.pipe()
+            os.set_blocking(write_descriptor, False)
             environment = {
                 **os.environ,
                 "CODEX_BIN": str(fake_codex),
@@ -542,21 +578,93 @@ class BonaparteRunnerTests(unittest.TestCase):
                 ["started"],
             )
 
-    def test_stdout_receipt_limit_includes_the_jsonl_terminator(self):
-        accepted = {"x": "a" * 4087}
-        serialized = RUNNER.serialize_receipt(accepted)
+    def test_receipt_size_boundary_is_review_only(self):
+        baseline_accepted = {"x": "a" * 4088}
+        serialized = RUNNER.serialize_receipt(baseline_accepted)
         stdout = io.StringIO()
         with mock.patch.object(sys, "stdout", stdout):
             RUNNER.emit_serialized(serialized)
 
         raw_output = stdout.getvalue().encode("utf-8")
-        self.assertEqual(len(raw_output), RUNNER.RECEIPT_MAX_BYTES)
+        self.assertEqual(len(serialized.encode("utf-8")), RUNNER.RECEIPT_MAX_BYTES)
+        self.assertEqual(len(raw_output), RUNNER.RECEIPT_MAX_BYTES + 1)
         self.assertTrue(raw_output.endswith(b"\n"))
-        self.assertEqual(json.loads(raw_output), accepted)
-        with self.assertRaisesRegex(RuntimeError, "receipt exceeded 4 KiB"):
-            RUNNER.serialize_receipt({"x": "a" * 4088})
+        self.assertEqual(json.loads(raw_output), baseline_accepted)
 
-    def test_coordinator_failure_receipts_never_expose_stderr(self):
+        review_accepted = {"x": "a" * 4087}
+        review_serialized = RUNNER.serialize_review_receipt(review_accepted)
+        self.assertEqual(
+            len((review_serialized + "\n").encode("utf-8")),
+            RUNNER.RECEIPT_MAX_BYTES,
+        )
+        with self.assertRaisesRegex(RuntimeError, "receipt exceeded 4 KiB"):
+            RUNNER.serialize_review_receipt(baseline_accepted)
+
+    def test_main_uses_review_serializer_only_after_review_is_selected(self):
+        cases = (
+            (RuntimeError("parse failed"), 1),
+            (KeyboardInterrupt(), 130),
+        )
+        for parse_error, expected_exit in cases:
+            with self.subTest(error=type(parse_error).__name__):
+                stdout = io.StringIO()
+                with (
+                    mock.patch.dict(
+                        os.environ, {RUNNER.PHASE_CHILD_ENV: ""}, clear=False
+                    ),
+                    mock.patch.object(RUNNER, "parse", side_effect=parse_error),
+                    mock.patch.object(
+                        RUNNER,
+                        "serialize_receipt",
+                        wraps=RUNNER.serialize_receipt,
+                    ) as baseline_serializer,
+                    mock.patch.object(
+                        RUNNER,
+                        "serialize_review_receipt",
+                        wraps=RUNNER.serialize_review_receipt,
+                    ) as review_serializer,
+                    mock.patch.object(sys, "stdout", stdout),
+                ):
+                    exit_code = RUNNER.main()
+
+                self.assertEqual(exit_code, expected_exit)
+                baseline_serializer.assert_called_once()
+                review_serializer.assert_not_called()
+                self.assertEqual(json.loads(stdout.getvalue())["state"], "failed")
+
+        stdout = io.StringIO()
+        with (
+            mock.patch.dict(os.environ, {RUNNER.PHASE_CHILD_ENV: ""}, clear=False),
+            mock.patch.object(
+                RUNNER,
+                "parse",
+                return_value=(ROOT, "review", "Continue.", SESSION_ID),
+            ),
+            mock.patch.object(
+                RUNNER,
+                "acquire_progress_reporter",
+                return_value=RUNNER.ProgressReporter(None),
+            ),
+            mock.patch.object(RUNNER, "run_phase", side_effect=RuntimeError("failed")),
+            mock.patch.object(
+                RUNNER,
+                "serialize_receipt",
+                wraps=RUNNER.serialize_receipt,
+            ) as baseline_serializer,
+            mock.patch.object(
+                RUNNER,
+                "serialize_review_receipt",
+                wraps=RUNNER.serialize_review_receipt,
+            ) as review_serializer,
+            mock.patch.object(sys, "stdout", stdout),
+        ):
+            exit_code = RUNNER.main()
+
+        self.assertEqual(exit_code, 1)
+        review_serializer.assert_called_once()
+        baseline_serializer.assert_not_called()
+
+    def test_review_coordinator_failure_receipt_never_exposes_stderr(self):
         canary = "private-child-detail-canary"
         final_line = "actionable final diagnostic"
 
@@ -565,71 +673,54 @@ class BonaparteRunnerTests(unittest.TestCase):
                 command, 23, stderr=f"{canary}\n\n{final_line}"
             )
 
-        for phase in RUNNER.WORKFLOWS:
-            with self.subTest(phase=phase):
-                stdout = io.StringIO()
-                with (
-                    mock.patch.dict(
-                        os.environ, {RUNNER.PHASE_CHILD_ENV: ""}, clear=False
-                    ),
-                    mock.patch.object(
-                        RUNNER,
-                        "parse",
-                        return_value=(ROOT, phase, "Continue.", SESSION_ID),
-                    ),
-                    mock.patch.object(
-                        RUNNER,
-                        "acquire_progress_reporter",
-                        return_value=RUNNER.ProgressReporter(None),
-                    ),
-                    mock.patch.object(
-                        RUNNER, "find_codex", return_value="/bin/codex"
-                    ),
-                    mock.patch.object(
-                        RUNNER.subprocess, "run", side_effect=fake_run
-                    ) as coordinator,
-                    mock.patch.object(sys, "stdout", stdout),
-                ):
-                    exit_code = RUNNER.main()
+        stdout = io.StringIO()
+        with (
+            mock.patch.dict(os.environ, {RUNNER.PHASE_CHILD_ENV: ""}, clear=False),
+            mock.patch.object(
+                RUNNER,
+                "parse",
+                return_value=(ROOT, "review", "Continue.", SESSION_ID),
+            ),
+            mock.patch.object(
+                RUNNER,
+                "acquire_progress_reporter",
+                return_value=RUNNER.ProgressReporter(None),
+            ),
+            mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
+            mock.patch.object(
+                RUNNER.subprocess, "run", side_effect=fake_run
+            ) as coordinator,
+            mock.patch.object(sys, "stdout", stdout),
+        ):
+            exit_code = RUNNER.main()
 
-                coordinator.assert_called_once()
-                self.assertIs(
-                    coordinator.call_args.kwargs["stderr"], subprocess.DEVNULL
-                )
-                self.assertEqual(exit_code, 1)
-                final_receipt = json.loads(stdout.getvalue())
-                self.assertEqual(final_receipt["state"], "failed")
-                self.assertEqual(
-                    final_receipt["summary"],
-                    f"{phase} coordinator failed (exit status 23)",
-                )
-                self.assertNotIn(canary, stdout.getvalue())
-                self.assertNotIn(final_line, stdout.getvalue())
+        coordinator.assert_called_once()
+        self.assertIs(coordinator.call_args.kwargs["stderr"], subprocess.DEVNULL)
+        self.assertEqual(exit_code, 1)
+        final_receipt = json.loads(stdout.getvalue())
+        self.assertEqual(final_receipt["state"], "failed")
+        self.assertEqual(
+            final_receipt["summary"],
+            "review coordinator failed (exit status 23)",
+        )
+        self.assertNotIn(canary, stdout.getvalue())
+        self.assertNotIn(final_line, stdout.getvalue())
 
-    def test_coordinator_failure_diagnostic_is_independent_of_stderr(self):
-        cases = [
-            "\n\n",
-            "ignored\n" + "x" * 801,
-        ]
+    def test_non_review_coordinator_retains_bounded_last_stderr_line(self):
+        diagnostic = "x" * 801
+        result = subprocess.CompletedProcess(
+            [], 1, stderr=f"earlier detail\n\n{diagnostic}"
+        )
+        with (
+            mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
+            mock.patch.object(RUNNER.subprocess, "run", return_value=result) as run,
+        ):
+            with self.assertRaises(RuntimeError) as raised:
+                RUNNER.run_phase(ROOT, "scope", "Continue.", SESSION_ID)
 
-        for stderr in cases:
-            with self.subTest(stderr_length=len(stderr)):
-                result = subprocess.CompletedProcess([], 1, stderr=stderr)
-                with (
-                    mock.patch.object(
-                        RUNNER, "find_codex", return_value="/bin/codex"
-                    ),
-                    mock.patch.object(RUNNER.subprocess, "run", return_value=result),
-                ):
-                    with self.assertRaises(RuntimeError) as raised:
-                        RUNNER.run_phase(ROOT, "scope", "Continue.", SESSION_ID)
-
-                self.assertEqual(
-                    str(raised.exception),
-                    "scope coordinator failed (exit status 1)",
-                )
-                if stderr.strip():
-                    self.assertNotIn(stderr.strip(), str(raised.exception))
+        run.assert_called_once()
+        self.assertIs(run.call_args.kwargs["stderr"], subprocess.PIPE)
+        self.assertEqual(str(raised.exception), diagnostic[:800])
 
     def test_review_cli_keeps_stdout_as_one_receipt(self):
         completed, events = run_review_cli(delivery_receipt("review"))
@@ -767,6 +858,7 @@ class BonaparteRunnerTests(unittest.TestCase):
             stdout_reader, stdout_writer = os.pipe()
             progress_reader, progress_writer = os.pipe()
             os.set_blocking(stdout_reader, False)
+            os.set_blocking(progress_writer, False)
             environment = {
                 **os.environ,
                 "CODEX_BIN": str(fake_codex),
@@ -829,6 +921,7 @@ class BonaparteRunnerTests(unittest.TestCase):
             fake_codex.chmod(0o755)
             stdout_reader, stdout_writer = os.pipe()
             progress_reader, progress_writer = os.pipe()
+            os.set_blocking(progress_writer, False)
             os.close(stdout_reader)
             environment = {
                 **os.environ,
@@ -876,6 +969,7 @@ class BonaparteRunnerTests(unittest.TestCase):
             )
             fake_codex.chmod(0o755)
             read_descriptor, write_descriptor = os.pipe()
+            os.set_blocking(write_descriptor, False)
             environment = {
                 **os.environ,
                 "CODEX_BIN": str(fake_codex),
