@@ -17,7 +17,6 @@ import time
 import uuid
 from pathlib import Path
 
-MODEL = "gpt-5.6-sol"
 COORDINATOR_EFFORT = "medium"
 SUBAGENT_EFFORT = "medium"
 PHASE_CHILD_ENV = "BONAPARTE_PHASE_CHILD"
@@ -43,6 +42,7 @@ PROGRESS_TERMINAL_STATES = {
     "failed",
     "interrupted",
 }
+GLOBAL_MODEL_ENV = "BONAPARTE_MODEL"
 
 RECEIPT_SCHEMA = {
     "type": "object",
@@ -590,6 +590,34 @@ def child_environment() -> dict[str, str]:
     return {**os.environ, PHASE_CHILD_ENV: "1"}
 
 
+def resolve_model(override: str | None = None) -> str | None:
+    """Resolve a model without overriding Codex when Bonaparte is unconfigured."""
+    selected = override if override is not None else os.environ.get(GLOBAL_MODEL_ENV)
+    if selected is None:
+        return None
+    model = selected.strip()
+    if not model:
+        raise RuntimeError("model setting requires a non-empty model")
+    return model
+
+
+def agent_config(description: str, model: str | None) -> str:
+    values = {
+        "description": description,
+        "model_reasoning_effort": SUBAGENT_EFFORT,
+    }
+    if model:
+        values["model"] = model
+    return (
+        "{"
+        + ",".join(
+            f"{key}={json.dumps(value, ensure_ascii=False)}"
+            for key, value in values.items()
+        )
+        + "}"
+    )
+
+
 def require_pull_request(receipt: dict, phase: str) -> None:
     if (
         phase in {"implement", "review", "publish"}
@@ -604,6 +632,7 @@ def run_phase(
     phase: str,
     phase_input: str,
     resume_session_id: str | None = None,
+    model: str | None = None,
 ) -> dict:
     workflow_name, assignment = WORKFLOWS[phase]
     workflow = (Path(__file__).resolve().parent / "workflows" / workflow_name).read_text()
@@ -613,10 +642,7 @@ def run_phase(
         "explorer": "Read-only Bonaparte repository investigator",
     }
     child_configs = {
-        role: (
-            f'{{description="{description}",model="{MODEL}",'
-            f'model_reasoning_effort="{SUBAGENT_EFFORT}"}}'
-        )
+        role: agent_config(description, model)
         for role, description in child_configs.items()
     }
     expected_branch = None
@@ -664,11 +690,11 @@ def run_phase(
             "You are already the Bonaparte phase coordinator. Execute this workflow "
             "directly; do not invoke Bonaparte or delegate back to its skill.\n\n"
             "# Model policy\n\n"
-            f"This coordinator is pinned to {MODEL} at {COORDINATOR_EFFORT} "
-            f"reasoning. Spawn every child on {MODEL} at {SUBAGENT_EFFORT} "
-            "reasoning using only the built-in default, worker, or explorer roles. "
-            "Do not select or request a different child model, role, or reasoning "
-            "effort.\n\n"
+            "Model selection is controlled by the runner. The coordinator uses "
+            f"{COORDINATOR_EFFORT} reasoning and every child uses {SUBAGENT_EFFORT} "
+            "reasoning. Spawn children using only the built-in default, worker, or "
+            "explorer roles. Do not select or request a different child model, role, "
+            "or reasoning effort.\n\n"
             f"Repository: {repository}\n\n{input_label}:\n{phase_input}{context_end}"
         )
     with tempfile.TemporaryDirectory(prefix=f"bonaparte-{phase}-") as temporary:
@@ -678,10 +704,10 @@ def run_phase(
         schema_path.write_text(json.dumps(RECEIPT_SCHEMA))
         command = [find_codex(), "exec"]
         command.extend(["resume"] if resume_session_id else ["-C", str(repository)])
+        if model:
+            command.extend(["-m", model])
         command.extend(
             [
-                "-m",
-                MODEL,
                 "-c",
                 f'model_reasoning_effort="{COORDINATOR_EFFORT}"',
                 "-c",
@@ -762,13 +788,20 @@ def run_phase(
     return receipt
 
 
-def parse() -> tuple[Path, str, str, str | None]:
+def parse() -> tuple[Path, str, str, str | None, str | None]:
     parser = argparse.ArgumentParser(
         prog="bonaparte",
         description="Run one isolated Linear-backed software delivery phase.",
         epilog="phases: create bug|feature, RCA, scope, implement, review, publish; resume",
     )
     parser.add_argument("--repo", default=".")
+    parser.add_argument(
+        "--model",
+        help=(
+            "model for this phase or resume; overrides BONAPARTE_MODEL and "
+            "Codex configuration"
+        ),
+    )
     parser.add_argument("command")
     parser.add_argument("input", nargs=argparse.REMAINDER)
     args = parser.parse_args()
@@ -808,7 +841,13 @@ def parse() -> tuple[Path, str, str, str | None]:
     repository = Path(args.repo).resolve()
     if not repository.is_dir() or not phase_input:
         raise RuntimeError("phase requires a repository and input")
-    return repository, phase, phase_input, resume_session_id
+    return (
+        repository,
+        phase,
+        phase_input,
+        resume_session_id,
+        resolve_model(args.model),
+    )
 
 
 def fail(summary: str) -> dict:
@@ -836,10 +875,22 @@ def main() -> int:
         try:
             if os.environ.get(PHASE_CHILD_ENV) == "1":
                 raise RuntimeError("nested Bonaparte invocation blocked")
-            repo, selected_phase, supplied_input, session_id = parse()
+            (
+                repo,
+                selected_phase,
+                supplied_input,
+                session_id,
+                selected_model,
+            ) = parse()
             progress = acquire_progress_reporter(selected_phase == "review")
             progress.start()
-            result_receipt = run_phase(repo, selected_phase, supplied_input, session_id)
+            result_receipt = run_phase(
+                repo,
+                selected_phase,
+                supplied_input,
+                session_id,
+                selected_model,
+            )
             progress.stop_heartbeat()
             progress.report("finalizing")
             terminal_state = result_receipt["state"]
