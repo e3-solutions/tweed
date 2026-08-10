@@ -128,3 +128,38 @@ route, runs the commands in sequence, and passes only the Linear issue identifie
 between them. Any `needs-input`, `blocked`, or failed phase stops the chain.
 After `needs-input`, `resume` continues the same coordinator session with the
 answer instead of restarting its investigation.
+
+## Review liveness for trusted hosts
+
+Review has an optional, host-controlled liveness channel. Before launching
+Bonaparte, a trusted host may open a writable file descriptor numbered 3 or
+higher, configure it as nonblocking, explicitly inherit it into the launcher,
+and set
+`BONAPARTE_PROGRESS_FD` to that descriptor number. The launcher preserves the
+descriptor when it replaces itself with the runner. Update subprocesses do not
+inherit it. This ABI is review-only: other phases emit no progress events.
+
+The channel is UTF-8 JSON Lines. Every line has exactly these fields:
+`version`, `sequence`, `phase`, `state`, and `elapsed_seconds`. `version` is `1`,
+`sequence` is a monotonically increasing integer, `phase` is `"review"`, and
+`elapsed_seconds` is a nonnegative number measured from the start of review and
+rounded to milliseconds.
+`state` is one of `started`, `active`, `finalizing`, `completed`, `needs-input`,
+`blocked`, `failed`, or `interrupted`.
+
+Emission is best effort: `started` is immediate, `active` is a periodic
+heartbeat every 10 seconds while the coordinator runs, and `finalizing` follows
+heartbeat shutdown and join. At most one terminal event follows, and it matches
+the validated final receipt. The channel contains no prompts, model events,
+issue or customer data, repository contents or paths, command output, secrets,
+URLs, or contact details.
+
+The host-supplied descriptor must already be nonblocking; Bonaparte rejects a
+blocking descriptor without changing its blocking mode. An invalid descriptor
+or any encoding, size, partial write, or write error permanently disables
+progress for that process. Bonaparte does not retry and never falls back to
+stdout, stderr, a file, or a service.
+Regardless of progress availability, stdout remains exactly one final JSON
+receipt of at most 4 KiB; stderr remains the diagnostic channel. Progress only
+proves process liveness. It does not mean that native review ran successfully,
+that findings were resolved, or that the review receipt will be `completed`.

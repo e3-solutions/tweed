@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """Run one isolated Bonaparte phase and emit one bounded receipt."""
 
+from __future__ import annotations
+
 import argparse
+import errno
 import json
 import os
 import signal
@@ -9,6 +12,8 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
+import time
 import uuid
 from pathlib import Path
 
@@ -16,6 +21,28 @@ MODEL = "gpt-5.6-sol"
 COORDINATOR_EFFORT = "medium"
 SUBAGENT_EFFORT = "medium"
 PHASE_CHILD_ENV = "BONAPARTE_PHASE_CHILD"
+PROGRESS_FD_ENV = "BONAPARTE_PROGRESS_FD"
+PROGRESS_VERSION = 1
+PROGRESS_HEARTBEAT_SECONDS = 10.0
+PROGRESS_MAX_BYTES = 4096
+RECEIPT_MAX_BYTES = 4096
+PROGRESS_STATES = {
+    "started",
+    "active",
+    "finalizing",
+    "completed",
+    "needs-input",
+    "blocked",
+    "failed",
+    "interrupted",
+}
+PROGRESS_TERMINAL_STATES = {
+    "completed",
+    "needs-input",
+    "blocked",
+    "failed",
+    "interrupted",
+}
 
 RECEIPT_SCHEMA = {
     "type": "object",
@@ -50,6 +77,39 @@ RECEIPT_SCHEMA = {
         "pull_request_url": {"type": ["string", "null"], "maxLength": 512},
     },
 }
+
+
+def validate_schema(value, schema: dict) -> None:
+    """Validate the JSON Schema constraints used by coordinator receipts."""
+    json_types = {
+        "object": lambda candidate: isinstance(candidate, dict),
+        "array": lambda candidate: isinstance(candidate, list),
+        "string": lambda candidate: isinstance(candidate, str),
+        "number": lambda candidate: isinstance(candidate, (int, float))
+        and not isinstance(candidate, bool),
+        "integer": lambda candidate: isinstance(candidate, int)
+        and not isinstance(candidate, bool),
+        "boolean": lambda candidate: isinstance(candidate, bool),
+        "null": lambda candidate: candidate is None,
+    }
+    allowed_types = schema.get("type")
+    if isinstance(allowed_types, str):
+        allowed_types = [allowed_types]
+    if allowed_types and not any(json_types[name](value) for name in allowed_types):
+        raise RuntimeError("Codex returned an invalid receipt")
+    if "enum" in schema and value not in schema["enum"]:
+        raise RuntimeError("Codex returned an invalid receipt")
+    if isinstance(value, str) and len(value) > schema.get("maxLength", len(value)):
+        raise RuntimeError("Codex returned an invalid receipt")
+    if isinstance(value, dict):
+        properties = schema.get("properties", {})
+        if not set(schema.get("required", ())).issubset(value):
+            raise RuntimeError("Codex returned an invalid receipt")
+        if schema.get("additionalProperties") is False and set(value) - set(properties):
+            raise RuntimeError("Codex returned an invalid receipt")
+        for name in value.keys() & properties.keys():
+            validate_schema(value[name], properties[name])
+
 
 WORKFLOWS = {
     "create": (
@@ -129,11 +189,199 @@ def find_codex() -> str:
     raise RuntimeError("no working local Codex CLI found")
 
 
-def emit(receipt: dict) -> None:
+def serialize_receipt(receipt: dict) -> str:
     output = json.dumps(receipt, ensure_ascii=False, separators=(",", ":"))
-    if len(output.encode()) > 4096:
+    if len(output.encode("utf-8")) > RECEIPT_MAX_BYTES:
         raise RuntimeError("receipt exceeded 4 KiB")
-    print(output)
+    return output
+
+
+def serialize_review_receipt(receipt: dict) -> str:
+    output = json.dumps(receipt, ensure_ascii=False, separators=(",", ":"))
+    if len((output + "\n").encode("utf-8")) > RECEIPT_MAX_BYTES:
+        raise RuntimeError("receipt exceeded 4 KiB")
+    return output
+
+
+def emit_serialized(output: str) -> None:
+    sys.stdout.write(output + "\n")
+    sys.stdout.flush()
+
+
+def emit(receipt: dict) -> None:
+    emit_serialized(serialize_receipt(receipt))
+
+
+class ProgressReporter:
+    """Emit privacy-bounded review lifecycle events to an isolated descriptor."""
+
+    def __init__(self, descriptor: int | None):
+        self._descriptor = descriptor
+        self._started_at = time.monotonic()
+        self._sequence = 0
+        self._last_state: str | None = None
+        self._terminal = False
+        self._lock = threading.Lock()
+        self._stop = threading.Event()
+        self._heartbeat: threading.Thread | None = None
+        self._start_attempted = False
+        self._heartbeat_running = threading.Event()
+
+    def _disable_locked(self) -> None:
+        descriptor, self._descriptor = self._descriptor, None
+        if descriptor is not None:
+            try:
+                os.close(descriptor)
+            except OSError:
+                pass
+
+    def report(self, state: str) -> None:
+        if state not in PROGRESS_STATES:
+            raise ValueError("invalid progress state")
+        with self._lock:
+            if self._descriptor is None or self._terminal:
+                return
+            if (
+                (state == "started" and self._last_state is not None)
+                or (state == "active" and self._last_state not in {"started", "active"})
+                or (
+                    state == "finalizing"
+                    and self._last_state not in {"started", "active"}
+                )
+                or (
+                    state in PROGRESS_TERMINAL_STATES
+                    and self._last_state != "finalizing"
+                )
+            ):
+                return
+            sequence = self._sequence + 1
+            event = {
+                "version": PROGRESS_VERSION,
+                "sequence": sequence,
+                "phase": "review",
+                "state": state,
+                "elapsed_seconds": round(
+                    max(0.0, time.monotonic() - self._started_at), 3
+                ),
+            }
+            try:
+                payload = (
+                    json.dumps(event, ensure_ascii=False, separators=(",", ":"))
+                    + "\n"
+                ).encode("utf-8")
+            except (TypeError, ValueError, UnicodeError, OverflowError):
+                self._disable_locked()
+                return
+            if len(payload) > PROGRESS_MAX_BYTES:
+                self._disable_locked()
+                return
+            try:
+                written = os.write(self._descriptor, payload)
+            except OSError as error:
+                if error.errno in {errno.EBADF, errno.EPIPE, errno.EAGAIN}:
+                    self._disable_locked()
+                    return
+                self._disable_locked()
+                return
+            if written != len(payload):
+                self._disable_locked()
+                return
+            self._sequence = sequence
+            self._last_state = state
+            if state in PROGRESS_TERMINAL_STATES:
+                self._terminal = True
+
+    def start(self) -> None:
+        if self._descriptor is None or self._start_attempted:
+            return
+        self._start_attempted = True
+        self.report("started")
+        if self._descriptor is None:
+            return
+        heartbeat = None
+        try:
+            heartbeat = threading.Thread(
+                target=self._heartbeat_loop,
+                name="bonaparte-review-progress",
+                daemon=True,
+            )
+            self._heartbeat = heartbeat
+            heartbeat.start()
+        except Exception:  # noqa: BLE001 - optional progress is best effort
+            self._stop.set()
+            if heartbeat is not None:
+                try:
+                    heartbeat.join()
+                except Exception:  # noqa: BLE001 - preserve the coordinator path
+                    pass
+            self._heartbeat = None
+            with self._lock:
+                self._disable_locked()
+            return
+
+    def _heartbeat_loop(self) -> None:
+        self._heartbeat_running.set()
+        while not self._stop.wait(PROGRESS_HEARTBEAT_SECONDS):
+            self.report("active")
+
+    def stop_heartbeat(self) -> None:
+        self._stop.set()
+        heartbeat = self._heartbeat
+        if heartbeat is not None:
+            try:
+                heartbeat.join()
+            except RuntimeError:
+                pass
+        self._heartbeat = None
+
+    def close(self) -> None:
+        self.stop_heartbeat()
+        with self._lock:
+            self._disable_locked()
+
+
+def acquire_progress_reporter(enabled: bool) -> ProgressReporter:
+    """Consume the inherited descriptor without ever exposing it to a child."""
+
+    raw_descriptor = os.environ.pop(PROGRESS_FD_ENV, None)
+    if (
+        raw_descriptor is None
+        or not raw_descriptor.isascii()
+        or not raw_descriptor.isdecimal()
+    ):
+        return ProgressReporter(None)
+    try:
+        original = int(raw_descriptor)
+    except ValueError:
+        return ProgressReporter(None)
+    if original < 3:
+        return ProgressReporter(None)
+    if not enabled:
+        try:
+            os.close(original)
+        except (OSError, OverflowError):
+            pass
+        return ProgressReporter(None)
+    duplicate = None
+    try:
+        duplicate = os.dup(original)
+        os.set_inheritable(duplicate, False)
+        if os.get_blocking(duplicate):
+            os.close(duplicate)
+            duplicate = None
+    except (OSError, OverflowError, ValueError):
+        if duplicate is not None:
+            try:
+                os.close(duplicate)
+            except (OSError, OverflowError):
+                pass
+        return ProgressReporter(None)
+    finally:
+        try:
+            os.close(original)
+        except (OSError, OverflowError):
+            pass
+    return ProgressReporter(duplicate)
 
 
 def call_linear(repository: Path, issue_identifier: str) -> tuple[dict, list[dict]]:
@@ -463,16 +711,26 @@ def run_phase(
                 input=prompt,
                 text=True,
                 stdout=events,
-                stderr=subprocess.PIPE,
+                stderr=(
+                    subprocess.DEVNULL if phase == "review" else subprocess.PIPE
+                ),
                 check=False,
             )
             session_id = extract_session_id(events) or resume_session_id
         if result.returncode:
+            if phase == "review":
+                raise RuntimeError(
+                    f"{phase} coordinator failed (exit status {result.returncode})"
+                )
             detail = result.stderr.strip().splitlines()
             raise RuntimeError(detail[-1][:800] if detail else f"{phase} failed")
         receipt = json.loads(receipt_path.read_text())
 
-    if not isinstance(receipt, dict) or set(receipt) != set(RECEIPT_SCHEMA["required"]):
+    if phase == "review":
+        validate_schema(receipt, RECEIPT_SCHEMA)
+    elif not isinstance(receipt, dict) or set(receipt) != set(
+        RECEIPT_SCHEMA["required"]
+    ):
         raise RuntimeError("Codex returned an invalid receipt")
     if receipt["phase"] != phase:
         raise RuntimeError("Codex returned the wrong phase")
@@ -570,15 +828,60 @@ def fail(summary: str) -> dict:
     }
 
 
-if __name__ == "__main__":
+def main() -> int:
+    progress = ProgressReporter(None)
+    exit_code = 0
+    selected_phase = None
     try:
-        if os.environ.get(PHASE_CHILD_ENV) == "1":
-            raise RuntimeError("nested Bonaparte invocation blocked")
-        repo, selected_phase, supplied_input, session_id = parse()
-        emit(run_phase(repo, selected_phase, supplied_input, session_id))
-    except KeyboardInterrupt:
-        emit(fail("Bonaparte was interrupted."))
-        raise SystemExit(130) from None
-    except Exception as error:  # noqa: BLE001
-        emit(fail(str(error).replace("\n", " ")[:800]))
-        raise SystemExit(1) from None
+        try:
+            if os.environ.get(PHASE_CHILD_ENV) == "1":
+                raise RuntimeError("nested Bonaparte invocation blocked")
+            repo, selected_phase, supplied_input, session_id = parse()
+            progress = acquire_progress_reporter(selected_phase == "review")
+            progress.start()
+            result_receipt = run_phase(repo, selected_phase, supplied_input, session_id)
+            progress.stop_heartbeat()
+            progress.report("finalizing")
+            terminal_state = result_receipt["state"]
+            if terminal_state not in PROGRESS_TERMINAL_STATES:
+                raise ValueError("invalid progress state")
+            serializer = (
+                serialize_review_receipt
+                if selected_phase == "review"
+                else serialize_receipt
+            )
+            serialized_receipt = serializer(result_receipt)
+        except KeyboardInterrupt:
+            progress.stop_heartbeat()
+            progress.report("finalizing")
+            serializer = (
+                serialize_review_receipt
+                if selected_phase == "review"
+                else serialize_receipt
+            )
+            serialized_receipt = serializer(fail("Bonaparte was interrupted."))
+            terminal_state = "failed"
+            exit_code = 130
+        except Exception as error:  # noqa: BLE001
+            progress.stop_heartbeat()
+            progress.report("finalizing")
+            serializer = (
+                serialize_review_receipt
+                if selected_phase == "review"
+                else serialize_receipt
+            )
+            serialized_receipt = serializer(
+                fail(str(error).replace("\n", " ")[:800])
+            )
+            terminal_state = "failed"
+            exit_code = 1
+
+        emit_serialized(serialized_receipt)
+        progress.report(terminal_state)
+        return exit_code
+    finally:
+        progress.close()
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
