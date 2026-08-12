@@ -167,6 +167,12 @@ class BonaparteRunnerTests(unittest.TestCase):
         guard = skill.split("Keep this invoking task thin", 1)[0]
         self.assertIn("Stop following this skill", guard)
 
+    def test_skill_waits_for_exit_without_polling_activity(self):
+        skill = (ROOT / "skills/use-bonaparte/SKILL.md").read_text()
+        self.assertIn("Prefer one event-driven wait", skill)
+        self.assertIn("2, 5, 10, then 15 minutes", skill)
+        self.assertIn("use `bonaparte status` as a completion poll", skill)
+
     def test_nested_invocation_is_blocked(self):
         environment = {**os.environ, RUNNER.PHASE_CHILD_ENV: "1"}
         completed = subprocess.run(

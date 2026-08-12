@@ -65,10 +65,13 @@ MCP without a model to select only the handoff required by the next phase, and
 installs nothing. Treat each command's stdout as one JSON receipt of at most 4
 KiB. Do not open coordinator/subagent tasks, Linear, or logs.
 
-Do not poll or inject activity updates while a phase runs. If the user asks for
-progress, run `bonaparte status` separately and report only its compact phase,
-state, and elapsed time. The launcher owns that external snapshot; reading it on
-demand does not wake the coordinator or add recurring content to this task.
+Keep each phase command pending until process exit so the host resumes this task
+once with the final receipt. Prefer one event-driven wait. If the host instead
+returns a live process or session handle, wait on that same handle with empty
+waits after 2, 5, 10, then 15 minutes, capped at 15 minutes. Do not emit progress
+commentary, relaunch the command, or use `bonaparte status` as a completion poll.
+If the user asks for progress, read `bonaparte status` once and report only its
+compact phase, state, and elapsed time.
 
 On `needs-input`, ask only `question`. If `resume_session_id` is present,
 continue the same coordinator once:

@@ -164,3 +164,8 @@ Status contains only a run ID, phase, factual state, timestamps, exit code, and
 elapsed time calculated when read. It never stores the command input, prompt,
 repository, issue, receipt, or model output. A `running` record whose launcher
 lock is no longer held is reported as `unknown` rather than assumed active.
+
+An invoking agent keeps the phase command pending until process exit, which
+resumes it once with the bounded final receipt. If its host yields a live session
+instead, it waits on that same session with sparse backoff; activity status is
+never used as a completion poll.
