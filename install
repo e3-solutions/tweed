@@ -41,7 +41,10 @@ if [ ! -e "$release_dir" ]; then
     mkdir "$staging/bundle"
     git -C "$repo_dir" archive --format=tar -o "$staging/source.tar" HEAD
     tar -xf "$staging/source.tar" -C "$staging/bundle"
-    python3 -m py_compile "$staging/bundle/bonaparte" "$staging/bundle/bonaparte-launcher"
+    python3 -m py_compile \
+        "$staging/bundle/bonaparte" \
+        "$staging/bundle/bonaparte-launcher" \
+        "$staging/bundle/bonaparte_checkpoint.py"
     BONAPARTE_AUTO_UPDATE=0 python3 "$staging/bundle/bonaparte" --help >/dev/null
     rm -rf "$staging/bundle/__pycache__"
     mv "$staging/bundle" "$release_dir"

@@ -8,9 +8,9 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import uuid
 from pathlib import Path
 from unittest import mock
-
 
 ROOT = Path(__file__).resolve().parents[1]
 SESSION_ID = "019fd385-da76-77f3-bd3a-2f1e4e49b936"
@@ -42,6 +42,7 @@ def receipt(state="completed"):
         "branch": None,
         "commit": None,
         "pull_request_url": None,
+        "remote_state_changed": False,
     }
 
 
@@ -69,6 +70,7 @@ def delivery_receipt(phase, pull_request_url="https://github.example/pr/1"):
         "branch": "arya/cor-1-example",
         "commit": "a" * 40,
         "pull_request_url": pull_request_url,
+        "remote_state_changed": True,
     }
 
 
@@ -92,6 +94,7 @@ def run_review_cli(fake_receipt):
         environment = {
             **os.environ,
             "CODEX_BIN": str(fake_codex),
+            "BONAPARTE_HOME": str(Path(temporary) / "bonaparte-home"),
             RUNNER.PROGRESS_FD_ENV: str(write_descriptor),
         }
         environment.pop(RUNNER.PHASE_CHILD_ENV, None)
@@ -119,6 +122,27 @@ def run_review_cli(fake_receipt):
 
 
 class BonaparteRunnerTests(unittest.TestCase):
+    def question_checkpoint(self, question="Which environment?"):
+        value = receipt("needs-input")
+        value["question"] = question
+        observation = {
+            "session_id": SESSION_ID,
+            "activity": "waiting-external",
+            "checks_completed": [],
+            "checks_completed_total_count": 0,
+            "checks_completed_truncated": False,
+        }
+        return RUNNER.new_question_checkpoint(
+            ROOT,
+            "rca",
+            value,
+            SESSION_ID,
+            "saved-model",
+            "high",
+            observation,
+            RUNNER.capture_git_state(ROOT),
+        )
+
     def test_reasoning_defaults_to_medium_and_accepts_a_phase_override(self):
         self.assertEqual(RUNNER.resolve_reasoning(), "medium")
         self.assertEqual(RUNNER.resolve_reasoning("xhigh"), "xhigh")
@@ -272,8 +296,12 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertIn("include a recommendation", skill)
         self.assertIn("Never answer for the user", skill)
         self.assertIn("combine\nindependent questions", skill)
-        self.assertIn("safely quoted answer", skill)
+        self.assertIn("safely quoted argument", skill)
+        self.assertIn("resume <receipt.resume_token> <answer>", skill)
         self.assertIn("another material question, repeat the exchange", skill)
+        self.assertIn("same token", skill)
+        self.assertIn("host write access", skill)
+        self.assertIn("never redirect checkpoints to a temporary directory", skill)
 
     def test_nested_invocation_is_blocked(self):
         environment = {**os.environ, RUNNER.PHASE_CHILD_ENV: "1"}
@@ -431,6 +459,707 @@ class BonaparteRunnerTests(unittest.TestCase):
         )
         self.assertNotIn("# Bonaparte Bug RCA", observed["prompt"])
         call_linear.assert_not_called()
+
+    def test_resume_token_parse_defers_checkpoint_loading_until_the_lease(self):
+        token = str(uuid.uuid4())
+        with (
+            mock.patch.object(sys, "argv", ["bonaparte", "resume", token, "Answer"]),
+            mock.patch.dict(os.environ, {}, clear=True),
+            mock.patch.object(RUNNER, "read_checkpoint") as read,
+        ):
+            repository, phase, answer, parsed_token, model, reasoning = RUNNER.parse()
+
+        self.assertEqual(repository, ROOT)
+        self.assertIsNone(phase)
+        self.assertEqual(answer, "Answer")
+        self.assertEqual(parsed_token, token)
+        self.assertIsNone(model)
+        self.assertIsNone(reasoning)
+        read.assert_not_called()
+
+    def test_needs_input_creates_a_durable_native_session_checkpoint(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            stdout = io.StringIO()
+
+            def fake_phase(*_arguments, **keywords):
+                keywords["observation"].update(
+                    session_id=SESSION_ID,
+                    activity="testing",
+                    checks_completed=[
+                        {
+                            "name": "python -m unittest",
+                            "status": "passed",
+                            "exit_code": 0,
+                        }
+                    ],
+                    checks_completed_total_count=1,
+                    checks_completed_truncated=False,
+                )
+                return receipt("needs-input")
+
+            with (
+                mock.patch.dict(
+                    os.environ,
+                    {
+                        "BONAPARTE_HOME": temporary,
+                        RUNNER.PHASE_CHILD_ENV: "",
+                    },
+                    clear=False,
+                ),
+                mock.patch.object(
+                    RUNNER,
+                    "parse",
+                    return_value=(
+                        ROOT,
+                        "rca",
+                        "COR-1",
+                        None,
+                        "saved-model",
+                        "high",
+                    ),
+                ),
+                mock.patch.object(RUNNER, "run_phase", side_effect=fake_phase),
+                mock.patch.object(sys, "stdout", stdout),
+            ):
+                self.assertEqual(RUNNER.main(), 0)
+                output = json.loads(stdout.getvalue())
+                stored = RUNNER.read_checkpoint(output["resume_token"])
+
+        self.assertEqual(output["state"], "needs-input")
+        self.assertEqual(output["resume_session_id"], SESSION_ID)
+        self.assertEqual(output["question"], "Which environment?")
+        self.assertEqual(output["worktree"], str(ROOT))
+        self.assertLessEqual(len(stdout.getvalue().encode()), RUNNER.RECEIPT_MAX_BYTES)
+        self.assertEqual(stored["status"], "waiting-input")
+        self.assertEqual(stored["token"], SESSION_ID)
+        self.assertEqual(stored["model"], "saved-model")
+        self.assertEqual(stored["reasoning"], "high")
+        self.assertEqual(stored["question"], "Which environment?")
+        self.assertIsNone(stored["pending_answer"])
+        self.assertEqual(stored["checks_completed_total_count"], 1)
+
+    def test_token_resume_persists_answer_and_reuses_session_and_token(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            stdout = io.StringIO()
+            with mock.patch.dict(
+                os.environ, {"BONAPARTE_HOME": temporary}, clear=False
+            ):
+                checkpoint = self.question_checkpoint()
+                token = checkpoint["token"]
+
+                def fake_phase(
+                    repository,
+                    phase,
+                    prompt,
+                    session_id,
+                    model,
+                    reasoning,
+                    observation,
+                    replayed_answer,
+                ):
+                    durable = RUNNER.read_checkpoint(token, active_only=True)
+                    self.assertEqual(durable["pending_answer"], "Production")
+                    self.assertEqual(repository, ROOT)
+                    self.assertEqual(phase, "rca")
+                    self.assertEqual(prompt, "Production")
+                    self.assertEqual(session_id, SESSION_ID)
+                    self.assertEqual(model, "saved-model")
+                    self.assertEqual(reasoning, "high")
+                    self.assertFalse(replayed_answer)
+                    observation.update(session_id=SESSION_ID)
+                    value = receipt("needs-input")
+                    value["question"] = "Can you confirm the request ID?"
+                    return value
+
+                with (
+                    mock.patch.object(
+                        RUNNER,
+                        "parse",
+                        return_value=(
+                            ROOT,
+                            None,
+                            "Production",
+                            token,
+                            None,
+                            None,
+                        ),
+                    ),
+                    mock.patch.object(RUNNER, "run_phase", side_effect=fake_phase),
+                    mock.patch.object(sys, "stdout", stdout),
+                ):
+                    self.assertEqual(RUNNER.main(), 0)
+                output = json.loads(stdout.getvalue())
+                stored = RUNNER.read_checkpoint(token, active_only=True)
+
+        self.assertEqual(output["resume_token"], token)
+        self.assertEqual(output["question"], "Can you confirm the request ID?")
+        self.assertEqual(stored["question"], output["question"])
+        self.assertIsNone(stored["pending_answer"])
+
+    def test_legacy_resume_routes_through_an_existing_checkpoint(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            stdout = io.StringIO()
+            with mock.patch.dict(
+                os.environ, {"BONAPARTE_HOME": temporary}, clear=False
+            ):
+                self.question_checkpoint()
+
+                def completed(*arguments):
+                    durable = RUNNER.read_checkpoint(SESSION_ID, active_only=True)
+                    self.assertEqual(durable["pending_answer"], "Production")
+                    arguments[-2].update(session_id=SESSION_ID)
+                    return receipt("completed")
+
+                with (
+                    mock.patch.object(
+                        RUNNER,
+                        "parse",
+                        return_value=(
+                            ROOT,
+                            "rca",
+                            "Production",
+                            SESSION_ID,
+                            None,
+                            None,
+                        ),
+                    ),
+                    mock.patch.object(RUNNER, "run_phase", side_effect=completed) as run,
+                    mock.patch.object(sys, "stdout", stdout),
+                ):
+                    self.assertEqual(RUNNER.main(), 0)
+                stored = RUNNER.read_checkpoint(SESSION_ID)
+
+                stdout = io.StringIO()
+                with (
+                    mock.patch.object(
+                        RUNNER,
+                        "parse",
+                        return_value=(
+                            ROOT,
+                            "rca",
+                            "Production",
+                            SESSION_ID,
+                            None,
+                            None,
+                        ),
+                    ),
+                    mock.patch.object(RUNNER, "run_phase") as reopened,
+                    mock.patch.object(sys, "stdout", stdout),
+                ):
+                    self.assertEqual(RUNNER.main(), 1)
+
+        run.assert_called_once()
+        self.assertEqual(stored["status"], "completed")
+        reopened.assert_not_called()
+        self.assertEqual(json.loads(stdout.getvalue())["state"], "failed")
+
+    def test_ambiguous_resume_failure_preserves_and_replays_the_answer(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            with mock.patch.dict(
+                os.environ, {"BONAPARTE_HOME": temporary}, clear=False
+            ):
+                checkpoint = self.question_checkpoint()
+                token = checkpoint["token"]
+
+                def failed_phase(*arguments):
+                    observation = arguments[-2]
+                    durable = RUNNER.read_checkpoint(token, active_only=True)
+                    self.assertEqual(durable["pending_answer"], "Production")
+                    observation.update(session_id=SESSION_ID)
+                    raise RuntimeError("native transport stopped")
+
+                with mock.patch.object(
+                    RUNNER, "run_phase", side_effect=failed_phase
+                ):
+                    result, exit_code = RUNNER.resume_checkpoint(
+                        checkpoint, "Production", None, None
+                    )
+                self.assertEqual(exit_code, 1)
+                self.assertEqual(result["resume_token"], token)
+                durable = RUNNER.read_checkpoint(token, active_only=True)
+                self.assertEqual(durable["pending_answer"], "Production")
+
+                observed = {}
+
+                def completed_phase(*arguments):
+                    observed["prompt"] = arguments[2]
+                    observed["replayed"] = arguments[-1]
+                    arguments[-2].update(session_id=SESSION_ID)
+                    return receipt("completed")
+
+                with mock.patch.object(
+                    RUNNER, "run_phase", side_effect=completed_phase
+                ):
+                    final, exit_code = RUNNER.resume_checkpoint(
+                        durable, "", None, None
+                    )
+                stored = RUNNER.read_checkpoint(token)
+                with self.assertRaises(RuntimeError):
+                    RUNNER.read_checkpoint(token, active_only=True)
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(final["state"], "completed")
+        self.assertEqual(observed["prompt"], "Production")
+        self.assertTrue(observed["replayed"])
+        self.assertEqual(stored["status"], "completed")
+
+    def test_resume_session_mismatch_does_not_retarget_the_checkpoint(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            with mock.patch.dict(
+                os.environ, {"BONAPARTE_HOME": temporary}, clear=False
+            ):
+                checkpoint = self.question_checkpoint()
+                token = checkpoint["token"]
+                other_session = str(uuid.uuid4())
+
+                def mismatch(*arguments):
+                    arguments[-2].update(
+                        session_id=other_session,
+                    )
+                    raise RuntimeError("Codex resumed a different session")
+
+                with mock.patch.object(RUNNER, "run_phase", side_effect=mismatch):
+                    result, exit_code = RUNNER.resume_checkpoint(
+                        checkpoint, "Production", None, None
+                    )
+                stored = RUNNER.read_checkpoint(token, active_only=True)
+
+        self.assertEqual(exit_code, 1)
+        self.assertEqual(result["resume_token"], token)
+        self.assertEqual(stored["token"], SESSION_ID)
+
+    def test_pending_answer_conflict_is_rejected_without_native_delivery(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            with mock.patch.dict(
+                os.environ, {"BONAPARTE_HOME": temporary}, clear=False
+            ):
+                checkpoint = self.question_checkpoint()
+                checkpoint["pending_answer"] = "Production"
+                RUNNER.write_checkpoint(checkpoint)
+                with mock.patch.object(RUNNER, "run_phase") as run_phase:
+                    result, exit_code = RUNNER.resume_checkpoint(
+                        checkpoint, "Staging", None, None
+                    )
+                stored = RUNNER.read_checkpoint(SESSION_ID, active_only=True)
+
+        self.assertEqual(exit_code, 1)
+        self.assertEqual(result["resume_token"], SESSION_ID)
+        self.assertEqual(stored["pending_answer"], "Production")
+        run_phase.assert_not_called()
+
+    def test_terminal_resume_receipt_reports_cumulative_remote_state(self):
+        for previous, expected in ((True, True), (None, None)):
+            with self.subTest(previous=previous), tempfile.TemporaryDirectory() as temporary:
+                with mock.patch.dict(
+                    os.environ, {"BONAPARTE_HOME": temporary}, clear=False
+                ):
+                    checkpoint = self.question_checkpoint()
+                    checkpoint["remote_state_changed"] = previous
+                    RUNNER.write_checkpoint(checkpoint)
+
+                    def completed(*arguments):
+                        arguments[-2].update(session_id=SESSION_ID)
+                        value = receipt("completed")
+                        value["remote_state_changed"] = False
+                        return value
+
+                    with mock.patch.object(
+                        RUNNER, "run_phase", side_effect=completed
+                    ):
+                        result, exit_code = RUNNER.resume_checkpoint(
+                            checkpoint, "Production", None, None
+                        )
+                    stored = RUNNER.read_checkpoint(SESSION_ID)
+
+                self.assertEqual(exit_code, 0)
+                self.assertIs(result["remote_state_changed"], expected)
+                self.assertIs(stored["remote_state_changed"], expected)
+
+    def test_resume_rejects_a_different_branch_after_saving_the_answer(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            repository = Path(temporary) / "repo"
+            home = Path(temporary) / "home"
+            repository.mkdir()
+
+            def git(*arguments):
+                subprocess.run(
+                    ["git", "-C", str(repository), *arguments],
+                    check=True,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+
+            git("init", "-q")
+            git("config", "user.name", "Bonaparte Test")
+            git("config", "user.email", "bonaparte@example.com")
+            (repository / "baseline.txt").write_text("baseline")
+            git("add", ".")
+            git("commit", "-qm", "baseline")
+            with mock.patch.dict(
+                os.environ, {"BONAPARTE_HOME": str(home)}, clear=False
+            ):
+                value = receipt("needs-input")
+                checkpoint = RUNNER.new_question_checkpoint(
+                    repository,
+                    "rca",
+                    value,
+                    SESSION_ID,
+                    None,
+                    "medium",
+                    {},
+                    RUNNER.capture_git_state(repository),
+                )
+                git("checkout", "-qb", "other")
+                with mock.patch.object(RUNNER, "run_phase") as run_phase:
+                    result, exit_code = RUNNER.resume_checkpoint(
+                        checkpoint, "Production", None, None
+                    )
+                stored = RUNNER.read_checkpoint(SESSION_ID, active_only=True)
+
+                with mock.patch.object(RUNNER, "run_phase") as second_run:
+                    second, second_exit = RUNNER.resume_checkpoint(
+                        stored, "", None, None
+                    )
+                stored_again = RUNNER.read_checkpoint(SESSION_ID, active_only=True)
+
+        self.assertEqual(exit_code, 1)
+        self.assertEqual(result["resume_token"], SESSION_ID)
+        self.assertEqual(stored["pending_answer"], "Production")
+        self.assertFalse(stored["remote_state_changed"])
+        self.assertEqual(stored["branch"], "main")
+        run_phase.assert_not_called()
+        self.assertEqual(second_exit, 1)
+        self.assertEqual(second["resume_token"], SESSION_ID)
+        self.assertEqual(stored_again["branch"], "main")
+        second_run.assert_not_called()
+
+    def test_checkpoint_uses_the_branch_current_when_the_question_is_asked(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            repository = Path(temporary) / "repo"
+            home = Path(temporary) / "home"
+            repository.mkdir()
+
+            def git(*arguments):
+                subprocess.run(
+                    ["git", "-C", str(repository), *arguments],
+                    check=True,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+
+            git("init", "-q")
+            git("config", "user.name", "Bonaparte Test")
+            git("config", "user.email", "bonaparte@example.com")
+            (repository / "baseline.txt").write_text("baseline")
+            git("add", ".")
+            git("commit", "-qm", "baseline")
+            base = RUNNER.capture_git_state(repository)
+            git("checkout", "-qb", "arya/feature")
+
+            with mock.patch.dict(
+                os.environ, {"BONAPARTE_HOME": str(home)}, clear=False
+            ):
+                checkpoint = RUNNER.new_question_checkpoint(
+                    repository,
+                    "implement",
+                    {
+                        **delivery_receipt("implement"),
+                        "state": "needs-input",
+                        "result": None,
+                        "question": "Confirm rollout?",
+                    },
+                    SESSION_ID,
+                    None,
+                    "medium",
+                    {},
+                    base,
+                )
+                with mock.patch.object(
+                    RUNNER,
+                    "run_phase",
+                    return_value=delivery_receipt("implement"),
+                ) as run:
+                    result, exit_code = RUNNER.resume_checkpoint(
+                        checkpoint, "Production", None, None
+                    )
+
+        self.assertEqual(checkpoint["branch"], "arya/feature")
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(result["state"], "completed")
+        run.assert_called_once()
+
+    def test_repeated_question_updates_the_saved_branch_identity(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            repository = Path(temporary) / "repo"
+            home = Path(temporary) / "home"
+            repository.mkdir()
+
+            def git(*arguments):
+                subprocess.run(
+                    ["git", "-C", str(repository), *arguments],
+                    check=True,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+
+            git("init", "-q")
+            git("config", "user.name", "Bonaparte Test")
+            git("config", "user.email", "bonaparte@example.com")
+            (repository / "baseline.txt").write_text("baseline")
+            git("add", ".")
+            git("commit", "-qm", "baseline")
+            with mock.patch.dict(
+                os.environ, {"BONAPARTE_HOME": str(home)}, clear=False
+            ):
+                checkpoint = RUNNER.new_question_checkpoint(
+                    repository,
+                    "implement",
+                    {
+                        **delivery_receipt("implement"),
+                        "state": "needs-input",
+                        "result": None,
+                        "question": "First question?",
+                    },
+                    SESSION_ID,
+                    None,
+                    "medium",
+                    {},
+                    RUNNER.capture_git_state(repository),
+                )
+
+                def second_question(*_arguments):
+                    git("checkout", "-qb", "arya/feature")
+                    value = delivery_receipt("implement")
+                    value.update(
+                        state="needs-input", result=None, question="Second question?"
+                    )
+                    return value
+
+                with mock.patch.object(
+                    RUNNER, "run_phase", side_effect=second_question
+                ):
+                    result, exit_code = RUNNER.resume_checkpoint(
+                        checkpoint, "First answer", None, None
+                    )
+                stored = RUNNER.read_checkpoint(SESSION_ID, active_only=True)
+
+                with mock.patch.object(
+                    RUNNER, "run_phase", return_value=delivery_receipt("implement")
+                ) as resumed:
+                    final, final_exit = RUNNER.resume_checkpoint(
+                        stored, "Second answer", None, None
+                    )
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(result["question"], "Second question?")
+        self.assertEqual(stored["branch"], "arya/feature")
+        self.assertEqual(final_exit, 0)
+        self.assertEqual(final["state"], "completed")
+        resumed.assert_called_once()
+
+    def test_resume_preserves_a_detached_checkpoint_identity(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            repository = Path(temporary) / "repo"
+            home = Path(temporary) / "home"
+            repository.mkdir()
+
+            def git(*arguments):
+                subprocess.run(
+                    ["git", "-C", str(repository), *arguments],
+                    check=True,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+
+            git("init", "-q")
+            git("config", "user.name", "Bonaparte Test")
+            git("config", "user.email", "bonaparte@example.com")
+            (repository / "baseline.txt").write_text("baseline")
+            git("add", ".")
+            git("commit", "-qm", "baseline")
+            git("checkout", "--detach", "-q")
+            base = RUNNER.capture_git_state(repository)
+
+            with mock.patch.dict(
+                os.environ, {"BONAPARTE_HOME": str(home)}, clear=False
+            ):
+                checkpoint = RUNNER.new_question_checkpoint(
+                    repository,
+                    "rca",
+                    receipt("needs-input"),
+                    SESSION_ID,
+                    None,
+                    "medium",
+                    {},
+                    base,
+                )
+                git("checkout", "-qb", "other")
+                with mock.patch.object(RUNNER, "run_phase") as run:
+                    result, exit_code = RUNNER.resume_checkpoint(
+                        checkpoint, "Production", None, None
+                    )
+                stored = RUNNER.read_checkpoint(SESSION_ID, active_only=True)
+
+        self.assertEqual(exit_code, 1)
+        self.assertEqual(result["resume_token"], SESSION_ID)
+        self.assertIsNone(stored["branch"])
+        run.assert_not_called()
+
+    def test_checkpoint_receipt_is_bounded_without_losing_token_or_question(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            with mock.patch.dict(
+                os.environ, {"BONAPARTE_HOME": temporary}, clear=False
+            ):
+                question = "\\" * 500
+                checkpoint = self.question_checkpoint(question)
+                checkpoint.update(
+                    worktree="/" + "w" * 5000,
+                    files_changed=[
+                        {"path": "p" * 500, "status": "??"} for _ in range(500)
+                    ],
+                    files_changed_total_count=500,
+                    files_changed_truncated=False,
+                )
+                projected = RUNNER.checkpoint_receipt(checkpoint)
+                serialized = RUNNER.serialize_receipt(projected) + "\n"
+
+        self.assertLessEqual(len(serialized.encode()), RUNNER.RECEIPT_MAX_BYTES)
+        self.assertEqual(projected["resume_token"], SESSION_ID)
+        self.assertEqual(projected["question"], question)
+
+    def test_git_and_event_inventory_cover_committed_dirty_and_failed_checks(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            repository = Path(temporary) / "repo"
+            repository.mkdir()
+
+            def git(*arguments):
+                subprocess.run(
+                    ["git", "-C", str(repository), *arguments],
+                    check=True,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+
+            git("init", "-q")
+            git("config", "user.name", "Bonaparte Test")
+            git("config", "user.email", "bonaparte@example.com")
+            (repository / "baseline.txt").write_text("baseline")
+            git("add", ".")
+            git("commit", "-qm", "baseline")
+            base = RUNNER.capture_git_state(repository)
+            (repository / "committed.txt").write_text("committed")
+            git("add", ".")
+            git("commit", "-qm", "phase change")
+            (repository / "dirty.txt").write_text("dirty")
+            state = RUNNER.capture_git_state(repository, base["head"])
+
+            with tempfile.TemporaryFile(mode="w+", encoding="utf-8") as events:
+                events.write(
+                    json.dumps(
+                        {
+                            "type": "item.completed",
+                            "item": {
+                                "type": "command_execution",
+                                "command": "python -m unittest",
+                                "exit_code": 1,
+                            },
+                        }
+                    )
+                    + "\n"
+                )
+                events.write(
+                    json.dumps(
+                        {
+                            "type": "item.completed",
+                            "item": {
+                                "type": "command_execution",
+                                "command": "git checkout -b arya/example",
+                                "exit_code": 0,
+                            },
+                        }
+                    )
+                    + "\n"
+                )
+                events.write(
+                    json.dumps(
+                        {
+                            "type": "item.completed",
+                            "item": {
+                                "type": "command_execution",
+                                "command": "cargo check",
+                                "exit_code": 0,
+                            },
+                        }
+                    )
+                    + "\n"
+                )
+                events.write(
+                    json.dumps(
+                        {
+                            "type": "item.completed",
+                            "item": {
+                                "type": "command_execution",
+                                "command": '/bin/zsh -lc "uv run pytest tests -q"',
+                                "exit_code": 0,
+                            },
+                        }
+                    )
+                    + "\n"
+                )
+                observation = RUNNER.observe_events(events)
+
+        self.assertEqual(
+            {item["path"] for item in state["files_changed"]},
+            {"committed.txt", "dirty.txt"},
+        )
+        self.assertEqual(observation["checks_completed_total_count"], 3)
+        self.assertEqual(observation["checks_completed"][0]["status"], "failed")
+        self.assertEqual(observation["checks_completed"][1]["name"], "cargo check")
+        self.assertIn("uv run pytest", observation["checks_completed"][2]["name"])
+
+    def test_git_inventory_marks_failed_queries_as_incomplete(self):
+        outputs = {
+            ("symbolic-ref", "--quiet", "--short", "HEAD"): "main",
+            ("rev-parse", "--verify", "HEAD"): "b" * 40,
+            ("rev-parse", "--absolute-git-dir"): "/repo/.git",
+        }
+
+        def output(_repository, *arguments):
+            return outputs.get(arguments)
+
+        with mock.patch.object(RUNNER, "git_output", side_effect=output):
+            state = RUNNER.capture_git_state(ROOT, "a" * 40)
+
+        self.assertEqual(state["files_changed"], [])
+        self.assertEqual(state["files_changed_total_count"], 0)
+        self.assertTrue(state["files_changed_truncated"])
+
+    def test_checkpoint_creation_requires_a_verified_git_identity(self):
+        unavailable = {
+            "worktree": str(ROOT),
+            "git_dir": None,
+            "head": None,
+            "branch": None,
+            "files_changed": [],
+            "files_changed_total_count": 0,
+            "files_changed_truncated": True,
+        }
+        with (
+            mock.patch.object(RUNNER, "capture_git_state", return_value=unavailable),
+            mock.patch.object(RUNNER, "write_checkpoint") as write,
+            self.assertRaisesRegex(RuntimeError, "identity is unavailable"),
+        ):
+            RUNNER.new_question_checkpoint(
+                ROOT,
+                "rca",
+                receipt("needs-input"),
+                SESSION_ID,
+                None,
+                "medium",
+                {},
+                unavailable,
+            )
+        write.assert_not_called()
 
     def test_non_review_run_phase_retains_baseline_key_only_validation(self):
         schema_invalid = receipt()
@@ -696,6 +1425,7 @@ class BonaparteRunnerTests(unittest.TestCase):
             environment = {
                 **os.environ,
                 "CODEX_BIN": str(fake_codex),
+                "BONAPARTE_HOME": str(temporary_path / "home"),
                 "COORDINATOR_CALLS": str(coordinator_calls),
                 "HEARTBEAT_JOINS": str(heartbeat_joins),
                 "PYTHONPATH": str(temporary_path),
@@ -834,7 +1564,12 @@ class BonaparteRunnerTests(unittest.TestCase):
 
         stdout = io.StringIO()
         with (
-            mock.patch.dict(os.environ, {RUNNER.PHASE_CHILD_ENV: ""}, clear=False),
+            tempfile.TemporaryDirectory() as temporary,
+            mock.patch.dict(
+                os.environ,
+                {RUNNER.PHASE_CHILD_ENV: "", "BONAPARTE_HOME": temporary},
+                clear=False,
+            ),
             mock.patch.object(
                 RUNNER,
                 "parse",
@@ -1021,6 +1756,7 @@ class BonaparteRunnerTests(unittest.TestCase):
             environment = {
                 **os.environ,
                 "CODEX_BIN": str(fake_codex),
+                "BONAPARTE_HOME": str(temporary_path / "home"),
                 "PYTHONPATH": str(temporary_path),
                 "STDOUT_READER": str(stdout_reader),
                 "OBSERVED_RECEIPT": str(observed_receipt),
@@ -1085,6 +1821,7 @@ class BonaparteRunnerTests(unittest.TestCase):
             environment = {
                 **os.environ,
                 "CODEX_BIN": str(fake_codex),
+                "BONAPARTE_HOME": str(Path(temporary) / "home"),
                 RUNNER.PROGRESS_FD_ENV: str(progress_writer),
             }
             environment.pop(RUNNER.PHASE_CHILD_ENV, None)
@@ -1132,6 +1869,7 @@ class BonaparteRunnerTests(unittest.TestCase):
             environment = {
                 **os.environ,
                 "CODEX_BIN": str(fake_codex),
+                "BONAPARTE_HOME": str(Path(temporary) / "home"),
                 RUNNER.PROGRESS_FD_ENV: str(write_descriptor),
             }
             environment.pop(RUNNER.PHASE_CHILD_ENV, None)

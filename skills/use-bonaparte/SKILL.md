@@ -14,6 +14,9 @@ Keep this invoking task thin. Do not inspect the repository, read Linear,
 investigate, or spawn subagents here. Each phase is exactly one command.
 Invoke the bare `bonaparte` executable from `PATH`; the repository installer owns
 that link. Do not search for or expect a runner inside this skill directory.
+Run it with host write access because its updater and durable checkpoints live
+under `$BONAPARTE_HOME`, outside a repository-only sandbox. If that access is
+denied, request approval; never redirect checkpoints to a temporary directory.
 
 Options precede the command name. Repeat run-wide options because every phase is
 a fresh process; do not select an option the user did not request.
@@ -85,17 +88,20 @@ fallback. The invoking task remains thin and waits for the final receipt.
 
 On `needs-input`, ask only `question`; it should already include a recommendation
 when the phase has evidence for one. Never answer for the user or combine
-independent questions. If `resume_session_id` is present, continue the same
-coordinator with the user's safely quoted answer; never interpolate answer text
-into shell syntax. Repeat that phase's model and reasoning flags before `resume`;
-its original base instruction remains in the session:
+independent questions. Continue the same coordinator with the user's answer by
+passing it as one safely quoted argument or structured process argument; never
+interpolate answer text into shell syntax. A token resume reuses the saved model,
+reasoning, repository, phase, and native Codex session. Supply model or reasoning
+flags only when the user intentionally overrides them:
 
 ```sh
 bonaparte --repo <repository> [--model <model>] [--reasoning <effort>] \
-  resume <receipt.phase> <receipt.resume_session_id> <answer>
+  resume <receipt.resume_token> <answer>
 ```
 
-If the resumed phase returns another material question, repeat the exchange. If
-`resume_session_id` is null, rerun the phase once with its original input plus
-the question and answer. Stop on `blocked` or `failed`; never reorder or otherwise
-retry a phase automatically.
+If the resumed phase returns another material question, repeat the exchange with
+the same token. For a legacy receipt without `resume_token`, use
+`resume <receipt.phase> <receipt.resume_session_id> <answer>` when its session ID
+is present. Stop on `blocked` or `failed`; if a failed receipt includes a token,
+report it with the blocker because the durable checkpoint remains available, but
+never retry or reorder a phase automatically.

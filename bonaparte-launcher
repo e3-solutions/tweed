@@ -17,7 +17,8 @@ REPOSITORY = os.environ.get(
 )
 TAG_PATTERN = re.compile(r"v(\d+)\.(\d+)\.(\d+)")
 CHECK_INTERVAL = 24 * 60 * 60
-REQUIRED = """bonaparte bonaparte-launcher skills/use-bonaparte/SKILL.md
+REQUIRED = """bonaparte bonaparte-launcher bonaparte_checkpoint.py
+skills/use-bonaparte/SKILL.md
 skills/use-bonaparte/agents/openai.yaml workflows/create.md workflows/bug-rca.md
 workflows/scope.md workflows/implement.md workflows/review.md workflows/publish.md""".split()
 
@@ -82,7 +83,7 @@ def validate_release(release: Path) -> None:
     missing = [name for name in REQUIRED if not (release / name).exists()]
     if missing:
         raise RuntimeError(f"release is missing {', '.join(missing)}")
-    for name in ("bonaparte", "bonaparte-launcher"):
+    for name in ("bonaparte", "bonaparte-launcher", "bonaparte_checkpoint.py"):
         source = release / name
         compile(source.read_text(), str(source), "exec")
     environment = updater_environment()

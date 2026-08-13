@@ -7,15 +7,24 @@ import argparse
 import errno
 import json
 import os
-import signal
+import shlex
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
 import threading
 import time
 import uuid
+from datetime import datetime, timezone
 from pathlib import Path
+
+from bonaparte_checkpoint import (
+    checkpoint_lease,
+    checkpoint_path,
+    read_checkpoint,
+    write_checkpoint,
+)
 
 COORDINATOR_EFFORT = "medium"
 PHASE_CHILD_ENV = "BONAPARTE_PHASE_CHILD"
@@ -24,6 +33,9 @@ PROGRESS_VERSION = 1
 PROGRESS_HEARTBEAT_SECONDS = 10.0
 PROGRESS_MAX_BYTES = 4096
 RECEIPT_MAX_BYTES = 4096
+MAX_EVENT_CHARACTERS = 4 * 1024 * 1024
+MAX_CHANGED_FILES = 500
+MAX_COMPLETED_CHECKS = 100
 PROGRESS_STATES = {
     "started",
     "active",
@@ -58,6 +70,7 @@ RECEIPT_SCHEMA = {
         "branch",
         "commit",
         "pull_request_url",
+        "remote_state_changed",
     ],
     "properties": {
         "phase": {
@@ -74,6 +87,13 @@ RECEIPT_SCHEMA = {
         "branch": {"type": ["string", "null"], "maxLength": 300},
         "commit": {"type": ["string", "null"], "maxLength": 100},
         "pull_request_url": {"type": ["string", "null"], "maxLength": 512},
+        "remote_state_changed": {
+            "type": ["boolean", "null"],
+            "description": (
+                "True if this phase turn changed Linear, GitHub, a Git remote, or "
+                "another external system; false if it did not; null if uncertain."
+            ),
+        },
     },
 }
 
@@ -580,18 +600,168 @@ def select_handoff(
     }
 
 
-def extract_session_id(events) -> str | None:
+def utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat(timespec="seconds").replace(
+        "+00:00", "Z"
+    )
+
+
+def git_output(repository: Path, *arguments: str) -> str | None:
+    try:
+        return subprocess.run(
+            ["git", "-C", str(repository), *arguments],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=5,
+        ).stdout.rstrip("\n")
+    except (OSError, subprocess.SubprocessError):
+        return None
+
+
+def capture_git_state(repository: Path, base_head: str | None = None) -> dict:
+    status = git_output(
+        repository, "status", "--porcelain=v1", "-z", "--untracked-files=all"
+    )
+    branch = git_output(repository, "symbolic-ref", "--quiet", "--short", "HEAD")
+    head = git_output(repository, "rev-parse", "--verify", "HEAD")
+    git_dir = git_output(repository, "rev-parse", "--absolute-git-dir")
+
+    changed: dict[str, str] = {}
+    if status is not None:
+        entries = status.split("\0")
+        index = 0
+        while index < len(entries):
+            entry = entries[index]
+            index += 1
+            if len(entry) < 4:
+                continue
+            code, path = entry[:2], entry[3:]
+            changed[path] = code
+            if ("R" in code or "C" in code) and index < len(entries):
+                original = entries[index]
+                index += 1
+                if original:
+                    changed.setdefault(original, code)
+
+    committed_known = True
+    if base_head and head and base_head != head:
+        committed = git_output(
+            repository, "diff", "--name-status", "-z", f"{base_head}..{head}"
+        )
+        if committed is None:
+            committed_known = False
+        else:
+            entries = committed.split("\0")
+            index = 0
+            while index + 1 < len(entries):
+                code, path = entries[index : index + 2]
+                index += 2
+                if code and path:
+                    changed.setdefault(path, code)
+                if code.startswith(("R", "C")) and index < len(entries):
+                    destination = entries[index]
+                    index += 1
+                    if destination:
+                        changed.setdefault(destination, code)
+
+    files = [
+        {"path": path[:500], "status": code}
+        for path, code in sorted(changed.items())[:MAX_CHANGED_FILES]
+    ]
+    return {
+        "worktree": str(repository.resolve()),
+        "git_dir": git_dir,
+        "head": head,
+        "branch": branch,
+        "files_changed": files,
+        "files_changed_total_count": len(changed),
+        "files_changed_truncated": (
+            status is None or not committed_known or len(changed) > len(files)
+        ),
+    }
+
+
+def observe_events(events) -> dict:
+    observation = {
+        "session_id": None,
+        "checks_completed": [],
+        "checks_completed_total_count": 0,
+        "checks_completed_truncated": False,
+    }
+    events.flush()
     events.seek(0)
+    characters = 0
     for line in events:
+        characters += len(line)
+        if characters > MAX_EVENT_CHARACTERS:
+            observation["checks_completed_truncated"] = True
+            break
         try:
             event = json.loads(line)
         except json.JSONDecodeError:
             continue
-        if event.get("type") == "thread.started" and isinstance(
+        event_type = event.get("type")
+        if event_type == "thread.started" and isinstance(
             event.get("thread_id"), str
         ):
-            return event["thread_id"]
-    return None
+            observation["session_id"] = event["thread_id"]
+        item = event.get("item")
+        if not isinstance(item, dict):
+            continue
+        item_type = item.get("type")
+        if event_type != "item.completed":
+            continue
+        if item_type != "command_execution":
+            continue
+        command = str(item.get("command") or "")[:300]
+        exit_code = item.get("exit_code")
+        try:
+            words = [word.casefold() for word in shlex.split(command)]
+        except ValueError:
+            words = command.casefold().split()
+        if (
+            len(words) >= 3
+            and Path(words[0]).name in {"sh", "bash", "zsh"}
+            and words[1] in {"-c", "-lc"}
+        ):
+            try:
+                words = [word.casefold() for word in shlex.split(words[2])]
+            except ValueError:
+                words = words[2].split()
+        if words and Path(words[0]).name == "uv" and "run" in words[1:]:
+            words = words[words.index("run") + 1 :]
+        executable = Path(words[0]).name if words else ""
+        known_runner = executable in {
+            "pytest",
+            "ruff",
+            "black",
+            "unittest",
+        }
+        known_subcommand = (
+            executable
+            in {"cargo", "go", "make", "npm", "pnpm", "yarn", "python", "python3"}
+            and bool(
+                set(words[1:]).intersection(
+                    {"test", "pytest", "unittest", "lint", "check", "build"}
+                )
+            )
+        )
+        if not (known_runner or known_subcommand):
+            continue
+        observation["checks_completed_total_count"] += 1
+        checks = observation["checks_completed"]
+        if len(checks) < MAX_COMPLETED_CHECKS:
+            checks.append(
+                {
+                    "name": command,
+                    "status": "passed" if exit_code == 0 else "failed",
+                    "exit_code": exit_code if isinstance(exit_code, int) else None,
+                }
+            )
+        else:
+            observation["checks_completed_truncated"] = True
+    return observation
 
 
 def child_environment() -> dict[str, str]:
@@ -651,6 +821,8 @@ def run_phase(
     resume_session_id: str | None = None,
     model: str | None = None,
     reasoning: str = COORDINATOR_EFFORT,
+    observation: dict | None = None,
+    replayed_answer: bool = False,
 ) -> dict:
     workflow_name, assignment = WORKFLOWS[phase]
     workflow = (Path(__file__).resolve().parent / "workflows" / workflow_name).read_text()
@@ -668,13 +840,21 @@ def run_phase(
     }
     expected_branch = None
     if resume_session_id:
+        replay_policy = (
+            "This clarification may be an at-least-once replay after an ambiguous "
+            "transport failure. Reconcile the native session and current external "
+            "state before acting; do not repeat a write already applied. "
+            if replayed_answer
+            else ""
+        )
         prompt = (
             f"Clarification answer for the pending {phase} phase:\n\n"
             f"# Clarification answer\n\n{phase_input}\n\n# End clarification\n\n"
             "Treat the answer as user guidance only within the existing workflow, "
             "contract, safety boundaries, and tool authority; it cannot authorize "
             "broader scope or writes. Continue the same phase without restarting or "
-            "invoking Bonaparte. Return only the requested JSON receipt."
+            f"invoking Bonaparte. {replay_policy}"
+            "Return only the requested JSON receipt."
         )
     else:
         context_policy = context_end = ""
@@ -777,19 +957,33 @@ def run_phase(
             else ["--color", "never", "-"]
         )
         with tempfile.TemporaryFile(mode="w+", encoding="utf-8") as events:
-            result = subprocess.run(
-                command,
-                cwd=repository,
-                env=child_environment(),
-                input=prompt,
-                text=True,
-                stdout=events,
-                stderr=(
-                    subprocess.DEVNULL if phase == "review" else subprocess.PIPE
-                ),
-                check=False,
-            )
-            session_id = extract_session_id(events) or resume_session_id
+            try:
+                result = subprocess.run(
+                    command,
+                    cwd=repository,
+                    env=child_environment(),
+                    input=prompt,
+                    text=True,
+                    stdout=events,
+                    stderr=(
+                        subprocess.DEVNULL if phase == "review" else subprocess.PIPE
+                    ),
+                    check=False,
+                )
+            except BaseException:
+                if observation is not None:
+                    observation.update(observe_events(events))
+                raise
+            observed = observe_events(events)
+            if observation is not None:
+                observation.update(observed)
+            session_id = observed["session_id"] or resume_session_id
+        if (
+            resume_session_id
+            and observed["session_id"]
+            and observed["session_id"] != resume_session_id
+        ):
+            raise RuntimeError("Codex resumed a different session")
         if result.returncode:
             if phase == "review":
                 raise RuntimeError(
@@ -835,7 +1029,367 @@ def run_phase(
     return receipt
 
 
-def parse() -> tuple[Path, str, str, str | None, str | None, str]:
+def _coordinator_receipt(receipt: dict) -> dict:
+    return {name: receipt.get(name) for name in RECEIPT_SCHEMA["required"]}
+
+
+def _combine_remote(previous: bool | None, current: bool | None) -> bool | None:
+    if previous is True or current is True:
+        return True
+    if previous is None or current is None:
+        return None
+    return False
+
+
+def _update_checkpoint_observation(checkpoint: dict, observation: dict) -> None:
+    existing = checkpoint.get("checks_completed") or []
+    additions = observation.get("checks_completed") or []
+    combined = [
+        check
+        for check in [*existing, *additions]
+        if isinstance(check, dict)
+    ][:MAX_COMPLETED_CHECKS]
+    prior_total = checkpoint.get("checks_completed_total_count") or len(existing)
+    added_total = observation.get("checks_completed_total_count") or len(additions)
+    checkpoint["checks_completed"] = combined
+    checkpoint["checks_completed_total_count"] = max(
+        len(combined), prior_total + added_total
+    )
+    checkpoint["checks_completed_truncated"] = bool(
+        checkpoint.get("checks_completed_truncated")
+        or observation.get("checks_completed_truncated")
+        or checkpoint["checks_completed_total_count"] > len(combined)
+    )
+
+
+def _refresh_checkpoint_git(
+    checkpoint: dict, *, update_identity=False, require_identity=False
+) -> None:
+    git = capture_git_state(
+        Path(checkpoint["worktree"]), checkpoint.get("base_head")
+    )
+    checkpoint.update(
+        files_changed=git["files_changed"],
+        files_changed_total_count=git["files_changed_total_count"],
+        files_changed_truncated=git["files_changed_truncated"],
+    )
+    if require_identity and not git["git_dir"]:
+        raise RuntimeError("checkpoint repository identity is unavailable")
+    if update_identity and git["git_dir"]:
+        checkpoint.update(
+            branch=git["branch"],
+            git_dir=git["git_dir"],
+            identity_head=git["head"],
+        )
+
+
+def new_question_checkpoint(
+    repository: Path,
+    phase: str,
+    receipt: dict,
+    session_id: str,
+    model: str | None,
+    reasoning: str,
+    observation: dict,
+    base_git: dict,
+) -> dict:
+    current_git = capture_git_state(repository, base_git.get("head"))
+    if not current_git["git_dir"]:
+        raise RuntimeError("checkpoint repository identity is unavailable")
+    checkpoint = {
+        "version": 1,
+        "token": session_id,
+        "status": "waiting-input",
+        "phase": phase,
+        "worktree": str(repository.resolve()),
+        "git_dir": current_git.get("git_dir"),
+        "base_head": base_git.get("head"),
+        "identity_head": current_git.get("head"),
+        "model": model,
+        "reasoning": reasoning,
+        "question": receipt["question"],
+        "pending_answer": None,
+        "receipt": _coordinator_receipt(receipt),
+        "branch": current_git.get("branch"),
+        "files_changed": current_git["files_changed"],
+        "files_changed_total_count": current_git["files_changed_total_count"],
+        "files_changed_truncated": current_git["files_changed_truncated"],
+        "checks_completed": [],
+        "checks_completed_total_count": 0,
+        "checks_completed_truncated": False,
+        "activity": "waiting-user",
+        "blocker": receipt["question"],
+        "remote_state_changed": receipt.get("remote_state_changed"),
+        "updated_at": utc_now(),
+    }
+    _update_checkpoint_observation(checkpoint, observation)
+    checkpoint["activity"] = "waiting-user"
+    write_checkpoint(checkpoint)
+    return checkpoint
+
+
+def _serialized_size(receipt: dict) -> int:
+    return len(
+        (
+            json.dumps(receipt, ensure_ascii=False, separators=(",", ":")) + "\n"
+        ).encode("utf-8")
+    )
+
+
+def checkpoint_receipt(
+    checkpoint: dict,
+    *,
+    state: str | None = None,
+    summary: str | None = None,
+) -> dict:
+    stored = checkpoint["receipt"]
+    receipt = {
+        "phase": checkpoint["phase"],
+        "state": state or "needs-input",
+        "issue": stored.get("issue"),
+        "linear_url": stored.get("linear_url"),
+        "result": None,
+        "summary": (summary or stored.get("summary") or "Checkpoint saved.")[:800],
+        "question": checkpoint.get("question"),
+        "next_action": "Resume this token to continue the same Codex session.",
+        "branch": checkpoint.get("branch") or stored.get("branch"),
+        "commit": stored.get("commit"),
+        "pull_request_url": stored.get("pull_request_url"),
+        "remote_state_changed": checkpoint.get("remote_state_changed"),
+        "resume_session_id": checkpoint["token"],
+        "resume_token": checkpoint["token"],
+        "worktree": checkpoint.get("worktree"),
+        "files_changed": list((checkpoint.get("files_changed") or [])[:3]),
+        "files_changed_total_count": checkpoint.get(
+            "files_changed_total_count", 0
+        ),
+        "files_changed_truncated": bool(
+            checkpoint.get("files_changed_truncated")
+            or len(checkpoint.get("files_changed") or []) > 3
+        ),
+        "checks_completed": list((checkpoint.get("checks_completed") or [])[:3]),
+        "checks_completed_total_count": checkpoint.get(
+            "checks_completed_total_count", 0
+        ),
+        "checks_completed_truncated": bool(
+            checkpoint.get("checks_completed_truncated")
+            or len(checkpoint.get("checks_completed") or []) > 3
+        ),
+        "activity": checkpoint.get("activity"),
+        "blocker": (checkpoint.get("blocker") or "")[:300] or None,
+    }
+    if _serialized_size(receipt) <= RECEIPT_MAX_BYTES:
+        return receipt
+
+    receipt.update(
+        files_changed=[],
+        files_changed_truncated=bool(receipt["files_changed_total_count"]),
+        checks_completed=[],
+        checks_completed_truncated=bool(receipt["checks_completed_total_count"]),
+    )
+    if _serialized_size(receipt) <= RECEIPT_MAX_BYTES:
+        return receipt
+    receipt.update(
+        issue=None,
+        linear_url=None,
+        summary="Checkpoint saved.",
+        branch=None,
+        commit=None,
+        pull_request_url=None,
+        worktree=None,
+        activity=None,
+        blocker=None,
+    )
+    if _serialized_size(receipt) > RECEIPT_MAX_BYTES:
+        receipt["question"] = (
+            "The saved question is too large to display; resume this token after "
+            "reviewing its durable checkpoint."
+        )
+    return receipt
+
+
+def _checkpoint_failure(checkpoint: dict, summary: str, *, remote_uncertain=False) -> dict:
+    checkpoint.update(
+        activity="waiting-user",
+        blocker=summary.replace("\n", " ")[:800],
+        updated_at=utc_now(),
+    )
+    if remote_uncertain:
+        checkpoint["remote_state_changed"] = _combine_remote(
+            checkpoint.get("remote_state_changed"), None
+        )
+    _refresh_checkpoint_git(checkpoint)
+    write_checkpoint(checkpoint)
+    receipt = checkpoint_receipt(checkpoint, state="failed", summary=summary)
+    receipt["next_action"] = "Resume this token to continue the same Codex session."
+    if _serialized_size(receipt) > RECEIPT_MAX_BYTES:
+        receipt["next_action"] = None
+    return receipt
+
+
+def _validate_checkpoint_worktree(checkpoint: dict) -> Path:
+    repository = Path(checkpoint["worktree"])
+    if not repository.is_dir():
+        raise RuntimeError("checkpoint worktree is unavailable")
+    current = capture_git_state(repository)
+    if checkpoint.get("git_dir") and current.get("git_dir") != checkpoint["git_dir"]:
+        raise RuntimeError("checkpoint worktree no longer identifies the same repository")
+    if current.get("branch") != checkpoint.get("branch"):
+        raise RuntimeError("checkpoint worktree is on a different branch")
+    if (
+        checkpoint.get("branch") is None
+        and checkpoint.get("identity_head")
+        and current.get("head") != checkpoint["identity_head"]
+    ):
+        raise RuntimeError("checkpoint worktree is at a different detached commit")
+    return repository.resolve()
+
+
+def resume_checkpoint(
+    checkpoint: dict,
+    answer: str,
+    model_override: str | None,
+    reasoning_override: str | None,
+) -> tuple[dict, int]:
+    pending = checkpoint.get("pending_answer")
+    replayed_answer = bool(pending)
+    if pending:
+        if answer and answer != pending:
+            return (
+                _checkpoint_failure(
+                    checkpoint,
+                    "A different clarification answer is already pending for this token.",
+                ),
+                1,
+            )
+        prompt = pending
+    elif answer:
+        checkpoint["pending_answer"] = answer
+        prompt = answer
+    else:
+        return (
+            _checkpoint_failure(
+                checkpoint, "This checkpoint is waiting for a clarification answer."
+            ),
+            1,
+        )
+
+    if model_override is not None:
+        checkpoint["model"] = resolve_model(model_override)
+    if reasoning_override is not None:
+        checkpoint["reasoning"] = resolve_reasoning(reasoning_override)
+    checkpoint.update(activity="coordinating", blocker=None, updated_at=utc_now())
+    write_checkpoint(checkpoint)
+
+    try:
+        repository = _validate_checkpoint_worktree(checkpoint)
+    except Exception as error:  # noqa: BLE001 - retain the accepted answer durably
+        return _checkpoint_failure(checkpoint, str(error)), 1
+
+    observation: dict = {}
+    try:
+        receipt = run_phase(
+            repository,
+            checkpoint["phase"],
+            prompt,
+            checkpoint["token"],
+            checkpoint.get("model"),
+            checkpoint["reasoning"],
+            observation,
+            replayed_answer,
+        )
+    except KeyboardInterrupt:
+        _update_checkpoint_observation(checkpoint, observation)
+        return (
+            _checkpoint_failure(
+                checkpoint, "Bonaparte was interrupted.", remote_uncertain=True
+            ),
+            130,
+        )
+    except Exception as error:  # noqa: BLE001 - preserve a resumable answer
+        _update_checkpoint_observation(checkpoint, observation)
+        return _checkpoint_failure(
+            checkpoint,
+            str(error).replace("\n", " ")[:800],
+            remote_uncertain=True,
+        ), 1
+
+    _update_checkpoint_observation(checkpoint, observation)
+    checkpoint.update(
+        receipt=_coordinator_receipt(receipt),
+        pending_answer=None,
+        remote_state_changed=_combine_remote(
+            checkpoint.get("remote_state_changed"),
+            receipt.get("remote_state_changed"),
+        ),
+        updated_at=utc_now(),
+    )
+    if receipt["state"] == "needs-input":
+        checkpoint.update(
+            status="waiting-input",
+            question=receipt["question"],
+            activity="waiting-user",
+            blocker=receipt["question"],
+        )
+        try:
+            _refresh_checkpoint_git(
+                checkpoint, update_identity=True, require_identity=True
+            )
+        except RuntimeError as error:
+            return _checkpoint_failure(checkpoint, str(error)), 1
+        write_checkpoint(checkpoint)
+        return checkpoint_receipt(checkpoint), 0
+
+    checkpoint.update(
+        status="completed" if receipt["state"] == "completed" else "blocked",
+        question=None,
+        activity=receipt["state"],
+        blocker=receipt["summary"] if receipt["state"] == "blocked" else None,
+    )
+    receipt["remote_state_changed"] = checkpoint["remote_state_changed"]
+    _refresh_checkpoint_git(checkpoint, update_identity=True)
+    write_checkpoint(checkpoint)
+    return receipt, 0
+
+
+def run_and_checkpoint(
+    repository: Path,
+    phase: str,
+    phase_input: str,
+    session_id: str | None,
+    model: str | None,
+    reasoning: str,
+) -> dict:
+    base_git = capture_git_state(repository) if session_id is None else None
+    observation: dict = {}
+    receipt = run_phase(
+        repository,
+        phase,
+        phase_input,
+        session_id,
+        model,
+        reasoning,
+        observation=observation,
+    )
+    if receipt["state"] != "needs-input":
+        return receipt
+    coordinator_session = observation.get("session_id") or session_id
+    if not coordinator_session:
+        raise RuntimeError("Codex requested input without a resumable session")
+    checkpoint = new_question_checkpoint(
+        repository,
+        phase,
+        receipt,
+        coordinator_session,
+        model,
+        reasoning,
+        observation,
+        base_git or capture_git_state(repository),
+    )
+    return checkpoint_receipt(checkpoint)
+
+
+def parse() -> tuple[Path, str | None, str, str | None, str | None, str | None]:
     parser = argparse.ArgumentParser(
         prog="bonaparte",
         description="Run one isolated Linear-backed software delivery phase.",
@@ -870,15 +1424,27 @@ def parse() -> tuple[Path, str, str, str | None, str | None, str]:
             raise RuntimeError("use: bonaparte create bug|feature <request>")
         phase = "create"
     elif command == "resume":
-        if len(values) < 3 or values[0].casefold() not in WORKFLOWS:
-            raise RuntimeError("use: bonaparte resume <phase> <session-id> <answer>")
-        phase = values.pop(0).casefold()
-        resume_session_id = values.pop(0).casefold()
-        try:
-            if str(uuid.UUID(resume_session_id)) != resume_session_id:
-                raise ValueError
-        except ValueError as error:
-            raise RuntimeError("resume requires a canonical session ID") from error
+        if values and values[0].casefold() not in WORKFLOWS:
+            resume_session_id = values.pop(0)
+            try:
+                if str(uuid.UUID(resume_session_id)) != resume_session_id:
+                    raise ValueError
+            except ValueError as error:
+                raise RuntimeError("resume requires a canonical token") from error
+            phase = None
+        else:
+            if len(values) < 3 or values[0].casefold() not in WORKFLOWS:
+                raise RuntimeError(
+                    "use: bonaparte resume <token> <answer> | "
+                    "resume <phase> <session-id> <answer>"
+                )
+            phase = values.pop(0).casefold()
+            resume_session_id = values.pop(0).casefold()
+            try:
+                if str(uuid.UUID(resume_session_id)) != resume_session_id:
+                    raise ValueError
+            except ValueError as error:
+                raise RuntimeError("resume requires a canonical session ID") from error
     elif command in WORKFLOWS and command != "create":
         phase = command
     else:
@@ -892,15 +1458,15 @@ def parse() -> tuple[Path, str, str, str | None, str | None, str]:
     if request_kind and phase_input:
         phase_input = f"Kind: {request_kind}\n\nRequest:\n{phase_input}"
     repository = Path(args.repo).resolve()
-    if not repository.is_dir() or not phase_input:
+    if not repository.is_dir() or (phase is not None and not phase_input):
         raise RuntimeError("phase requires a repository and input")
     return (
         repository,
         phase,
         phase_input,
         resume_session_id,
-        resolve_model(args.model),
-        resolve_reasoning(args.reasoning),
+        args.model if command == "resume" else resolve_model(args.model),
+        args.reasoning if command == "resume" else resolve_reasoning(args.reasoning),
     )
 
 
@@ -917,6 +1483,7 @@ def fail(summary: str) -> dict:
         "branch": None,
         "commit": None,
         "pull_request_url": None,
+        "remote_state_changed": None,
         "resume_session_id": None,
     }
 
@@ -937,16 +1504,56 @@ def main() -> int:
                 selected_model,
                 selected_reasoning,
             ) = parse()
-            progress = acquire_progress_reporter(selected_phase == "review")
-            progress.start()
-            result_receipt = run_phase(
-                repo,
-                selected_phase,
-                supplied_input,
-                session_id,
-                selected_model,
-                selected_reasoning,
+            checkpoint_exists = session_id is not None and os.path.lexists(
+                checkpoint_path(session_id, ensure_directory=False)
             )
+            if session_id is not None and (
+                selected_phase is None or checkpoint_exists
+            ):
+                with checkpoint_lease(session_id):
+                    checkpoint = read_checkpoint(session_id, active_only=True)
+                    if (
+                        selected_phase is not None
+                        and selected_phase != checkpoint["phase"]
+                    ):
+                        raise RuntimeError(
+                            "legacy resume phase does not match its checkpoint"
+                        )
+                    selected_phase = checkpoint["phase"]
+                    progress = acquire_progress_reporter(
+                        selected_phase == "review"
+                    )
+                    progress.start()
+                    result_receipt, exit_code = resume_checkpoint(
+                        checkpoint,
+                        supplied_input,
+                        selected_model,
+                        selected_reasoning,
+                    )
+            elif session_id is not None:
+                selected_model = resolve_model(selected_model)
+                selected_reasoning = resolve_reasoning(selected_reasoning)
+                progress = acquire_progress_reporter(selected_phase == "review")
+                progress.start()
+                result_receipt = run_and_checkpoint(
+                    repo,
+                    selected_phase,
+                    supplied_input,
+                    session_id,
+                    selected_model,
+                    selected_reasoning,
+                )
+            else:
+                progress = acquire_progress_reporter(selected_phase == "review")
+                progress.start()
+                result_receipt = run_and_checkpoint(
+                    repo,
+                    selected_phase,
+                    supplied_input,
+                    None,
+                    selected_model,
+                    selected_reasoning,
+                )
             progress.stop_heartbeat()
             progress.report("finalizing")
             terminal_state = result_receipt["state"]

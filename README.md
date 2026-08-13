@@ -106,7 +106,7 @@ bonaparte scope LIN-123
 bonaparte implement LIN-123
 bonaparte review LIN-123
 bonaparte publish LIN-123
-bonaparte resume RCA <session-id> "clarification answer"
+bonaparte resume <resume-token> "clarification answer"
 ```
 
 ## Model selection
@@ -115,7 +115,7 @@ Select a model for one phase or for a resumed phase with `--model`:
 
 ```sh
 bonaparte --model gpt-5.6-terra scope LIN-123
-bonaparte --model gpt-5.6-luna resume scope <session-id> "clarification answer"
+bonaparte --model gpt-5.6-luna resume <resume-token> "clarification answer"
 ```
 
 Set one model for every Bonaparte phase in the environment:
@@ -146,7 +146,26 @@ When a user asks an agent to use Bonaparte, the skill selects the bug or feature
 route, runs the commands in sequence, and passes only the Linear issue identifier
 between them. Any `needs-input`, `blocked`, or failed phase stops the chain.
 After `needs-input`, `resume` continues the same coordinator session with the
-answer instead of restarting its investigation.
+answer instead of restarting its investigation. The opaque `resume_token` is
+stable across follow-up questions; the older
+`resume <phase> <session-id> <answer>` form remains accepted for compatibility.
+
+## Durable clarification checkpoints
+
+A `needs-input` receipt includes a `resume_token` backed by a private checkpoint
+under `$BONAPARTE_HOME/checkpoints` (normally
+`~/.local/share/bonaparte/checkpoints`). The checkpoint records the native Codex
+session, worktree and branch, changed-file and completed-check inventories,
+current activity and blocker, and whether remote changes are known. The native
+Codex session remains the source of truth for coordinator and subagent history;
+Bonaparte does not copy their transcript.
+
+Before resuming, Bonaparte exclusively locks the token and durably records the
+answer. A later question reuses the same token. Completed and blocked records
+remain on disk for audit but cannot be resumed. If native delivery becomes
+ambiguous, Bonaparte preserves the pending answer and reports the token instead
+of silently restarting the phase. Token resumes reuse the saved model and
+reasoning unless an explicit override is supplied.
 
 ## Review liveness for trusted hosts
 
