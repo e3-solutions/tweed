@@ -24,8 +24,9 @@ not create another PR, change its metadata or readiness, merge, or deploy.
 - For a new review, require the implementation handoff's draft PR URL. Derive
   the canonical repository from `origin`, scope every `gh` read explicitly to
   it, and verify the PR is open and draft with the recorded official branch,
-  expected base, and implementation commit. A missing, duplicate, closed,
-  merged, non-draft, or mismatched PR blocks review before any correction.
+  expected base (from trusted supplemental input when present), and implementation
+  commit. A missing, duplicate, closed, merged, non-draft, or mismatched PR
+  blocks review before any correction.
 - Switch to the recorded branch only from a clean worktree. Require its history
   and remote PR head to contain the implementation commit. Never reset, clean,
   stash, discard, or overwrite user changes. The only GitHub write allowed is an

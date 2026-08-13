@@ -18,7 +18,6 @@ import uuid
 from pathlib import Path
 
 COORDINATOR_EFFORT = "medium"
-SUBAGENT_EFFORT = "medium"
 PHASE_CHILD_ENV = "BONAPARTE_PHASE_CHILD"
 PROGRESS_FD_ENV = "BONAPARTE_PROGRESS_FD"
 PROGRESS_VERSION = 1
@@ -601,10 +600,19 @@ def resolve_model(override: str | None = None) -> str | None:
     return model
 
 
-def agent_config(description: str, model: str | None) -> str:
+def resolve_reasoning(override: str | None = None) -> str:
+    """Resolve the shared coordinator and subagent reasoning effort."""
+    selected = override if override is not None else COORDINATOR_EFFORT
+    reasoning = selected.strip()
+    if not reasoning:
+        raise RuntimeError("reasoning setting requires a non-empty value")
+    return reasoning
+
+
+def agent_config(description: str, model: str | None, reasoning: str) -> str:
     values = {
         "description": description,
-        "model_reasoning_effort": SUBAGENT_EFFORT,
+        "model_reasoning_effort": reasoning,
     }
     if model:
         values["model"] = model
@@ -633,6 +641,7 @@ def run_phase(
     phase_input: str,
     resume_session_id: str | None = None,
     model: str | None = None,
+    reasoning: str = COORDINATOR_EFFORT,
 ) -> dict:
     workflow_name, assignment = WORKFLOWS[phase]
     workflow = (Path(__file__).resolve().parent / "workflows" / workflow_name).read_text()
@@ -642,7 +651,7 @@ def run_phase(
         "explorer": "Read-only Bonaparte repository investigator",
     }
     child_configs = {
-        role: agent_config(description, model)
+        role: agent_config(description, model, reasoning)
         for role, description in child_configs.items()
     }
     expected_branch = None
@@ -691,7 +700,7 @@ def run_phase(
             "directly; do not invoke Bonaparte or delegate back to its skill.\n\n"
             "# Model policy\n\n"
             "Model selection is controlled by the runner. The coordinator uses "
-            f"{COORDINATOR_EFFORT} reasoning and every child uses {SUBAGENT_EFFORT} "
+            f"{reasoning} reasoning and every child uses {reasoning} "
             "reasoning. Spawn children using only the built-in default, worker, or "
             "explorer roles. Do not select or request a different child model, role, "
             "or reasoning effort.\n\n"
@@ -709,7 +718,7 @@ def run_phase(
         command.extend(
             [
                 "-c",
-                f'model_reasoning_effort="{COORDINATOR_EFFORT}"',
+                f"model_reasoning_effort={json.dumps(reasoning)}",
                 "-c",
                 f"agents.default={child_configs['default']}",
                 "-c",
@@ -788,7 +797,7 @@ def run_phase(
     return receipt
 
 
-def parse() -> tuple[Path, str, str, str | None, str | None]:
+def parse() -> tuple[Path, str, str, str | None, str | None, str]:
     parser = argparse.ArgumentParser(
         prog="bonaparte",
         description="Run one isolated Linear-backed software delivery phase.",
@@ -800,6 +809,12 @@ def parse() -> tuple[Path, str, str, str | None, str | None]:
         help=(
             "model for this phase or resume; overrides BONAPARTE_MODEL and "
             "Codex configuration"
+        ),
+    )
+    parser.add_argument(
+        "--reasoning",
+        help=(
+            "reasoning effort for this phase or resume; defaults to medium"
         ),
     )
     parser.add_argument("command")
@@ -847,6 +862,7 @@ def parse() -> tuple[Path, str, str, str | None, str | None]:
         phase_input,
         resume_session_id,
         resolve_model(args.model),
+        resolve_reasoning(args.reasoning),
     )
 
 
@@ -881,6 +897,7 @@ def main() -> int:
                 supplied_input,
                 session_id,
                 selected_model,
+                selected_reasoning,
             ) = parse()
             progress = acquire_progress_reporter(selected_phase == "review")
             progress.start()
@@ -890,6 +907,7 @@ def main() -> int:
                 supplied_input,
                 session_id,
                 selected_model,
+                selected_reasoning,
             )
             progress.stop_heartbeat()
             progress.report("finalizing")

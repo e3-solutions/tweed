@@ -16,11 +16,11 @@ existing PR's metadata, readiness, and final Linear comment.
 - Extract the exact reviewed branch and commit. Require a clean local worktree
   on that branch, with `HEAD` equal to the reviewed commit.
 - Require a configured GitHub `origin`, a working authenticated `gh`, and an
-  identifiable default base branch. Derive one canonical
-  `[host/]owner/repository` selector from `origin`; never use ambient `GH_REPO`
-  or infer a repository from the working directory. Scope every `gh` read and
-  write explicitly to that selector. Ask one question only if the base cannot be
-  discovered.
+  identifiable base named by trusted supplemental input or, when absent,
+  GitHub's default base. Derive one canonical `[host/]owner/repository` selector
+  from `origin`; never use ambient `GH_REPO` or infer a repository from the
+  working directory. Scope every `gh` read and write explicitly to that
+  selector. Ask one question only if the base cannot be discovered.
 - For a new publish, require the review handoff's draft PR URL. Verify it belongs
   to that canonical repository, is open, uses the exact reviewed head branch and
   expected base, and points at the reviewed commit. It should be draft unless an
@@ -38,7 +38,8 @@ existing PR's metadata, readiness, and final Linear comment.
 1. Read the supplied review and issue metadata. Confirm the reviewed commit is
    a descendant of the implementation commit and that the local branch is
    clean.
-2. Resolve the canonical GitHub repository and default base from `origin`.
+2. Resolve the canonical GitHub repository and expected base from `origin` and
+   the trusted supplemental input, falling back to GitHub's default base.
    Confirm the reviewed branch differs from the base, contains the implementation
    commit, and has no local commit beyond the PR head.
 3. Resolve the exact PR by the review handoff URL and head branch. Search all PR
@@ -66,7 +67,7 @@ existing PR's metadata, readiness, and final Linear comment.
 
 5. If the exact PR is still draft, mark it ready for review. Never change the
    readiness or metadata of another PR.
-6. Verify the PR is open, non-draft, targets the discovered base, uses the exact
+6. Verify the PR is open, non-draft, targets the expected base, uses the exact
    canonical head repository, reviewed branch, and reviewed commit, and reports
    no immediately visible update error. Do not claim CI has passed unless GitHub
    shows it.
