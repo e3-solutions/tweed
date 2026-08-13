@@ -15,17 +15,26 @@ investigate, or spawn subagents here. Each phase is exactly one command.
 Invoke the bare `bonaparte` executable from `PATH`; the repository installer owns
 that link. Do not search for or expect a runner inside this skill directory.
 
-Honor model choices without choosing a model yourself. If the user selects one
-model for the whole Bonaparte run, add `--model <model>` before the command name
-on every phase and resume command. If the user selects models by phase, add the
-matching flag only to those phase and resume commands. A model supplied on resume
-may change the active coordinator's model. When the user makes no model choice,
-omit the flag so the runner can honor `BONAPARTE_MODEL` or Codex configuration.
+Options precede the command name. Repeat run-wide options because every phase is
+a fresh process; do not select an option the user did not request.
+
+- Use `--model <model>` for the coordinator and its children. If omitted,
+  `BONAPARTE_MODEL` and then Codex config apply.
+- Use `--reasoning <effort>` for the coordinator and its children. It defaults
+  to `medium`.
+- When the user names a PR base, append the quoted supplemental input
+  `Expected pull-request base: <branch>` after the issue identifier on
+  `implement`, `review`, and `publish`. Repeat it for all three phases. This is
+  the PR target; Linear's `gitBranchName` remains the PR head.
 
 ```sh
-bonaparte --model <model> --repo <repository> scope <receipt.issue>
-bonaparte --model <model> --repo <repository> resume \
-  <receipt.phase> <receipt.resume_session_id> <answer>
+bonaparte --repo <repository> --model gpt-5.6-sol --reasoning high scope <issue>
+bonaparte --repo <repository> --model gpt-5.6-sol --reasoning high \
+  implement <issue> "Expected pull-request base: staging"
+bonaparte --repo <repository> --model gpt-5.6-sol --reasoning high \
+  review <issue> "Expected pull-request base: staging"
+bonaparte --repo <repository> --model gpt-5.6-sol --reasoning high \
+  publish <issue> "Expected pull-request base: staging"
 ```
 
 For a new request, classify it as a bug only when it reports incorrect existing
@@ -33,7 +42,8 @@ behavior; classify a requested capability as a feature. Assemble a compact
 factual intake from the user's messages. Keep expected outcome, impact,
 workflow, constraints, environment, examples, and evidence when supplied. For a
 bug, also keep observed behavior and reproduction. Do not investigate or guess.
-Safely quote the intake and run one:
+Include a named PR base in the intake as a delivery constraint, then also pass
+the supplemental input above during delivery. Safely quote the intake and run:
 
 ```sh
 bonaparte --repo <repository> create bug <factual intake>
@@ -52,7 +62,8 @@ bonaparte --repo <repository> publish <receipt.issue>
 
 For a full feature, skip RCA and run `scope`, `implement`, `review`, then
 `publish`. Start each phase only when the prior receipt is `completed`, and pass
-only the issue identifier returned by creation.
+only the issue identifier returned by creation. Add the retained configuration
+flags to these command shapes as described above.
 
 If the user requests only one phase, run only that command. For an existing
 issue, skip creation and start at the requested phase; do not infer an
@@ -73,10 +84,12 @@ bounded stdout receipt, and its absence or failure requires no retry or
 fallback. The invoking task remains thin and waits for the final receipt.
 
 On `needs-input`, ask only `question`. If `resume_session_id` is present,
-continue the same coordinator once:
+continue the same coordinator once. Repeat that phase's model and reasoning
+flags before `resume`; its original base instruction remains in the session:
 
 ```sh
-bonaparte --repo <repository> resume <receipt.phase> <receipt.resume_session_id> <answer>
+bonaparte --repo <repository> [--model <model>] [--reasoning <effort>] \
+  resume <receipt.phase> <receipt.resume_session_id> <answer>
 ```
 
 If it is null, rerun the phase once with its original input plus the question

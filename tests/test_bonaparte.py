@@ -119,8 +119,9 @@ def run_review_cli(fake_receipt):
 
 
 class BonaparteRunnerTests(unittest.TestCase):
-    def test_coordinator_reasoning_is_medium(self):
-        self.assertEqual(RUNNER.COORDINATOR_EFFORT, "medium")
+    def test_reasoning_defaults_to_medium_and_accepts_a_phase_override(self):
+        self.assertEqual(RUNNER.resolve_reasoning(), "medium")
+        self.assertEqual(RUNNER.resolve_reasoning("xhigh"), "xhigh")
 
     def test_model_precedence_is_command_then_global_then_codex(self):
         with mock.patch.dict(os.environ, {}, clear=True):
@@ -211,6 +212,12 @@ class BonaparteRunnerTests(unittest.TestCase):
             "Do not spawn implementation agents, change code, push commits", publish
         )
 
+    def test_delivery_workflows_accept_a_supplemental_expected_base(self):
+        for filename in ("implement.md", "review.md", "publish.md"):
+            workflow = (ROOT / "workflows" / filename).read_text()
+            with self.subTest(workflow=filename):
+                self.assertIn("supplemental input", workflow)
+
     def test_phase_child_guard_stops_before_invoking_instructions(self):
         skill = (ROOT / "skills/use-bonaparte/SKILL.md").read_text()
         guard = skill.split("Keep this invoking task thin", 1)[0]
@@ -264,7 +271,7 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertNotIn("-m", observed["command"])
         self.assertNotIn("resume", observed["command"][:3])
 
-    def test_phase_model_configures_coordinator_and_children(self):
+    def test_phase_model_and_reasoning_configure_coordinator_and_children(self):
         observed = {}
 
         def fake_run(command, **kwargs):
@@ -278,10 +285,17 @@ class BonaparteRunnerTests(unittest.TestCase):
             mock.patch.object(RUNNER, "call_linear", return_value=(linear_issue(), [])),
             mock.patch.object(RUNNER.subprocess, "run", side_effect=fake_run),
         ):
-            RUNNER.run_phase(ROOT, "rca", "COR-1", model="gpt-5.6-terra")
+            RUNNER.run_phase(
+                ROOT,
+                "rca",
+                "COR-1",
+                model="gpt-5.6-terra",
+                reasoning="high",
+            )
 
         model_index = observed["command"].index("-m")
         self.assertEqual(observed["command"][model_index + 1], "gpt-5.6-terra")
+        self.assertIn('model_reasoning_effort="high"', observed["command"])
         agent_overrides = [
             value
             for value in observed["command"]
@@ -290,12 +304,15 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertEqual(len(agent_overrides), 3)
         for override in agent_overrides:
             self.assertIn('model="gpt-5.6-terra"', override)
+            self.assertIn('model_reasoning_effort="high"', override)
 
     def test_resume_uses_the_same_session_and_can_switch_models(self):
         argv = [
             "bonaparte",
             "--model",
             "gpt-5.6-luna",
+            "--reasoning",
+            "high",
             "resume",
             "RCA",
             SESSION_ID,
@@ -306,8 +323,9 @@ class BonaparteRunnerTests(unittest.TestCase):
             mock.patch.object(sys, "argv", argv),
             mock.patch.dict(os.environ, {}, clear=True),
         ):
-            repository, phase, answer, session_id, model = RUNNER.parse()
+            repository, phase, answer, session_id, model, reasoning = RUNNER.parse()
         self.assertEqual(model, "gpt-5.6-luna")
+        self.assertEqual(reasoning, "high")
         observed = {}
 
         def fake_run(command, **kwargs):
@@ -321,12 +339,15 @@ class BonaparteRunnerTests(unittest.TestCase):
             mock.patch.object(RUNNER, "call_linear") as call_linear,
             mock.patch.object(RUNNER.subprocess, "run", side_effect=fake_run),
         ):
-            result = RUNNER.run_phase(repository, phase, answer, session_id, model)
+            result = RUNNER.run_phase(
+                repository, phase, answer, session_id, model, reasoning
+            )
 
         self.assertEqual(result["state"], "completed")
         self.assertEqual(observed["command"][:3], ["/bin/codex", "exec", "resume"])
         model_index = observed["command"].index("-m")
         self.assertEqual(observed["command"][model_index + 1], "gpt-5.6-luna")
+        self.assertIn('model_reasoning_effort="high"', observed["command"])
         self.assertEqual(observed["command"][-2:], [SESSION_ID, "-"])
         self.assertIn("Use production.", observed["prompt"])
         self.assertNotIn("# Bonaparte Bug RCA", observed["prompt"])
@@ -697,7 +718,7 @@ class BonaparteRunnerTests(unittest.TestCase):
             mock.patch.object(
                 RUNNER,
                 "parse",
-                return_value=(ROOT, "review", "Continue.", SESSION_ID, None),
+                return_value=(ROOT, "review", "Continue.", SESSION_ID, None, "medium"),
             ),
             mock.patch.object(
                 RUNNER,
@@ -738,7 +759,7 @@ class BonaparteRunnerTests(unittest.TestCase):
             mock.patch.object(
                 RUNNER,
                 "parse",
-                return_value=(ROOT, "review", "Continue.", SESSION_ID, None),
+                return_value=(ROOT, "review", "Continue.", SESSION_ID, None, "medium"),
             ),
             mock.patch.object(
                 RUNNER,
@@ -1105,7 +1126,9 @@ class BonaparteRunnerTests(unittest.TestCase):
                 os.environ, {RUNNER.PHASE_CHILD_ENV: ""}, clear=False
             ),
             mock.patch.object(
-                RUNNER, "parse", return_value=(ROOT, "review", "x", None, None)
+                RUNNER,
+                "parse",
+                return_value=(ROOT, "review", "x", None, None, "medium"),
             ),
             mock.patch.object(
                 RUNNER, "acquire_progress_reporter", return_value=progress

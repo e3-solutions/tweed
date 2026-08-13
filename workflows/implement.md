@@ -57,11 +57,12 @@ not mark it ready, merge, deploy, or mutate other remote services or data.
    materially stale or requires an external action beyond the permitted draft
    PR workflow.
 6. Require a configured GitHub `origin`, authenticated `gh`, and an identifiable
-   default base branch. Derive one canonical `[host/]owner/repository` selector
+   base named by trusted supplemental input or, when absent, GitHub's default
+   base. Derive one canonical `[host/]owner/repository` selector
    from `origin`; never use ambient `GH_REPO` or infer a repository from the
    working directory. Scope every `gh` read and write explicitly to that
-   selector. Require the issue branch to descend from the current remote base and
-   reject unrelated commits before pushing.
+   selector. Require the selected base to exist in the canonical remote. Require
+   the issue branch to descend from it and reject unrelated commits before pushing.
 7. Search all PR states for the exact head branch and inspect every match. Reuse
    exactly one only when its host, head repository, head branch, and base match
    the canonical repository and expected refs. Before implementation completes,
