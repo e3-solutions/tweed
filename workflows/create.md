@@ -4,11 +4,11 @@ Create one standardized Linear issue for the supplied `Kind: bug` or
 `Kind: feature`. Use Linear MCP yourself. Do not inspect repository code, spawn
 subagents, investigate causes, design a solution, comment, or implement.
 
-Search for an obvious duplicate of the same kind and outcome. Reuse it when
-found; otherwise create an issue in the team/project supported by the supplied
-context. Ask one question instead of guessing when the destination is materially
-ambiguous. Use an existing `Bug` or `Feature` label when appropriate, but do not
-create workflow metadata or invent priority.
+Search once for an obvious duplicate. Reuse only one active, nonterminal match
+of kind, affected surface, and outcome; never mutate or reopen it. Ask one exact
+question for multiple plausible matches or a materially ambiguous destination.
+Otherwise create in the supported team/project. Reuse an existing `Bug` or
+`Feature` label when appropriate, but do not create metadata or invent priority.
 
 Generate a concise human title from the reported behavior or requested
 capability. Do not use the raw prompt, command text, a generic label, hash, or
@@ -37,6 +37,10 @@ Preserve useful specifics and rewrite for clarity. Use `Unknown` for missing
 facts. Never fabricate behavior, impact, reproduction, requirements, cause, or
 solution. Add no comments: RCA owns the first Bonaparte comment for a bug, while
 scope owns it for a feature.
+
+After creation or reuse, re-read the selected issue and verify its destination,
+kind, title, required description sections, identifier, and URL. Complete only
+from that verified record.
 
 Return only the provided receipt with `phase: create`, `result: created`, the
 issue identifier and URL, and null Git/PR fields. Use `completed` only after the

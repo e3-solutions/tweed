@@ -1,6 +1,6 @@
 ---
 name: use-bonaparte
-description: Take a software bug or feature from standardized Linear intake through the applicable isolated phases and a ready-to-merge GitHub pull request using bounded receipts. Bugs use evidence-backed RCA before solution scoping; features proceed directly to scope. Use when the user asks Bonaparte to record, investigate, build, solve, implement, review, or publish a software request, or asks for one Bonaparte phase on an existing Linear issue without loading child work into the current context.
+description: Take a software bug or feature from standardized Linear intake through the applicable isolated phases and a ready-for-review GitHub pull request using bounded receipts. Bugs use evidence-backed RCA before solution scoping; features proceed directly to scope. Use when the user asks Bonaparte to record, investigate, build, solve, implement, review, or publish a software request, or asks for one Bonaparte phase on an existing Linear issue without loading child work into the current context.
 ---
 
 # Use Bonaparte
@@ -83,15 +83,19 @@ best-effort liveness; it carries no review result, never replaces the single
 bounded stdout receipt, and its absence or failure requires no retry or
 fallback. The invoking task remains thin and waits for the final receipt.
 
-On `needs-input`, ask only `question`. If `resume_session_id` is present,
-continue the same coordinator once. Repeat that phase's model and reasoning
-flags before `resume`; its original base instruction remains in the session:
+On `needs-input`, ask only `question`; it should already include a recommendation
+when the phase has evidence for one. Never answer for the user or combine
+independent questions. If `resume_session_id` is present, continue the same
+coordinator with the user's safely quoted answer; never interpolate answer text
+into shell syntax. Repeat that phase's model and reasoning flags before `resume`;
+its original base instruction remains in the session:
 
 ```sh
 bonaparte --repo <repository> [--model <model>] [--reasoning <effort>] \
   resume <receipt.phase> <receipt.resume_session_id> <answer>
 ```
 
-If it is null, rerun the phase once with its original input plus the question
-and answer. Stop on `blocked` or `failed`; never reorder or otherwise retry a
-phase automatically.
+If the resumed phase returns another material question, repeat the exchange. If
+`resume_session_id` is null, rerun the phase once with its original input plus
+the question and answer. Stop on `blocked` or `failed`; never reorder or otherwise
+retry a phase automatically.

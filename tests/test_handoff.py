@@ -69,6 +69,18 @@ class HandoffTests(unittest.TestCase):
         self.assertEqual(set(existing["context"]), {"existing"})
         self.assertIn("CURRENT", existing["context"]["existing"])
 
+    def test_existing_rca_keeps_original_intake_for_reinvestigation(self):
+        prior = comment("rca", "WEAK-RCA", "3")
+        handoff = select_handoff(issue(), [prior], "rca")
+
+        self.assertEqual(
+            set(handoff["context"]),
+            {"intake", "existing", "existing_comment_id"},
+        )
+        self.assertIn("Intake", handoff["context"]["intake"])
+        self.assertIn("WEAK-RCA", handoff["context"]["existing"])
+        self.assertEqual(handoff["context"]["existing_comment_id"], "WEAK-RCA")
+
     def test_missing_or_ambiguous_input_fails_closed(self):
         ambiguous = issue()
         ambiguous["description"] += "\n**Kind:** Feature"

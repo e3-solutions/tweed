@@ -1,7 +1,7 @@
 # Bonaparte
 
 Bonaparte takes one software request from a human-readable Linear issue to a
-reviewed, ready-to-merge GitHub pull request. Each phase starts a fresh local
+reviewed, ready-for-review GitHub pull request. Each phase starts a fresh local
 Codex task; Linear is the durable handoff, and the invoking task sees only a
 bounded JSON receipt.
 

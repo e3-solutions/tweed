@@ -2,9 +2,9 @@
 
 Investigate the bug from the supplied deterministic Linear handoff and publish
 one evidence-backed root cause analysis as its first Bonaparte comment. The runner
-has already selected the issue intake or latest existing RCA. Keep repository
-investigation in isolated subagents so the invoking task receives only the
-bounded receipt.
+has already selected the issue intake or latest existing RCA. Use bounded,
+read-only subagents only for distinct evidence questions so the invoking task
+receives only the bounded receipt.
 
 ## Boundaries
 
@@ -15,50 +15,57 @@ bounded receipt.
   Do not fetch other issue content or comments. Children must not use Linear.
 - Do not change the issue title or description, modify project files, install
   dependencies, add helper code, create a branch, propose a fix, or implement
-  anything.
-- Use existing repository tools, tests, history, logs, and configuration.
+  anything. All diagnostics and evidence access must be read-only; do not mutate
+  runtime data, infrastructure, dependencies, providers, or other external state.
+- Use relevant available repository, runtime, data, infrastructure, dependency,
+  and external-service evidence. Start from the affected causal path; do not run
+  broad source or telemetry scans without a material question.
 - Treat the issue report as a symptom, not as a proven explanation.
 - Prefer runtime, test, repository, configuration, and history evidence over
   agent opinion.
-- Inspect available evidence before asking the user. Ask only when one material
-  fact cannot be discovered from the repository or issue.
+- Inspect available evidence and tools before asking the user. Ask only when one
+  material fact cannot be discovered through an authorized source.
 
 ## Investigation workflow
 
 1. Read the supplied intake and record the exact reported behavior, expected
    behavior when known, affected surface, reproduction details, environment,
-   constraints, and supplied evidence. Do not silently fill gaps.
+   constraints, and supplied evidence. Identify the exact affected artifact,
+   incident window, and correlation identifiers when applicable. Mark unknowns;
+   do not silently fill gaps or attach evidence from a merely similar artifact.
 2. Record the absolute repository path, Git `HEAD`, and whether the worktree is
    clean or dirty. Treat dirty and untracked files as live state rather than as
    evidence from `HEAD`, and disclose when they affect the finding.
-3. Spawn independent read-only investigators, without inherited conversation,
-   for the distinct jobs the problem requires. Usually cover:
-   - reproduction or precise symptom characterization;
-   - execution-path, state, configuration, dependency, and history tracing; and
-   - falsification of the leading explanation and strongest credible
-     alternative.
-4. Run independent work concurrently when possible, or in blind waves. Give
-   each child only the issue facts, repository path, its assignment, the
-   read-only boundary, and the evidence standard. Do not reveal another
-   investigator's conclusion before its first return.
-5. Require each return to be at most 500 words and contain only:
+3. Trace only boundaries implicated by the reported path. For lifecycle-based
+   integrations such as subscriptions, leases, tokens, or webhooks, follow
+   create, persist, renew or reconnect, expire or revoke, and deliver. Correlate
+   local and dependency/provider telemetry or status by timestamp or request ID.
+4. Use zero to three read-only investigators, combining related work for a
+   narrow path. Delegate only distinct questions about artifact/timeline,
+   execution or runtime boundaries, or falsifying the leading explanation.
+5. Brief each child under the coordinator's delegation policy. Additionally name
+   the diagnostic and what would support or falsify the claim. Keep initial
+   conclusions blind when that reduces anchoring.
+6. Require each return to be at most 500 words and contain only:
 
    ```text
    Conclusion: precise claim
-   Evidence: diagnostic result and file:line references
+   Evidence: diagnostic result and source/location (`file:line` when applicable)
    Confidence: high | medium | low, with reason
    Missing: missing evidence or none
    Relationship: supports | challenges | unresolved
    ```
 
-6. Reconcile the independent results. Identify the best-supported causal chain,
+7. Reconcile the independent results. Identify the best-supported causal chain,
    the strongest credible alternative, contradictions, and the exact evidence
-   still missing from the completion gate.
-7. Use a targeted follow-up investigator only when a concrete diagnostic can
+   still missing from the completion gate. Route each material gap to an
+   available diagnostic, one user-only fact, or a specifically unavailable
+   source; do not confuse an unattempted query with unavailable evidence.
+8. Use a targeted follow-up investigator only when a concrete diagnostic can
    resolve a named gap or contradiction. Share relevant claims and evidence,
    not raw transcripts. Do not add agents or rounds that cannot change the
    conclusion.
-8. Immediately before reporting, re-read every cited code location and rerun
+9. Immediately before reporting, re-read every cited source and rerun
    the smallest confirming diagnostic when feasible. If relevant repository
    state changed during the investigation, reconcile the conclusion against the
    new state.
@@ -73,22 +80,32 @@ Call the root cause established only when direct evidence identifies all four:
 - the mechanism connecting that trigger to the observed failure; and
 - why the strongest credible alternative does not fit the evidence.
 
+For a time-dependent incident, identify the artifact and align the cause with its
+window. Static evidence proves susceptibility, not the incident; require a
+reproduction or correlated runtime evidence at the failing boundary. Attempt the
+smallest conclusion-changing diagnostics that can be completed without an
+unbounded wait; otherwise name the smallest unavailable or next diagnostic.
+
 Direct evidence can include a reproduction, execution trace, failing test,
 focused diagnostic, logs, telemetry, or configuration/history records. A
 plausible theory, code smell, or investigator consensus is not enough.
 
 If one user answer could close the evidence gap, return `needs-input` with one
-concise question. Use `summary` to explain why it matters and `next_action` for
-concrete options or an evidence-backed recommendation. Do not write a Linear
-comment yet. If repository work cannot establish the cause and no single answer
-will do so, report `not-established` and name the smallest next diagnostic.
+concise question containing concrete options and the evidence-backed recommended
+answer when one exists, so the user can confirm or correct it. Use `summary` to
+explain why it matters and `next_action` to mirror useful detail. Do not write a
+Linear comment yet. If available authorized evidence cannot establish the cause
+and no single answer will do so, report `not-established` and name the smallest
+next diagnostic. Do not return `not-established` while a targeted, read-only,
+bounded diagnostic could still change the conclusion.
 
 ## First Bonaparte comment
 
-For terminal `established` or `not-established` results, reuse a supplied
-`existing` RCA only if it satisfies the current completion gate and comment
-schema; otherwise return `blocked` and name the missing handoff facts. When no
-existing RCA was supplied, add exactly one comment in this form:
+Treat an `existing` RCA as a hypothesis. Recheck it against the original intake
+and current gate. Reuse it if it passes; otherwise investigate its gaps and
+update `existing_comment_id` only after a fresh terminal result passes. If that
+ID is unavailable, return `blocked`; never append a competing RCA. With no
+existing RCA, add exactly one comment in this form:
 
 After writing, re-read the comment and return `completed` only if it matches
 this schema and contains the evidence required by the completion gate.
