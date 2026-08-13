@@ -72,11 +72,12 @@ best-effort liveness; it carries no review result, never replaces the single
 bounded stdout receipt, and its absence or failure requires no retry or
 fallback. The invoking task remains thin and waits for the final receipt.
 
-Every phase returns control within five minutes by default. Do not pass
-`--extended` unless the user explicitly authorizes a longer single phase. The
-runner emits privacy-bounded progress on stderr (or the trusted progress
-descriptor) and stops the whole coordinator process tree at the deadline. A
-deadline receipt is a stop condition: report it and do not silently rerun.
+The runner emits privacy-bounded live task activity on stderr (or the trusted
+progress descriptor). Surface those events as compact updates while the command
+remains pending. They expose only safe task categories and status, never model
+text, command content, arguments, output, paths, services, customer data, or
+secrets. Do not add an arbitrary time limit. On interruption, the runner stops
+the whole coordinator process tree before returning its receipt.
 
 On `needs-input`, ask only `question`. If `resume_session_id` is present,
 continue the same coordinator once:

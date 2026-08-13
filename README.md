@@ -148,18 +148,22 @@ between them. Any `needs-input`, `blocked`, or failed phase stops the chain.
 After `needs-input`, `resume` continues the same coordinator session with the
 answer instead of restarting its investigation.
 
-## Bounded phases and liveness
+## Live task activity and liveness
 
-Every phase has a five-minute hard execution budget by default. Bonaparte tells
-the coordinator not to begin work that cannot finish inside that quantum and
-stops the entire coordinator process group at the deadline, so children cannot
-continue as orphans. Use `--extended` only when the user explicitly authorizes
-a longer operation; it raises the single-phase budget to 30 minutes.
+Bonaparte does not impose an arbitrary phase deadline. It keeps the phase
+attached until completion or user interruption and stops the entire coordinator
+process group when interrupted, so child tasks cannot continue as orphans.
 
-All phases emit privacy-bounded lifecycle progress every ten seconds. When a
-trusted host does not provide a progress descriptor, the same safe events are
-written to stderr so an interactive caller never appears hung. Stdout remains
-exactly one final bounded receipt.
+All phases emit privacy-bounded lifecycle progress every ten seconds and live
+task activity as the coordinator works. Activity reports only a safe category
+(`agent`, `tests`, `build`, `version_control`, `repository_command`, or
+`connected_service`) and whether that task started, completed, or failed. It
+never forwards prompts, model messages, commands, arguments, output, paths,
+service names, issue/customer data, URLs, contacts, or secrets.
+
+When a trusted host does not provide a progress descriptor, the same safe events
+are written to stderr so an interactive caller can display actual progress.
+Stdout remains exactly one final bounded receipt.
 
 ## Trusted-host progress channel
 
@@ -179,12 +183,10 @@ rounded to milliseconds.
 `state` is one of `started`, `active`, `finalizing`, `completed`, `needs-input`,
 `blocked`, `failed`, or `interrupted`.
 
-Emission is best effort: `started` is immediate, `active` is a periodic
-heartbeat every 10 seconds while the coordinator runs, and `finalizing` follows
-heartbeat shutdown and join. At most one terminal event follows, and it matches
-the validated final receipt. The channel contains no prompts, model events,
-issue or customer data, repository contents or paths, command output, secrets,
-URLs, or contact details.
+Emission is best effort: `started` is immediate, `active` includes both the
+periodic heartbeat and sanitized task events, and `finalizing` follows heartbeat
+shutdown and join. Task events add only `task` and `task_status`. At most one
+terminal event follows, and it matches the validated final receipt.
 
 The host-supplied descriptor must already be nonblocking; Bonaparte rejects a
 blocking descriptor without changing its blocking mode. An invalid descriptor

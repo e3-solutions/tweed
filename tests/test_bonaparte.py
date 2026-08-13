@@ -7,7 +7,6 @@ import os
 import subprocess
 import sys
 import tempfile
-import time
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -139,26 +138,7 @@ class BonaparteRunnerTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "non-empty model"):
             RUNNER.resolve_model("  ")
 
-    def test_extended_mode_requires_explicit_cli_flag(self):
-        with (
-            mock.patch.object(sys, "argv", ["bonaparte", "RCA", "COR-1"]),
-            mock.patch.dict(os.environ, {}, clear=True),
-        ):
-            *_, default_timeout = RUNNER.parse()
-        with (
-            mock.patch.object(
-                sys,
-                "argv",
-                ["bonaparte", "--extended", "RCA", "COR-1"],
-            ),
-            mock.patch.dict(os.environ, {}, clear=True),
-        ):
-            *_, extended_timeout = RUNNER.parse()
-
-        self.assertEqual(default_timeout, RUNNER.DEFAULT_PHASE_TIMEOUT_SECONDS)
-        self.assertEqual(extended_timeout, RUNNER.EXTENDED_PHASE_TIMEOUT_SECONDS)
-
-    def test_deadline_stops_the_entire_coordinator_process_group(self):
+    def test_cancellation_stops_the_entire_coordinator_process_group(self):
         with tempfile.TemporaryDirectory() as temporary:
             temporary_path = Path(temporary)
             marker = temporary_path / "orphan-ran"
@@ -171,22 +151,41 @@ class BonaparteRunnerTests(unittest.TestCase):
                 "pathlib.Path(r'%s').write_text('orphan')\" % marker])\n"
                 "time.sleep(60)\n"
             )
-            with tempfile.TemporaryFile(mode="w+", encoding="utf-8") as events:
-                with self.assertRaisesRegex(
-                    RUNNER.PhaseDeadlineExceeded,
-                    "process tree was stopped",
-                ):
-                    RUNNER.run_coordinator(
-                        [sys.executable, str(coordinator), str(marker)],
-                        repository=ROOT,
-                        environment=os.environ.copy(),
-                        prompt="",
-                        stdout=events,
-                        stderr=subprocess.PIPE,
-                        timeout_seconds=0.1,
-                    )
-            time.sleep(0.5)
+            process = subprocess.Popen(
+                [sys.executable, str(coordinator), str(marker)],
+                start_new_session=True,
+            )
+            RUNNER.stop_process_group(process)
+            process.wait(timeout=2)
+            subprocess.run(["sleep", "0.5"], check=True)
             self.assertFalse(marker.exists())
+
+    def test_activity_classification_never_forwards_event_content(self):
+        command = {
+            "type": "item.started",
+            "item": {
+                "type": "command_execution",
+                "command": "yarn test --token super-secret",
+            },
+        }
+        service = {
+            "type": "item.completed",
+            "item": {
+                "type": "mcp_tool_call",
+                "server": "private-customer-system",
+                "status": "failed",
+            },
+        }
+        self.assertEqual(RUNNER.classify_activity(command), ("tests", "started"))
+        self.assertEqual(
+            RUNNER.classify_activity(service),
+            ("connected_service", "failed"),
+        )
+        rendered = json.dumps(
+            [RUNNER.classify_activity(command), RUNNER.classify_activity(service)]
+        )
+        self.assertNotIn("super-secret", rendered)
+        self.assertNotIn("private-customer-system", rendered)
 
     def test_all_phases_fall_back_to_bounded_stderr_progress(self):
         stream = io.StringIO()
@@ -380,9 +379,8 @@ class BonaparteRunnerTests(unittest.TestCase):
             mock.patch.object(sys, "argv", argv),
             mock.patch.dict(os.environ, {}, clear=True),
         ):
-            repository, phase, answer, session_id, model, timeout = RUNNER.parse()
+            repository, phase, answer, session_id, model = RUNNER.parse()
         self.assertEqual(model, "gpt-5.6-luna")
-        self.assertEqual(timeout, RUNNER.DEFAULT_PHASE_TIMEOUT_SECONDS)
         observed = {}
 
         def fake_run(command, **kwargs):
@@ -778,7 +776,6 @@ class BonaparteRunnerTests(unittest.TestCase):
                     "Continue.",
                     SESSION_ID,
                     None,
-                    RUNNER.DEFAULT_PHASE_TIMEOUT_SECONDS,
                 ),
             ),
             mock.patch.object(
@@ -826,7 +823,6 @@ class BonaparteRunnerTests(unittest.TestCase):
                     "Continue.",
                     SESSION_ID,
                     None,
-                    RUNNER.DEFAULT_PHASE_TIMEOUT_SECONDS,
                 ),
             ),
             mock.patch.object(
@@ -1202,7 +1198,6 @@ class BonaparteRunnerTests(unittest.TestCase):
                     "x",
                     None,
                     None,
-                    RUNNER.DEFAULT_PHASE_TIMEOUT_SECONDS,
                 ),
             ),
             mock.patch.object(
