@@ -9,7 +9,6 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -77,6 +76,11 @@ class InstallationTests(unittest.TestCase):
     def install(self):
         self.run_command(str(self.source / "install"))
         return (self.home / "current").resolve().name
+
+    def test_release_bundle_requires_the_checkpoint_runtime(self):
+        self.assertIn("bonaparte_checkpoint.py", LAUNCHER.REQUIRED)
+        self.install()
+        self.assertTrue((self.home / "current/bonaparte_checkpoint.py").exists())
 
     def publish(self, tag):
         readme = self.source / "README.md"
