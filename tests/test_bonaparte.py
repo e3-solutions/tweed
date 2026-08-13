@@ -809,6 +809,7 @@ class BonaparteRunnerTests(unittest.TestCase):
                     {},
                     RUNNER.capture_git_state(repository),
                 )
+                checkpoint_branch = checkpoint["branch"]
                 git("checkout", "-qb", "other")
                 with mock.patch.object(RUNNER, "run_phase") as run_phase:
                     result, exit_code = RUNNER.resume_checkpoint(
@@ -826,11 +827,11 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertEqual(result["resume_token"], SESSION_ID)
         self.assertEqual(stored["pending_answer"], "Production")
         self.assertFalse(stored["remote_state_changed"])
-        self.assertEqual(stored["branch"], "main")
+        self.assertEqual(stored["branch"], checkpoint_branch)
         run_phase.assert_not_called()
         self.assertEqual(second_exit, 1)
         self.assertEqual(second["resume_token"], SESSION_ID)
-        self.assertEqual(stored_again["branch"], "main")
+        self.assertEqual(stored_again["branch"], checkpoint_branch)
         second_run.assert_not_called()
 
     def test_checkpoint_uses_the_branch_current_when_the_question_is_asked(self):
