@@ -391,6 +391,42 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertNotIn("-m", observed["command"])
         self.assertNotIn("resume", observed["command"][:3])
 
+    def test_run_phase_failure_exports_the_latest_semantic_snapshot(self):
+        observation = {}
+        progress = RUNNER.ProgressReporter(None, "scope")
+        latest = {
+            "stage": "checking",
+            "actor": "coordinator",
+            "activity": "check",
+            "status": "failed",
+            "count": 3,
+        }
+        process = mock.Mock(stdin=io.BytesIO(), stdout=io.BytesIO())
+
+        def fail_after_progress(_stream, _observer):
+            progress.update_semantic(latest, milestone=True)
+            raise RuntimeError("event drain failed")
+
+        with (
+            mock.patch.object(RUNNER, "_ACTIVE_PROGRESS", progress),
+            mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
+            mock.patch.object(RUNNER.subprocess, "Popen", return_value=process),
+            mock.patch.object(RUNNER, "drain_jsonl", side_effect=fail_after_progress),
+            self.assertRaisesRegex(RuntimeError, "event drain failed"),
+        ):
+            RUNNER.run_phase(
+                ROOT,
+                "scope",
+                "Continue.",
+                SESSION_ID,
+                observation=observation,
+            )
+
+        self.assertEqual(observation["semantic"], latest)
+        self.assertEqual(observation["semantic_milestones"], [latest])
+        self.assertEqual(observation["semantic_milestones_total_count"], 1)
+        self.assertFalse(observation["semantic_milestones_truncated"])
+
     def test_phase_model_and_reasoning_configure_coordinator_and_children(self):
         observed = {}
 
@@ -569,6 +605,64 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertEqual(stored["question"], "Which environment?")
         self.assertIsNone(stored["pending_answer"])
         self.assertEqual(stored["checks_completed_total_count"], 1)
+
+    def test_checkpoint_observation_replaces_only_complete_semantic_snapshots(self):
+        stale_semantic = {
+            "stage": "coordinating",
+            "actor": "coordinator",
+            "activity": "lifecycle",
+            "status": "started",
+            "count": None,
+        }
+        stale_milestone = {**stale_semantic, "status": "completed"}
+        checkpoint = {
+            "semantic": stale_semantic,
+            "semantic_milestones": [stale_milestone],
+            "semantic_milestones_total_count": 1,
+            "semantic_milestones_truncated": False,
+        }
+        latest_semantic = {
+            "stage": "checking",
+            "actor": "coordinator",
+            "activity": "check",
+            "status": "failed",
+            "count": 41,
+        }
+        latest_milestones = [
+            {**latest_semantic, "status": "completed", "count": 40},
+            latest_semantic,
+        ]
+
+        RUNNER._update_checkpoint_observation(
+            checkpoint,
+            {
+                "semantic": latest_semantic,
+                "semantic_milestones": latest_milestones,
+                "semantic_milestones_total_count": 43,
+                "semantic_milestones_truncated": True,
+            },
+        )
+
+        self.assertEqual(checkpoint["semantic"], latest_semantic)
+        self.assertEqual(checkpoint["semantic_milestones"], latest_milestones)
+        self.assertEqual(checkpoint["semantic_milestones_total_count"], 43)
+        self.assertTrue(checkpoint["semantic_milestones_truncated"])
+        retained = {
+            name: checkpoint[name]
+            for name in (
+                "semantic",
+                "semantic_milestones",
+                "semantic_milestones_total_count",
+                "semantic_milestones_truncated",
+            )
+        }
+
+        RUNNER._update_checkpoint_observation(checkpoint, {})
+
+        self.assertEqual(
+            {name: checkpoint[name] for name in retained},
+            retained,
+        )
 
     def test_token_resume_persists_answer_and_reuses_session_and_token(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -1390,6 +1484,62 @@ class BonaparteRunnerTests(unittest.TestCase):
         RUNNER.drain_jsonl(stream, observer)
         self.assertEqual(observer.observation["session_id"], SESSION_ID)
 
+    def test_incremental_drain_ignores_non_string_structural_types(self):
+        observer = RUNNER.EventObserver(RUNNER.ProgressReporter(None, "implement"))
+        records = [
+            {"type": ["item.completed"], "item": {"type": "web_search"}},
+            {"type": "item.completed", "item": {"type": ["web_search"]}},
+            {"type": "thread.started", "thread_id": SESSION_ID},
+        ]
+        stream = io.BytesIO(
+            b"".join(json.dumps(record).encode() + b"\n" for record in records)
+        )
+
+        RUNNER.drain_jsonl(stream, observer)
+
+        self.assertEqual(observer.observation["session_id"], SESSION_ID)
+
+    def test_incremental_drain_observes_a_flushed_event_while_child_is_alive(self):
+        process = subprocess.Popen(
+            [
+                sys.executable,
+                "-c",
+                (
+                    "import json, sys, time; "
+                    f"print(json.dumps({{'type': 'thread.started', "
+                    f"'thread_id': {SESSION_ID!r}}}), flush=True); "
+                    "time.sleep(1.5)"
+                ),
+            ],
+            stdout=subprocess.PIPE,
+        )
+        self.assertIsNotNone(process.stdout)
+        started_at = RUNNER.time.monotonic()
+
+        class RecordingObserver(RUNNER.EventObserver):
+            first_event_elapsed = None
+            child_was_alive = None
+
+            def feed(self, line):
+                if self.first_event_elapsed is None:
+                    self.first_event_elapsed = RUNNER.time.monotonic() - started_at
+                    self.child_was_alive = process.poll() is None
+                super().feed(line)
+
+        observer = RecordingObserver(RUNNER.ProgressReporter(None, "review"))
+        try:
+            RUNNER.drain_jsonl(process.stdout, observer)
+            process.stdout.close()
+            self.assertEqual(process.wait(timeout=3), 0)
+        finally:
+            if process.poll() is None:
+                process.kill()
+                process.wait(timeout=3)
+
+        self.assertEqual(observer.observation["session_id"], SESSION_ID)
+        self.assertTrue(observer.child_was_alive)
+        self.assertLess(observer.first_event_elapsed, 1.5)
+
     def test_progress_reporter_uses_every_phase(self):
         for phase in RUNNER.WORKFLOWS:
             with self.subTest(phase=phase):
@@ -1551,27 +1701,24 @@ class BonaparteRunnerTests(unittest.TestCase):
                 ["started"],
             )
 
-    def test_receipt_size_boundary_is_review_only(self):
-        baseline_accepted = {"x": "a" * 4088}
-        serialized = RUNNER.serialize_receipt(baseline_accepted)
+    def test_receipt_size_boundary_includes_the_emitted_newline(self):
+        accepted = {"x": "a" * 4087}
+        serialized = RUNNER.serialize_receipt(accepted)
         stdout = io.StringIO()
         with mock.patch.object(sys, "stdout", stdout):
             RUNNER.emit_serialized(serialized)
 
         raw_output = stdout.getvalue().encode("utf-8")
-        self.assertEqual(len(serialized.encode("utf-8")), RUNNER.RECEIPT_MAX_BYTES)
-        self.assertEqual(len(raw_output), RUNNER.RECEIPT_MAX_BYTES + 1)
+        self.assertEqual(len(raw_output), RUNNER.RECEIPT_MAX_BYTES)
         self.assertTrue(raw_output.endswith(b"\n"))
-        self.assertEqual(json.loads(raw_output), baseline_accepted)
+        self.assertEqual(json.loads(raw_output), accepted)
 
-        review_accepted = {"x": "a" * 4087}
-        review_serialized = RUNNER.serialize_review_receipt(review_accepted)
-        self.assertEqual(
-            len((review_serialized + "\n").encode("utf-8")),
-            RUNNER.RECEIPT_MAX_BYTES,
-        )
+        oversized = {"x": "a" * 4088}
+        self.assertEqual(RUNNER.serialize_review_receipt(accepted), serialized)
         with self.assertRaisesRegex(RuntimeError, "receipt exceeded 4 KiB"):
-            RUNNER.serialize_review_receipt(baseline_accepted)
+            RUNNER.serialize_receipt(oversized)
+        with self.assertRaisesRegex(RuntimeError, "receipt exceeded 4 KiB"):
+            RUNNER.serialize_review_receipt(oversized)
 
     def test_main_uses_review_serializer_only_after_review_is_selected(self):
         cases = (

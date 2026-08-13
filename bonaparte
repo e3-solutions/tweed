@@ -241,18 +241,19 @@ def find_codex() -> str:
     raise RuntimeError("no working local Codex CLI found")
 
 
-def serialize_receipt(receipt: dict) -> str:
-    output = json.dumps(receipt, ensure_ascii=False, separators=(",", ":"))
-    if len(output.encode("utf-8")) > RECEIPT_MAX_BYTES:
-        raise RuntimeError("receipt exceeded 4 KiB")
-    return output
-
-
-def serialize_review_receipt(receipt: dict) -> str:
+def _serialize_receipt(receipt: dict) -> str:
     output = json.dumps(receipt, ensure_ascii=False, separators=(",", ":"))
     if len((output + "\n").encode("utf-8")) > RECEIPT_MAX_BYTES:
         raise RuntimeError("receipt exceeded 4 KiB")
     return output
+
+
+def serialize_receipt(receipt: dict) -> str:
+    return _serialize_receipt(receipt)
+
+
+def serialize_review_receipt(receipt: dict) -> str:
+    return _serialize_receipt(receipt)
 
 
 def emit_serialized(output: str) -> None:
@@ -851,6 +852,8 @@ class EventObserver:
         if not isinstance(event, dict):
             return
         event_type = event.get("type")
+        if not isinstance(event_type, str):
+            event_type = None
         if event_type == "thread.started" and isinstance(
             event.get("thread_id"), str
         ):
@@ -859,6 +862,8 @@ class EventObserver:
         if not isinstance(item, dict):
             return
         item_type = item.get("type")
+        if not isinstance(item_type, str):
+            item_type = None
         status = {
             "item.started": "started",
             "item.completed": "completed",
@@ -963,8 +968,10 @@ def drain_jsonl(stream, observer: EventObserver) -> None:
     """Drain a binary JSONL stream through EOF with bounded per-line retention."""
     retained = bytearray()
     discarding = False
+    read_available = getattr(stream, "read1", None)
+    read_chunk = read_available if callable(read_available) else stream.read
     while True:
-        chunk = stream.read(65536)
+        chunk = read_chunk(65536)
         if not chunk:
             break
         for byte in chunk:
@@ -1195,7 +1202,7 @@ def run_phase(
                 returncode = process.wait()
             except BaseException:
                 if observation is not None:
-                    observation.update(observer.observation)
+                    observation.update(observer.finish())
                 raise
             observed = observer.finish()
             if observation is not None:
@@ -1269,6 +1276,38 @@ def _combine_remote(previous: bool | None, current: bool | None) -> bool | None:
 
 
 def _update_checkpoint_observation(checkpoint: dict, observation: dict) -> None:
+    semantic = observation.get("semantic")
+    milestones = observation.get("semantic_milestones")
+    milestones_total = observation.get("semantic_milestones_total_count")
+    milestones_truncated = observation.get("semantic_milestones_truncated")
+
+    def valid_semantic(value: object) -> bool:
+        if not isinstance(value, dict) or _safe_semantic(value) != value:
+            return False
+        actor = value["actor"]
+        return not (
+            isinstance(actor, str)
+            and actor.startswith("subagent-")
+            and int(actor.removeprefix("subagent-")) > 2**31 - 1
+        )
+
+    if (
+        valid_semantic(semantic)
+        and isinstance(milestones, list)
+        and len(milestones) <= PROGRESS_MAX_MILESTONES
+        and all(valid_semantic(item) for item in milestones)
+        and type(milestones_total) is int
+        and len(milestones) <= milestones_total <= 2**31 - 1
+        and type(milestones_truncated) is bool
+        and (milestones_truncated or milestones_total == len(milestones))
+    ):
+        checkpoint.update(
+            semantic=dict(semantic),
+            semantic_milestones=[dict(item) for item in milestones],
+            semantic_milestones_total_count=milestones_total,
+            semantic_milestones_truncated=milestones_truncated,
+        )
+
     existing = checkpoint.get("checks_completed") or []
     additions = observation.get("checks_completed") or []
     combined = [
