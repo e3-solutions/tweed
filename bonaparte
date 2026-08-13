@@ -20,22 +20,55 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from bonaparte_checkpoint import (
+    VERSION as CHECKPOINT_VERSION,
     checkpoint_lease,
     checkpoint_path,
     read_checkpoint,
     write_checkpoint,
 )
 
+_ACTIVE_PROGRESS: ProgressReporter | None = None
+
 COORDINATOR_EFFORT = "medium"
 PHASE_CHILD_ENV = "BONAPARTE_PHASE_CHILD"
 PROGRESS_FD_ENV = "BONAPARTE_PROGRESS_FD"
-PROGRESS_VERSION = 1
+PROGRESS_VERSION = 2
 PROGRESS_HEARTBEAT_SECONDS = 10.0
 PROGRESS_MAX_BYTES = 4096
 RECEIPT_MAX_BYTES = 4096
 MAX_EVENT_CHARACTERS = 4 * 1024 * 1024
 MAX_CHANGED_FILES = 500
 MAX_COMPLETED_CHECKS = 100
+PROGRESS_MAX_LINE_BYTES = 1024 * 1024
+PROGRESS_MAX_MILESTONES = 32
+PROGRESS_STAGES = {
+    "coordinating",
+    "searching",
+    "tool-use",
+    "checking",
+    "file-changes",
+    "subagent-assignment",
+    "subagent-completion",
+    "waiting-input",
+    "finalizing",
+    "terminal",
+}
+PROGRESS_ACTIVITIES = {
+    "lifecycle",
+    "search",
+    "tool",
+    "check",
+    "file-change",
+    "subagent",
+}
+PROGRESS_STATUSES = {
+    "started",
+    "in-progress",
+    "completed",
+    "failed",
+    "waiting",
+    "interrupted",
+}
 PROGRESS_STATES = {
     "started",
     "active",
@@ -231,11 +264,48 @@ def emit(receipt: dict) -> None:
     emit_serialized(serialize_receipt(receipt))
 
 
-class ProgressReporter:
-    """Emit privacy-bounded review lifecycle events to an isolated descriptor."""
+def _safe_semantic(value: dict | None) -> dict:
+    """Return only the fixed, string-free semantic progress vocabulary."""
+    if not isinstance(value, dict) or value.get("stage") not in PROGRESS_STAGES:
+        return {
+            "stage": "coordinating",
+            "actor": "coordinator",
+            "activity": "lifecycle",
+            "status": "in-progress",
+            "count": None,
+        }
+    semantic = {
+        "stage": value["stage"],
+        "actor": None,
+        "activity": None,
+        "status": None,
+        "count": None,
+    }
+    actor = value.get("actor")
+    if actor == "coordinator" or (
+        isinstance(actor, str)
+        and actor.startswith("subagent-")
+        and actor.removeprefix("subagent-").isascii()
+        and actor.removeprefix("subagent-").isdecimal()
+        and int(actor.removeprefix("subagent-")) > 0
+    ):
+        semantic["actor"] = actor
+    if value.get("activity") in PROGRESS_ACTIVITIES:
+        semantic["activity"] = value["activity"]
+    if value.get("status") in PROGRESS_STATUSES:
+        semantic["status"] = value["status"]
+    count = value.get("count")
+    if isinstance(count, int) and not isinstance(count, bool) and count >= 0:
+        semantic["count"] = min(count, 2**31 - 1)
+    return semantic
 
-    def __init__(self, descriptor: int | None):
+
+class ProgressReporter:
+    """Emit privacy-bounded semantic lifecycle events to an isolated descriptor."""
+
+    def __init__(self, descriptor: int | None, phase: str = "review"):
         self._descriptor = descriptor
+        self._phase = phase if phase in WORKFLOWS else "review"
         self._started_at = time.monotonic()
         self._sequence = 0
         self._last_state: str | None = None
@@ -245,6 +315,17 @@ class ProgressReporter:
         self._heartbeat: threading.Thread | None = None
         self._start_attempted = False
         self._heartbeat_running = threading.Event()
+        self._semantic = _safe_semantic(
+            {
+                "stage": "coordinating",
+                "actor": "coordinator",
+                "activity": "lifecycle",
+                "status": "started",
+            }
+        )
+        self._milestones: list[dict] = []
+        self._milestones_total_count = 0
+        self._milestones_truncated = False
 
     def _disable_locked(self) -> None:
         descriptor, self._descriptor = self._descriptor, None
@@ -253,6 +334,48 @@ class ProgressReporter:
                 os.close(descriptor)
             except OSError:
                 pass
+
+    def update_semantic(self, semantic: dict, *, milestone: bool = False) -> None:
+        safe = _safe_semantic(semantic)
+        with self._lock:
+            self._semantic = safe
+            if milestone and safe not in self._milestones:
+                self._milestones_total_count += 1
+                self._milestones.append(dict(safe))
+                if len(self._milestones) > PROGRESS_MAX_MILESTONES:
+                    del self._milestones[0]
+                    self._milestones_truncated = True
+
+    def restore_semantic(self, checkpoint: dict) -> None:
+        safe = _safe_semantic(checkpoint.get("semantic"))
+        milestones = checkpoint.get("semantic_milestones")
+        if not isinstance(milestones, list):
+            milestones = []
+        with self._lock:
+            self._semantic = safe
+            self._milestones = []
+            for value in milestones[-PROGRESS_MAX_MILESTONES:]:
+                item = _safe_semantic(value)
+                if item not in self._milestones:
+                    self._milestones.append(item)
+            total = checkpoint.get("semantic_milestones_total_count", len(self._milestones))
+            self._milestones_total_count = (
+                total if isinstance(total, int) and not isinstance(total, bool) and total >= len(self._milestones)
+                else len(self._milestones)
+            )
+            self._milestones_truncated = bool(
+                checkpoint.get("semantic_milestones_truncated")
+                or self._milestones_total_count > len(self._milestones)
+            )
+
+    def snapshot(self) -> dict:
+        with self._lock:
+            return {
+                "semantic": dict(self._semantic),
+                "semantic_milestones": [dict(item) for item in self._milestones],
+                "semantic_milestones_total_count": self._milestones_total_count,
+                "semantic_milestones_truncated": self._milestones_truncated,
+            }
 
     def report(self, state: str) -> None:
         if state not in PROGRESS_STATES:
@@ -277,12 +400,21 @@ class ProgressReporter:
             event = {
                 "version": PROGRESS_VERSION,
                 "sequence": sequence,
-                "phase": "review",
+                "phase": self._phase,
                 "state": state,
                 "elapsed_seconds": round(
                     max(0.0, time.monotonic() - self._started_at), 3
                 ),
+                "semantic": dict(self._semantic),
             }
+            if self._milestones:
+                event["semantic"]["milestones"] = [dict(item) for item in self._milestones]
+                event["semantic"]["milestones_total_count"] = self._milestones_total_count
+                event["semantic"]["milestones_truncated"] = self._milestones_truncated
+            if state == "finalizing":
+                event["semantic"].update(stage="finalizing", activity="lifecycle", status="in-progress", count=None)
+            elif state in PROGRESS_TERMINAL_STATES:
+                event["semantic"].update(stage="terminal", activity="lifecycle", status="completed" if state == "completed" else "interrupted" if state == "interrupted" else "failed", count=None)
             try:
                 payload = (
                     json.dumps(event, ensure_ascii=False, separators=(",", ":"))
@@ -291,6 +423,13 @@ class ProgressReporter:
             except (TypeError, ValueError, UnicodeError, OverflowError):
                 self._disable_locked()
                 return
+            while len(payload) > PROGRESS_MAX_BYTES and event["semantic"].get("milestones"):
+                del event["semantic"]["milestones"][0]
+                event["semantic"]["milestones_truncated"] = True
+                payload = (json.dumps(event, ensure_ascii=False, separators=(",", ":")) + "\n").encode("utf-8")
+            if len(payload) > PROGRESS_MAX_BYTES:
+                event["semantic"] = _safe_semantic(self._semantic)
+                payload = (json.dumps(event, ensure_ascii=False, separators=(",", ":")) + "\n").encode("utf-8")
             if len(payload) > PROGRESS_MAX_BYTES:
                 self._disable_locked()
                 return
@@ -359,7 +498,7 @@ class ProgressReporter:
             self._disable_locked()
 
 
-def acquire_progress_reporter(enabled: bool) -> ProgressReporter:
+def acquire_progress_reporter(enabled: bool = True, phase: str = "review") -> ProgressReporter:
     """Consume the inherited descriptor without ever exposing it to a child."""
 
     raw_descriptor = os.environ.pop(PROGRESS_FD_ENV, None)
@@ -368,19 +507,19 @@ def acquire_progress_reporter(enabled: bool) -> ProgressReporter:
         or not raw_descriptor.isascii()
         or not raw_descriptor.isdecimal()
     ):
-        return ProgressReporter(None)
+        return ProgressReporter(None, phase)
     try:
         original = int(raw_descriptor)
     except ValueError:
-        return ProgressReporter(None)
+        return ProgressReporter(None, phase)
     if original < 3:
-        return ProgressReporter(None)
+        return ProgressReporter(None, phase)
     if not enabled:
         try:
             os.close(original)
         except (OSError, OverflowError):
             pass
-        return ProgressReporter(None)
+        return ProgressReporter(None, phase)
     duplicate = None
     try:
         duplicate = os.dup(original)
@@ -400,7 +539,7 @@ def acquire_progress_reporter(enabled: bool) -> ProgressReporter:
             os.close(original)
         except (OSError, OverflowError):
             pass
-    return ProgressReporter(duplicate)
+    return ProgressReporter(duplicate, phase)
 
 
 def call_linear(repository: Path, issue_identifier: str) -> tuple[dict, list[dict]]:
@@ -682,38 +821,69 @@ def capture_git_state(repository: Path, base_head: str | None = None) -> dict:
     }
 
 
-def observe_events(events) -> dict:
-    observation = {
+class EventObserver:
+    """Incrementally observe native JSONL without retaining native event text."""
+
+    def __init__(self, progress: ProgressReporter | None = None):
+        self.observation = {
         "session_id": None,
         "checks_completed": [],
         "checks_completed_total_count": 0,
         "checks_completed_truncated": False,
-    }
-    events.flush()
-    events.seek(0)
-    characters = 0
-    for line in events:
-        characters += len(line)
-        if characters > MAX_EVENT_CHARACTERS:
-            observation["checks_completed_truncated"] = True
-            break
+        }
+        self._progress = progress or _ACTIVE_PROGRESS
+        self._counts = {name: 0 for name in PROGRESS_ACTIVITIES if name != "lifecycle"}
+        self._actors: dict[str, str] = {}
+
+    def _actor(self, item: dict) -> str:
+        identifier = item.get("id") or item.get("agent_id") or item.get("thread_id")
+        if not isinstance(identifier, str):
+            return "coordinator"
+        if identifier not in self._actors:
+            self._actors[identifier] = f"subagent-{len(self._actors) + 1}"
+        return self._actors[identifier]
+
+    def feed(self, line: str) -> None:
         try:
             event = json.loads(line)
-        except json.JSONDecodeError:
-            continue
+        except (json.JSONDecodeError, UnicodeError):
+            return
+        if not isinstance(event, dict):
+            return
         event_type = event.get("type")
         if event_type == "thread.started" and isinstance(
             event.get("thread_id"), str
         ):
-            observation["session_id"] = event["thread_id"]
+            self.observation["session_id"] = event["thread_id"]
         item = event.get("item")
         if not isinstance(item, dict):
-            continue
+            return
         item_type = item.get("type")
-        if event_type != "item.completed":
-            continue
-        if item_type != "command_execution":
-            continue
+        status = {
+            "item.started": "started",
+            "item.completed": "completed",
+            "item.failed": "failed",
+        }.get(event_type)
+        mapping = {
+            "web_search": ("searching", "search"),
+            "mcp_tool_call": ("tool-use", "tool"),
+            "file_change": ("file-changes", "file-change"),
+            "command_execution": ("tool-use", "tool"),
+            "subagent_assignment": ("subagent-assignment", "subagent"),
+            "subagent_completion": ("subagent-completion", "subagent"),
+        }
+        mapped = mapping.get(item_type)
+        if status and mapped:
+            stage, activity = mapped
+            actor = self._actor(item) if activity == "subagent" else "coordinator"
+            self._counts[activity] += 1
+            if self._progress is not None:
+                self._progress.update_semantic(
+                    {"stage": stage, "actor": actor, "activity": activity, "status": status, "count": self._counts[activity]},
+                    milestone=status in {"completed", "failed"},
+                )
+        if event_type != "item.completed" or item_type != "command_execution":
+            return
         command = str(item.get("command") or "")[:300]
         exit_code = item.get("exit_code")
         try:
@@ -748,9 +918,9 @@ def observe_events(events) -> dict:
             )
         )
         if not (known_runner or known_subcommand):
-            continue
-        observation["checks_completed_total_count"] += 1
-        checks = observation["checks_completed"]
+            return
+        self.observation["checks_completed_total_count"] += 1
+        checks = self.observation["checks_completed"]
         if len(checks) < MAX_COMPLETED_CHECKS:
             checks.append(
                 {
@@ -760,8 +930,56 @@ def observe_events(events) -> dict:
                 }
             )
         else:
-            observation["checks_completed_truncated"] = True
-    return observation
+            self.observation["checks_completed_truncated"] = True
+        self._counts["check"] += 1
+        if self._progress is not None:
+            self._progress.update_semantic(
+                {"stage": "checking", "actor": "coordinator", "activity": "check", "status": "completed" if exit_code == 0 else "failed", "count": self._counts["check"]},
+                milestone=True,
+            )
+
+    def finish(self) -> dict:
+        if self._progress is not None:
+            self.observation.update(self._progress.snapshot())
+        return self.observation
+
+
+def observe_events(events, progress: ProgressReporter | None = None) -> dict:
+    observer = EventObserver(progress)
+    events.flush()
+    events.seek(0)
+    characters = 0
+    for line in events:
+        characters += len(line)
+        if characters > MAX_EVENT_CHARACTERS:
+            observer.observation["checks_completed_truncated"] = True
+            break
+        if len(line.encode("utf-8")) <= PROGRESS_MAX_LINE_BYTES:
+            observer.feed(line)
+    return observer.finish()
+
+
+def drain_jsonl(stream, observer: EventObserver) -> None:
+    """Drain a binary JSONL stream through EOF with bounded per-line retention."""
+    retained = bytearray()
+    discarding = False
+    while True:
+        chunk = stream.read(65536)
+        if not chunk:
+            break
+        for byte in chunk:
+            if byte == 10:
+                if not discarding:
+                    observer.feed(retained.decode("utf-8", "ignore"))
+                retained.clear()
+                discarding = False
+            elif not discarding:
+                retained.append(byte)
+                if len(retained) > PROGRESS_MAX_LINE_BYTES:
+                    retained.clear()
+                    discarding = True
+    if retained and not discarding:
+        observer.feed(retained.decode("utf-8", "ignore"))
 
 
 def child_environment() -> dict[str, str]:
@@ -956,41 +1174,50 @@ def run_phase(
             if resume_session_id
             else ["--color", "never", "-"]
         )
-        with tempfile.TemporaryFile(mode="w+", encoding="utf-8") as events:
+        with tempfile.TemporaryFile(mode="w+", encoding="utf-8") as diagnostics:
+            stderr_target = subprocess.DEVNULL if phase == "review" else diagnostics
+            observer = EventObserver()
             try:
-                result = subprocess.run(
+                process = subprocess.Popen(
                     command,
                     cwd=repository,
                     env=child_environment(),
-                    input=prompt,
-                    text=True,
-                    stdout=events,
-                    stderr=(
-                        subprocess.DEVNULL if phase == "review" else subprocess.PIPE
-                    ),
-                    check=False,
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=stderr_target,
                 )
+                if process.stdin is None or process.stdout is None:
+                    raise RuntimeError("Codex coordinator pipes are unavailable")
+                process.stdin.write(prompt.encode("utf-8"))
+                process.stdin.close()
+                drain_jsonl(process.stdout, observer)
+                process.stdout.close()
+                returncode = process.wait()
             except BaseException:
                 if observation is not None:
-                    observation.update(observe_events(events))
+                    observation.update(observer.observation)
                 raise
-            observed = observe_events(events)
+            observed = observer.finish()
             if observation is not None:
                 observation.update(observed)
             session_id = observed["session_id"] or resume_session_id
+            diagnostics.flush()
+            diagnostics.seek(0)
+            diagnostic_lines = diagnostics.read().strip().splitlines()
         if (
             resume_session_id
             and observed["session_id"]
             and observed["session_id"] != resume_session_id
         ):
             raise RuntimeError("Codex resumed a different session")
-        if result.returncode:
+        if returncode:
             if phase == "review":
                 raise RuntimeError(
-                    f"{phase} coordinator failed (exit status {result.returncode})"
+                    f"{phase} coordinator failed (exit status {returncode})"
                 )
-            detail = result.stderr.strip().splitlines()
-            raise RuntimeError(detail[-1][:800] if detail else f"{phase} failed")
+            raise RuntimeError(
+                diagnostic_lines[-1][:800] if diagnostic_lines else f"{phase} failed"
+            )
         receipt = json.loads(receipt_path.read_text())
 
     if phase == "review":
@@ -1097,7 +1324,7 @@ def new_question_checkpoint(
     if not current_git["git_dir"]:
         raise RuntimeError("checkpoint repository identity is unavailable")
     checkpoint = {
-        "version": 1,
+        "version": CHECKPOINT_VERSION,
         "token": session_id,
         "status": "waiting-input",
         "phase": phase,
@@ -1121,6 +1348,16 @@ def new_question_checkpoint(
         "blocker": receipt["question"],
         "remote_state_changed": receipt.get("remote_state_changed"),
         "updated_at": utc_now(),
+        "semantic": observation.get("semantic"),
+        "semantic_milestones": list(
+            (observation.get("semantic_milestones") or [])[-PROGRESS_MAX_MILESTONES:]
+        ),
+        "semantic_milestones_total_count": observation.get(
+            "semantic_milestones_total_count", 0
+        ),
+        "semantic_milestones_truncated": bool(
+            observation.get("semantic_milestones_truncated")
+        ),
     }
     _update_checkpoint_observation(checkpoint, observation)
     checkpoint["activity"] = "waiting-user"
@@ -1489,6 +1726,7 @@ def fail(summary: str) -> dict:
 
 
 def main() -> int:
+    global _ACTIVE_PROGRESS
     progress = ProgressReporter(None)
     exit_code = 0
     selected_phase = None
@@ -1520,9 +1758,9 @@ def main() -> int:
                             "legacy resume phase does not match its checkpoint"
                         )
                     selected_phase = checkpoint["phase"]
-                    progress = acquire_progress_reporter(
-                        selected_phase == "review"
-                    )
+                    progress = acquire_progress_reporter(True, selected_phase)
+                    progress.restore_semantic(checkpoint)
+                    _ACTIVE_PROGRESS = progress
                     progress.start()
                     result_receipt, exit_code = resume_checkpoint(
                         checkpoint,
@@ -1533,7 +1771,8 @@ def main() -> int:
             elif session_id is not None:
                 selected_model = resolve_model(selected_model)
                 selected_reasoning = resolve_reasoning(selected_reasoning)
-                progress = acquire_progress_reporter(selected_phase == "review")
+                progress = acquire_progress_reporter(True, selected_phase)
+                _ACTIVE_PROGRESS = progress
                 progress.start()
                 result_receipt = run_and_checkpoint(
                     repo,
@@ -1544,7 +1783,8 @@ def main() -> int:
                     selected_reasoning,
                 )
             else:
-                progress = acquire_progress_reporter(selected_phase == "review")
+                progress = acquire_progress_reporter(True, selected_phase)
+                _ACTIVE_PROGRESS = progress
                 progress.start()
                 result_receipt = run_and_checkpoint(
                     repo,
@@ -1594,6 +1834,7 @@ def main() -> int:
         progress.report(terminal_state)
         return exit_code
     finally:
+        _ACTIVE_PROGRESS = None
         progress.close()
 
 

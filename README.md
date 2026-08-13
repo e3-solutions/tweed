@@ -167,37 +167,85 @@ ambiguous, Bonaparte preserves the pending answer and reports the token instead
 of silently restarting the phase. Token resumes reuse the saved model and
 reasoning unless an explicit override is supplied.
 
-## Review liveness for trusted hosts
+## Semantic progress for trusted hosts
 
-Review has an optional, host-controlled liveness channel. Before launching
-Bonaparte, a trusted host may open a writable file descriptor numbered 3 or
-higher, configure it as nonblocking, explicitly inherit it into the launcher,
-and set
+Every fresh or resumed create, RCA, scope, implement, review, and publish run
+has an optional, host-controlled progress channel. Before launching Bonaparte,
+a trusted host may open a writable file descriptor numbered 3 or higher,
+configure it as nonblocking, explicitly inherit it into the launcher, and set
 `BONAPARTE_PROGRESS_FD` to that descriptor number. The launcher preserves the
-descriptor when it replaces itself with the runner. Update subprocesses do not
-inherit it. This ABI is review-only: other phases emit no progress events.
+descriptor when it replaces itself with the final runner. Update subprocesses
+do not inherit the descriptor or its environment variable. No other transport
+or progress setting exists.
 
-The channel is UTF-8 JSON Lines. Every line has exactly these fields:
-`version`, `sequence`, `phase`, `state`, and `elapsed_seconds`. `version` is `1`,
-`sequence` is a monotonically increasing integer, `phase` is `"review"`, and
-`elapsed_seconds` is a nonnegative number measured from the start of review and
-rounded to milliseconds.
+The channel is UTF-8 JSON Lines using progress ABI version 2. Each record has
+exactly `version`, `sequence`, `phase`, `state`, `elapsed_seconds`, and
+`semantic`. `version` is `2`; `sequence` is a strictly increasing integer for
+one process; `phase` is one of `create`, `rca`, `scope`, `implement`, `review`,
+or `publish`; and `elapsed_seconds` is a nonnegative monotonic duration rounded
+to milliseconds. A resume starts a new process sequence and elapsed clock while
+restoring only its safe durable semantic snapshot.
+
 `state` is one of `started`, `active`, `finalizing`, `completed`, `needs-input`,
-`blocked`, `failed`, or `interrupted`.
+`blocked`, `failed`, or `interrupted`. `semantic` is the latest snapshot plus
+its bounded `milestones` list:
 
-Emission is best effort: `started` is immediate, `active` is a periodic
-heartbeat every 10 seconds while the coordinator runs, and `finalizing` follows
-heartbeat shutdown and join. At most one terminal event follows, and it matches
-the validated final receipt. The channel contains no prompts, model events,
-issue or customer data, repository contents or paths, command output, secrets,
-URLs, or contact details.
+```json
+{"version":2,"sequence":7,"phase":"implement","state":"active","elapsed_seconds":30.004,"semantic":{"stage":"checking","actor":"subagent-1","activity":"check","status":"completed","count":3,"milestones":[{"stage":"searching","actor":"coordinator","activity":"search","status":"completed","count":2},{"stage":"checking","actor":"subagent-1","activity":"check","status":"completed","count":3}],"milestones_total_count":2,"milestones_truncated":false}}
+```
+
+The snapshot and every milestone have exactly five typed fields: `stage`,
+`actor`, `activity`, `status`, and `count`. Their allowed values are:
+
+| Field | Allowed values |
+|---|---|
+| `stage` | `coordinating`, `searching`, `tool-use`, `checking`, `file-changes`, `subagent-assignment`, `subagent-completion`, `waiting-input`, `finalizing`, `terminal` |
+| `actor` | `null`, `coordinator`, or an opaque per-run ordinal `subagent-N` where `N` is at least 1 |
+| `activity` | `null`, `lifecycle`, `search`, `tool`, `check`, `file-change`, `subagent` |
+| `status` | `null`, `started`, `in-progress`, `completed`, `failed`, `waiting`, `interrupted` |
+| `count` | `null` or an integer from 0 through 2147483647; when present, the generic cumulative count for the current activity |
+
+When milestones exist, `semantic` also contains `milestones`,
+`milestones_total_count`, and `milestones_truncated`. The total is a
+nonnegative integer no smaller than the retained list length, and the boolean
+truncation flag reports whether earlier milestones were omitted. These three
+fields are absent before the first milestone.
+
+Bonaparte continuously drains native Codex JSONL but translates only recognized
+structural event types and typed fields into this fixed taxonomy. Events within
+one heartbeat window update the latest snapshot; Bonaparte does not write one
+progress line per native event. Milestones are same-shaped, deduplicated, and
+capped at 32. The oldest milestones are also removed when necessary to keep the
+entire progress record at or below 4 KiB. Unknown, malformed, oversized, or
+string-bearing native event data is drained and ignored.
+
+Emission is best effort. `started` is immediate; `active` is a heartbeat every
+10 seconds and repeats the latest compact semantic state even when no new native
+event arrives; and `finalizing` is emitted immediately after heartbeat shutdown
+and join. Exactly one terminal event follows the flushed stdout receipt and
+matches that validated receipt. Sequences remain increasing and elapsed time
+remains monotonic across heartbeat and event-update races.
+
+The channel never forwards or stores raw JSONL, logs, commands, output, file
+contents or paths, patches, prompts, queries, arguments, URLs, messages,
+reasoning, transcripts, task text, arbitrary model text, secrets, PII, or issue
+or customer data. Structural identifiers are represented only by the local
+opaque actor ordinals. Clarification checkpoints persist the latest safe
+snapshot, at most 32 milestones, and bounded count/truncation metadata alongside
+the existing private question state; they are not event logs. Existing version
+1 checkpoints remain readable and normalize to empty semantic state before a
+subsequent version 2 write.
 
 The host-supplied descriptor must already be nonblocking; Bonaparte rejects a
-blocking descriptor without changing its blocking mode. An invalid descriptor
-or any encoding, size, partial write, or write error permanently disables
-progress for that process. Bonaparte does not retry and never falls back to
-stdout, stderr, a file, or a service.
-Regardless of progress availability, stdout remains exactly one final JSON
-receipt of at most 4 KiB; stderr remains the diagnostic channel. Progress only
-proves process liveness. It does not mean that native review ran successfully,
-that findings were resolved, or that the review receipt will be `completed`.
+blocking descriptor without changing its blocking mode. An invalid, closed,
+full, or partially writable descriptor, or any encoding, size, or write error,
+permanently disables progress for that process. Bonaparte does not retry and
+never falls back to stdout, stderr, a file, or a service. There is no watchdog,
+timeout, or cancellation behavior associated with progress.
+
+Progress ABI version 2 is intentionally incompatible with the former exact
+review-only version 1 record. Hosts must update their parser before enabling the
+channel. Regardless of progress availability, stdout remains exactly one final
+JSON receipt of at most 4 KiB and stderr remains the diagnostic channel.
+Progress is advisory: it does not establish phase success or replace the final
+receipt.

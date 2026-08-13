@@ -29,6 +29,38 @@ def load_runner():
 RUNNER = load_runner()
 
 
+def popen_adapter(fake_run):
+    """Adapt legacy completed-process fixtures to the incremental Popen boundary."""
+    def construct(command, **kwargs):
+        process = mock.Mock()
+        process.stdout = io.BytesIO()
+
+        class Input(io.BytesIO):
+            def close(self):
+                events = io.StringIO()
+                completed = fake_run(
+                    command,
+                    **{
+                        **kwargs,
+                        "input": self.getvalue().decode(),
+                        "stdout": events,
+                    },
+                )
+                process.stdout = io.BytesIO(events.getvalue().encode())
+                process.returncode = completed.returncode
+                stderr = getattr(completed, "stderr", None)
+                target = kwargs.get("stderr")
+                if stderr and hasattr(target, "write"):
+                    target.write(stderr)
+                super().close()
+
+        process.stdin = Input()
+        process.wait.side_effect = lambda: process.returncode
+        return process
+
+    return construct
+
+
 def receipt(state="completed"):
     return {
         "phase": "rca",
@@ -335,7 +367,7 @@ class BonaparteRunnerTests(unittest.TestCase):
         with (
             mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
             mock.patch.object(RUNNER, "call_linear", return_value=(linear_issue(), [])),
-            mock.patch.object(RUNNER.subprocess, "run", side_effect=fake_run),
+            mock.patch.object(RUNNER.subprocess, "Popen", side_effect=popen_adapter(fake_run)),
         ):
             result = RUNNER.run_phase(ROOT, "rca", "COR-1")
             observed["omit_event"] = True
@@ -371,7 +403,7 @@ class BonaparteRunnerTests(unittest.TestCase):
         with (
             mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
             mock.patch.object(RUNNER, "call_linear", return_value=(linear_issue(), [])),
-            mock.patch.object(RUNNER.subprocess, "run", side_effect=fake_run),
+            mock.patch.object(RUNNER.subprocess, "Popen", side_effect=popen_adapter(fake_run)),
         ):
             RUNNER.run_phase(
                 ROOT,
@@ -437,7 +469,7 @@ class BonaparteRunnerTests(unittest.TestCase):
         with (
             mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
             mock.patch.object(RUNNER, "call_linear") as call_linear,
-            mock.patch.object(RUNNER.subprocess, "run", side_effect=fake_run),
+            mock.patch.object(RUNNER.subprocess, "Popen", side_effect=popen_adapter(fake_run)),
         ):
             result = RUNNER.run_phase(
                 repository, phase, answer, session_id, model, reasoning
@@ -587,7 +619,7 @@ class BonaparteRunnerTests(unittest.TestCase):
                     mock.patch.object(RUNNER, "run_phase", side_effect=fake_phase),
                     mock.patch.object(sys, "stdout", stdout),
                 ):
-                    self.assertEqual(RUNNER.main(), 0)
+                    self.assertEqual(RUNNER.main(), 0, stdout.getvalue())
                 output = json.loads(stdout.getvalue())
                 stored = RUNNER.read_checkpoint(token, active_only=True)
 
@@ -626,7 +658,7 @@ class BonaparteRunnerTests(unittest.TestCase):
                     mock.patch.object(RUNNER, "run_phase", side_effect=completed) as run,
                     mock.patch.object(sys, "stdout", stdout),
                 ):
-                    self.assertEqual(RUNNER.main(), 0)
+                    self.assertEqual(RUNNER.main(), 0, stdout.getvalue())
                 stored = RUNNER.read_checkpoint(SESSION_ID)
 
                 stdout = io.StringIO()
@@ -1178,7 +1210,7 @@ class BonaparteRunnerTests(unittest.TestCase):
 
         with (
             mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
-            mock.patch.object(RUNNER.subprocess, "run", side_effect=fake_run) as run,
+            mock.patch.object(RUNNER.subprocess, "Popen", side_effect=popen_adapter(fake_run)) as run,
         ):
             result = RUNNER.run_phase(ROOT, "scope", "Continue.", SESSION_ID)
 
@@ -1217,9 +1249,9 @@ class BonaparteRunnerTests(unittest.TestCase):
         for event in events:
             self.assertEqual(
                 set(event),
-                {"version", "sequence", "phase", "state", "elapsed_seconds"},
+                {"version", "sequence", "phase", "state", "elapsed_seconds", "semantic"},
             )
-            self.assertEqual(event["version"], 1)
+            self.assertEqual(event["version"], 2)
             self.assertEqual(event["phase"], "review")
             self.assertLessEqual(len(json.dumps(event).encode()), 4096)
 
@@ -1321,6 +1353,57 @@ class BonaparteRunnerTests(unittest.TestCase):
 
         self.assertEqual(wait.call_count, 2)
         report.assert_called_once_with("active")
+
+    def test_semantic_translation_is_bounded_deduplicated_and_private(self):
+        read_descriptor, write_descriptor = os.pipe()
+        os.set_blocking(write_descriptor, False)
+        progress = RUNNER.ProgressReporter(write_descriptor, "scope")
+        observer = RUNNER.EventObserver(progress)
+        canary = "private-query-command-path-secret"
+        observer.feed(json.dumps({"type": "item.completed", "item": {"type": "web_search", "query": canary}}))
+        for _ in range(40):
+            observer.feed(json.dumps({"type": "item.completed", "item": {"type": "file_change", "path": canary, "patch": canary}}))
+        observer.feed(json.dumps({"type": "agent_message", "message": canary, "reasoning": canary}))
+        observer.feed("not json " + canary)
+        progress.report("started")
+        progress.report("active")
+        progress.stop_heartbeat()
+        progress.report("finalizing")
+        progress.report("completed")
+        progress.close()
+        payload = os.read(read_descriptor, 65536)
+        os.close(read_descriptor)
+        events = [json.loads(line) for line in payload.splitlines()]
+        self.assertNotIn(canary, payload.decode())
+        self.assertTrue(all(event["version"] == 2 and event["phase"] == "scope" for event in events))
+        self.assertLessEqual(len(events[1]["semantic"].get("milestones", [])), 32)
+        self.assertTrue(all(len(line) + 1 <= RUNNER.PROGRESS_MAX_BYTES for line in payload.splitlines()))
+
+    def test_incremental_drain_ignores_oversized_and_unterminated_lines(self):
+        progress = RUNNER.ProgressReporter(None, "implement")
+        observer = RUNNER.EventObserver(progress)
+        stream = io.BytesIO(
+            (b"x" * (RUNNER.PROGRESS_MAX_LINE_BYTES + 10))
+            + b"\nmalformed\n"
+            + json.dumps({"type": "thread.started", "thread_id": SESSION_ID}).encode()
+        )
+        RUNNER.drain_jsonl(stream, observer)
+        self.assertEqual(observer.observation["session_id"], SESSION_ID)
+
+    def test_progress_reporter_uses_every_phase(self):
+        for phase in RUNNER.WORKFLOWS:
+            with self.subTest(phase=phase):
+                reader, writer = os.pipe()
+                os.set_blocking(writer, False)
+                progress = RUNNER.ProgressReporter(writer, phase)
+                progress.report("started")
+                progress.stop_heartbeat()
+                progress.report("finalizing")
+                progress.report("completed")
+                progress.close()
+                events = [json.loads(line) for line in os.read(reader, 16384).splitlines()]
+                os.close(reader)
+                self.assertEqual([event["phase"] for event in events], [phase] * 3)
 
     def test_thread_setup_failures_disable_progress_without_masking_review(self):
         class StartFailure:
@@ -1583,7 +1666,7 @@ class BonaparteRunnerTests(unittest.TestCase):
             ),
             mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
             mock.patch.object(
-                RUNNER.subprocess, "run", side_effect=fake_run
+                RUNNER.subprocess, "Popen", side_effect=popen_adapter(fake_run)
             ) as coordinator,
             mock.patch.object(sys, "stdout", stdout),
         ):
@@ -1608,13 +1691,13 @@ class BonaparteRunnerTests(unittest.TestCase):
         )
         with (
             mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
-            mock.patch.object(RUNNER.subprocess, "run", return_value=result) as run,
+            mock.patch.object(RUNNER.subprocess, "Popen", side_effect=popen_adapter(lambda command, **kwargs: result)) as run,
         ):
             with self.assertRaises(RuntimeError) as raised:
                 RUNNER.run_phase(ROOT, "scope", "Continue.", SESSION_ID)
 
         run.assert_called_once()
-        self.assertIs(run.call_args.kwargs["stderr"], subprocess.PIPE)
+        self.assertTrue(hasattr(run.call_args.kwargs["stderr"], "write"))
         self.assertEqual(str(raised.exception), diagnostic[:800])
 
     def test_review_cli_keeps_stdout_as_one_receipt(self):

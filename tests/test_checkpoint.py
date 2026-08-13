@@ -12,6 +12,18 @@ import bonaparte_checkpoint as checkpoint
 TOKEN = "01234567-89ab-4def-8123-456789abcdef"
 
 
+def semantic(**overrides):
+    value = {
+        "stage": "waiting-input",
+        "actor": "coordinator",
+        "activity": "lifecycle",
+        "status": "waiting",
+        "count": 1,
+    }
+    value.update(overrides)
+    return value
+
+
 def record(status="waiting-input", **overrides):
     value = {
         "version": checkpoint.VERSION,
@@ -38,6 +50,10 @@ def record(status="waiting-input", **overrides):
         "blocker": "environment is user-only information",
         "remote_state_changed": None,
         "updated_at": "2026-08-13T18:00:00+00:00",
+        "semantic": semantic(),
+        "semantic_milestones": [semantic(status="started")],
+        "semantic_milestones_total_count": 1,
+        "semantic_milestones_truncated": False,
     }
     value.update(overrides)
     return value
@@ -107,12 +123,87 @@ class ValidationTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "question"):
             checkpoint.validate(record(question=None))
 
+    def test_semantic_state_accepts_only_fixed_typed_values(self):
+        accepted = (
+            semantic(actor=None, activity=None, status=None, count=None),
+            semantic(actor="subagent-27", stage="checking", activity="check"),
+        )
+        for item in accepted:
+            with self.subTest(item=item):
+                checkpoint.validate(record(semantic=item))
+
+        invalid = (
+            semantic(stage="reading /private/secret"),
+            semantic(stage=[]),
+            semantic(actor="subagent-secret"),
+            semantic(actor=f"subagent-{checkpoint.MAX_SEMANTIC_COUNT + 1}"),
+            semantic(activity="query=user@example.com"),
+            semantic(activity=[]),
+            semantic(status="ran command"),
+            semantic(status=[]),
+            semantic(count=True),
+            semantic(count=-1),
+            semantic(count=checkpoint.MAX_SEMANTIC_COUNT + 1),
+            {**semantic(), "message": "secret"},
+        )
+        for item in invalid:
+            with self.subTest(item=item), self.assertRaises(RuntimeError):
+                checkpoint.validate(record(semantic=item))
+
+    def test_semantic_milestones_are_bounded_and_have_consistent_metadata(self):
+        milestone = semantic(stage="checking", activity="check")
+        invalid = (
+            record(
+                semantic_milestones=[milestone]
+                * (checkpoint.MAX_SEMANTIC_MILESTONES + 1),
+                semantic_milestones_total_count=(
+                    checkpoint.MAX_SEMANTIC_MILESTONES + 1
+                ),
+            ),
+            record(semantic_milestones_total_count=0),
+            record(semantic_milestones_total_count=True),
+            record(semantic_milestones_total_count=2),
+            record(semantic_milestones_truncated="yes"),
+            record(
+                semantic_milestones=[semantic(activity="contains secret")]
+            ),
+        )
+        for value in invalid:
+            with self.subTest(value=value), self.assertRaises(RuntimeError):
+                checkpoint.validate(value)
+
+        truncated = record(
+            semantic_milestones_total_count=50,
+            semantic_milestones_truncated=True,
+        )
+        self.assertIs(checkpoint.validate(truncated), truncated)
+
     def test_serialized_envelope_is_bounded(self):
         with self.assertRaisesRegex(RuntimeError, "1 MiB"):
             checkpoint.validate(record(pending_answer="x" * checkpoint.MAX_BYTES))
 
 
 class PersistenceTests(unittest.TestCase):
+    def test_v1_checkpoint_is_read_and_normalized_to_empty_v2_semantics(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            home = Path(temporary)
+            legacy = record()
+            for field in set(legacy) - checkpoint.V1_FIELDS:
+                del legacy[field]
+            legacy["version"] = 1
+            path = checkpoint.checkpoint_path(TOKEN, home)
+            path.write_text(json.dumps(legacy))
+
+            normalized = checkpoint.read_checkpoint(TOKEN, home)
+            self.assertEqual(normalized["version"], 2)
+            self.assertIsNone(normalized["semantic"])
+            self.assertEqual(normalized["semantic_milestones"], [])
+            self.assertEqual(normalized["semantic_milestones_total_count"], 0)
+            self.assertFalse(normalized["semantic_milestones_truncated"])
+
+            checkpoint.write_checkpoint(normalized, home)
+            self.assertEqual(json.loads(path.read_text())["version"], 2)
+
     def test_atomic_round_trip_permissions_and_fsync(self):
         with tempfile.TemporaryDirectory() as temporary:
             home = Path(temporary)
