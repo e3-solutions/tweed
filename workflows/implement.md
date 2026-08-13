@@ -1,8 +1,9 @@
 # Bonaparte Implementation
 
 Implement the approved Bonaparte scope from the supplied deterministic Linear
-handoff using bounded Codex subagents. The runner supplies only the latest scope
-or existing implementation result plus issue metadata. Use Linear only to
+handoff, using bounded Codex subagents only when delegation has a distinct
+purpose. The runner supplies only the latest scope or existing implementation
+result plus issue metadata. Use Linear only to
 publish and verify the final handoff. Children must not use Linear. Work only in
 the supplied local repository. Create or recover one draft pull request for the
 official Linear branch and push only verified implementation commits to it. Do
@@ -68,54 +69,54 @@ not mark it ready, merge, deploy, or mutate other remote services or data.
    the canonical repository and expected refs. Before implementation completes,
    it must be open and draft. A duplicate, closed, merged, cross-repository, or
    otherwise mismatched PR is ambiguous; return `blocked` without changing it.
-8. If no matching PR exists, ensure the issue branch differs from the base. When
-   no meaningful implementation commit exists yet, create one verified empty
-   kickoff commit containing the issue ID with `git commit --allow-empty --only`
-   so staged user work is not consumed. Prove its tree equals its parent, push
-   the exact branch with an ordinary upstream push, and create one draft with
-   `gh pr create --draft` using explicit `--repo`, `--base`, and `--head`
-   arguments. Give it a concise issue-derived title and a body with the Linear
-   URL, approved outcome, work-in-progress status, and pending verification.
-   Verify its repository, refs, draft state, and URL before any implementation
-   wave continues.
+8. If no matching PR exists, ensure the issue branch differs from the base and
+   record that a draft must be created after the first meaningful, coherent,
+   passing implementation commit. Do not create an empty kickoff commit or push
+   merely to reserve the branch. When creating the draft, use `gh pr create
+   --draft` with explicit `--repo`, `--base`, and `--head` arguments, a concise
+   issue-derived title, and a body with the Linear URL, approved outcome,
+   work-in-progress status, and verification. Verify its repository, refs, draft
+   state, and URL before publishing the implementation handoff.
 
 ## Implementation workflow
 
 1. Translate the approved steps into dependency-aware work packets. Each packet
-   must contain its allowed files, required behavior, dependencies, reuse
-   decision, non-goals, acceptance criteria, and proving checks.
-2. Spawn fresh writer subagents without inherited conversation. Give each path
-   exactly one writer. Run packets concurrently only when their entire file and
-   command side-effect surfaces are disjoint; serialize overlaps, package
-   managers, formatters, code generation, migrations, and global checks.
+   must name its owned paths, required behavior and non-goals, dependencies,
+   proving checks, and stop conditions for stale scope or unexpected state.
+2. The coordinator may implement one narrow coherent packet directly. Otherwise
+   use the fewest fresh writer subagents needed and do not split work merely to
+   add concurrency. Give each path exactly one writer. Run packets concurrently
+   only when their entire file and command side-effect surfaces are disjoint;
+   serialize overlaps, package managers, formatters, code generation,
+   migrations, and global checks. The coordinator alone owns staging, commits,
+   pushes, GitHub, and Linear.
 3. Require each writer to re-read its assigned files before editing and return
    only: completed scope items, files changed, checks and results, blocker, and
-   deviation. Writers may not create new product or architecture decisions.
+   deviation. Writers may not create new product or architecture decisions. If
+   a necessary path or command is outside the packet, stop and report it.
 4. After every wave, inspect the actual diff, map every hunk to an approved
-   step, and rerun focused checks. When the wave forms a coherent bounded unit,
-   stage only its owned files, commit it with the issue ID, and push it normally
-   to the draft PR before unlocking dependents. Keep an incomplete wave local
-   until it is coherent; do not manufacture commits. If a writer fails, inspect
-   the workspace before reassigning and never assume it made no changes.
-5. After integration, spawn independent non-authoring reviewers for:
-   - **Simplicity, clarity, reuse, and performance:** find code to delete,
-     flatten, or replace with verified existing capabilities; reject subjective
-     rewrites.
-   - **Correctness, robustness, and verification:** falsify changed behavior and
-     failure paths; map every acceptance criterion to evidence.
-   - **Compatibility and integration:** trace changed interfaces to callers and
-     consumers and check supported versions and formats.
-   Add a specialist only for a concrete material risk.
-6. Reproduce each material finding, route it to the owning writer for the
-   minimum in-scope correction, and have a non-authoring reviewer recheck the
-   affected surface. Do not add arbitrary review rounds.
-7. Run the smallest checks proving each acceptance criterion, then relevant
-   repository-supported build, type, lint, and test checks. For a bug fix, add a
-   regression check that fails for the original mechanism when feasible.
+   step, and rerun focused checks. A coherent bounded unit may be committed
+   locally with the issue ID, but do not push every wave. Keep an incomplete wave
+   local until it is coherent; do not manufacture commits. If a writer fails,
+   inspect the workspace before reassigning and never assume it made no changes.
+5. Inspect the integrated diff and affected consumers at the exact commit for
+   scope fidelity, simplicity and reuse, correctness and failure behavior,
+   verification, compatibility, and material resource effects. Delegate only a
+   named uncertainty that can change completion; add a specialist only for a
+   concrete material risk.
+6. Reproduce each material finding and route it to the coordinator or owning
+   writer for the minimum in-scope correction. Use a non-authoring reviewer to
+   recheck judgment-dependent corrections; a deterministic proving check is
+   sufficient for a mechanical correction. Do not add arbitrary review rounds.
+7. Run the smallest checks proving each acceptance criterion, then only the
+   broader repository-supported build, type, lint, and test checks justified by
+   the affected surface. For a bug fix, add a regression check that fails for
+   the original mechanism when feasible.
 8. Reinspect the final diff and Git status. Commit any remaining coherent
-   implementation-owned changes with the issue ID and push normally. Never amend
-   the kickoff, an earlier implementation commit, or unrelated history. Require
-   a clean worktree and verify the draft PR head equals the final passing commit.
+   implementation-owned changes with the issue ID and push the final verified
+   head normally. Create the one draft PR now if preflight found none. Never
+   amend an earlier implementation commit or unrelated history. Require a clean
+   worktree and verify the draft PR head equals the final passing commit.
 
 ## Completion gate
 
@@ -132,7 +133,7 @@ Call the phase implemented only when:
   performance regression remains when a simpler verified capability exists;
 - no unauthorized dependency, interface, migration, cleanup, or external side
   effect beyond the exact branch pushes and draft PR occurred;
-- independent reviewers have no unresolved material finding; and
+- the applicable review axes have no unresolved material finding; and
 - the issue branch has a clean, passing final commit; and
 - one verified open PR contains that exact commit. It is draft for a new
   implementation; an idempotent retry may observe a later reviewed head or

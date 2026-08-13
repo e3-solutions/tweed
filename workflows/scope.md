@@ -25,10 +25,10 @@ or perform any other external write.
   insufficient and current dependency behavior matters.
 - Separate verified facts and constraints from proposals, assumptions, and
   unresolved decisions.
-- Put deployments, credentials, remote configuration, live migrations, and
-  production verification in non-blocking post-merge follow-up. The
-  implementation contract must be achievable through repository edits and local
-  validation.
+- Keep deployments, credentials, remote configuration, live migrations, and
+  production verification out of implementation. For each state-changing
+  external prerequisite, record safe ordering, verification, and rollback; do
+  not call it non-blocking when safe operation depends on it.
 - Ask the user only when an irreducible product, safety, compatibility, or
   architecture decision prevents a valid scope.
 
@@ -41,8 +41,8 @@ or perform any other external write.
    `HEAD`, and relevant clean/dirty worktree state. If repository evidence
    materially contradicts the handoff, return `blocked` with the smallest
    re-investigation needed.
-2. Spawn exactly three independent read-only agents, without inherited
-   conversation:
+2. Use zero to three read-only agents only for distinct decisions; the
+   coordinator may combine applicable axes for a narrow change:
    - **Repository and reuse:** inventory internal utilities, framework or
      language built-ins, installed libraries and versions, integration points,
      tests, and conventions relevant to the fix.
@@ -53,20 +53,21 @@ or perform any other external write.
      compatibility, security, data, concurrency, performance, and operational
      risks; translate supported risks into bounded safeguards and proving
      checks.
-3. Give each agent only the issue facts, applicable RCA, repository path, its
-   axis, and the read-only evidence standard. Keep initial conclusions blind.
-   Require a concise return with recommendation, repository evidence, rejected
-   excess, material risks, confidence, and missing information.
+3. Require a concise recommendation with source locations, rejected excess,
+   material risks, confidence, and missing information. Keep conclusions blind
+   when that reduces anchoring.
 4. Synthesize the smallest complete candidate. Every proposed change must map
    to the bug's RCA mechanism, the feature's requested outcome, or an observable
    acceptance criterion.
-5. Give only the candidate, constraints, and cited evidence to one fresh
-   adversarial reviewer. Require material objections and the minimum correction
-   needed; do not request a second general critique.
-6. Add one specialist only when a named unresolved risk cannot be decided from
-   repository evidence or the baseline agents. Do not add an agent or round
-   without a specific unresolved question.
-7. Reconcile supported objections. Re-read cited evidence and confirm `HEAD`
+5. If the request cannot fit one coherent implementation packet, propose ordered
+   valuable packets and ask which comes first. Do not publish an omnibus scope.
+6. Apply adversarial checks directly, delegating to one fresh reviewer only for
+   a named objection or unresolved decision. Require only material objections
+   and the minimum correction.
+7. Add one specialist only when a named unresolved risk cannot be decided from
+   repository evidence or the coordinator's current analysis. Do not add an
+   agent or round without a specific unresolved question.
+8. Reconcile supported objections. Re-read cited evidence and confirm `HEAD`
    and relevant worktree state before reporting.
 
 ## Completion gate
@@ -85,14 +86,17 @@ Call the solution scoped only when:
   covered in proportion to evidence;
 - acceptance criteria and validation distinguish the fix or delivered feature
   from the prior behavior;
+- every acceptance criterion names its trigger, observable outcome, and smallest
+  proving check; include a before/after bug regression when feasible and broader
+  suites only when justified;
 - implementation steps are ordered, locally executable, and independently
   verifiable; and
 - no material evidence-backed objection remains unresolved.
 
 If one user decision can close the gap, return `needs-input` with one exact
-question, explain its consequence in `summary`, and put concrete options plus a
-recommendation in `next_action`. Otherwise return `blocked` and name the
-smallest missing investigation. Never fill gaps with speculative architecture.
+question containing supported options and a recommendation for confirmation or
+correction. Explain its consequence in `summary`. Otherwise return `blocked`
+with the smallest missing investigation; never invent architecture.
 
 ## Linear comment
 

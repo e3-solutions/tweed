@@ -4,9 +4,9 @@ Finalize the reviewed Bonaparte draft pull request, mark it ready for review, an
 record it in Linear. The runner supplies only the latest review or existing
 publish result plus issue metadata. Use Linear only to publish and verify the
 final comment, and use the installed authenticated `git` and `gh` CLIs for
-GitHub. Do not spawn implementation agents, change code, push commits, create
-another PR, merge, deploy, delete branches, or mutate anything outside the
-existing PR's metadata, readiness, and final Linear comment.
+GitHub. Do not spawn subagents, change code, push commits, create another PR,
+merge, deploy, delete branches, or mutate anything outside the existing PR's
+metadata, readiness, and final Linear comment.
 
 ## Preconditions
 
@@ -24,8 +24,9 @@ existing PR's metadata, readiness, and final Linear comment.
 - For a new publish, require the review handoff's draft PR URL. Verify it belongs
   to that canonical repository, is open, uses the exact reviewed head branch and
   expected base, and points at the reviewed commit. It should be draft unless an
-  interrupted publish already marked it ready. A missing, duplicate, closed,
-  merged, or mismatched PR is unsafe; return `blocked` without changing it.
+  interrupted publish satisfies the exact recovery checks in step 3. A missing,
+  duplicate, closed, merged, unexpectedly non-draft, or mismatched PR is unsafe;
+  return `blocked` without changing it.
 - When an `existing` publish result was supplied, return it without another
   comment only after its delivery state and all GitHub facts are re-verified;
   otherwise return `blocked` and name the missing or stale fact. When a review
@@ -34,6 +35,9 @@ existing PR's metadata, readiness, and final Linear comment.
   create another PR, deploy, or close or change another PR.
 
 ## Publish workflow
+
+Before each write, revalidate the exact target identity and stop if it changed;
+read back every write so an interrupted retry can continue idempotently.
 
 1. Read the supplied review and issue metadata. Confirm the reviewed commit is
    a descendant of the implementation commit and that the local branch is
@@ -46,7 +50,8 @@ existing PR's metadata, readiness, and final Linear comment.
    states for that branch to reject duplicates, then re-verify its repository,
    base, head branch, and head commit before any mutation. If it is already
    non-draft at the reviewed commit, treat readiness as completed remote state
-   from an interrupted publish.
+   from an interrupted publish only when its title contains the issue identifier
+   and its body contains the required sections and Linear link.
 4. While the exact PR is still draft, update it with a concise human title
    derived from the Linear title, prefixed with the issue identifier, and a body
    containing:
@@ -79,7 +84,7 @@ existing PR's metadata, readiness, and final Linear comment.
    ```markdown
    ## Bonaparte · Pull Request
 
-   **Status:** Ready to merge
+   **Status:** Ready for review
 
    ### Delivery
    - Pull request: [URL]
@@ -97,6 +102,14 @@ existing PR's metadata, readiness, and final Linear comment.
 
 If PR finalization succeeds but the Linear write fails, a retry must recover the
 same ready PR and add only the missing comment. Never open a duplicate PR.
+
+## Completion gate
+
+Complete only when the exact PR is open and non-draft at the reviewed commit,
+its repository/base/head match, its title and required body sections identify the
+issue, local `HEAD` and clean worktree are unchanged, and one verified Linear
+delivery comment records it. Never duplicate that comment or claim ready to
+merge while CI or approvals remain pending or unobserved.
 
 ## Receipt
 

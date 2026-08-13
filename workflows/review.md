@@ -31,8 +31,9 @@ not create another PR, change its metadata or readiness, merge, or deploy.
   and remote PR head to contain the implementation commit. Never reset, clean,
   stash, discard, or overwrite user changes. The only GitHub write allowed is an
   ordinary non-force push of a verified review correction commit to that branch.
-- Reviewers never edit. Only a separately assigned fixer may change a validated
-  finding's bounded surface, and that fixer cannot close its own finding.
+- Reviewers never edit. The coordinator or one separately assigned worker may
+  change a validated finding's bounded surface; an author cannot adjudicate a
+  judgment-dependent recheck of its own correction.
 - Agent agreement does not make a finding material; reproducible evidence does.
 - Research exact installed versions and primary sources before claiming custom
   code duplicates an existing library or framework capability.
@@ -47,12 +48,14 @@ requires the draft at the recorded implementation head; an existing review may
 observe the same open PR at its recorded reviewed head and later published
 readiness. If state is ambiguous or user work could be overwritten, return
 `blocked`; read-only observations may be reported in the receipt but must not be
-applied.
+applied. Give every pass one canonical range—verified base merge-base through the
+recorded head—and changed-path inventory; recompute both after corrections.
 
 ## Review workflow
 
-1. Spawn fresh, independent, non-writing reviewers without inherited
-   conversation. Run them concurrently when possible or in blind waves across:
+1. The coordinator owns the baseline whole-diff review and combines applicable
+   axes for a narrow diff. Add zero to three non-writing reviewers only for
+   separable questions that can change the verdict:
    - **Simplicity, clarity, reuse, and scope fidelity:** seek deletion and
      reduction; challenge unnecessary hunks, nesting, abstractions,
      dependencies, duplication, compatibility shims, cleanup, and custom code
@@ -69,8 +72,9 @@ applied.
    - **Verification quality:** map every acceptance criterion to implementation
      and a proving check; challenge missing regressions, weak assertions,
      untested failures, and unexplained check failures.
-2. Add a security/privacy, accessibility, data, migration, operations, or other
-   specialist only when a concrete changed boundary creates a material question.
+2. Give each reviewer the canonical range and affected consumers. Require actual
+   code and repository evidence, not implementation summaries. Add a specialist
+   only for a concrete changed-boundary risk.
 3. Require every proposed finding to include a stable ID, axis, material
    consequence, violated contract, file:line or runtime evidence, owning
    surface, minimum correction, and proving check.
@@ -80,15 +84,17 @@ applied.
    unsupported performance concerns.
 5. Assign every accepted finding to exactly one bounded fixer. Serialize
    overlapping file or command effects. Inspect each fix and rerun its proving
-   check; then use a non-authoring reviewer to recheck the affected surface.
+   check. Use a non-authoring reviewer for a judgment-dependent recheck; a
+   deterministic proving check is sufficient for a mechanical correction.
 6. If a finding proves the approved design is incomplete or requires a new
    component, behavior, dependency, interface, schema, migration, rollout, or
    product decision, do not fix it in review. Return `blocked` with the exact
    evidence and change that must go back to scope.
-7. When targeted findings clear, run a fresh whole-diff pass across all baseline
-   axes, followed by the exact acceptance checks and relevant broader build,
-   type, lint, contract, integration, and test suites. A new material finding
-   re-enters the bounded fix and re-review loop.
+7. If a correction changes the diff, repeat the whole-diff review across all
+   applicable axes; otherwise the baseline review is final. Then run the exact
+   acceptance checks and only the broader build, type, lint, contract,
+   integration, and test suites justified by the affected surface. A new
+   material finding re-enters the bounded fix and re-review loop.
 8. If fixes were made, stage only review-owned changes and create one additional
    commit containing the issue ID. Never rewrite the implementation commit.
    Rerun the proving checks, push the correction normally to the same draft PR,
@@ -113,7 +119,7 @@ Call the phase reviewed only when:
 - relevant hot paths have no evidence-backed avoidable regression;
 - non-goals and user work remain untouched;
 - relevant broader checks pass without unexplained failure;
-- a fresh independent whole-diff pass has zero unresolved material findings;
+- the final whole-diff review has zero unresolved material findings;
 - the worktree is clean and the verified PR points at the final reviewed commit.
   It is draft for a new review; an idempotent retry may observe later published
   readiness only when the existing review records the same PR and commit.
