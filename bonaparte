@@ -23,6 +23,9 @@ PHASE_CHILD_ENV = "BONAPARTE_PHASE_CHILD"
 PROGRESS_FD_ENV = "BONAPARTE_PROGRESS_FD"
 PROGRESS_VERSION = 1
 PROGRESS_HEARTBEAT_SECONDS = 10.0
+DEFAULT_PHASE_TIMEOUT_SECONDS = 5 * 60.0
+EXTENDED_PHASE_TIMEOUT_SECONDS = 30 * 60.0
+PROCESS_TERMINATION_GRACE_SECONDS = 5.0
 PROGRESS_MAX_BYTES = 4096
 RECEIPT_MAX_BYTES = 4096
 PROGRESS_STATES = {
@@ -213,10 +216,17 @@ def emit(receipt: dict) -> None:
 
 
 class ProgressReporter:
-    """Emit privacy-bounded review lifecycle events to an isolated descriptor."""
+    """Emit privacy-bounded phase lifecycle events to an isolated descriptor."""
 
-    def __init__(self, descriptor: int | None):
+    def __init__(
+        self,
+        descriptor: int | None,
+        phase: str = "review",
+        stream=None,
+    ):
         self._descriptor = descriptor
+        self._phase = phase
+        self._stream = stream
         self._started_at = time.monotonic()
         self._sequence = 0
         self._last_state: str | None = None
@@ -229,6 +239,7 @@ class ProgressReporter:
 
     def _disable_locked(self) -> None:
         descriptor, self._descriptor = self._descriptor, None
+        self._stream = None
         if descriptor is not None:
             try:
                 os.close(descriptor)
@@ -239,7 +250,7 @@ class ProgressReporter:
         if state not in PROGRESS_STATES:
             raise ValueError("invalid progress state")
         with self._lock:
-            if self._descriptor is None or self._terminal:
+            if (self._descriptor is None and self._stream is None) or self._terminal:
                 return
             if (
                 (state == "started" and self._last_state is not None)
@@ -258,7 +269,7 @@ class ProgressReporter:
             event = {
                 "version": PROGRESS_VERSION,
                 "sequence": sequence,
-                "phase": "review",
+                "phase": self._phase,
                 "state": state,
                 "elapsed_seconds": round(
                     max(0.0, time.monotonic() - self._started_at), 3
@@ -276,14 +287,22 @@ class ProgressReporter:
                 self._disable_locked()
                 return
             try:
-                written = os.write(self._descriptor, payload)
-            except OSError as error:
-                if error.errno in {errno.EBADF, errno.EPIPE, errno.EAGAIN}:
+                if self._descriptor is not None:
+                    written = os.write(self._descriptor, payload)
+                    if written != len(payload):
+                        self._disable_locked()
+                        return
+                else:
+                    self._stream.write(payload.decode("utf-8"))
+                    self._stream.flush()
+            except (OSError, UnicodeError) as error:
+                if isinstance(error, OSError) and error.errno in {
+                    errno.EBADF,
+                    errno.EPIPE,
+                    errno.EAGAIN,
+                }:
                     self._disable_locked()
                     return
-                self._disable_locked()
-                return
-            if written != len(payload):
                 self._disable_locked()
                 return
             self._sequence = sequence
@@ -292,17 +311,20 @@ class ProgressReporter:
                 self._terminal = True
 
     def start(self) -> None:
-        if self._descriptor is None or self._start_attempted:
+        if (
+            (self._descriptor is None and self._stream is None)
+            or self._start_attempted
+        ):
             return
         self._start_attempted = True
         self.report("started")
-        if self._descriptor is None:
+        if self._descriptor is None and self._stream is None:
             return
         heartbeat = None
         try:
             heartbeat = threading.Thread(
                 target=self._heartbeat_loop,
-                name="bonaparte-review-progress",
+                name=f"bonaparte-{self._phase}-progress",
                 daemon=True,
             )
             self._heartbeat = heartbeat
@@ -340,7 +362,7 @@ class ProgressReporter:
             self._disable_locked()
 
 
-def acquire_progress_reporter(enabled: bool) -> ProgressReporter:
+def acquire_progress_reporter(phase: str | None) -> ProgressReporter:
     """Consume the inherited descriptor without ever exposing it to a child."""
 
     raw_descriptor = os.environ.pop(PROGRESS_FD_ENV, None)
@@ -349,19 +371,19 @@ def acquire_progress_reporter(enabled: bool) -> ProgressReporter:
         or not raw_descriptor.isascii()
         or not raw_descriptor.isdecimal()
     ):
-        return ProgressReporter(None)
+        return ProgressReporter(None, phase or "review", sys.stderr if phase else None)
     try:
         original = int(raw_descriptor)
     except ValueError:
-        return ProgressReporter(None)
+        return ProgressReporter(None, phase or "review", sys.stderr if phase else None)
     if original < 3:
-        return ProgressReporter(None)
-    if not enabled:
+        return ProgressReporter(None, phase or "review", sys.stderr if phase else None)
+    if phase is None:
         try:
             os.close(original)
         except (OSError, OverflowError):
             pass
-        return ProgressReporter(None)
+        return ProgressReporter(None, phase or "review")
     duplicate = None
     try:
         duplicate = os.dup(original)
@@ -375,13 +397,80 @@ def acquire_progress_reporter(enabled: bool) -> ProgressReporter:
                 os.close(duplicate)
             except (OSError, OverflowError):
                 pass
-        return ProgressReporter(None)
+        return ProgressReporter(None, phase, sys.stderr)
     finally:
         try:
             os.close(original)
         except (OSError, OverflowError):
             pass
-    return ProgressReporter(duplicate)
+    return ProgressReporter(duplicate, phase, sys.stderr if duplicate is None else None)
+
+
+class PhaseDeadlineExceeded(RuntimeError):
+    """Raised after the coordinator process tree is stopped at its deadline."""
+
+
+def stop_process_group(process: subprocess.Popen) -> None:
+    """Stop a coordinator and every descendant without leaving orphaned work."""
+
+    if process.poll() is not None:
+        return
+    try:
+        os.killpg(process.pid, signal.SIGTERM)
+    except ProcessLookupError:
+        return
+    try:
+        process.wait(timeout=PROCESS_TERMINATION_GRACE_SECONDS)
+        return
+    except subprocess.TimeoutExpired:
+        pass
+    try:
+        os.killpg(process.pid, signal.SIGKILL)
+    except ProcessLookupError:
+        return
+    process.wait(timeout=PROCESS_TERMINATION_GRACE_SECONDS)
+
+
+def run_coordinator(
+    command: list[str],
+    *,
+    repository: Path,
+    environment: dict[str, str],
+    prompt: str,
+    stdout,
+    stderr,
+    timeout_seconds: float,
+) -> subprocess.CompletedProcess:
+    """Run one coordinator quantum with a hard, process-tree-safe deadline."""
+
+    process = subprocess.Popen(
+        command,
+        cwd=repository,
+        env=environment,
+        stdin=subprocess.PIPE,
+        stdout=stdout,
+        stderr=stderr,
+        text=True,
+        start_new_session=True,
+    )
+    try:
+        _, stderr_output = process.communicate(input=prompt, timeout=timeout_seconds)
+    except subprocess.TimeoutExpired as error:
+        stop_process_group(process)
+        process.communicate()
+        raise PhaseDeadlineExceeded(
+            f"phase deadline exceeded after {timeout_seconds:g} seconds; "
+            "the coordinator process tree was stopped"
+        ) from error
+    except BaseException:
+        stop_process_group(process)
+        process.communicate()
+        raise
+    return subprocess.CompletedProcess(
+        command,
+        process.returncode,
+        stderr=stderr_output,
+    )
 
 
 def call_linear(repository: Path, issue_identifier: str) -> tuple[dict, list[dict]]:
@@ -633,6 +722,7 @@ def run_phase(
     phase_input: str,
     resume_session_id: str | None = None,
     model: str | None = None,
+    timeout_seconds: float = DEFAULT_PHASE_TIMEOUT_SECONDS,
 ) -> dict:
     workflow_name, assignment = WORKFLOWS[phase]
     workflow = (Path(__file__).resolve().parent / "workflows" / workflow_name).read_text()
@@ -695,6 +785,12 @@ def run_phase(
             "reasoning. Spawn children using only the built-in default, worker, or "
             "explorer roles. Do not select or request a different child model, role, "
             "or reasoning effort.\n\n"
+            "# Turnaround budget\n\n"
+            f"This phase has a hard {timeout_seconds:g}-second execution budget. "
+            "Do not begin package installation, migrations, deployment, broad test "
+            "suites, external waits, or work packets that cannot finish inside it. "
+            "Return a blocked or partial receipt with the safest resumable next action "
+            "before the deadline instead of running long.\n\n"
             f"Repository: {repository}\n\n{input_label}:\n{phase_input}{context_end}"
         )
     with tempfile.TemporaryDirectory(prefix=f"bonaparte-{phase}-") as temporary:
@@ -730,17 +826,16 @@ def run_phase(
             else ["--color", "never", "-"]
         )
         with tempfile.TemporaryFile(mode="w+", encoding="utf-8") as events:
-            result = subprocess.run(
+            result = run_coordinator(
                 command,
-                cwd=repository,
-                env=child_environment(),
-                input=prompt,
-                text=True,
+                repository=repository,
+                environment=child_environment(),
+                prompt=prompt,
                 stdout=events,
                 stderr=(
                     subprocess.DEVNULL if phase == "review" else subprocess.PIPE
                 ),
-                check=False,
+                timeout_seconds=timeout_seconds,
             )
             session_id = extract_session_id(events) or resume_session_id
         if result.returncode:
@@ -788,7 +883,7 @@ def run_phase(
     return receipt
 
 
-def parse() -> tuple[Path, str, str, str | None, str | None]:
+def parse() -> tuple[Path, str, str, str | None, str | None, float]:
     parser = argparse.ArgumentParser(
         prog="bonaparte",
         description="Run one isolated Linear-backed software delivery phase.",
@@ -801,6 +896,11 @@ def parse() -> tuple[Path, str, str, str | None, str | None]:
             "model for this phase or resume; overrides BONAPARTE_MODEL and "
             "Codex configuration"
         ),
+    )
+    parser.add_argument(
+        "--extended",
+        action="store_true",
+        help="explicitly allow a 30-minute phase instead of the 5-minute default",
     )
     parser.add_argument("command")
     parser.add_argument("input", nargs=argparse.REMAINDER)
@@ -847,6 +947,11 @@ def parse() -> tuple[Path, str, str, str | None, str | None]:
         phase_input,
         resume_session_id,
         resolve_model(args.model),
+        (
+            EXTENDED_PHASE_TIMEOUT_SECONDS
+            if args.extended
+            else DEFAULT_PHASE_TIMEOUT_SECONDS
+        ),
     )
 
 
@@ -881,8 +986,9 @@ def main() -> int:
                 supplied_input,
                 session_id,
                 selected_model,
+                phase_timeout,
             ) = parse()
-            progress = acquire_progress_reporter(selected_phase == "review")
+            progress = acquire_progress_reporter(selected_phase)
             progress.start()
             result_receipt = run_phase(
                 repo,
@@ -890,6 +996,7 @@ def main() -> int:
                 supplied_input,
                 session_id,
                 selected_model,
+                phase_timeout,
             )
             progress.stop_heartbeat()
             progress.report("finalizing")

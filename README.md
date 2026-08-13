@@ -148,20 +148,33 @@ between them. Any `needs-input`, `blocked`, or failed phase stops the chain.
 After `needs-input`, `resume` continues the same coordinator session with the
 answer instead of restarting its investigation.
 
-## Review liveness for trusted hosts
+## Bounded phases and liveness
 
-Review has an optional, host-controlled liveness channel. Before launching
+Every phase has a five-minute hard execution budget by default. Bonaparte tells
+the coordinator not to begin work that cannot finish inside that quantum and
+stops the entire coordinator process group at the deadline, so children cannot
+continue as orphans. Use `--extended` only when the user explicitly authorizes
+a longer operation; it raises the single-phase budget to 30 minutes.
+
+All phases emit privacy-bounded lifecycle progress every ten seconds. When a
+trusted host does not provide a progress descriptor, the same safe events are
+written to stderr so an interactive caller never appears hung. Stdout remains
+exactly one final bounded receipt.
+
+## Trusted-host progress channel
+
+Every phase has an optional, host-controlled liveness channel. Before launching
 Bonaparte, a trusted host may open a writable file descriptor numbered 3 or
 higher, configure it as nonblocking, explicitly inherit it into the launcher,
 and set
 `BONAPARTE_PROGRESS_FD` to that descriptor number. The launcher preserves the
 descriptor when it replaces itself with the runner. Update subprocesses do not
-inherit it. This ABI is review-only: other phases emit no progress events.
+inherit it.
 
 The channel is UTF-8 JSON Lines. Every line has exactly these fields:
 `version`, `sequence`, `phase`, `state`, and `elapsed_seconds`. `version` is `1`,
-`sequence` is a monotonically increasing integer, `phase` is `"review"`, and
-`elapsed_seconds` is a nonnegative number measured from the start of review and
+`sequence` is a monotonically increasing integer, `phase` names the active phase, and
+`elapsed_seconds` is a nonnegative number measured from the start of the phase and
 rounded to milliseconds.
 `state` is one of `started`, `active`, `finalizing`, `completed`, `needs-input`,
 `blocked`, `failed`, or `interrupted`.
@@ -175,9 +188,9 @@ URLs, or contact details.
 
 The host-supplied descriptor must already be nonblocking; Bonaparte rejects a
 blocking descriptor without changing its blocking mode. An invalid descriptor
-or any encoding, size, partial write, or write error permanently disables
-progress for that process. Bonaparte does not retry and never falls back to
-stdout, stderr, a file, or a service.
+or any encoding, size, partial write, or write error disables descriptor output.
+The runner then uses the same bounded stderr lifecycle events when safe. It
+never writes progress to stdout, a file, or a service.
 Regardless of progress availability, stdout remains exactly one final JSON
 receipt of at most 4 KiB; stderr remains the diagnostic channel. Progress only
 proves process liveness. It does not mean that native review ran successfully,

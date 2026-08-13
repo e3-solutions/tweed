@@ -7,6 +7,7 @@ import os
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -138,6 +139,75 @@ class BonaparteRunnerTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "non-empty model"):
             RUNNER.resolve_model("  ")
 
+    def test_extended_mode_requires_explicit_cli_flag(self):
+        with (
+            mock.patch.object(sys, "argv", ["bonaparte", "RCA", "COR-1"]),
+            mock.patch.dict(os.environ, {}, clear=True),
+        ):
+            *_, default_timeout = RUNNER.parse()
+        with (
+            mock.patch.object(
+                sys,
+                "argv",
+                ["bonaparte", "--extended", "RCA", "COR-1"],
+            ),
+            mock.patch.dict(os.environ, {}, clear=True),
+        ):
+            *_, extended_timeout = RUNNER.parse()
+
+        self.assertEqual(default_timeout, RUNNER.DEFAULT_PHASE_TIMEOUT_SECONDS)
+        self.assertEqual(extended_timeout, RUNNER.EXTENDED_PHASE_TIMEOUT_SECONDS)
+
+    def test_deadline_stops_the_entire_coordinator_process_group(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            temporary_path = Path(temporary)
+            marker = temporary_path / "orphan-ran"
+            coordinator = temporary_path / "coordinator.py"
+            coordinator.write_text(
+                "import pathlib, subprocess, sys, time\n"
+                "marker = sys.argv[1]\n"
+                "subprocess.Popen([sys.executable, '-c', "
+                "\"import pathlib,time; time.sleep(0.4); "
+                "pathlib.Path(r'%s').write_text('orphan')\" % marker])\n"
+                "time.sleep(60)\n"
+            )
+            with tempfile.TemporaryFile(mode="w+", encoding="utf-8") as events:
+                with self.assertRaisesRegex(
+                    RUNNER.PhaseDeadlineExceeded,
+                    "process tree was stopped",
+                ):
+                    RUNNER.run_coordinator(
+                        [sys.executable, str(coordinator), str(marker)],
+                        repository=ROOT,
+                        environment=os.environ.copy(),
+                        prompt="",
+                        stdout=events,
+                        stderr=subprocess.PIPE,
+                        timeout_seconds=0.1,
+                    )
+            time.sleep(0.5)
+            self.assertFalse(marker.exists())
+
+    def test_all_phases_fall_back_to_bounded_stderr_progress(self):
+        stream = io.StringIO()
+        with (
+            mock.patch.dict(os.environ, {}, clear=True),
+            mock.patch.object(sys, "stderr", stream),
+        ):
+            progress = RUNNER.acquire_progress_reporter("implement")
+            progress.start()
+            progress.stop_heartbeat()
+            progress.report("finalizing")
+            progress.report("completed")
+            progress.close()
+
+        events = [json.loads(line) for line in stream.getvalue().splitlines()]
+        self.assertEqual(
+            [event["state"] for event in events],
+            ["started", "finalizing", "completed"],
+        )
+        self.assertTrue(all(event["phase"] == "implement" for event in events))
+
     def test_workflows_require_complete_evidence_bearing_handoffs(self):
         required_markers = {
             "bug-rca.md": [
@@ -235,7 +305,11 @@ class BonaparteRunnerTests(unittest.TestCase):
         observed = {}
 
         def fake_run(command, **kwargs):
-            observed.update(command=command, env=kwargs["env"], prompt=kwargs["input"])
+            observed.update(
+                command=command,
+                env=kwargs["environment"],
+                prompt=kwargs["prompt"],
+            )
             if not observed.get("omit_event"):
                 kwargs["stdout"].write(
                     json.dumps({"type": "thread.started", "thread_id": SESSION_ID})
@@ -248,7 +322,7 @@ class BonaparteRunnerTests(unittest.TestCase):
         with (
             mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
             mock.patch.object(RUNNER, "call_linear", return_value=(linear_issue(), [])),
-            mock.patch.object(RUNNER.subprocess, "run", side_effect=fake_run),
+            mock.patch.object(RUNNER, "run_coordinator", side_effect=fake_run),
         ):
             result = RUNNER.run_phase(ROOT, "rca", "COR-1")
             observed["omit_event"] = True
@@ -268,7 +342,7 @@ class BonaparteRunnerTests(unittest.TestCase):
         observed = {}
 
         def fake_run(command, **kwargs):
-            observed.update(command=command, prompt=kwargs["input"])
+            observed.update(command=command, prompt=kwargs["prompt"])
             receipt_path = Path(command[command.index("--output-last-message") + 1])
             receipt_path.write_text(json.dumps(receipt()))
             return subprocess.CompletedProcess(command, 0, stderr="")
@@ -276,7 +350,7 @@ class BonaparteRunnerTests(unittest.TestCase):
         with (
             mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
             mock.patch.object(RUNNER, "call_linear", return_value=(linear_issue(), [])),
-            mock.patch.object(RUNNER.subprocess, "run", side_effect=fake_run),
+            mock.patch.object(RUNNER, "run_coordinator", side_effect=fake_run),
         ):
             RUNNER.run_phase(ROOT, "rca", "COR-1", model="gpt-5.6-terra")
 
@@ -306,12 +380,13 @@ class BonaparteRunnerTests(unittest.TestCase):
             mock.patch.object(sys, "argv", argv),
             mock.patch.dict(os.environ, {}, clear=True),
         ):
-            repository, phase, answer, session_id, model = RUNNER.parse()
+            repository, phase, answer, session_id, model, timeout = RUNNER.parse()
         self.assertEqual(model, "gpt-5.6-luna")
+        self.assertEqual(timeout, RUNNER.DEFAULT_PHASE_TIMEOUT_SECONDS)
         observed = {}
 
         def fake_run(command, **kwargs):
-            observed.update(command=command, prompt=kwargs["input"])
+            observed.update(command=command, prompt=kwargs["prompt"])
             receipt_path = Path(command[command.index("--output-last-message") + 1])
             receipt_path.write_text(json.dumps(receipt()))
             return subprocess.CompletedProcess(command, 0, stderr="")
@@ -319,7 +394,7 @@ class BonaparteRunnerTests(unittest.TestCase):
         with (
             mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
             mock.patch.object(RUNNER, "call_linear") as call_linear,
-            mock.patch.object(RUNNER.subprocess, "run", side_effect=fake_run),
+            mock.patch.object(RUNNER, "run_coordinator", side_effect=fake_run),
         ):
             result = RUNNER.run_phase(repository, phase, answer, session_id, model)
 
@@ -348,7 +423,7 @@ class BonaparteRunnerTests(unittest.TestCase):
 
         with (
             mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
-            mock.patch.object(RUNNER.subprocess, "run", side_effect=fake_run) as run,
+            mock.patch.object(RUNNER, "run_coordinator", side_effect=fake_run) as run,
         ):
             result = RUNNER.run_phase(ROOT, "scope", "Continue.", SESSION_ID)
 
@@ -364,7 +439,7 @@ class BonaparteRunnerTests(unittest.TestCase):
             {RUNNER.PROGRESS_FD_ENV: str(write_descriptor)},
             clear=False,
         ):
-            progress = RUNNER.acquire_progress_reporter(True)
+            progress = RUNNER.acquire_progress_reporter("review")
             self.assertNotIn(RUNNER.PROGRESS_FD_ENV, os.environ)
             with self.assertRaises(OSError):
                 os.fstat(write_descriptor)
@@ -398,7 +473,7 @@ class BonaparteRunnerTests(unittest.TestCase):
             with self.subTest(value=value), mock.patch.dict(
                 os.environ, {RUNNER.PROGRESS_FD_ENV: value}, clear=False
             ):
-                progress = RUNNER.acquire_progress_reporter(True)
+                progress = RUNNER.acquire_progress_reporter("review")
                 self.assertNotIn(RUNNER.PROGRESS_FD_ENV, os.environ)
                 self.assertNotIn(RUNNER.PROGRESS_FD_ENV, RUNNER.child_environment())
                 progress.close()
@@ -410,7 +485,7 @@ class BonaparteRunnerTests(unittest.TestCase):
             {RUNNER.PROGRESS_FD_ENV: f"+{invalid_writer}"},
             clear=False,
         ):
-            progress = RUNNER.acquire_progress_reporter(False)
+            progress = RUNNER.acquire_progress_reporter(None)
             os.fstat(invalid_writer)
             progress.close()
         os.close(invalid_writer)
@@ -422,7 +497,7 @@ class BonaparteRunnerTests(unittest.TestCase):
             {RUNNER.PROGRESS_FD_ENV: str(write_descriptor)},
             clear=False,
         ):
-            progress = RUNNER.acquire_progress_reporter(False)
+            progress = RUNNER.acquire_progress_reporter(None)
             self.assertNotIn(RUNNER.PROGRESS_FD_ENV, os.environ)
             self.assertIsNone(progress._descriptor)
             with self.assertRaises(OSError):
@@ -441,7 +516,7 @@ class BonaparteRunnerTests(unittest.TestCase):
                     {RUNNER.PROGRESS_FD_ENV: str(write_descriptor)},
                     clear=False,
                 ):
-                    progress = RUNNER.acquire_progress_reporter(True)
+                    progress = RUNNER.acquire_progress_reporter("review")
 
                 self.assertNotIn(RUNNER.PROGRESS_FD_ENV, os.environ)
                 with self.assertRaises(OSError):
@@ -697,7 +772,14 @@ class BonaparteRunnerTests(unittest.TestCase):
             mock.patch.object(
                 RUNNER,
                 "parse",
-                return_value=(ROOT, "review", "Continue.", SESSION_ID, None),
+                return_value=(
+                    ROOT,
+                    "review",
+                    "Continue.",
+                    SESSION_ID,
+                    None,
+                    RUNNER.DEFAULT_PHASE_TIMEOUT_SECONDS,
+                ),
             ),
             mock.patch.object(
                 RUNNER,
@@ -738,7 +820,14 @@ class BonaparteRunnerTests(unittest.TestCase):
             mock.patch.object(
                 RUNNER,
                 "parse",
-                return_value=(ROOT, "review", "Continue.", SESSION_ID, None),
+                return_value=(
+                    ROOT,
+                    "review",
+                    "Continue.",
+                    SESSION_ID,
+                    None,
+                    RUNNER.DEFAULT_PHASE_TIMEOUT_SECONDS,
+                ),
             ),
             mock.patch.object(
                 RUNNER,
@@ -747,7 +836,7 @@ class BonaparteRunnerTests(unittest.TestCase):
             ),
             mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
             mock.patch.object(
-                RUNNER.subprocess, "run", side_effect=fake_run
+                RUNNER, "run_coordinator", side_effect=fake_run
             ) as coordinator,
             mock.patch.object(sys, "stdout", stdout),
         ):
@@ -772,7 +861,7 @@ class BonaparteRunnerTests(unittest.TestCase):
         )
         with (
             mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
-            mock.patch.object(RUNNER.subprocess, "run", return_value=result) as run,
+            mock.patch.object(RUNNER, "run_coordinator", return_value=result) as run,
         ):
             with self.assertRaises(RuntimeError) as raised:
                 RUNNER.run_phase(ROOT, "scope", "Continue.", SESSION_ID)
@@ -1105,7 +1194,16 @@ class BonaparteRunnerTests(unittest.TestCase):
                 os.environ, {RUNNER.PHASE_CHILD_ENV: ""}, clear=False
             ),
             mock.patch.object(
-                RUNNER, "parse", return_value=(ROOT, "review", "x", None, None)
+                RUNNER,
+                "parse",
+                return_value=(
+                    ROOT,
+                    "review",
+                    "x",
+                    None,
+                    None,
+                    RUNNER.DEFAULT_PHASE_TIMEOUT_SECONDS,
+                ),
             ),
             mock.patch.object(
                 RUNNER, "acquire_progress_reporter", return_value=progress
