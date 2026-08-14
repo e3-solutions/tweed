@@ -14,6 +14,38 @@ from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 SESSION_ID = "019fd385-da76-77f3-bd3a-2f1e4e49b936"
+SUBAGENT_ID = "019ff6ce-cb6d-7fb3-a844-2b022bf2b0af"
+
+# Shapes captured from Codex's native `exec --json` collaboration events.
+NATIVE_COLLAB_SPAWN_COMPLETED = {
+    "type": "item.completed",
+    "item": {
+        "id": "item_0",
+        "type": "collab_tool_call",
+        "tool": "spawn_agent",
+        "sender_thread_id": SESSION_ID,
+        "receiver_thread_ids": [SUBAGENT_ID],
+        "prompt": "private assignment",
+        "agents_states": {
+            SUBAGENT_ID: {"status": "pending_init", "message": None}
+        },
+        "status": "completed",
+    },
+}
+NATIVE_COLLAB_WAIT_COMPLETED = {
+    "type": "item.completed",
+    "item": {
+        "id": "item_1",
+        "type": "collab_tool_call",
+        "tool": "wait",
+        "sender_thread_id": SESSION_ID,
+        "receiver_thread_ids": [SUBAGENT_ID],
+        "agents_states": {
+            SUBAGENT_ID: {"status": "completed", "message": None}
+        },
+        "status": "completed",
+    },
+}
 
 
 def load_runner():
@@ -367,7 +399,9 @@ class BonaparteRunnerTests(unittest.TestCase):
         with (
             mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
             mock.patch.object(RUNNER, "call_linear", return_value=(linear_issue(), [])),
-            mock.patch.object(RUNNER.subprocess, "Popen", side_effect=popen_adapter(fake_run)),
+            mock.patch.object(
+                RUNNER.subprocess, "Popen", side_effect=popen_adapter(fake_run)
+            ) as run,
         ):
             result = RUNNER.run_phase(ROOT, "rca", "COR-1")
             observed["omit_event"] = True
@@ -376,6 +410,7 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertEqual(result["resume_session_id"], SESSION_ID)
         self.assertIsNone(fallback["resume_session_id"])
         self.assertEqual(observed["env"][RUNNER.PHASE_CHILD_ENV], "1")
+        self.assertTrue(run.call_args.kwargs["start_new_session"])
         self.assertIn("already the Bonaparte phase coordinator", observed["prompt"])
         self.assertIn("Default and explorer are read-only", observed["prompt"])
         self.assertIn("Children must not stage, commit, push", observed["prompt"])
@@ -426,6 +461,77 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertEqual(observation["semantic_milestones"], [latest])
         self.assertEqual(observation["semantic_milestones_total_count"], 1)
         self.assertFalse(observation["semantic_milestones_truncated"])
+
+    def test_run_phase_exception_terminates_coordinator_process_group(self):
+        real_popen = subprocess.Popen
+        child = None
+        grandchild_pid = None
+
+        def spawn_sleeping_group(*_args, **kwargs):
+            nonlocal child, grandchild_pid
+            child = real_popen(
+                [
+                    sys.executable,
+                    "-c",
+                    (
+                        "import subprocess, sys, time; "
+                        "p=subprocess.Popen([sys.executable,'-c','import time; time.sleep(60)']); "
+                        "print(p.pid, flush=True); time.sleep(60)"
+                    ),
+                ],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+                start_new_session=kwargs["start_new_session"],
+            )
+            grandchild_pid = int(child.stdout.readline())
+            return child
+
+        try:
+            with (
+                mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
+                mock.patch.object(
+                    RUNNER.subprocess, "Popen", side_effect=spawn_sleeping_group
+                ),
+                mock.patch.object(
+                    RUNNER, "drain_jsonl", side_effect=RuntimeError("drain failed")
+                ),
+                self.assertRaisesRegex(RuntimeError, "drain failed"),
+            ):
+                RUNNER.run_phase(
+                    ROOT,
+                    "scope",
+                    "Continue.",
+                    SESSION_ID,
+                )
+
+            self.assertIsNotNone(child)
+            self.assertIsNotNone(child.poll())
+            with self.assertRaises(ProcessLookupError):
+                os.kill(grandchild_pid, 0)
+        finally:
+            if child is not None and child.poll() is None:
+                os.killpg(child.pid, 9)
+                child.wait(timeout=3)
+
+    def test_cleanup_failure_does_not_mask_the_coordinator_error(self):
+        process = mock.Mock(stdin=io.BytesIO(), stdout=io.BytesIO())
+        with (
+            mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
+            mock.patch.object(RUNNER.subprocess, "Popen", return_value=process),
+            mock.patch.object(
+                RUNNER, "drain_jsonl", side_effect=RuntimeError("drain failed")
+            ),
+            mock.patch.object(
+                RUNNER,
+                "terminate_and_reap",
+                side_effect=subprocess.TimeoutExpired("codex", 5),
+            ) as cleanup,
+            self.assertRaisesRegex(RuntimeError, "drain failed"),
+        ):
+            RUNNER.run_phase(ROOT, "scope", "Continue.", SESSION_ID)
+
+        cleanup.assert_called_once_with(process)
 
     def test_phase_model_and_reasoning_configure_coordinator_and_children(self):
         observed = {}
@@ -1473,6 +1579,137 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertLessEqual(len(events[1]["semantic"].get("milestones", [])), 32)
         self.assertTrue(all(len(line) + 1 <= RUNNER.PROGRESS_MAX_BYTES for line in payload.splitlines()))
 
+    def test_native_collab_events_emit_assignment_and_completion(self):
+        progress = RUNNER.ProgressReporter(None, "implement")
+        observer = RUNNER.EventObserver(progress)
+
+        observer.feed(
+            json.dumps(
+                {
+                    **NATIVE_COLLAB_SPAWN_COMPLETED,
+                    "type": "item.started",
+                    "item": {
+                        **NATIVE_COLLAB_SPAWN_COMPLETED["item"],
+                        "receiver_thread_ids": [],
+                        "agents_states": {},
+                        "status": "in_progress",
+                    },
+                }
+            )
+        )
+        observer.feed(json.dumps(NATIVE_COLLAB_SPAWN_COMPLETED))
+        assignment = progress.snapshot()["semantic"]
+        observer.feed(
+            json.dumps(
+                {
+                    **NATIVE_COLLAB_WAIT_COMPLETED,
+                    "type": "item.started",
+                    "item": {
+                        **NATIVE_COLLAB_WAIT_COMPLETED["item"],
+                        "agents_states": {SUBAGENT_ID: {"status": "running"}},
+                        "status": "in_progress",
+                    },
+                }
+            )
+        )
+        observer.feed(json.dumps(NATIVE_COLLAB_WAIT_COMPLETED))
+        completion = progress.snapshot()["semantic"]
+
+        self.assertEqual(
+            assignment,
+            {
+                "stage": "subagent-assignment",
+                "actor": "subagent-1",
+                "activity": "subagent",
+                "status": "completed",
+                "count": 1,
+            },
+        )
+        self.assertEqual(
+            completion,
+            {
+                "stage": "subagent-completion",
+                "actor": "subagent-1",
+                "activity": "subagent",
+                "status": "completed",
+                "count": 2,
+            },
+        )
+        self.assertNotIn(
+            "private assignment", json.dumps(progress.snapshot())
+        )
+
+    def test_native_item_status_and_updates_drive_semantics(self):
+        progress = RUNNER.ProgressReporter(None, "review")
+        observer = RUNNER.EventObserver(progress)
+        observer.feed(
+            json.dumps(
+                {
+                    "type": "item.updated",
+                    "item": {"type": "web_search", "status": "in_progress"},
+                }
+            )
+        )
+        self.assertEqual(progress.snapshot()["semantic"]["status"], "in-progress")
+
+        observer.feed(
+            json.dumps(
+                {
+                    "type": "item.completed",
+                    "item": {"type": "mcp_tool_call", "status": "failed"},
+                }
+            )
+        )
+        semantic = progress.snapshot()["semantic"]
+        self.assertEqual(semantic["stage"], "tool-use")
+        self.assertEqual(semantic["status"], "failed")
+
+        observer.feed(
+            json.dumps(
+                {
+                    "type": "item.completed",
+                    "item": {"type": "command_execution", "status": "declined"},
+                }
+            )
+        )
+        self.assertEqual(progress.snapshot()["semantic"]["status"], "failed")
+
+        observer.feed(
+            json.dumps(
+                {
+                    **NATIVE_COLLAB_WAIT_COMPLETED,
+                    "item": {
+                        **NATIVE_COLLAB_WAIT_COMPLETED["item"],
+                        "agents_states": {SUBAGENT_ID: {"status": "running"}},
+                        "status": "failed",
+                    },
+                }
+            )
+        )
+        semantic = progress.snapshot()["semantic"]
+        self.assertEqual(semantic["stage"], "subagent-completion")
+        self.assertEqual(semantic["status"], "failed")
+
+    def test_subagent_actor_retention_is_capped(self):
+        progress = RUNNER.ProgressReporter(None, "rca")
+        observer = RUNNER.EventObserver(progress)
+        for index in range(RUNNER.PROGRESS_MAX_ACTORS + 5):
+            event = {
+                **NATIVE_COLLAB_SPAWN_COMPLETED,
+                "item": {
+                    **NATIVE_COLLAB_SPAWN_COMPLETED["item"],
+                    "receiver_thread_ids": [f"agent-{index}"],
+                    "agents_states": {f"agent-{index}": {"status": "running"}},
+                },
+            }
+            observer.feed(json.dumps(event))
+
+        self.assertEqual(len(observer._actors), RUNNER.PROGRESS_MAX_ACTORS)
+        self.assertEqual(
+            progress.snapshot()["semantic"]["actor"],
+            f"subagent-{RUNNER.PROGRESS_MAX_ACTORS + 1}",
+        )
+
     def test_incremental_drain_ignores_oversized_and_unterminated_lines(self):
         progress = RUNNER.ProgressReporter(None, "implement")
         observer = RUNNER.EventObserver(progress)
@@ -1554,6 +1791,30 @@ class BonaparteRunnerTests(unittest.TestCase):
                 events = [json.loads(line) for line in os.read(reader, 16384).splitlines()]
                 os.close(reader)
                 self.assertEqual([event["phase"] for event in events], [phase] * 3)
+
+    def test_needs_input_progress_is_waiting_not_failed(self):
+        reader, writer = os.pipe()
+        os.set_blocking(writer, False)
+        progress = RUNNER.ProgressReporter(writer, "rca")
+        progress.report("started")
+        progress.stop_heartbeat()
+        progress.report("finalizing")
+        progress.report("needs-input")
+        progress.close()
+        events = [json.loads(line) for line in os.read(reader, 16384).splitlines()]
+        os.close(reader)
+
+        self.assertEqual(events[-1]["state"], "needs-input")
+        self.assertEqual(
+            events[-1]["semantic"],
+            {
+                "stage": "waiting-input",
+                "actor": "coordinator",
+                "activity": "lifecycle",
+                "status": "waiting",
+                "count": None,
+            },
+        )
 
     def test_thread_setup_failures_disable_progress_without_masking_review(self):
         class StartFailure:

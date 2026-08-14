@@ -41,6 +41,9 @@ MAX_CHANGED_FILES = 500
 MAX_COMPLETED_CHECKS = 100
 PROGRESS_MAX_LINE_BYTES = 1024 * 1024
 PROGRESS_MAX_MILESTONES = 32
+PROGRESS_MAX_ACTORS = 32
+COORDINATOR_TERMINATE_GRACE_SECONDS = 1.0
+COORDINATOR_KILL_GRACE_SECONDS = 5.0
 PROGRESS_STAGES = {
     "coordinating",
     "searching",
@@ -414,6 +417,14 @@ class ProgressReporter:
                 event["semantic"]["milestones_truncated"] = self._milestones_truncated
             if state == "finalizing":
                 event["semantic"].update(stage="finalizing", activity="lifecycle", status="in-progress", count=None)
+            elif state == "needs-input":
+                event["semantic"].update(
+                    stage="waiting-input",
+                    actor="coordinator",
+                    activity="lifecycle",
+                    status="waiting",
+                    count=None,
+                )
             elif state in PROGRESS_TERMINAL_STATES:
                 event["semantic"].update(stage="terminal", activity="lifecycle", status="completed" if state == "completed" else "interrupted" if state == "interrupted" else "failed", count=None)
             try:
@@ -836,13 +847,117 @@ class EventObserver:
         self._counts = {name: 0 for name in PROGRESS_ACTIVITIES if name != "lifecycle"}
         self._actors: dict[str, str] = {}
 
-    def _actor(self, item: dict) -> str:
-        identifier = item.get("id") or item.get("agent_id") or item.get("thread_id")
-        if not isinstance(identifier, str):
+    def _actor(self, identifier: object) -> str:
+        if not isinstance(identifier, str) or not identifier:
             return "coordinator"
         if identifier not in self._actors:
+            if len(self._actors) >= PROGRESS_MAX_ACTORS:
+                return f"subagent-{PROGRESS_MAX_ACTORS + 1}"
             self._actors[identifier] = f"subagent-{len(self._actors) + 1}"
         return self._actors[identifier]
+
+    @staticmethod
+    def _event_status(event_type: str | None, item: dict) -> str | None:
+        native = item.get("status")
+        status = {
+            "in_progress": "in-progress",
+            "completed": "completed",
+            "failed": "failed",
+            "declined": "failed",
+            "interrupted": "interrupted",
+        }.get(native if isinstance(native, str) else None)
+        if event_type == "item.started" and status == "in-progress":
+            return "started"
+        return status or {
+            "item.started": "started",
+            "item.updated": "in-progress",
+            "item.completed": "completed",
+        }.get(event_type)
+
+    @staticmethod
+    def _collab_agents(item: dict) -> list[tuple[str, str | None]]:
+        states = item.get("agents_states")
+        if isinstance(states, dict) and states:
+            return [
+                (identifier, state.get("status"))
+                for identifier, state in states.items()
+                if isinstance(identifier, str)
+                and identifier
+                and isinstance(state, dict)
+                and isinstance(state.get("status"), str)
+            ]
+        receivers = item.get("receiver_thread_ids")
+        if not isinstance(receivers, list):
+            return []
+        return [
+            (identifier, None)
+            for identifier in receivers
+            if isinstance(identifier, str) and identifier
+        ]
+
+    @staticmethod
+    def _agent_status(native_status: str | None) -> str | None:
+        return {
+            "pending_init": "started",
+            "running": "in-progress",
+            "completed": "completed",
+            "errored": "failed",
+            "shutdown": "completed",
+            "not_found": "failed",
+            "interrupted": "interrupted",
+        }.get(native_status)
+
+    def _update_progress(
+        self, stage: str, activity: str, status: str, actor: str = "coordinator"
+    ) -> None:
+        if status in {"completed", "failed", "interrupted"}:
+            self._counts[activity] += 1
+            count = self._counts[activity]
+        else:
+            count = self._counts[activity] + 1
+        if self._progress is not None:
+            self._progress.update_semantic(
+                {
+                    "stage": stage,
+                    "actor": actor,
+                    "activity": activity,
+                    "status": status,
+                    "count": count,
+                },
+                milestone=status in {"completed", "failed", "interrupted"},
+            )
+
+    def _observe_collab(self, event_type: str | None, item: dict) -> None:
+        tool = item.get("tool")
+        stage = {
+            "spawn_agent": "subagent-assignment",
+            "send_input": "subagent-assignment",
+            "wait": "subagent-completion",
+            "close_agent": "subagent-completion",
+        }.get(tool if isinstance(tool, str) else None)
+        status = self._event_status(event_type, item)
+        if stage is None or status is None:
+            return
+        agents = self._collab_agents(item)
+        if not agents:
+            self._update_progress(stage, "subagent", status)
+            return
+        for identifier, native_status in agents:
+            agent_status = self._agent_status(native_status)
+            effective_status = status
+            if (
+                status != "failed"
+                and stage == "subagent-completion"
+                and event_type in {"item.updated", "item.completed"}
+                and agent_status is not None
+            ):
+                effective_status = agent_status
+            self._update_progress(
+                stage,
+                "subagent",
+                effective_status,
+                self._actor(identifier),
+            )
 
     def feed(self, line: str) -> None:
         try:
@@ -864,29 +979,19 @@ class EventObserver:
         item_type = item.get("type")
         if not isinstance(item_type, str):
             item_type = None
-        status = {
-            "item.started": "started",
-            "item.completed": "completed",
-            "item.failed": "failed",
-        }.get(event_type)
+        status = self._event_status(event_type, item)
+        if item_type == "collab_tool_call":
+            self._observe_collab(event_type, item)
         mapping = {
             "web_search": ("searching", "search"),
             "mcp_tool_call": ("tool-use", "tool"),
             "file_change": ("file-changes", "file-change"),
             "command_execution": ("tool-use", "tool"),
-            "subagent_assignment": ("subagent-assignment", "subagent"),
-            "subagent_completion": ("subagent-completion", "subagent"),
         }
         mapped = mapping.get(item_type)
         if status and mapped:
             stage, activity = mapped
-            actor = self._actor(item) if activity == "subagent" else "coordinator"
-            self._counts[activity] += 1
-            if self._progress is not None:
-                self._progress.update_semantic(
-                    {"stage": stage, "actor": actor, "activity": activity, "status": status, "count": self._counts[activity]},
-                    milestone=status in {"completed", "failed"},
-                )
+            self._update_progress(stage, activity, status)
         if event_type != "item.completed" or item_type != "command_execution":
             return
         command = str(item.get("command") or "")[:300]
@@ -987,6 +1092,52 @@ def drain_jsonl(stream, observer: EventObserver) -> None:
                     discarding = True
     if retained and not discarding:
         observer.feed(retained.decode("utf-8", "ignore"))
+
+
+def terminate_and_reap(process: subprocess.Popen) -> None:
+    """Boundedly stop the coordinator's private process group and reap it."""
+    pid = getattr(process, "pid", None)
+
+    def signal_group(sig: int) -> None:
+        try:
+            if isinstance(pid, int) and pid > 0:
+                os.killpg(pid, sig)
+            elif sig == signal.SIGTERM:
+                process.terminate()
+            else:
+                process.kill()
+        except OSError:
+            pass
+
+    def group_alive() -> bool:
+        if not isinstance(pid, int) or pid <= 0:
+            return process.poll() is None
+        try:
+            os.killpg(pid, 0)
+            return True
+        except ProcessLookupError:
+            return False
+        except PermissionError:
+            return True
+
+    try:
+        signal_group(signal.SIGTERM)
+        deadline = time.monotonic() + COORDINATOR_TERMINATE_GRACE_SECONDS
+        while time.monotonic() < deadline:
+            process.poll()
+            if not group_alive():
+                break
+            time.sleep(0.01)
+        if group_alive():
+            signal_group(signal.SIGKILL)
+        process.wait(timeout=COORDINATOR_KILL_GRACE_SECONDS)
+    finally:
+        for stream in (process.stdin, process.stdout):
+            if stream is not None:
+                try:
+                    stream.close()
+                except (OSError, ValueError):
+                    pass
 
 
 def child_environment() -> dict[str, str]:
@@ -1184,6 +1335,7 @@ def run_phase(
         with tempfile.TemporaryFile(mode="w+", encoding="utf-8") as diagnostics:
             stderr_target = subprocess.DEVNULL if phase == "review" else diagnostics
             observer = EventObserver()
+            process = None
             try:
                 process = subprocess.Popen(
                     command,
@@ -1192,6 +1344,7 @@ def run_phase(
                     stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE,
                     stderr=stderr_target,
+                    start_new_session=True,
                 )
                 if process.stdin is None or process.stdout is None:
                     raise RuntimeError("Codex coordinator pipes are unavailable")
@@ -1201,8 +1354,16 @@ def run_phase(
                 process.stdout.close()
                 returncode = process.wait()
             except BaseException:
+                if process is not None:
+                    try:
+                        terminate_and_reap(process)
+                    except BaseException:
+                        pass
                 if observation is not None:
-                    observation.update(observer.finish())
+                    try:
+                        observation.update(observer.finish())
+                    except BaseException:
+                        pass
                 raise
             observed = observer.finish()
             if observation is not None:
