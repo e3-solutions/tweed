@@ -45,6 +45,7 @@ PROGRESS_MAX_MILESTONES = 32
 PROGRESS_MAX_ACTORS = 32
 COORDINATOR_TERMINATE_GRACE_SECONDS = 1.0
 COORDINATOR_KILL_GRACE_SECONDS = 5.0
+APP_SERVER_REQUEST_TIMEOUT_SECONDS = 45.0
 PROGRESS_STAGES = {
     "coordinating",
     "searching",
@@ -1229,26 +1230,47 @@ class AppServerPhaseDriver:
         self._reader.start()
 
     def _read(self) -> None:
+        chunks: list[str] = []
+        line_bytes = 0
+        discarding = False
+
+        def emit_line(line: str) -> bool:
+            try:
+                message = json.loads(line)
+            except (json.JSONDecodeError, UnicodeError):
+                self._messages.put(
+                    RuntimeError("Codex app-server returned malformed JSON")
+                )
+                return False
+            if not isinstance(message, dict):
+                self._messages.put(
+                    RuntimeError("Codex app-server returned a malformed message")
+                )
+                return False
+            self._messages.put(message)
+            return True
+
         try:
-            for line in self.process.stdout:
-                if len(line.encode("utf-8")) > PROGRESS_MAX_LINE_BYTES:
-                    self._messages.put(
-                        RuntimeError("Codex app-server event is too large")
-                    )
-                    return
-                try:
-                    message = json.loads(line)
-                except (json.JSONDecodeError, UnicodeError) as error:
-                    self._messages.put(
-                        RuntimeError("Codex app-server returned malformed JSON")
-                    )
-                    return
-                if not isinstance(message, dict):
-                    self._messages.put(
-                        RuntimeError("Codex app-server returned a malformed message")
-                    )
-                    return
-                self._messages.put(message)
+            while True:
+                chunk = self.process.stdout.readline(64 * 1024)
+                if not chunk:
+                    break
+                ends_line = chunk.endswith("\n")
+                if not discarding:
+                    line_bytes += len(chunk.encode("utf-8"))
+                    if line_bytes > PROGRESS_MAX_LINE_BYTES:
+                        chunks.clear()
+                        discarding = True
+                    else:
+                        chunks.append(chunk)
+                if ends_line:
+                    if not discarding and not emit_line("".join(chunks)):
+                        return
+                    chunks.clear()
+                    line_bytes = 0
+                    discarding = False
+            if chunks and not emit_line("".join(chunks)):
+                return
         except BaseException as error:
             self._messages.put(error)
         finally:
@@ -1286,6 +1308,7 @@ class AppServerPhaseDriver:
     def _legacy_item(item: dict) -> dict:
         item_type = item.get("type")
         mapping = {
+            "collabAgentToolCall": "collab_tool_call",
             "collabToolCall": "collab_tool_call",
             "webSearch": "web_search",
             "mcpToolCall": "mcp_tool_call",
@@ -1295,17 +1318,46 @@ class AppServerPhaseDriver:
         legacy = dict(item)
         legacy["type"] = mapping.get(item_type, item_type)
         legacy["exit_code"] = item.get("exitCode")
-        legacy["receiver_thread_ids"] = [
-            identifier
-            for identifier in (item.get("receiverThreadId"), item.get("newThreadId"))
-            if isinstance(identifier, str) and identifier
-        ]
+        native_receivers = item.get("receiverThreadIds")
+        if isinstance(native_receivers, list):
+            legacy["receiver_thread_ids"] = [
+                identifier
+                for identifier in native_receivers
+                if isinstance(identifier, str) and identifier
+            ]
+        else:
+            legacy["receiver_thread_ids"] = [
+                identifier
+                for identifier in (
+                    item.get("receiverThreadId"),
+                    item.get("newThreadId"),
+                )
+                if isinstance(identifier, str) and identifier
+            ]
         native_status = item.get("status")
         legacy["status"] = {
             "inProgress": "in_progress",
         }.get(native_status, native_status)
-        legacy["tool"] = item.get("tool")
-        if isinstance(item.get("agentStatus"), str) and legacy["receiver_thread_ids"]:
+        legacy["tool"] = {
+            "spawnAgent": "spawn_agent",
+            "sendInput": "send_input",
+            "resumeAgent": "resume_agent",
+            "closeAgent": "close_agent",
+        }.get(item.get("tool"), item.get("tool"))
+        native_states = item.get("agentsStates")
+        if isinstance(native_states, dict):
+            legacy["agents_states"] = {
+                identifier: {
+                    **state,
+                    "status": {
+                        "pendingInit": "pending_init",
+                        "notFound": "not_found",
+                    }.get(state.get("status"), state.get("status")),
+                }
+                for identifier, state in native_states.items()
+                if isinstance(identifier, str) and isinstance(state, dict)
+            }
+        elif isinstance(item.get("agentStatus"), str) and legacy["receiver_thread_ids"]:
             legacy["agents_states"] = {
                 legacy["receiver_thread_ids"][0]: {
                     "status": {
@@ -1355,8 +1407,14 @@ class AppServerPhaseDriver:
 
     def request(self, method: str, params: dict) -> dict:
         request_id = self.send(method, params)
+        deadline = time.monotonic() + APP_SERVER_REQUEST_TIMEOUT_SECONDS
         while True:
-            message = self.next_message()
+            try:
+                message = self.next_message(max(0.0, deadline - time.monotonic()))
+            except TimeoutError as error:
+                raise RuntimeError(
+                    f"Codex app-server timed out during {method}"
+                ) from error
             if "method" in message:
                 self.observe_notification(message)
                 continue
@@ -1593,18 +1651,21 @@ def run_phase(
                 steered = True
                 continue
             if "method" in message:
-                if steered and message.get("method") == "item/started":
+                if steer_acknowledged and message.get("method") == "item/started":
                     params = message.get("params")
                     item = params.get("item") if isinstance(params, dict) else None
                     item_type = item.get("type") if isinstance(item, dict) else None
                     if isinstance(params, dict) and params.get("threadId") == session_id:
                         post_steer_work = post_steer_work or item_type in {
                             "commandExecution",
+                            "dynamicToolCall",
+                            "fileChange",
+                            "imageGeneration",
                             "mcpToolCall",
                             "webSearch",
                         } or (
-                            item_type == "collabToolCall"
-                            and item.get("tool") == "spawn_agent"
+                            item_type in {"collabAgentToolCall", "collabToolCall"}
+                            and item.get("tool") in {"spawnAgent", "spawn_agent"}
                         )
                 _method, completed_turn = driver.observe_notification(message)
                 if completed_turn is not None:

@@ -79,6 +79,9 @@ class AppServerFixture:
         output = queue.Queue()
 
         class Output:
+            def __init__(self):
+                self.pending = ""
+
             def __iter__(self):
                 return self
 
@@ -86,6 +89,18 @@ class AppServerFixture:
                 value = output.get(timeout=3)
                 if value is None:
                     raise StopIteration
+                return value
+
+            def readline(self, size=-1):
+                while not self.pending:
+                    value = output.get(timeout=3)
+                    if value is None:
+                        return ""
+                    self.pending = value
+                if size >= 0 and len(self.pending) > size:
+                    value, self.pending = self.pending[:size], self.pending[size:]
+                    return value
+                value, self.pending = self.pending, ""
                 return value
 
         class Input:
@@ -662,6 +677,51 @@ class BonaparteRunnerTests(unittest.TestCase):
 
         cleanup.assert_called_once_with(server.process)
 
+    def test_bootstrap_request_timeout_terminates_coordinator_process_group(self):
+        def stay_silent(_fixture, message, _output):
+            return message.get("method") == "initialize"
+
+        server = AppServerFixture(handler=stay_silent)
+        with (
+            mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
+            mock.patch.object(RUNNER.subprocess, "Popen", side_effect=server),
+            mock.patch.object(RUNNER, "APP_SERVER_REQUEST_TIMEOUT_SECONDS", 0.01),
+            mock.patch.object(RUNNER, "terminate_and_reap") as cleanup,
+            self.assertRaisesRegex(RuntimeError, "timed out during initialize"),
+        ):
+            RUNNER.run_phase(ROOT, "scope", "Continue.", SESSION_ID)
+
+        cleanup.assert_called_once_with(server.process)
+
+    def test_oversized_app_server_notification_is_drained_before_valid_messages(self):
+        def emit_oversized_notification(_fixture, message, output):
+            if message.get("method") == "turn/start":
+                output.put(
+                    json.dumps(
+                        {
+                            "method": "item/completed",
+                            "params": {
+                                "item": {
+                                    "type": "agentMessage",
+                                    "text": "x"
+                                    * (RUNNER.PROGRESS_MAX_LINE_BYTES + 1),
+                                }
+                            },
+                        }
+                    )
+                    + "\n"
+                )
+            return False
+
+        server = AppServerFixture(handler=emit_oversized_notification)
+        with (
+            mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
+            mock.patch.object(RUNNER.subprocess, "Popen", side_effect=server),
+        ):
+            result = RUNNER.run_phase(ROOT, "rca", "Continue.", SESSION_ID)
+
+        self.assertEqual(result["state"], "completed")
+
     def test_cleanup_failure_does_not_mask_the_coordinator_error(self):
         def malformed(_fixture, message, output):
             if message.get("method") == "initialize":
@@ -866,6 +926,116 @@ class BonaparteRunnerTests(unittest.TestCase):
             },
         )
         self.assertFalse(instances[0].closed_failed)
+
+    def test_post_ack_root_work_is_rejected_but_in_flight_and_wrap_up_are_allowed(self):
+        final = receipt("needs-input")
+        final["summary"] = "One proof obligation remains unverified."
+        final["question"] = RUNNER.SOFT_BUDGET_CONTINUE_QUESTION
+        observe_notification = RUNNER.AppServerPhaseDriver.observe_notification
+
+        def run_case(*, before_ack=(), after_ack=()):
+            instances = []
+
+            class Driver:
+                _legacy_item = staticmethod(RUNNER.AppServerPhaseDriver._legacy_item)
+
+                def __init__(self, _repository, observer):
+                    self.observer = observer
+                    self.process = mock.Mock(stdin=io.StringIO())
+                    self.messages = iter(
+                        [
+                            TimeoutError(),
+                            TimeoutError(),
+                            *before_ack,
+                            {"id": 1, "result": {"turnId": "turn-1"}},
+                            *after_ack,
+                            {
+                                "method": "turn/completed",
+                                "params": {
+                                    "turn": {
+                                        "id": "turn-1",
+                                        "status": "completed",
+                                    }
+                                },
+                            },
+                        ]
+                    )
+                    instances.append(self)
+
+                def request(self, method, _params):
+                    return {
+                        "initialize": {},
+                        "thread/resume": {"thread": {"id": SESSION_ID}},
+                        "turn/start": {"turn": {"id": "turn-1"}},
+                    }[method]
+
+                def next_message(self, _timeout=None):
+                    value = next(self.messages)
+                    if isinstance(value, BaseException):
+                        raise value
+                    return value
+
+                def send(self, _method, _params):
+                    return 1
+
+                def observe_notification(self, message):
+                    return observe_notification(self, message)
+
+                @property
+                def last_agent_message(self):
+                    return json.dumps(final)
+
+                def close(self, *, failed):
+                    self.closed_failed = failed
+
+            with (
+                mock.patch.object(RUNNER, "AppServerPhaseDriver", Driver),
+                mock.patch.object(
+                    RUNNER.time, "monotonic", side_effect=[100.0, 101.0]
+                ),
+            ):
+                result = RUNNER.run_phase(
+                    ROOT,
+                    "rca",
+                    "Continue.",
+                    SESSION_ID,
+                    soft_phase_budget_seconds=1,
+                )
+            return result, instances[0]
+
+        def started(item):
+            return {
+                "method": "item/started",
+                "params": {"threadId": SESSION_ID, "item": item},
+            }
+
+        forbidden = [
+            {"type": item_type}
+            for item_type in (
+                "commandExecution",
+                "dynamicToolCall",
+                "fileChange",
+                "imageGeneration",
+                "mcpToolCall",
+                "webSearch",
+            )
+        ] + [{"type": "collabAgentToolCall", "tool": "spawnAgent"}]
+        for item in forbidden:
+            with self.subTest(item=item):
+                with self.assertRaisesRegex(
+                    RuntimeError, "started new work after soft-budget steer"
+                ):
+                    run_case(after_ack=[started(item)])
+
+        result, instance = run_case(
+            before_ack=[started({"type": "commandExecution"})],
+            after_ack=[
+                started({"type": "agentMessage"}),
+                started({"type": "collabAgentToolCall", "tool": "wait"}),
+            ],
+        )
+        self.assertEqual(result["state"], "needs-input")
+        self.assertFalse(instance.closed_failed)
 
     def test_budget_steer_rejection_is_fatal_and_cleanup_runs(self):
         instances = []
@@ -2081,16 +2251,19 @@ class BonaparteRunnerTests(unittest.TestCase):
                 "method": "item/completed",
                 "params": {
                     "item": {
-                        "type": "collabToolCall",
-                        "tool": "spawn_agent",
-                        "newThreadId": SUBAGENT_ID,
-                        "agentStatus": "completed",
+                        "type": "collabAgentToolCall",
+                        "tool": "spawnAgent",
+                        "receiverThreadIds": [SUBAGENT_ID],
+                        "agentsStates": {
+                            SUBAGENT_ID: {"status": "completed"}
+                        },
                         "prompt": canary,
                         "status": "completed",
                     }
                 },
             }
         )
+        assignment = progress.snapshot()["semantic"]
         driver.observe_notification(
             {
                 "method": "item/completed",
@@ -2120,8 +2293,43 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertEqual(observation["session_id"], SESSION_ID)
         self.assertEqual(observation["checks_completed_total_count"], 1)
         self.assertEqual(observation["checks_completed"][0]["status"], "passed")
+        self.assertEqual(assignment["stage"], "subagent-assignment")
+        self.assertEqual(assignment["actor"], "subagent-1")
         self.assertEqual(json.loads(driver.last_agent_message)["state"], "completed")
         self.assertNotIn(canary, json.dumps(progress.snapshot()))
+
+    def test_native_collab_agent_fields_and_enums_translate_to_legacy_taxonomy(self):
+        for native_tool, legacy_tool in {
+            "spawnAgent": "spawn_agent",
+            "sendInput": "send_input",
+            "resumeAgent": "resume_agent",
+            "wait": "wait",
+            "closeAgent": "close_agent",
+        }.items():
+            with self.subTest(tool=native_tool):
+                translated = RUNNER.AppServerPhaseDriver._legacy_item(
+                    {
+                        "type": "collabAgentToolCall",
+                        "tool": native_tool,
+                        "receiverThreadIds": [SUBAGENT_ID],
+                        "agentsStates": {
+                            SUBAGENT_ID: {"status": "pendingInit"},
+                            "missing-agent": {"status": "notFound"},
+                        },
+                    }
+                )
+                self.assertEqual(translated["type"], "collab_tool_call")
+                self.assertEqual(translated["tool"], legacy_tool)
+                self.assertEqual(
+                    translated["receiver_thread_ids"], [SUBAGENT_ID]
+                )
+                self.assertEqual(
+                    translated["agents_states"],
+                    {
+                        SUBAGENT_ID: {"status": "pending_init"},
+                        "missing-agent": {"status": "not_found"},
+                    },
+                )
 
     def test_native_item_status_and_updates_drive_semantics(self):
         progress = RUNNER.ProgressReporter(None, "review")
@@ -2531,7 +2739,7 @@ class BonaparteRunnerTests(unittest.TestCase):
         canary = "private-child-detail-canary"
         process = mock.Mock()
         process.stdin = io.StringIO()
-        process.stdout = iter(())
+        process.stdout = io.StringIO()
         process.returncode = 23
         process.poll.return_value = 23
 
@@ -2573,7 +2781,7 @@ class BonaparteRunnerTests(unittest.TestCase):
     def test_app_server_eof_is_reported_and_process_is_cleaned_up(self):
         process = mock.Mock()
         process.stdin = io.StringIO()
-        process.stdout = iter(())
+        process.stdout = io.StringIO()
         process.returncode = 1
         process.poll.return_value = 1
         with (
