@@ -238,6 +238,7 @@ class BonaparteRunnerTests(unittest.TestCase):
             ],
             "scope.md": [
                 "### Handoff basis",
+                "### Proof obligations",
                 "| File or boundary | Current evidence | Exact responsibility |",
                 "| Risk | Evidence and affected boundary | Safeguard |",
                 "| Alternative | Evidence | Decision and reason |",
@@ -247,15 +248,15 @@ class BonaparteRunnerTests(unittest.TestCase):
                 "### Review contract",
                 "### Delivered behavior",
                 "| File or boundary | Responsibility delivered |",
-                "| Command or diagnostic | Result | Scope/criterion proved |",
+                "### Evidence ledger",
                 "| Finding | Evidence and consequence | Disposition/fix |",
                 "| Role | Material conclusion | Evidence |",
             ],
             "review.md": [
                 "### Review basis",
+                "### Evidence ledger",
                 "| Axis | Result | Evidence | Remaining concern |",
                 "| ID | Axis | Material consequence/contract | Evidence |",
-                "| Exact command or diagnostic | Result | Contract/finding proved |",
                 "| Role | Material conclusion | Evidence |",
             ],
             "publish.md": [
@@ -276,6 +277,53 @@ class BonaparteRunnerTests(unittest.TestCase):
         implementation = (ROOT / "workflows/implement.md").read_text()
         self.assertIn("issue.git_branch_name", implementation)
         self.assertNotIn("bonaparte/<issue-id>", implementation)
+
+    def test_verification_ownership_depends_on_changed_boundary(self):
+        scope = (ROOT / "workflows/scope.md").read_text()
+        implementation = (ROOT / "workflows/implement.md").read_text()
+        review = (ROOT / "workflows/review.md").read_text()
+
+        for boundary in (
+            "Simple local logic",
+            "external/native protocol",
+            "process lifecycle",
+            "persistence/concurrency",
+            "producer-consumer boundary",
+        ):
+            self.assertIn(boundary, scope)
+        self.assertRegex(scope, r"Do not waive it as\s+safe degradation")
+        self.assertIn("provisional evidence", implementation)
+        self.assertIn("Designate one verification owner", implementation)
+        self.assertIn(
+            "run the smallest decisive authorized diagnostics", implementation
+        )
+        self.assertIn("Rebuild the evidence ledger", review)
+        self.assertRegex(review, r"run the\s+smallest decisive checks")
+        for workflow in (implementation, review):
+            self.assertRegex(workflow, r"`pass`, `fail`, or\s+`unverified`")
+            self.assertIn("fresh read-only verifier", workflow)
+            self.assertIn("unverified", workflow)
+
+    def test_workflows_upgrade_only_the_immediately_preceding_handoff_schema(self):
+        scope = (ROOT / "workflows/scope.md").read_text()
+        implementation = (ROOT / "workflows/implement.md").read_text()
+        review = (ROOT / "workflows/review.md").read_text()
+
+        self.assertIn("immediately preceding legacy schema", scope)
+        self.assertRegex(scope, r"lacks\s+`### Proof obligations`")
+        self.assertIn("without redesigning the accepted scope", scope)
+        for workflow in (implementation, review):
+            self.assertIn("immediately preceding legacy schema", workflow)
+            self.assertIn("`### Verification`", workflow)
+            self.assertRegex(workflow, r"lacks\s+`### Evidence ledger`")
+            self.assertRegex(
+                workflow, r"evidence candidates, not\s+inherited `pass`"
+            )
+            self.assertRegex(
+                workflow, r"missing ledger\s+alone is not a blocker"
+            )
+        self.assertIn("without reimplementing", implementation)
+        self.assertIn("exact recorded head", review)
 
     def test_delivery_phases_require_the_draft_pr_handoff(self):
         for phase in ("implement", "review", "publish"):
@@ -413,6 +461,7 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertTrue(run.call_args.kwargs["start_new_session"])
         self.assertIn("already the Bonaparte phase coordinator", observed["prompt"])
         self.assertIn("Default and explorer are read-only", observed["prompt"])
+        self.assertIn("run workflow-authorized diagnostics", observed["prompt"])
         self.assertIn("Children must not stage, commit, push", observed["prompt"])
         self.assertIn("or spawn descendants", observed["prompt"])
         self.assertIn("without a distinct question", observed["prompt"])

@@ -11,13 +11,16 @@ not mark it ready, merge, deploy, or mutate other remote services or data.
 
 ## Contract and safety
 
-- A new implementation requires a complete `## Bonaparte · Solution Scope`; it is
-  the complete implementation contract. An `existing` implementation must
-  instead carry the complete current implementation schema. Otherwise return
-  `blocked` before editing or publishing remote state.
+- A new implementation requires a complete `## Bonaparte · Solution Scope`; it
+  is the complete implementation contract. An `existing` implementation must
+  carry the complete current schema or qualify only for the bounded legacy
+  upgrade in preflight. Otherwise return `blocked` before editing or publishing
+  remote state.
 - Treat the scope's outcome, change surface, steps, non-goals, acceptance
   criteria, and validation as the approved contract. Do not redesign or broaden
   it during implementation.
+- Writer-authored tests and implementation claims are provisional evidence;
+  they cannot close an obligation that requires independent verification.
 - Prefer the scope's verified project utilities, built-ins, and installed
   dependencies. Add a dependency, lockfile change, schema, migration, public
   interface, generated asset, or configuration only when explicitly required.
@@ -39,9 +42,20 @@ not mark it ready, merge, deploy, or mutate other remote services or data.
    locally and the PR belongs to the repository derived from `origin`, is open,
    uses the exact branch and base, and points at that commit or a later reviewed
    descendant. A PR already marked ready is valid only as later publish state.
-   If only the PR handoff is missing, recover or create it from the verified
-   existing branch and commit, then publish one refreshed implementation
-   handoff; otherwise return `blocked` with the stale fact.
+   Treat it as the immediately preceding legacy schema only when it contains its
+   review contract, delivered behavior, changed-file responsibilities,
+   `### Verification`, findings, deviations, remaining work, Git handoff, and
+   implementation map, but lacks `### Evidence ledger`. For that case only,
+   reconstruct obligations from its carried acceptance criteria and changed
+   boundaries, run steps 2 and 7–9 at the exact recorded candidate, and publish
+   one refreshed current-schema implementation handoff without reimplementing
+   when the completion gate passes. Legacy checks are evidence candidates, not
+   inherited `pass` results. The missing ledger alone is not a blocker; a
+   missing contract or provenance fact, failed or unverified obligation, or
+   required code change follows the normal blocked or correction rules. If only
+   the PR handoff is missing, recover or create it from the verified existing
+   branch and commit, then publish one refreshed implementation handoff;
+   otherwise return `blocked` with the stale fact.
 2. Record repository identity, current branch, `HEAD`, staged, unstaged, and
    untracked paths. Require `issue.git_branch_name` in the supplied metadata and
    validate it with `git check-ref-format --branch`. Use that exact Linear branch
@@ -83,36 +97,49 @@ not mark it ready, merge, deploy, or mutate other remote services or data.
 1. Translate the approved steps into dependency-aware work packets. Each packet
    must name its owned paths, required behavior and non-goals, dependencies,
    proving checks, and stop conditions for stale scope or unexpected state.
-2. The coordinator may implement one narrow coherent packet directly. Otherwise
+2. Create an evidence ledger from the scope's proof obligations. Give each one
+   an owner and record `pass`, `fail`, or `unverified`: only observed direct
+   evidence is `pass`; a reproduced contradiction is `fail`; missing or
+   insufficient evidence is `unverified`. Only `pass` closes an obligation.
+3. The coordinator may implement one narrow coherent packet directly. Otherwise
    use the fewest fresh writer subagents needed and do not split work merely to
    add concurrency. Give each path exactly one writer. Run packets concurrently
    only when their entire file and command side-effect surfaces are disjoint;
    serialize overlaps, package managers, formatters, code generation,
    migrations, and global checks. The coordinator alone owns staging, commits,
    pushes, GitHub, and Linear.
-3. Require each writer to re-read its assigned files before editing and return
+4. Require each writer to re-read its assigned files before editing and return
    only: completed scope items, files changed, checks and results, blocker, and
    deviation. Writers may not create new product or architecture decisions. If
    a necessary path or command is outside the packet, stop and report it.
-4. After every wave, inspect the actual diff, map every hunk to an approved
+5. After every wave, inspect the actual diff, map every hunk to an approved
    step, and rerun focused checks. A coherent bounded unit may be committed
    locally with the issue ID, but do not push every wave. Keep an incomplete wave
    local until it is coherent; do not manufacture commits. If a writer fails,
    inspect the workspace before reassigning and never assume it made no changes.
-5. Inspect the integrated diff and affected consumers at the exact commit for
+6. Inspect the integrated diff and affected consumers at the exact commit for
    scope fidelity, simplicity and reuse, correctness and failure behavior,
    verification, compatibility, and material resource effects. Delegate only a
    named uncertainty that can change completion; add a specialist only for a
    concrete material risk.
-6. Reproduce each material finding and route it to the coordinator or owning
+7. Designate one verification owner for the integrated candidate. The
+   coordinator may own simple local-logic checks. For any scoped external/native
+   protocol, process lifecycle, persistence/concurrency, or producer-consumer
+   obligation, use one fresh non-writing default or explorer agent. Give it the
+   acceptance contract, exact candidate, changed paths, affected consumers,
+   allowed evidence, and obligations—not the author's conclusions. It must
+   inspect the code, run the smallest decisive authorized diagnostics, and
+   return each obligation as `pass`, `fail`, or `unverified`. Fix failures
+   minimally and recheck; `unverified` blocks completion.
+8. Reproduce each material finding and route it to the coordinator or owning
    writer for the minimum in-scope correction. Use a non-authoring reviewer to
    recheck judgment-dependent corrections; a deterministic proving check is
    sufficient for a mechanical correction. Do not add arbitrary review rounds.
-7. Run the smallest checks proving each acceptance criterion, then only the
+9. Run the smallest checks proving each acceptance criterion, then only the
    broader repository-supported build, type, lint, and test checks justified by
    the affected surface. For a bug fix, add a regression check that fails for
    the original mechanism when feasible.
-8. Reinspect the final diff and Git status. Commit any remaining coherent
+10. Reinspect the final diff and Git status. Commit any remaining coherent
    implementation-owned changes with the issue ID and push the final verified
    head normally. Create the one draft PR now if preflight found none. Never
    amend an earlier implementation commit or unrelated history. Require a clean
@@ -124,6 +151,9 @@ Call the phase implemented only when:
 
 - every scoped step and acceptance criterion maps to the final diff and passing
   evidence;
+- every proof obligation is `pass`; independence-required obligations were run
+  by a fresh read-only verifier, and no author claim or author-derived synthetic
+  fixture substituted for direct evidence;
 - every diff hunk is explained by the scope and non-goals remain untouched;
 - relevant build, type, lint, test, and behavior checks pass without an
   unexplained failure;
@@ -170,10 +200,10 @@ this schema and contains the evidence required by the completion gate.
 |---|---|---|---|
 | [`file` or boundary] | [exact change] | [consumer effect or None] | [`file:line`, diff fact, or diagnostic] |
 
-### Verification
-| Command or diagnostic | Result | Scope/criterion proved | Relevant boundary |
-|---|---|---|---|
-| `[exact command or diagnostic]` | [pass/fail and salient counts] | [criterion] | [files/interface] |
+### Evidence ledger
+| Acceptance criterion | Boundary and proof obligation | Owner | Exact command or diagnostic | Status | Observed evidence |
+|---|---|---|---|---|---|
+| [criterion] | [boundary and required proof] | [coordinator/verifier] | `[check]` | [pass/fail/unverified] | [observed result] |
 
 ### Review findings
 | Finding | Evidence and consequence | Disposition/fix | Recheck |

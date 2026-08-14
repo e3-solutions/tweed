@@ -25,6 +25,11 @@ or perform any other external write.
   insufficient and current dependency behavior matters.
 - Separate verified facts and constraints from proposals, assumptions, and
   unresolved decisions.
+- Resolve any uncertainty that can change an acceptance criterion's feasibility
+  or design with direct evidence before scope completes. Do not waive it as
+  safe degradation or close it with an assumption or a synthetic fixture based
+  only on the proposed behavior. A later conformance uncertainty may remain
+  only as an explicit proof obligation, not a verified fact.
 - Keep deployments, credentials, remote configuration, live migrations, and
   production verification out of implementation. For each state-changing
   external prerequisite, record safe ordering, verification, and rollback; do
@@ -59,15 +64,25 @@ or perform any other external write.
 4. Synthesize the smallest complete candidate. Every proposed change must map
    to the bug's RCA mechanism, the feature's requested outcome, or an observable
    acceptance criterion.
-5. If the request cannot fit one coherent implementation packet, propose ordered
+5. Classify each acceptance criterion's proving boundary and record its smallest
+   decisive proof and owner. Simple local logic may use a coordinator-owned
+   deterministic check. A changed external/native protocol, process lifecycle,
+   persistence/concurrency invariant, or producer-consumer boundary requires
+   fresh read-only verification in both implementation and review, using,
+   respectively: the installed primary contract plus
+   captured/live behavior; injected exit/error/interruption with resource
+   cleanup proof; interruption/retry/competing-access proof; or an end-to-end
+   consumer canary. Combine compatible obligations under one verifier and do
+   not verify boundaries the change does not touch.
+6. If the request cannot fit one coherent implementation packet, propose ordered
    valuable packets and ask which comes first. Do not publish an omnibus scope.
-6. Apply adversarial checks directly, delegating to one fresh reviewer only for
+7. Apply adversarial checks directly, delegating to one fresh reviewer only for
    a named objection or unresolved decision. Require only material objections
    and the minimum correction.
-7. Add one specialist only when a named unresolved risk cannot be decided from
+8. Add one specialist only when a named unresolved risk cannot be decided from
    repository evidence or the coordinator's current analysis. Do not add an
    agent or round without a specific unresolved question.
-8. Reconcile supported objections. Re-read cited evidence and confirm `HEAD`
+9. Reconcile supported objections. Re-read cited evidence and confirm `HEAD`
    and relevant worktree state before reporting.
 
 ## Completion gate
@@ -89,6 +104,8 @@ Call the solution scoped only when:
 - every acceptance criterion names its trigger, observable outcome, and smallest
   proving check; include a before/after bug regression when feasible and broader
   suites only when justified;
+- every acceptance criterion has a classified proof obligation and owner, and
+  no design-affecting uncertainty remains unresolved;
 - implementation steps are ordered, locally executable, and independently
   verifiable; and
 - no material evidence-backed objection remains unresolved.
@@ -101,9 +118,17 @@ with the smallest missing investigation; never invent architecture.
 ## Linear comment
 
 If an `existing` solution scope was supplied, validate it under the current
-gate and comment schema before returning it. If it is incomplete, return
-`blocked` and identify the missing handoff facts. Otherwise publish one terminal
-`scoped` comment:
+gate. Treat it as the immediately preceding legacy schema only when it contains
+the outcome, repository evidence, reuse decision, change surface,
+implementation steps, non-goals, acceptance criteria, risks and safeguards,
+validation, decisions and assumptions, and repository state, but lacks
+`### Proof obligations`. For that case only, classify the carried acceptance
+criteria under step 5 without redesigning the accepted scope, revalidate
+material repository facts, and publish one refreshed current-schema scope. The
+missing table alone is not a blocker; any missing contract fact, design change,
+or unresolved design-affecting uncertainty is. A complete current scope may be
+returned only after validation; any other incomplete scope returns `blocked`.
+For a new or upgraded scope, publish one terminal `scoped` comment:
 
 After writing, re-read the comment and return `completed` only if it matches
 this schema and contains the evidence required by the completion gate.
@@ -142,6 +167,11 @@ this schema and contains the evidence required by the completion gate.
 
 ### Acceptance criteria
 - [Observable behavior proving the fix]
+
+### Proof obligations
+| Acceptance criterion | Boundary type | Direct evidence required | Verification owner |
+|---|---|---|---|
+| [criterion] | [local logic/protocol/process/persistence/concurrency/producer-consumer] | [smallest decisive check] | [coordinator or fresh read-only verifier] |
 
 ### Risks and safeguards
 | Risk | Evidence and affected boundary | Safeguard | Proving check |
