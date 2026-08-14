@@ -147,11 +147,9 @@ class InstallationTests(unittest.TestCase):
         self.assertEqual(run.call_args.kwargs["env"]["BONAPARTE_AUTO_UPDATE"], "0")
 
     @unittest.skipUnless(os.name == "posix", "file-descriptor ABI requires POSIX")
-    def test_launcher_preserves_only_the_host_progress_channel_for_the_runner(self):
+    def test_launcher_preserves_only_the_host_progress_channel_for_all_runner_routes(self):
         self.install()
         release = (self.home / "current").resolve()
-        progress_reader, progress_writer = os.pipe()
-        self.addCleanup(os.close, progress_reader)
 
         probe = release / "bonaparte"
         probe.write_text(
@@ -159,8 +157,13 @@ class InstallationTests(unittest.TestCase):
             "import json, os, sys\n"
             "fd = int(os.environ['BONAPARTE_PROGRESS_FD'])\n"
             "os.write(fd, (json.dumps({\n"
-            "    'version': 1, 'sequence': 1, 'phase': 'review',\n"
+            "    'version': 2, 'sequence': 1,\n"
+            "    'phase': os.environ['TEST_EXPECTED_PHASE'],\n"
             "    'state': 'started', 'elapsed_seconds': 0,\n"
+            "    'semantic': {\n"
+            "        'stage': 'coordinating', 'actor': 'coordinator',\n"
+            "        'activity': 'lifecycle', 'status': 'started', 'count': None,\n"
+            "    },\n"
             "}, separators=(',', ':')) + '\\n').encode())\n"
             "print('runner stdout')\n"
             "print('runner stderr', file=sys.stderr)\n"
@@ -174,9 +177,10 @@ class InstallationTests(unittest.TestCase):
         fake_git.write_text(
             "#!/usr/bin/env python3\n"
             "import json, os, pathlib\n"
+            "fd = int(os.environ.get('TEST_PROGRESS_FD', '-1'))\n"
             "inherited = True\n"
             "try:\n"
-            f"    os.write({progress_writer}, b'updater wrote to progress\\n')\n"
+            "    os.write(fd, b'updater wrote to progress\\n')\n"
             "except OSError:\n"
             "    inherited = False\n"
             f"pathlib.Path({str(updater_called)!r}).write_text(json.dumps({{\n"
@@ -187,40 +191,72 @@ class InstallationTests(unittest.TestCase):
         )
         fake_git.chmod(0o755)
 
-        environment = {
-            **self.environment,
-            "BONAPARTE_AUTO_UPDATE": "1",
-            "BONAPARTE_PROGRESS_FD": str(progress_writer),
-            "PATH": f"{fake_bin}{os.pathsep}{self.environment['PATH']}",
-        }
-        completed = subprocess.run(
-            [str(self.bin / "bonaparte"), "review", "COR-3451"],
-            cwd=self.source,
-            env=environment,
-            check=True,
-            capture_output=True,
-            text=True,
-            pass_fds=(progress_writer,),
-            timeout=45,
+        routes = (
+            ("create", ("create", "feature", "request")),
+            ("rca", ("RCA", "COR-3451")),
+            ("scope", ("scope", "COR-3451")),
+            ("implement", ("implement", "COR-3451")),
+            ("review", ("review", "COR-3451")),
+            ("publish", ("publish", "COR-3451")),
+            ("scope", ("resume", "opaque-token", "answer")),
+            ("scope", ("resume", "scope", "session-id", "answer")),
         )
-        os.close(progress_writer)
-        progress = os.read(progress_reader, 4096).decode()
+        for expected_phase, arguments in routes:
+            with self.subTest(route=arguments):
+                progress_reader, progress_writer = os.pipe()
+                try:
+                    (self.home / "last-check").unlink(missing_ok=True)
+                    updater_called.unlink(missing_ok=True)
+                    environment = {
+                        **self.environment,
+                        "BONAPARTE_AUTO_UPDATE": "1",
+                        "BONAPARTE_PROGRESS_FD": str(progress_writer),
+                        "TEST_PROGRESS_FD": str(progress_writer),
+                        "TEST_EXPECTED_PHASE": expected_phase,
+                        "PATH": f"{fake_bin}{os.pathsep}{self.environment['PATH']}",
+                    }
+                    completed = subprocess.run(
+                        [str(self.bin / "bonaparte"), *arguments],
+                        cwd=self.source,
+                        env=environment,
+                        check=True,
+                        capture_output=True,
+                        text=True,
+                        pass_fds=(progress_writer,),
+                        timeout=45,
+                    )
+                    os.close(progress_writer)
+                    progress_writer = -1
+                    progress = os.read(progress_reader, 4096).decode()
 
-        self.assertGreaterEqual(int(environment["BONAPARTE_PROGRESS_FD"]), 3)
-        self.assertTrue(updater_called.exists())
-        self.assertEqual(
-            json.loads(updater_called.read_text()),
-            {"env_present": False, "fd_inherited": False},
-        )
-        self.assertEqual(completed.stdout, "runner stdout\n")
-        self.assertEqual(completed.stderr, "runner stderr\n")
-        self.assertEqual(
-            json.loads(progress),
-            {
-                "version": 1,
-                "sequence": 1,
-                "phase": "review",
-                "state": "started",
-                "elapsed_seconds": 0,
-            },
-        )
+                    self.assertGreaterEqual(
+                        int(environment["BONAPARTE_PROGRESS_FD"]), 3
+                    )
+                    self.assertTrue(updater_called.exists())
+                    self.assertEqual(
+                        json.loads(updater_called.read_text()),
+                        {"env_present": False, "fd_inherited": False},
+                    )
+                    self.assertEqual(completed.stdout, "runner stdout\n")
+                    self.assertEqual(completed.stderr, "runner stderr\n")
+                    self.assertEqual(
+                        json.loads(progress),
+                        {
+                            "version": 2,
+                            "sequence": 1,
+                            "phase": expected_phase,
+                            "state": "started",
+                            "elapsed_seconds": 0,
+                            "semantic": {
+                                "stage": "coordinating",
+                                "actor": "coordinator",
+                                "activity": "lifecycle",
+                                "status": "started",
+                                "count": None,
+                            },
+                        },
+                    )
+                finally:
+                    if progress_writer >= 0:
+                        os.close(progress_writer)
+                    os.close(progress_reader)

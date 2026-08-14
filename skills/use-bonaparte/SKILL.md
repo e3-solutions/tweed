@@ -79,12 +79,16 @@ MCP without a model to select only the handoff required by the next phase, and
 installs nothing. Treat each command's stdout as one JSON receipt of at most 4
 KiB. Do not open coordinator/subagent tasks, Linear, or logs.
 
-For review only, a trusted host may optionally open and explicitly inherit a
-nonblocking file descriptor numbered 3 or higher, then set
-`BONAPARTE_PROGRESS_FD` to its number. Consume that JSONL channel only as
-best-effort liveness; it carries no review result, never replaces the single
-bounded stdout receipt, and its absence or failure requires no retry or
-fallback. The invoking task remains thin and waits for the final receipt.
+For every fresh or resumed phase, a trusted host may optionally open and
+explicitly inherit a nonblocking file descriptor numbered 3 or higher, then set
+`BONAPARTE_PROGRESS_FD` to its number. Progress JSONL uses ABI version 2 and
+contains only fixed semantic stages, activities, statuses, counts, opaque actor
+ordinals, and at most 32 deduplicated milestones. A host may continuously drain
+and render those records while the one phase command runs, but must not poll
+Bonaparte, interpret progress as a phase result, or expose coordinator data.
+The channel is best effort; its absence or permanent failure requires no retry
+or fallback. It never replaces the single stdout receipt of at most 4 KiB. The
+invoking task remains thin and waits once for that final receipt.
 
 On `needs-input`, ask only `question`; it should already include a recommendation
 when the phase has evidence for one. Never answer for the user or combine

@@ -5,17 +5,51 @@ from __future__ import annotations
 import fcntl
 import json
 import os
+import re
 import stat
 import tempfile
 import uuid
 from contextlib import contextmanager
 from pathlib import Path
 
-VERSION = 1
+VERSION = 2
 MAX_BYTES = 1 << 20
+MAX_SEMANTIC_MILESTONES = 32
+MAX_SEMANTIC_COUNT = 2**31 - 1
 STATUSES = {"waiting-input", "completed", "blocked"}
 PHASES = {"create", "rca", "scope", "implement", "review", "publish"}
-FIELDS = {
+SEMANTIC_STAGES = {
+    "coordinating",
+    "searching",
+    "tool-use",
+    "checking",
+    "file-changes",
+    "subagent-assignment",
+    "subagent-completion",
+    "waiting-input",
+    "finalizing",
+    "terminal",
+}
+SEMANTIC_ACTIVITIES = {
+    "lifecycle",
+    "search",
+    "tool",
+    "check",
+    "file-change",
+    "subagent",
+}
+SEMANTIC_STATUSES = {
+    "started",
+    "in-progress",
+    "completed",
+    "failed",
+    "waiting",
+    "interrupted",
+}
+SEMANTIC_FIELDS = {"stage", "actor", "activity", "status", "count"}
+_SUBAGENT_ACTOR = re.compile(r"subagent-([1-9][0-9]{0,9})\Z")
+
+V1_FIELDS = {
     "version",
     "token",
     "status",
@@ -40,6 +74,12 @@ FIELDS = {
     "blocker",
     "remote_state_changed",
     "updated_at",
+}
+FIELDS = V1_FIELDS | {
+    "semantic",
+    "semantic_milestones",
+    "semantic_milestones_total_count",
+    "semantic_milestones_truncated",
 }
 
 
@@ -115,11 +155,34 @@ def _json_bytes(value: object) -> bytes:
         raise RuntimeError("checkpoint is not valid JSON") from error
 
 
-def validate(value: object, token=None) -> dict:
-    if not isinstance(value, dict) or set(value) != FIELDS:
-        raise RuntimeError("checkpoint envelope is invalid")
-    if type(value["version"]) is not int or value["version"] != VERSION:
-        raise RuntimeError("checkpoint version is invalid")
+def _validate_semantic(value: object, label: str) -> None:
+    if not isinstance(value, dict) or set(value) != SEMANTIC_FIELDS:
+        raise RuntimeError(f"checkpoint {label} is invalid")
+    if not isinstance(value["stage"], str) or value["stage"] not in SEMANTIC_STAGES:
+        raise RuntimeError(f"checkpoint {label} stage is invalid")
+    actor = value["actor"]
+    if actor is not None and actor != "coordinator":
+        match = _SUBAGENT_ACTOR.fullmatch(actor) if isinstance(actor, str) else None
+        if match is None or int(match.group(1)) > MAX_SEMANTIC_COUNT:
+            raise RuntimeError(f"checkpoint {label} actor is invalid")
+    activity = value["activity"]
+    if activity is not None and (
+        not isinstance(activity, str) or activity not in SEMANTIC_ACTIVITIES
+    ):
+        raise RuntimeError(f"checkpoint {label} activity is invalid")
+    status = value["status"]
+    if status is not None and (
+        not isinstance(status, str) or status not in SEMANTIC_STATUSES
+    ):
+        raise RuntimeError(f"checkpoint {label} status is invalid")
+    if value["count"] is not None and (
+        type(value["count"]) is not int
+        or not 0 <= value["count"] <= MAX_SEMANTIC_COUNT
+    ):
+        raise RuntimeError(f"checkpoint {label} count is invalid")
+
+
+def _validate_common(value: dict, token=None) -> None:
     if token is not None and canonical_token(value["token"]) != canonical_token(token):
         raise RuntimeError("checkpoint token does not match its path")
     canonical_token(value["token"])
@@ -170,9 +233,51 @@ def validate(value: object, token=None) -> dict:
             or (not truncated and total != len(items))
         ):
             raise RuntimeError(f"checkpoint {field} inventory is invalid")
+
+
+def validate(value: object, token=None) -> dict:
+    if not isinstance(value, dict) or set(value) != FIELDS:
+        raise RuntimeError("checkpoint envelope is invalid")
+    if type(value["version"]) is not int or value["version"] != VERSION:
+        raise RuntimeError("checkpoint version is invalid")
+    _validate_common(value, token)
+    if value["semantic"] is not None:
+        _validate_semantic(value["semantic"], "semantic snapshot")
+    milestones = value["semantic_milestones"]
+    total = value["semantic_milestones_total_count"]
+    truncated = value["semantic_milestones_truncated"]
+    if (
+        not isinstance(milestones, list)
+        or len(milestones) > MAX_SEMANTIC_MILESTONES
+        or type(total) is not int
+        or not len(milestones) <= total <= MAX_SEMANTIC_COUNT
+        or type(truncated) is not bool
+        or (not truncated and total != len(milestones))
+    ):
+        raise RuntimeError("checkpoint semantic milestone inventory is invalid")
+    for milestone in milestones:
+        _validate_semantic(milestone, "semantic milestone")
     if len(_json_bytes(value)) > MAX_BYTES:
         raise RuntimeError("checkpoint exceeds 1 MiB")
     return value
+
+
+def _normalize_read(value: object, token: str) -> dict:
+    if not isinstance(value, dict):
+        raise RuntimeError("checkpoint envelope is invalid")
+    version = value.get("version")
+    if type(version) is int and version == 1 and set(value) == V1_FIELDS:
+        _validate_common(value, token)
+        normalized = dict(value)
+        normalized.update(
+            version=VERSION,
+            semantic=None,
+            semantic_milestones=[],
+            semantic_milestones_total_count=0,
+            semantic_milestones_truncated=False,
+        )
+        return validate(normalized, token)
+    return validate(value, token)
 
 
 def _open_regular(path: Path, flags: int, mode=0o600) -> int:
@@ -199,7 +304,7 @@ def read_checkpoint(token, home=None, *, active_only=False) -> dict:
     if len(payload) > MAX_BYTES:
         raise RuntimeError("checkpoint exceeds 1 MiB")
     try:
-        checkpoint = validate(json.loads(payload.decode("utf-8")), canonical)
+        checkpoint = _normalize_read(json.loads(payload.decode("utf-8")), canonical)
     except (UnicodeDecodeError, json.JSONDecodeError) as error:
         raise RuntimeError("checkpoint JSON is invalid") from error
     if active_only and checkpoint["status"] != "waiting-input":

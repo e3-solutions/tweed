@@ -14,6 +14,38 @@ from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 SESSION_ID = "019fd385-da76-77f3-bd3a-2f1e4e49b936"
+SUBAGENT_ID = "019ff6ce-cb6d-7fb3-a844-2b022bf2b0af"
+
+# Shapes captured from Codex's native `exec --json` collaboration events.
+NATIVE_COLLAB_SPAWN_COMPLETED = {
+    "type": "item.completed",
+    "item": {
+        "id": "item_0",
+        "type": "collab_tool_call",
+        "tool": "spawn_agent",
+        "sender_thread_id": SESSION_ID,
+        "receiver_thread_ids": [SUBAGENT_ID],
+        "prompt": "private assignment",
+        "agents_states": {
+            SUBAGENT_ID: {"status": "pending_init", "message": None}
+        },
+        "status": "completed",
+    },
+}
+NATIVE_COLLAB_WAIT_COMPLETED = {
+    "type": "item.completed",
+    "item": {
+        "id": "item_1",
+        "type": "collab_tool_call",
+        "tool": "wait",
+        "sender_thread_id": SESSION_ID,
+        "receiver_thread_ids": [SUBAGENT_ID],
+        "agents_states": {
+            SUBAGENT_ID: {"status": "completed", "message": None}
+        },
+        "status": "completed",
+    },
+}
 
 
 def load_runner():
@@ -27,6 +59,38 @@ def load_runner():
 
 
 RUNNER = load_runner()
+
+
+def popen_adapter(fake_run):
+    """Adapt legacy completed-process fixtures to the incremental Popen boundary."""
+    def construct(command, **kwargs):
+        process = mock.Mock()
+        process.stdout = io.BytesIO()
+
+        class Input(io.BytesIO):
+            def close(self):
+                events = io.StringIO()
+                completed = fake_run(
+                    command,
+                    **{
+                        **kwargs,
+                        "input": self.getvalue().decode(),
+                        "stdout": events,
+                    },
+                )
+                process.stdout = io.BytesIO(events.getvalue().encode())
+                process.returncode = completed.returncode
+                stderr = getattr(completed, "stderr", None)
+                target = kwargs.get("stderr")
+                if stderr and hasattr(target, "write"):
+                    target.write(stderr)
+                super().close()
+
+        process.stdin = Input()
+        process.wait.side_effect = lambda: process.returncode
+        return process
+
+    return construct
 
 
 def receipt(state="completed"):
@@ -335,7 +399,9 @@ class BonaparteRunnerTests(unittest.TestCase):
         with (
             mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
             mock.patch.object(RUNNER, "call_linear", return_value=(linear_issue(), [])),
-            mock.patch.object(RUNNER.subprocess, "run", side_effect=fake_run),
+            mock.patch.object(
+                RUNNER.subprocess, "Popen", side_effect=popen_adapter(fake_run)
+            ) as run,
         ):
             result = RUNNER.run_phase(ROOT, "rca", "COR-1")
             observed["omit_event"] = True
@@ -344,6 +410,7 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertEqual(result["resume_session_id"], SESSION_ID)
         self.assertIsNone(fallback["resume_session_id"])
         self.assertEqual(observed["env"][RUNNER.PHASE_CHILD_ENV], "1")
+        self.assertTrue(run.call_args.kwargs["start_new_session"])
         self.assertIn("already the Bonaparte phase coordinator", observed["prompt"])
         self.assertIn("Default and explorer are read-only", observed["prompt"])
         self.assertIn("Children must not stage, commit, push", observed["prompt"])
@@ -359,6 +426,113 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertNotIn("-m", observed["command"])
         self.assertNotIn("resume", observed["command"][:3])
 
+    def test_run_phase_failure_exports_the_latest_semantic_snapshot(self):
+        observation = {}
+        progress = RUNNER.ProgressReporter(None, "scope")
+        latest = {
+            "stage": "checking",
+            "actor": "coordinator",
+            "activity": "check",
+            "status": "failed",
+            "count": 3,
+        }
+        process = mock.Mock(stdin=io.BytesIO(), stdout=io.BytesIO())
+
+        def fail_after_progress(_stream, _observer):
+            progress.update_semantic(latest, milestone=True)
+            raise RuntimeError("event drain failed")
+
+        with (
+            mock.patch.object(RUNNER, "_ACTIVE_PROGRESS", progress),
+            mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
+            mock.patch.object(RUNNER.subprocess, "Popen", return_value=process),
+            mock.patch.object(RUNNER, "drain_jsonl", side_effect=fail_after_progress),
+            self.assertRaisesRegex(RuntimeError, "event drain failed"),
+        ):
+            RUNNER.run_phase(
+                ROOT,
+                "scope",
+                "Continue.",
+                SESSION_ID,
+                observation=observation,
+            )
+
+        self.assertEqual(observation["semantic"], latest)
+        self.assertEqual(observation["semantic_milestones"], [latest])
+        self.assertEqual(observation["semantic_milestones_total_count"], 1)
+        self.assertFalse(observation["semantic_milestones_truncated"])
+
+    def test_run_phase_exception_terminates_coordinator_process_group(self):
+        real_popen = subprocess.Popen
+        child = None
+        grandchild_pid = None
+
+        def spawn_sleeping_group(*_args, **kwargs):
+            nonlocal child, grandchild_pid
+            child = real_popen(
+                [
+                    sys.executable,
+                    "-c",
+                    (
+                        "import subprocess, sys, time; "
+                        "p=subprocess.Popen([sys.executable,'-c','import time; time.sleep(60)']); "
+                        "print(p.pid, flush=True); time.sleep(60)"
+                    ),
+                ],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+                start_new_session=kwargs["start_new_session"],
+            )
+            grandchild_pid = int(child.stdout.readline())
+            return child
+
+        try:
+            with (
+                mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
+                mock.patch.object(
+                    RUNNER.subprocess, "Popen", side_effect=spawn_sleeping_group
+                ),
+                mock.patch.object(
+                    RUNNER, "drain_jsonl", side_effect=RuntimeError("drain failed")
+                ),
+                self.assertRaisesRegex(RuntimeError, "drain failed"),
+            ):
+                RUNNER.run_phase(
+                    ROOT,
+                    "scope",
+                    "Continue.",
+                    SESSION_ID,
+                )
+
+            self.assertIsNotNone(child)
+            self.assertIsNotNone(child.poll())
+            with self.assertRaises(ProcessLookupError):
+                os.kill(grandchild_pid, 0)
+        finally:
+            if child is not None and child.poll() is None:
+                os.killpg(child.pid, 9)
+                child.wait(timeout=3)
+
+    def test_cleanup_failure_does_not_mask_the_coordinator_error(self):
+        process = mock.Mock(stdin=io.BytesIO(), stdout=io.BytesIO())
+        with (
+            mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
+            mock.patch.object(RUNNER.subprocess, "Popen", return_value=process),
+            mock.patch.object(
+                RUNNER, "drain_jsonl", side_effect=RuntimeError("drain failed")
+            ),
+            mock.patch.object(
+                RUNNER,
+                "terminate_and_reap",
+                side_effect=subprocess.TimeoutExpired("codex", 5),
+            ) as cleanup,
+            self.assertRaisesRegex(RuntimeError, "drain failed"),
+        ):
+            RUNNER.run_phase(ROOT, "scope", "Continue.", SESSION_ID)
+
+        cleanup.assert_called_once_with(process)
+
     def test_phase_model_and_reasoning_configure_coordinator_and_children(self):
         observed = {}
 
@@ -371,7 +545,7 @@ class BonaparteRunnerTests(unittest.TestCase):
         with (
             mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
             mock.patch.object(RUNNER, "call_linear", return_value=(linear_issue(), [])),
-            mock.patch.object(RUNNER.subprocess, "run", side_effect=fake_run),
+            mock.patch.object(RUNNER.subprocess, "Popen", side_effect=popen_adapter(fake_run)),
         ):
             RUNNER.run_phase(
                 ROOT,
@@ -437,7 +611,7 @@ class BonaparteRunnerTests(unittest.TestCase):
         with (
             mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
             mock.patch.object(RUNNER, "call_linear") as call_linear,
-            mock.patch.object(RUNNER.subprocess, "run", side_effect=fake_run),
+            mock.patch.object(RUNNER.subprocess, "Popen", side_effect=popen_adapter(fake_run)),
         ):
             result = RUNNER.run_phase(
                 repository, phase, answer, session_id, model, reasoning
@@ -538,6 +712,64 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertIsNone(stored["pending_answer"])
         self.assertEqual(stored["checks_completed_total_count"], 1)
 
+    def test_checkpoint_observation_replaces_only_complete_semantic_snapshots(self):
+        stale_semantic = {
+            "stage": "coordinating",
+            "actor": "coordinator",
+            "activity": "lifecycle",
+            "status": "started",
+            "count": None,
+        }
+        stale_milestone = {**stale_semantic, "status": "completed"}
+        checkpoint = {
+            "semantic": stale_semantic,
+            "semantic_milestones": [stale_milestone],
+            "semantic_milestones_total_count": 1,
+            "semantic_milestones_truncated": False,
+        }
+        latest_semantic = {
+            "stage": "checking",
+            "actor": "coordinator",
+            "activity": "check",
+            "status": "failed",
+            "count": 41,
+        }
+        latest_milestones = [
+            {**latest_semantic, "status": "completed", "count": 40},
+            latest_semantic,
+        ]
+
+        RUNNER._update_checkpoint_observation(
+            checkpoint,
+            {
+                "semantic": latest_semantic,
+                "semantic_milestones": latest_milestones,
+                "semantic_milestones_total_count": 43,
+                "semantic_milestones_truncated": True,
+            },
+        )
+
+        self.assertEqual(checkpoint["semantic"], latest_semantic)
+        self.assertEqual(checkpoint["semantic_milestones"], latest_milestones)
+        self.assertEqual(checkpoint["semantic_milestones_total_count"], 43)
+        self.assertTrue(checkpoint["semantic_milestones_truncated"])
+        retained = {
+            name: checkpoint[name]
+            for name in (
+                "semantic",
+                "semantic_milestones",
+                "semantic_milestones_total_count",
+                "semantic_milestones_truncated",
+            )
+        }
+
+        RUNNER._update_checkpoint_observation(checkpoint, {})
+
+        self.assertEqual(
+            {name: checkpoint[name] for name in retained},
+            retained,
+        )
+
     def test_token_resume_persists_answer_and_reuses_session_and_token(self):
         with tempfile.TemporaryDirectory() as temporary:
             stdout = io.StringIO()
@@ -587,7 +819,7 @@ class BonaparteRunnerTests(unittest.TestCase):
                     mock.patch.object(RUNNER, "run_phase", side_effect=fake_phase),
                     mock.patch.object(sys, "stdout", stdout),
                 ):
-                    self.assertEqual(RUNNER.main(), 0)
+                    self.assertEqual(RUNNER.main(), 0, stdout.getvalue())
                 output = json.loads(stdout.getvalue())
                 stored = RUNNER.read_checkpoint(token, active_only=True)
 
@@ -626,7 +858,7 @@ class BonaparteRunnerTests(unittest.TestCase):
                     mock.patch.object(RUNNER, "run_phase", side_effect=completed) as run,
                     mock.patch.object(sys, "stdout", stdout),
                 ):
-                    self.assertEqual(RUNNER.main(), 0)
+                    self.assertEqual(RUNNER.main(), 0, stdout.getvalue())
                 stored = RUNNER.read_checkpoint(SESSION_ID)
 
                 stdout = io.StringIO()
@@ -1178,7 +1410,7 @@ class BonaparteRunnerTests(unittest.TestCase):
 
         with (
             mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
-            mock.patch.object(RUNNER.subprocess, "run", side_effect=fake_run) as run,
+            mock.patch.object(RUNNER.subprocess, "Popen", side_effect=popen_adapter(fake_run)) as run,
         ):
             result = RUNNER.run_phase(ROOT, "scope", "Continue.", SESSION_ID)
 
@@ -1217,9 +1449,9 @@ class BonaparteRunnerTests(unittest.TestCase):
         for event in events:
             self.assertEqual(
                 set(event),
-                {"version", "sequence", "phase", "state", "elapsed_seconds"},
+                {"version", "sequence", "phase", "state", "elapsed_seconds", "semantic"},
             )
-            self.assertEqual(event["version"], 1)
+            self.assertEqual(event["version"], 2)
             self.assertEqual(event["phase"], "review")
             self.assertLessEqual(len(json.dumps(event).encode()), 4096)
 
@@ -1321,6 +1553,268 @@ class BonaparteRunnerTests(unittest.TestCase):
 
         self.assertEqual(wait.call_count, 2)
         report.assert_called_once_with("active")
+
+    def test_semantic_translation_is_bounded_deduplicated_and_private(self):
+        read_descriptor, write_descriptor = os.pipe()
+        os.set_blocking(write_descriptor, False)
+        progress = RUNNER.ProgressReporter(write_descriptor, "scope")
+        observer = RUNNER.EventObserver(progress)
+        canary = "private-query-command-path-secret"
+        observer.feed(json.dumps({"type": "item.completed", "item": {"type": "web_search", "query": canary}}))
+        for _ in range(40):
+            observer.feed(json.dumps({"type": "item.completed", "item": {"type": "file_change", "path": canary, "patch": canary}}))
+        observer.feed(json.dumps({"type": "agent_message", "message": canary, "reasoning": canary}))
+        observer.feed("not json " + canary)
+        progress.report("started")
+        progress.report("active")
+        progress.stop_heartbeat()
+        progress.report("finalizing")
+        progress.report("completed")
+        progress.close()
+        payload = os.read(read_descriptor, 65536)
+        os.close(read_descriptor)
+        events = [json.loads(line) for line in payload.splitlines()]
+        self.assertNotIn(canary, payload.decode())
+        self.assertTrue(all(event["version"] == 2 and event["phase"] == "scope" for event in events))
+        self.assertLessEqual(len(events[1]["semantic"].get("milestones", [])), 32)
+        self.assertTrue(all(len(line) + 1 <= RUNNER.PROGRESS_MAX_BYTES for line in payload.splitlines()))
+
+    def test_native_collab_events_emit_assignment_and_completion(self):
+        progress = RUNNER.ProgressReporter(None, "implement")
+        observer = RUNNER.EventObserver(progress)
+
+        observer.feed(
+            json.dumps(
+                {
+                    **NATIVE_COLLAB_SPAWN_COMPLETED,
+                    "type": "item.started",
+                    "item": {
+                        **NATIVE_COLLAB_SPAWN_COMPLETED["item"],
+                        "receiver_thread_ids": [],
+                        "agents_states": {},
+                        "status": "in_progress",
+                    },
+                }
+            )
+        )
+        observer.feed(json.dumps(NATIVE_COLLAB_SPAWN_COMPLETED))
+        assignment = progress.snapshot()["semantic"]
+        observer.feed(
+            json.dumps(
+                {
+                    **NATIVE_COLLAB_WAIT_COMPLETED,
+                    "type": "item.started",
+                    "item": {
+                        **NATIVE_COLLAB_WAIT_COMPLETED["item"],
+                        "agents_states": {SUBAGENT_ID: {"status": "running"}},
+                        "status": "in_progress",
+                    },
+                }
+            )
+        )
+        observer.feed(json.dumps(NATIVE_COLLAB_WAIT_COMPLETED))
+        completion = progress.snapshot()["semantic"]
+
+        self.assertEqual(
+            assignment,
+            {
+                "stage": "subagent-assignment",
+                "actor": "subagent-1",
+                "activity": "subagent",
+                "status": "completed",
+                "count": 1,
+            },
+        )
+        self.assertEqual(
+            completion,
+            {
+                "stage": "subagent-completion",
+                "actor": "subagent-1",
+                "activity": "subagent",
+                "status": "completed",
+                "count": 2,
+            },
+        )
+        self.assertNotIn(
+            "private assignment", json.dumps(progress.snapshot())
+        )
+
+    def test_native_item_status_and_updates_drive_semantics(self):
+        progress = RUNNER.ProgressReporter(None, "review")
+        observer = RUNNER.EventObserver(progress)
+        observer.feed(
+            json.dumps(
+                {
+                    "type": "item.updated",
+                    "item": {"type": "web_search", "status": "in_progress"},
+                }
+            )
+        )
+        self.assertEqual(progress.snapshot()["semantic"]["status"], "in-progress")
+
+        observer.feed(
+            json.dumps(
+                {
+                    "type": "item.completed",
+                    "item": {"type": "mcp_tool_call", "status": "failed"},
+                }
+            )
+        )
+        semantic = progress.snapshot()["semantic"]
+        self.assertEqual(semantic["stage"], "tool-use")
+        self.assertEqual(semantic["status"], "failed")
+
+        observer.feed(
+            json.dumps(
+                {
+                    "type": "item.completed",
+                    "item": {"type": "command_execution", "status": "declined"},
+                }
+            )
+        )
+        self.assertEqual(progress.snapshot()["semantic"]["status"], "failed")
+
+        observer.feed(
+            json.dumps(
+                {
+                    **NATIVE_COLLAB_WAIT_COMPLETED,
+                    "item": {
+                        **NATIVE_COLLAB_WAIT_COMPLETED["item"],
+                        "agents_states": {SUBAGENT_ID: {"status": "running"}},
+                        "status": "failed",
+                    },
+                }
+            )
+        )
+        semantic = progress.snapshot()["semantic"]
+        self.assertEqual(semantic["stage"], "subagent-completion")
+        self.assertEqual(semantic["status"], "failed")
+
+    def test_subagent_actor_retention_is_capped(self):
+        progress = RUNNER.ProgressReporter(None, "rca")
+        observer = RUNNER.EventObserver(progress)
+        for index in range(RUNNER.PROGRESS_MAX_ACTORS + 5):
+            event = {
+                **NATIVE_COLLAB_SPAWN_COMPLETED,
+                "item": {
+                    **NATIVE_COLLAB_SPAWN_COMPLETED["item"],
+                    "receiver_thread_ids": [f"agent-{index}"],
+                    "agents_states": {f"agent-{index}": {"status": "running"}},
+                },
+            }
+            observer.feed(json.dumps(event))
+
+        self.assertEqual(len(observer._actors), RUNNER.PROGRESS_MAX_ACTORS)
+        self.assertEqual(
+            progress.snapshot()["semantic"]["actor"],
+            f"subagent-{RUNNER.PROGRESS_MAX_ACTORS + 1}",
+        )
+
+    def test_incremental_drain_ignores_oversized_and_unterminated_lines(self):
+        progress = RUNNER.ProgressReporter(None, "implement")
+        observer = RUNNER.EventObserver(progress)
+        stream = io.BytesIO(
+            (b"x" * (RUNNER.PROGRESS_MAX_LINE_BYTES + 10))
+            + b"\nmalformed\n"
+            + json.dumps({"type": "thread.started", "thread_id": SESSION_ID}).encode()
+        )
+        RUNNER.drain_jsonl(stream, observer)
+        self.assertEqual(observer.observation["session_id"], SESSION_ID)
+
+    def test_incremental_drain_ignores_non_string_structural_types(self):
+        observer = RUNNER.EventObserver(RUNNER.ProgressReporter(None, "implement"))
+        records = [
+            {"type": ["item.completed"], "item": {"type": "web_search"}},
+            {"type": "item.completed", "item": {"type": ["web_search"]}},
+            {"type": "thread.started", "thread_id": SESSION_ID},
+        ]
+        stream = io.BytesIO(
+            b"".join(json.dumps(record).encode() + b"\n" for record in records)
+        )
+
+        RUNNER.drain_jsonl(stream, observer)
+
+        self.assertEqual(observer.observation["session_id"], SESSION_ID)
+
+    def test_incremental_drain_observes_a_flushed_event_while_child_is_alive(self):
+        process = subprocess.Popen(
+            [
+                sys.executable,
+                "-c",
+                (
+                    "import json, sys, time; "
+                    f"print(json.dumps({{'type': 'thread.started', "
+                    f"'thread_id': {SESSION_ID!r}}}), flush=True); "
+                    "time.sleep(1.5)"
+                ),
+            ],
+            stdout=subprocess.PIPE,
+        )
+        self.assertIsNotNone(process.stdout)
+        started_at = RUNNER.time.monotonic()
+
+        class RecordingObserver(RUNNER.EventObserver):
+            first_event_elapsed = None
+            child_was_alive = None
+
+            def feed(self, line):
+                if self.first_event_elapsed is None:
+                    self.first_event_elapsed = RUNNER.time.monotonic() - started_at
+                    self.child_was_alive = process.poll() is None
+                super().feed(line)
+
+        observer = RecordingObserver(RUNNER.ProgressReporter(None, "review"))
+        try:
+            RUNNER.drain_jsonl(process.stdout, observer)
+            process.stdout.close()
+            self.assertEqual(process.wait(timeout=3), 0)
+        finally:
+            if process.poll() is None:
+                process.kill()
+                process.wait(timeout=3)
+
+        self.assertEqual(observer.observation["session_id"], SESSION_ID)
+        self.assertTrue(observer.child_was_alive)
+        self.assertLess(observer.first_event_elapsed, 1.5)
+
+    def test_progress_reporter_uses_every_phase(self):
+        for phase in RUNNER.WORKFLOWS:
+            with self.subTest(phase=phase):
+                reader, writer = os.pipe()
+                os.set_blocking(writer, False)
+                progress = RUNNER.ProgressReporter(writer, phase)
+                progress.report("started")
+                progress.stop_heartbeat()
+                progress.report("finalizing")
+                progress.report("completed")
+                progress.close()
+                events = [json.loads(line) for line in os.read(reader, 16384).splitlines()]
+                os.close(reader)
+                self.assertEqual([event["phase"] for event in events], [phase] * 3)
+
+    def test_needs_input_progress_is_waiting_not_failed(self):
+        reader, writer = os.pipe()
+        os.set_blocking(writer, False)
+        progress = RUNNER.ProgressReporter(writer, "rca")
+        progress.report("started")
+        progress.stop_heartbeat()
+        progress.report("finalizing")
+        progress.report("needs-input")
+        progress.close()
+        events = [json.loads(line) for line in os.read(reader, 16384).splitlines()]
+        os.close(reader)
+
+        self.assertEqual(events[-1]["state"], "needs-input")
+        self.assertEqual(
+            events[-1]["semantic"],
+            {
+                "stage": "waiting-input",
+                "actor": "coordinator",
+                "activity": "lifecycle",
+                "status": "waiting",
+                "count": None,
+            },
+        )
 
     def test_thread_setup_failures_disable_progress_without_masking_review(self):
         class StartFailure:
@@ -1468,27 +1962,24 @@ class BonaparteRunnerTests(unittest.TestCase):
                 ["started"],
             )
 
-    def test_receipt_size_boundary_is_review_only(self):
-        baseline_accepted = {"x": "a" * 4088}
-        serialized = RUNNER.serialize_receipt(baseline_accepted)
+    def test_receipt_size_boundary_includes_the_emitted_newline(self):
+        accepted = {"x": "a" * 4087}
+        serialized = RUNNER.serialize_receipt(accepted)
         stdout = io.StringIO()
         with mock.patch.object(sys, "stdout", stdout):
             RUNNER.emit_serialized(serialized)
 
         raw_output = stdout.getvalue().encode("utf-8")
-        self.assertEqual(len(serialized.encode("utf-8")), RUNNER.RECEIPT_MAX_BYTES)
-        self.assertEqual(len(raw_output), RUNNER.RECEIPT_MAX_BYTES + 1)
+        self.assertEqual(len(raw_output), RUNNER.RECEIPT_MAX_BYTES)
         self.assertTrue(raw_output.endswith(b"\n"))
-        self.assertEqual(json.loads(raw_output), baseline_accepted)
+        self.assertEqual(json.loads(raw_output), accepted)
 
-        review_accepted = {"x": "a" * 4087}
-        review_serialized = RUNNER.serialize_review_receipt(review_accepted)
-        self.assertEqual(
-            len((review_serialized + "\n").encode("utf-8")),
-            RUNNER.RECEIPT_MAX_BYTES,
-        )
+        oversized = {"x": "a" * 4088}
+        self.assertEqual(RUNNER.serialize_review_receipt(accepted), serialized)
         with self.assertRaisesRegex(RuntimeError, "receipt exceeded 4 KiB"):
-            RUNNER.serialize_review_receipt(baseline_accepted)
+            RUNNER.serialize_receipt(oversized)
+        with self.assertRaisesRegex(RuntimeError, "receipt exceeded 4 KiB"):
+            RUNNER.serialize_review_receipt(oversized)
 
     def test_main_uses_review_serializer_only_after_review_is_selected(self):
         cases = (
@@ -1583,7 +2074,7 @@ class BonaparteRunnerTests(unittest.TestCase):
             ),
             mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
             mock.patch.object(
-                RUNNER.subprocess, "run", side_effect=fake_run
+                RUNNER.subprocess, "Popen", side_effect=popen_adapter(fake_run)
             ) as coordinator,
             mock.patch.object(sys, "stdout", stdout),
         ):
@@ -1608,13 +2099,13 @@ class BonaparteRunnerTests(unittest.TestCase):
         )
         with (
             mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
-            mock.patch.object(RUNNER.subprocess, "run", return_value=result) as run,
+            mock.patch.object(RUNNER.subprocess, "Popen", side_effect=popen_adapter(lambda command, **kwargs: result)) as run,
         ):
             with self.assertRaises(RuntimeError) as raised:
                 RUNNER.run_phase(ROOT, "scope", "Continue.", SESSION_ID)
 
         run.assert_called_once()
-        self.assertIs(run.call_args.kwargs["stderr"], subprocess.PIPE)
+        self.assertTrue(hasattr(run.call_args.kwargs["stderr"], "write"))
         self.assertEqual(str(raised.exception), diagnostic[:800])
 
     def test_review_cli_keeps_stdout_as_one_receipt(self):
