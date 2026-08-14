@@ -103,6 +103,9 @@ class AppServerFixture:
                 value, self.pending = self.pending, ""
                 return value
 
+            def close(self):
+                return None
+
         class Input:
             def __init__(self):
                 self.buffer = ""
@@ -168,6 +171,7 @@ class AppServerFixture:
                     "method": "item/completed",
                     "params": {
                         "threadId": self.session_id,
+                        "turnId": "turn-1",
                         "item": {
                             "id": "item-final",
                             "type": "agentMessage",
@@ -208,7 +212,7 @@ def app_server_script(fake_receipt):
         " else: result={'turnId':'turn-1'}\n"
         " print(json.dumps({'id':request_id,'result':result}), flush=True)\n"
         " if method == 'turn/start':\n"
-        "  print(json.dumps({'method':'item/completed','params':{'threadId':session,'item':{'id':'final','type':'agentMessage','text':json.dumps(receipt),'status':'completed'}}}), flush=True)\n"
+        "  print(json.dumps({'method':'item/completed','params':{'threadId':session,'turnId':'turn-1','item':{'id':'final','type':'agentMessage','text':json.dumps(receipt),'status':'completed'}}}), flush=True)\n"
         "  print(json.dumps({'method':'turn/completed','params':{'threadId':session,'turn':{'id':'turn-1','status':'completed'}}}), flush=True)\n"
     )
 
@@ -693,6 +697,14 @@ class BonaparteRunnerTests(unittest.TestCase):
 
         cleanup.assert_called_once_with(server.process)
 
+    def test_successful_app_server_close_reaps_the_process_group(self):
+        driver = object.__new__(RUNNER.AppServerPhaseDriver)
+        driver.process = mock.Mock()
+        with mock.patch.object(RUNNER, "terminate_and_reap") as cleanup:
+            driver.close(failed=False)
+
+        cleanup.assert_called_once_with(driver.process)
+
     def test_oversized_app_server_notification_is_drained_before_valid_messages(self):
         def emit_oversized_notification(_fixture, message, output):
             if message.get("method") == "turn/start":
@@ -1019,7 +1031,14 @@ class BonaparteRunnerTests(unittest.TestCase):
                 "mcpToolCall",
                 "webSearch",
             )
-        ] + [{"type": "collabAgentToolCall", "tool": "spawnAgent"}]
+        ] + [
+            {"type": "collabAgentToolCall", "tool": "spawnAgent"},
+            {
+                "type": "subAgentActivity",
+                "kind": "started",
+                "agentThreadId": SUBAGENT_ID,
+            },
+        ]
         for item in forbidden:
             with self.subTest(item=item):
                 with self.assertRaisesRegex(
@@ -2238,6 +2257,8 @@ class BonaparteRunnerTests(unittest.TestCase):
         driver = object.__new__(RUNNER.AppServerPhaseDriver)
         driver.observer = observer
         driver._last_agent_message = None
+        driver._receipt_thread_id = SESSION_ID
+        driver._receipt_turn_id = "turn-1"
         canary = "private-app-server-payload"
 
         driver.observe_notification(
@@ -2250,6 +2271,8 @@ class BonaparteRunnerTests(unittest.TestCase):
             {
                 "method": "item/completed",
                 "params": {
+                    "threadId": SESSION_ID,
+                    "turnId": "turn-1",
                     "item": {
                         "type": "collabAgentToolCall",
                         "tool": "spawnAgent",
@@ -2281,6 +2304,8 @@ class BonaparteRunnerTests(unittest.TestCase):
             {
                 "method": "item/completed",
                 "params": {
+                    "threadId": SESSION_ID,
+                    "turnId": "turn-1",
                     "item": {
                         "type": "agentMessage",
                         "text": json.dumps(delivery_receipt("review")),
@@ -2297,6 +2322,64 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertEqual(assignment["actor"], "subagent-1")
         self.assertEqual(json.loads(driver.last_agent_message)["state"], "completed")
         self.assertNotIn(canary, json.dumps(progress.snapshot()))
+
+    def test_native_subagent_activity_reports_assignment(self):
+        progress = RUNNER.ProgressReporter(None, "review")
+        observer = RUNNER.EventObserver(progress)
+        driver = object.__new__(RUNNER.AppServerPhaseDriver)
+        driver.observer = observer
+        driver._last_agent_message = None
+        driver._receipt_thread_id = SESSION_ID
+        driver._receipt_turn_id = "turn-1"
+
+        driver.observe_notification(
+            {
+                "method": "item/started",
+                "params": {
+                    "threadId": SESSION_ID,
+                    "turnId": "turn-1",
+                    "item": {
+                        "id": "subagent-start",
+                        "type": "subAgentActivity",
+                        "kind": "started",
+                        "agentThreadId": SUBAGENT_ID,
+                        "agentPath": "default",
+                    },
+                },
+            }
+        )
+
+        semantic = progress.snapshot()["semantic"]
+        self.assertEqual(semantic["stage"], "subagent-assignment")
+        self.assertEqual(semantic["actor"], "subagent-1")
+        self.assertEqual(semantic["status"], "started")
+
+    def test_app_server_receipt_is_bound_to_the_root_thread_and_turn(self):
+        driver = object.__new__(RUNNER.AppServerPhaseDriver)
+        driver.observer = RUNNER.EventObserver()
+        driver._last_agent_message = None
+        driver._receipt_thread_id = SESSION_ID
+        driver._receipt_turn_id = "turn-1"
+        root_receipt = delivery_receipt("review")
+
+        def completed_message(thread_id, turn_id, text):
+            return {
+                "method": "item/completed",
+                "params": {
+                    "threadId": thread_id,
+                    "turnId": turn_id,
+                    "item": {"type": "agentMessage", "text": text},
+                },
+            }
+
+        driver.observe_notification(
+            completed_message(SESSION_ID, "turn-1", json.dumps(root_receipt))
+        )
+        driver.observe_notification(
+            completed_message(SUBAGENT_ID, "child-turn", "CHILD_DONE")
+        )
+
+        self.assertEqual(json.loads(driver.last_agent_message), root_receipt)
 
     def test_native_collab_agent_fields_and_enums_translate_to_legacy_taxonomy(self):
         for native_tool, legacy_tool in {

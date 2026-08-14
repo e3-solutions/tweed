@@ -976,6 +976,22 @@ class EventObserver:
                 self._actor(identifier),
             )
 
+    def _observe_subagent_activity(self, item: dict) -> None:
+        kind = item.get("kind")
+        stage_and_status = {
+            "started": ("subagent-assignment", "started"),
+            "interacted": ("subagent-assignment", "in-progress"),
+            "interrupted": ("subagent-completion", "interrupted"),
+        }.get(kind if isinstance(kind, str) else None)
+        if stage_and_status is None:
+            return
+        receivers = item.get("receiver_thread_ids")
+        identifier = (
+            receivers[0] if isinstance(receivers, list) and receivers else None
+        )
+        stage, status = stage_and_status
+        self._update_progress(stage, "subagent", status, self._actor(identifier))
+
     def feed(self, line: str) -> None:
         try:
             event = json.loads(line)
@@ -999,6 +1015,8 @@ class EventObserver:
         status = self._event_status(event_type, item)
         if item_type == "collab_tool_call":
             self._observe_collab(event_type, item)
+        elif item_type == "subagent_activity":
+            self._observe_subagent_activity(item)
         mapping = {
             "web_search": ("searching", "search"),
             "mcp_tool_call": ("tool-use", "tool"),
@@ -1226,6 +1244,8 @@ class AppServerPhaseDriver:
         self._messages: queue.Queue = queue.Queue(maxsize=64)
         self._request_id = 0
         self._last_agent_message: str | None = None
+        self._receipt_thread_id: str | None = None
+        self._receipt_turn_id: str | None = None
         self._reader = threading.Thread(target=self._read, daemon=True)
         self._reader.start()
 
@@ -1310,6 +1330,7 @@ class AppServerPhaseDriver:
         mapping = {
             "collabAgentToolCall": "collab_tool_call",
             "collabToolCall": "collab_tool_call",
+            "subAgentActivity": "subagent_activity",
             "webSearch": "web_search",
             "mcpToolCall": "mcp_tool_call",
             "fileChange": "file_change",
@@ -1331,6 +1352,7 @@ class AppServerPhaseDriver:
                 for identifier in (
                     item.get("receiverThreadId"),
                     item.get("newThreadId"),
+                    item.get("agentThreadId"),
                 )
                 if isinstance(identifier, str) and identifier
             ]
@@ -1384,7 +1406,12 @@ class AppServerPhaseDriver:
             item = params.get("item")
             if not isinstance(item, dict):
                 raise RuntimeError("Codex app-server item notification is malformed")
-            if method == "item/completed" and item.get("type") == "agentMessage":
+            if (
+                method == "item/completed"
+                and item.get("type") == "agentMessage"
+                and params.get("threadId") == getattr(self, "_receipt_thread_id", None)
+                and params.get("turnId") == getattr(self, "_receipt_turn_id", None)
+            ):
                 text = item.get("text")
                 if isinstance(text, str):
                     self._last_agent_message = text
@@ -1434,19 +1461,7 @@ class AppServerPhaseDriver:
         return self._last_agent_message
 
     def close(self, *, failed: bool) -> None:
-        try:
-            self.process.stdin.close()
-        except (OSError, ValueError):
-            pass
-        if failed:
-            terminate_and_reap(self.process)
-            return
-        self.process.terminate()
-        try:
-            self.process.wait(timeout=COORDINATOR_TERMINATE_GRACE_SECONDS)
-        except subprocess.TimeoutExpired:
-            self.process.kill()
-            self.process.wait(timeout=COORDINATOR_KILL_GRACE_SECONDS)
+        terminate_and_reap(self.process)
 
 
 def run_phase(
@@ -1615,6 +1630,8 @@ def run_phase(
         if not isinstance(turn, dict) or not isinstance(turn.get("id"), str):
             raise RuntimeError("Codex app-server returned no turn identity")
         turn_id = turn["id"]
+        driver._receipt_thread_id = session_id
+        driver._receipt_turn_id = turn_id
         deadline = time.monotonic() + soft_phase_budget_seconds
         steered = False
         steer_acknowledged = False
@@ -1666,6 +1683,9 @@ def run_phase(
                         } or (
                             item_type in {"collabAgentToolCall", "collabToolCall"}
                             and item.get("tool") in {"spawnAgent", "spawn_agent"}
+                        ) or (
+                            item_type == "subAgentActivity"
+                            and item.get("kind") == "started"
                         )
                 _method, completed_turn = driver.observe_notification(message)
                 if completed_turn is not None:
