@@ -30,6 +30,7 @@ def record(status="waiting-input", **overrides):
         "token": TOKEN,
         "status": status,
         "phase": "rca",
+        "soft_phase_budget_seconds": 300.0,
         "worktree": "/tmp/worktree",
         "git_dir": "/tmp/repository/.git",
         "base_head": "a" * 40,
@@ -123,6 +124,29 @@ class ValidationTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "question"):
             checkpoint.validate(record(question=None))
 
+    def test_soft_phase_budget_accepts_only_positive_finite_numbers(self):
+        for budget in (1, 0.25, 300.0):
+            with self.subTest(budget=budget):
+                value = record(soft_phase_budget_seconds=budget)
+                self.assertIs(checkpoint.validate(value), value)
+
+        invalid = (
+            True,
+            False,
+            0,
+            -1,
+            float("inf"),
+            float("-inf"),
+            float("nan"),
+            "300",
+            None,
+        )
+        for budget in invalid:
+            with self.subTest(budget=budget), self.assertRaisesRegex(
+                RuntimeError, "positive finite"
+            ):
+                checkpoint.validate(record(soft_phase_budget_seconds=budget))
+
     def test_semantic_state_accepts_only_fixed_typed_values(self):
         accepted = (
             semantic(actor=None, activity=None, status=None, count=None),
@@ -184,7 +208,7 @@ class ValidationTests(unittest.TestCase):
 
 
 class PersistenceTests(unittest.TestCase):
-    def test_v1_checkpoint_is_read_and_normalized_to_empty_v2_semantics(self):
+    def test_v1_checkpoint_is_read_and_normalized_to_current_defaults(self):
         with tempfile.TemporaryDirectory() as temporary:
             home = Path(temporary)
             legacy = record()
@@ -195,14 +219,60 @@ class PersistenceTests(unittest.TestCase):
             path.write_text(json.dumps(legacy))
 
             normalized = checkpoint.read_checkpoint(TOKEN, home)
-            self.assertEqual(normalized["version"], 2)
+            self.assertEqual(normalized["version"], checkpoint.VERSION)
+            self.assertEqual(
+                normalized["soft_phase_budget_seconds"],
+                checkpoint.DEFAULT_SOFT_PHASE_BUDGET_SECONDS,
+            )
             self.assertIsNone(normalized["semantic"])
             self.assertEqual(normalized["semantic_milestones"], [])
             self.assertEqual(normalized["semantic_milestones_total_count"], 0)
             self.assertFalse(normalized["semantic_milestones_truncated"])
 
             checkpoint.write_checkpoint(normalized, home)
-            self.assertEqual(json.loads(path.read_text())["version"], 2)
+            persisted = json.loads(path.read_text())
+            self.assertEqual(persisted["version"], checkpoint.VERSION)
+            self.assertEqual(
+                persisted["soft_phase_budget_seconds"],
+                checkpoint.DEFAULT_SOFT_PHASE_BUDGET_SECONDS,
+            )
+
+    def test_v2_checkpoint_is_read_and_normalized_to_default_budget(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            home = Path(temporary)
+            legacy = record()
+            del legacy["soft_phase_budget_seconds"]
+            legacy["version"] = 2
+            path = checkpoint.checkpoint_path(TOKEN, home)
+            path.write_text(json.dumps(legacy))
+
+            normalized = checkpoint.read_checkpoint(TOKEN, home)
+
+            self.assertEqual(normalized["version"], checkpoint.VERSION)
+            self.assertEqual(
+                normalized["soft_phase_budget_seconds"],
+                checkpoint.DEFAULT_SOFT_PHASE_BUDGET_SECONDS,
+            )
+
+    def test_configured_budget_survives_atomic_round_trip_and_lease_reuse(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            home = Path(temporary)
+            configured = record(soft_phase_budget_seconds=42.5)
+
+            with checkpoint.checkpoint_lease(TOKEN, home):
+                path = checkpoint.write_checkpoint(configured, home)
+                self.assertEqual(
+                    checkpoint.read_checkpoint(TOKEN, home)[
+                        "soft_phase_budget_seconds"
+                    ],
+                    42.5,
+                )
+
+            with checkpoint.checkpoint_lease(TOKEN, home):
+                self.assertEqual(
+                    json.loads(path.read_text())["soft_phase_budget_seconds"],
+                    42.5,
+                )
 
     def test_atomic_round_trip_permissions_and_fsync(self):
         with tempfile.TemporaryDirectory() as temporary:

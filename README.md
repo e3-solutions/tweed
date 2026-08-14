@@ -109,6 +109,22 @@ bonaparte publish LIN-123
 bonaparte resume <resume-token> "clarification answer"
 ```
 
+Each coordinator turn has a soft, cooperative time budget. The default is 300
+seconds; select a positive, finite number of seconds for one fresh or resumed
+turn with `--soft-phase-budget-seconds`:
+
+```sh
+bonaparte --soft-phase-budget-seconds 600 implement LIN-123
+bonaparte --soft-phase-budget-seconds 120 resume <resume-token> "Continue"
+```
+
+The budget starts fresh for each coordinator turn. On expiry Bonaparte sends
+exactly one native steer asking the coordinator to finish its current bounded
+work and return a receipt. This is not a hard deadline or kill: work already in
+progress may overrun the budget and report its result. Bonaparte requires a
+Codex app-server that supports this native steering contract and fails clearly
+when that contract is unavailable.
+
 ## Model selection
 
 Select a model for one phase or for a resumed phase with `--model`:
@@ -149,6 +165,10 @@ After `needs-input`, `resume` continues the same coordinator session with the
 answer instead of restarting its investigation. The opaque `resume_token` is
 stable across follow-up questions; the older
 `resume <phase> <session-id> <answer>` form remains accepted for compatibility.
+Soft-budget expiry produces `needs-input` with an exact instruction to resume
+the token with `Continue`; other `needs-input` receipts contain one material
+clarification question. Relay that exact question to the user, then pass the
+user's answer back with the same token so the exact native thread resumes.
 
 ## Durable clarification checkpoints
 
@@ -165,7 +185,9 @@ answer. A later question reuses the same token. Completed and blocked records
 remain on disk for audit but cannot be resumed. If native delivery becomes
 ambiguous, Bonaparte preserves the pending answer and reports the token instead
 of silently restarting the phase. Token resumes reuse the saved model and
-reasoning unless an explicit override is supplied.
+reasoning unless an explicit override is supplied. They also reuse the saved
+soft phase budget unless `--soft-phase-budget-seconds` explicitly overrides it
+for that resumed turn.
 
 ## Semantic progress for trusted hosts
 
@@ -233,8 +255,13 @@ or customer data. Structural identifiers are represented only by the local
 opaque actor ordinals. Clarification checkpoints persist the latest safe
 snapshot, at most 32 milestones, and bounded count/truncation metadata alongside
 the existing private question state; they are not event logs. Existing version
-1 checkpoints remain readable and normalize to empty semantic state before a
-subsequent version 2 write.
+1 and version 2 checkpoints remain readable. They normalize missing semantic
+state as needed and the missing budget to 300 seconds before a subsequent
+version 3 write.
+
+Soft phase budgets do not change this progress ABI or its privacy boundary.
+Progress remains advisory and does not become a deadline, cancellation, or
+coordinator-content channel.
 
 The host-supplied descriptor must already be nonblocking; Bonaparte rejects a
 blocking descriptor without changing its blocking mode. An invalid, closed,
