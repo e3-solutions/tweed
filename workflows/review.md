@@ -14,13 +14,28 @@ not create another PR, change its metadata or readiness, merge, or deploy.
 - If an `existing` review was supplied, validate it under the current gate and
   comment schema, then verify its branch, commit, and recorded PR. The PR may be
   draft or already published, but it must remain open in the canonical
-  repository at that exact reviewed head. Return it without duplicating the
-  phase only when every check passes; otherwise return `blocked` and name the
-  missing or stale fact. Otherwise require the supplied implementation handoff,
-  then extract the recorded branch, commit, and draft PR.
+  repository at that exact reviewed head. Return a current-schema review without
+  duplicating the phase only when every check passes; a stale current-schema
+  review returns `blocked` with the missing fact. The immediately preceding
+  legacy schema is handled by the next rule. Without an `existing` review,
+  require the supplied implementation handoff and extract its recorded branch,
+  commit, and draft PR.
+- Treat an `existing` review as the immediately preceding legacy schema only
+  when it contains its review basis, final axis results, findings, changes,
+  `### Verification`, remaining concerns, Git handoff, and review map, but lacks
+  `### Evidence ledger`. For that case only, rebuild the ledger from its carried
+  acceptance criteria and changed boundaries at the exact recorded head, run
+  the current independent verification workflow, and publish one refreshed
+  current-schema review comment when the completion gate passes. Legacy checks
+  are evidence candidates, not inherited `pass` results. The missing ledger
+  alone is not a blocker; any missing contract or provenance fact, failed or
+  unverified obligation, or required unsafe correction follows the normal
+  blocked or finding rules.
 - Treat its carried-forward outcome, non-goals, acceptance criteria, risks, and
   validation as the contract. Treat implementation claims as provenance, not
   as proof of quality.
+- Implementation-author tests and diagnostics remain provisional. Green tests
+  introduced by the patch do not alone prove an external or native contract.
 - For a new review, require the implementation handoff's draft PR URL. Derive
   the canonical repository from `origin`, scope every `gh` read explicitly to
   it, and verify the PR is open and draft with the recorded official branch,
@@ -53,7 +68,17 @@ recorded head—and changed-path inventory; recompute both after corrections.
 
 ## Review workflow
 
-1. The coordinator owns the baseline whole-diff review and combines applicable
+1. Rebuild the evidence ledger at the exact review target. The coordinator may
+   verify simple local logic. For every changed external/native protocol,
+   process lifecycle, persistence/concurrency, or producer-consumer boundary,
+   assign a fresh read-only verifier within the zero-to-three reviewer total in
+   step 2. One verifier may cover all compatible obligations; add another only
+   when evidence or tool boundaries are incompatible. Give it the contract,
+   canonical range, changed paths, affected consumers, and required evidence—not
+   the author's conclusions. It must inspect the implementation and run the
+   smallest decisive checks. Record each obligation as `pass`, `fail`, or
+   `unverified`; tracing cannot close a boundary requiring runtime evidence.
+2. The coordinator owns the baseline whole-diff review and combines applicable
    axes for a narrow diff. Add zero to three non-writing reviewers only for
    separable questions that can change the verdict:
    - **Simplicity, clarity, reuse, and scope fidelity:** seek deletion and
@@ -72,30 +97,32 @@ recorded head—and changed-path inventory; recompute both after corrections.
    - **Verification quality:** map every acceptance criterion to implementation
      and a proving check; challenge missing regressions, weak assertions,
      untested failures, and unexplained check failures.
-2. Give each reviewer the canonical range and affected consumers. Require actual
+3. Give each reviewer the canonical range and affected consumers. Require actual
    code and repository evidence, not implementation summaries. Add a specialist
    only for a concrete changed-boundary risk.
-3. Require every proposed finding to include a stable ID, axis, material
+4. Require every proposed finding to include a stable ID, axis, material
    consequence, violated contract, file:line or runtime evidence, owning
    surface, minimum correction, and proving check.
-4. Reproduce or trace each finding. Accept or reject it with evidence before any
+5. Reproduce or trace each finding. Accept or reject it with evidence before any
    edit. Reject style preferences, equivalent rewrites, hypothetical hardening,
    generic future-proofing, unrelated defects, subjective refactors, and
    unsupported performance concerns.
-5. Assign every accepted finding to exactly one bounded fixer. Serialize
+6. Assign every accepted finding to exactly one bounded fixer. Serialize
    overlapping file or command effects. Inspect each fix and rerun its proving
    check. Use a non-authoring reviewer for a judgment-dependent recheck; a
    deterministic proving check is sufficient for a mechanical correction.
-6. If a finding proves the approved design is incomplete or requires a new
+7. If a finding proves the approved design is incomplete or requires a new
    component, behavior, dependency, interface, schema, migration, rollout, or
    product decision, do not fix it in review. Return `blocked` with the exact
    evidence and change that must go back to scope.
-7. If a correction changes the diff, repeat the whole-diff review across all
+8. If a correction changes a proof-obligation boundary, its non-authoring
+   verifier must rerun that obligation. If any correction changes the diff,
+   repeat the whole-diff review across all
    applicable axes; otherwise the baseline review is final. Then run the exact
    acceptance checks and only the broader build, type, lint, contract,
    integration, and test suites justified by the affected surface. A new
    material finding re-enters the bounded fix and re-review loop.
-8. If fixes were made, stage only review-owned changes and create one additional
+9. If fixes were made, stage only review-owned changes and create one additional
    commit containing the issue ID. Never rewrite the implementation commit.
    Rerun the proving checks, push the correction normally to the same draft PR,
    and verify its head is the final reviewed commit. If no fix was needed, verify
@@ -112,6 +139,9 @@ Call the phase reviewed only when:
 - every final diff hunk maps to the carried-forward contract or an accepted
   correction;
 - every acceptance criterion has passing evidence;
+- the final evidence ledger contains only `pass`; no criterion is failed or
+  unverified, and every independence-required obligation has direct evidence
+  from its designated verifier;
 - no unnecessary machinery, duplication, dependency, or unrelated cleanup
   remains;
 - realistic failures at changed boundaries are handled;
@@ -165,10 +195,10 @@ this schema and contains the evidence required by the completion gate.
 ### Changes made
 - [Finding ID and minimum correction, or “None.”]
 
-### Verification
-| Exact command or diagnostic | Result | Contract/finding proved | Coverage boundary |
-|---|---|---|---|
-| `[command]` | [pass/fail and salient counts] | [criterion/finding] | [files/interface] |
+### Evidence ledger
+| Acceptance criterion | Boundary and proof obligation | Owner | Exact command or diagnostic | Status | Observed evidence |
+|---|---|---|---|---|---|
+| [criterion] | [boundary and required proof] | [coordinator/verifier] | `[check]` | [pass/fail/unverified] | [observed result] |
 
 ### Remaining concerns
 [Non-blocking operational or CI caveat, or “None.”]

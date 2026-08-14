@@ -81,6 +81,27 @@ class HandoffTests(unittest.TestCase):
         self.assertIn("WEAK-RCA", handoff["context"]["existing"])
         self.assertEqual(handoff["context"]["existing_comment_id"], "WEAK-RCA")
 
+    def test_immediately_preceding_legacy_handoffs_reach_the_upgrade_workflow(self):
+        legacy_sections = {
+            "scope": "### Outcome\nPrior scope\n\n### Validation\n- old check",
+            "implement": (
+                "### Review contract\nPrior contract\n\n### Verification\n- old check"
+            ),
+            "review": "### Review basis\nPrior review\n\n### Verification\n- old check",
+        }
+        for phase, sections in legacy_sections.items():
+            with self.subTest(phase=phase):
+                body = f"{HEADERS[phase]}\n\n{sections}"
+                prior = {
+                    "id": f"legacy-{phase}",
+                    "body": body,
+                    "createdAt": "3",
+                    "parentId": None,
+                }
+                handoff = select_handoff(issue(), [prior], phase)
+                self.assertEqual(handoff["context"], {"existing": body})
+                self.assertNotIn("### Evidence ledger", body)
+
     def test_missing_or_ambiguous_input_fails_closed(self):
         ambiguous = issue()
         ambiguous["description"] += "\n**Kind:** Feature"
