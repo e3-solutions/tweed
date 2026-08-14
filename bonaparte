@@ -92,15 +92,19 @@ PROGRESS_TERMINAL_STATES = {
 }
 GLOBAL_MODEL_ENV = "BONAPARTE_MODEL"
 DEFAULT_SOFT_PHASE_BUDGET_SECONDS = 300.0
+SOFT_BUDGET_CONTINUE_QUESTION = (
+    "Soft phase budget reached. Resume this token with Continue."
+)
 SOFT_BUDGET_STEER = (
     "The configured soft phase budget has expired. Enter wrap-up mode now. "
     "Start no new subagents, root diagnostics, or tool calls. Ask already-running "
     "bounded children for practical reports when possible, incorporate completed "
     "evidence, and mark every unfinished proof obligation unverified. Return the "
-    "existing schema-valid needs-input receipt with one exact question: either "
-    "'Soft phase budget reached. Resume this token with Continue.' or one material "
-    "clarification question that states the exact continuation required. Do not "
-    "discard in-flight work and do not claim unverified obligations passed."
+    "existing schema-valid needs-input receipt. Its question must be exactly "
+    f"'{SOFT_BUDGET_CONTINUE_QUESTION}' or start with 'Clarification required:' "
+    "and state one material user decision. The summary must explicitly identify "
+    "unfinished proof obligations as unverified. Do not discard in-flight work "
+    "and do not claim unverified obligations passed."
 )
 
 RECEIPT_SCHEMA = {
@@ -1518,7 +1522,7 @@ def run_phase(
         thread_params = {
             "cwd": str(repository),
             "approvalPolicy": "never",
-            "sandbox": "dangerFullAccess",
+            "sandbox": "danger-full-access",
             "config": {
                 "model_reasoning_effort": reasoning,
                 "agents": child_config_values,
@@ -1555,9 +1559,10 @@ def run_phase(
         turn_id = turn["id"]
         deadline = time.monotonic() + soft_phase_budget_seconds
         steered = False
+        steer_acknowledged = False
         terminal = None
         post_steer_work = False
-        while terminal is None:
+        while terminal is None or (steered and not steer_acknowledged):
             timeout = None if steered else max(0.0, deadline - time.monotonic())
             try:
                 message = driver.next_message(timeout)
@@ -1616,6 +1621,7 @@ def run_phase(
             result = message.get("result")
             if not isinstance(result, dict) or result.get("turnId") != turn_id:
                 raise RuntimeError("Codex app-server returned an invalid steer result")
+            steer_acknowledged = True
         if terminal.get("status") != "completed":
             detail = terminal.get("error")
             raise RuntimeError(
@@ -1647,12 +1653,7 @@ def run_phase(
                 if not failed:
                     raise
 
-    if phase == "review":
-        validate_schema(receipt, RECEIPT_SCHEMA)
-    elif not isinstance(receipt, dict) or set(receipt) != set(
-        RECEIPT_SCHEMA["required"]
-    ):
-        raise RuntimeError("Codex returned an invalid receipt")
+    validate_schema(receipt, RECEIPT_SCHEMA)
     if receipt["phase"] != phase:
         raise RuntimeError("Codex returned the wrong phase")
     if receipt["state"] == "completed" and (
@@ -1665,6 +1666,18 @@ def run_phase(
         raise RuntimeError(f"completed {phase} returned the wrong result")
     if receipt["state"] == "needs-input" and not receipt["question"]:
         raise RuntimeError("phase requested input without a question")
+    if steered:
+        if receipt["state"] != "needs-input":
+            raise RuntimeError("soft-budget wrap-up did not request continuation")
+        question = receipt["question"]
+        if question != SOFT_BUDGET_CONTINUE_QUESTION and not question.startswith(
+            "Clarification required:"
+        ):
+            raise RuntimeError("soft-budget wrap-up returned an invalid question")
+        if "unverified" not in receipt["summary"].casefold():
+            raise RuntimeError(
+                "soft-budget wrap-up omitted unverified proof obligations"
+            )
     if receipt["state"] == "needs-input":
         receipt["resume_session_id"] = session_id
     else:

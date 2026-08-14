@@ -737,7 +737,7 @@ class BonaparteRunnerTests(unittest.TestCase):
             {
                 "cwd": str(ROOT),
                 "approvalPolicy": "never",
-                "sandbox": "dangerFullAccess",
+                "sandbox": "danger-full-access",
             },
         )
         self.assertEqual(thread["params"]["model"], "gpt-5.6-terra")
@@ -787,7 +787,9 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertNotIn("turn/steer", [item.get("method") for item in server.requests])
 
     def test_active_budget_expiry_sends_exactly_one_steer_at_queue_boundary(self):
-        final = receipt()
+        final = receipt("needs-input")
+        final["summary"] = "One proof obligation remains unverified."
+        final["question"] = RUNNER.SOFT_BUDGET_CONTINUE_QUESTION
         instances = []
         observe_notification = RUNNER.AppServerPhaseDriver.observe_notification
 
@@ -852,7 +854,7 @@ class BonaparteRunnerTests(unittest.TestCase):
                 soft_phase_budget_seconds=1,
             )
 
-        self.assertEqual(result["state"], "completed")
+        self.assertEqual(result["state"], "needs-input")
         self.assertEqual(len(instances[0].sent), 1)
         self.assertEqual(instances[0].sent[0][0], "turn/steer")
         self.assertEqual(
@@ -915,6 +917,66 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertEqual(instances[0].sent[0][0], "turn/steer")
         self.assertTrue(instances[0].closed_failed)
 
+    def test_terminal_before_steer_rejection_still_fails(self):
+        instances = []
+        observe_notification = RUNNER.AppServerPhaseDriver.observe_notification
+
+        class Driver:
+            def __init__(self, _repository, observer):
+                self.observer = observer
+                self.process = mock.Mock(stdin=io.StringIO())
+                self.messages = iter(
+                    [
+                        TimeoutError(),
+                        TimeoutError(),
+                        {
+                            "method": "turn/completed",
+                            "params": {
+                                "turn": {"id": "turn-1", "status": "completed"}
+                            },
+                        },
+                        {"id": 4, "error": "too late"},
+                    ]
+                )
+                instances.append(self)
+
+            def request(self, method, _params):
+                return {
+                    "initialize": {},
+                    "thread/resume": {"thread": {"id": SESSION_ID}},
+                    "turn/start": {"turn": {"id": "turn-1"}},
+                }[method]
+
+            def next_message(self, _timeout=None):
+                value = next(self.messages)
+                if isinstance(value, BaseException):
+                    raise value
+                return value
+
+            def send(self, _method, _params):
+                return 4
+
+            def observe_notification(self, message):
+                return observe_notification(self, message)
+
+            def close(self, *, failed):
+                self.closed_failed = failed
+
+        with (
+            mock.patch.object(RUNNER, "AppServerPhaseDriver", Driver),
+            mock.patch.object(RUNNER.time, "monotonic", side_effect=[20.0, 21.0]),
+            self.assertRaisesRegex(RuntimeError, "rejected turn/steer"),
+        ):
+            RUNNER.run_phase(
+                ROOT,
+                "rca",
+                "Continue.",
+                SESSION_ID,
+                soft_phase_budget_seconds=1,
+            )
+
+        self.assertTrue(instances[0].closed_failed)
+
     def test_resume_uses_the_same_session_and_can_switch_models(self):
         argv = [
             "bonaparte",
@@ -965,7 +1027,7 @@ class BonaparteRunnerTests(unittest.TestCase):
                 "threadId": SESSION_ID,
                 "cwd": str(ROOT),
                 "approvalPolicy": "never",
-                "sandbox": "dangerFullAccess",
+                "sandbox": "danger-full-access",
                 "model": "gpt-5.6-luna",
             },
         )
@@ -1759,7 +1821,7 @@ class BonaparteRunnerTests(unittest.TestCase):
             )
         write.assert_not_called()
 
-    def test_non_review_run_phase_retains_baseline_key_only_validation(self):
+    def test_non_review_run_phase_enforces_the_declared_schema(self):
         schema_invalid = receipt()
         schema_invalid.update(
             phase="scope",
@@ -1773,12 +1835,11 @@ class BonaparteRunnerTests(unittest.TestCase):
         with (
             mock.patch.object(RUNNER, "find_codex", return_value="/bin/codex"),
             mock.patch.object(RUNNER.subprocess, "Popen", side_effect=server) as run,
+            self.assertRaisesRegex(RuntimeError, "invalid receipt"),
         ):
-            result = RUNNER.run_phase(ROOT, "scope", "Continue.", SESSION_ID)
+            RUNNER.run_phase(ROOT, "scope", "Continue.", SESSION_ID)
 
         run.assert_called_once()
-        self.assertIsNone(result["summary"])
-        self.assertEqual(result["state"], "blocked")
 
     def test_review_progress_lifecycle_is_bounded_and_terminal(self):
         read_descriptor, write_descriptor = os.pipe()
