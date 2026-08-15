@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import fcntl
 import json
+import math
 import os
 import re
 import stat
@@ -12,7 +13,8 @@ import uuid
 from contextlib import contextmanager
 from pathlib import Path
 
-VERSION = 2
+VERSION = 3
+DEFAULT_SOFT_PHASE_BUDGET_SECONDS = 300.0
 MAX_BYTES = 1 << 20
 MAX_SEMANTIC_MILESTONES = 32
 MAX_SEMANTIC_COUNT = 2**31 - 1
@@ -75,12 +77,13 @@ V1_FIELDS = {
     "remote_state_changed",
     "updated_at",
 }
-FIELDS = V1_FIELDS | {
+V2_FIELDS = V1_FIELDS | {
     "semantic",
     "semantic_milestones",
     "semantic_milestones_total_count",
     "semantic_milestones_truncated",
 }
+FIELDS = V2_FIELDS | {"soft_phase_budget_seconds"}
 
 
 def canonical_token(value: object, label: str = "checkpoint token") -> str:
@@ -235,12 +238,28 @@ def _validate_common(value: dict, token=None) -> None:
             raise RuntimeError(f"checkpoint {field} inventory is invalid")
 
 
+def _validate_soft_phase_budget(value: object) -> None:
+    if type(value) not in (int, float):
+        raise RuntimeError(
+            "checkpoint soft phase budget must be a positive finite number"
+        )
+    try:
+        finite = math.isfinite(value)
+    except OverflowError:
+        finite = False
+    if not finite or value <= 0:
+        raise RuntimeError(
+            "checkpoint soft phase budget must be a positive finite number"
+        )
+
+
 def validate(value: object, token=None) -> dict:
     if not isinstance(value, dict) or set(value) != FIELDS:
         raise RuntimeError("checkpoint envelope is invalid")
     if type(value["version"]) is not int or value["version"] != VERSION:
         raise RuntimeError("checkpoint version is invalid")
     _validate_common(value, token)
+    _validate_soft_phase_budget(value["soft_phase_budget_seconds"])
     if value["semantic"] is not None:
         _validate_semantic(value["semantic"], "semantic snapshot")
     milestones = value["semantic_milestones"]
@@ -271,10 +290,19 @@ def _normalize_read(value: object, token: str) -> dict:
         normalized = dict(value)
         normalized.update(
             version=VERSION,
+            soft_phase_budget_seconds=DEFAULT_SOFT_PHASE_BUDGET_SECONDS,
             semantic=None,
             semantic_milestones=[],
             semantic_milestones_total_count=0,
             semantic_milestones_truncated=False,
+        )
+        return validate(normalized, token)
+    if type(version) is int and version == 2 and set(value) == V2_FIELDS:
+        _validate_common(value, token)
+        normalized = dict(value)
+        normalized.update(
+            version=VERSION,
+            soft_phase_budget_seconds=DEFAULT_SOFT_PHASE_BUDGET_SECONDS,
         )
         return validate(normalized, token)
     return validate(value, token)

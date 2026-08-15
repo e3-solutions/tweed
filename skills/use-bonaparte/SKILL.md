@@ -25,6 +25,9 @@ a fresh process; do not select an option the user did not request.
   `BONAPARTE_MODEL` and then Codex config apply.
 - Use `--reasoning <effort>` for the coordinator and its children. It defaults
   to `medium`.
+- Use `--soft-phase-budget-seconds <seconds>` only when the user selects a
+  budget. Retain that flag across fresh phase commands; omit it to use the
+  default 300-second soft budget. The value must be positive and finite.
 - When the user names a PR base, append the quoted supplemental input
   `Expected pull-request base: <branch>` after the issue identifier on
   `implement`, `review`, and `publish`. Repeat it for all three phases. This is
@@ -92,14 +95,18 @@ invoking task remains thin and waits once for that final receipt.
 
 On `needs-input`, ask only `question`; it should already include a recommendation
 when the phase has evidence for one. Never answer for the user or combine
-independent questions. Continue the same coordinator with the user's answer by
-passing it as one safely quoted argument or structured process argument; never
-interpolate answer text into shell syntax. A token resume reuses the saved model,
-reasoning, repository, phase, and native Codex session. Supply model or reasoning
-flags only when the user intentionally overrides them:
+independent questions. Soft-budget expiry uses an exact instruction to resume
+the token with `Continue`; otherwise the question is a material clarification. Relay the exact question
+before continuing the same coordinator with the user's answer, passing it as one
+safely quoted argument or structured process argument; never interpolate answer
+text into shell syntax. A token resume reuses the saved model, reasoning,
+repository, phase, soft phase budget, and exact native Codex thread. Supply
+model, reasoning, or soft-budget flags only when the user intentionally overrides
+them:
 
 ```sh
 bonaparte --repo <repository> [--model <model>] [--reasoning <effort>] \
+  [--soft-phase-budget-seconds <seconds>] \
   resume <receipt.resume_token> <answer>
 ```
 

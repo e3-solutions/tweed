@@ -6,13 +6,14 @@ from __future__ import annotations
 import argparse
 import errno
 import json
+import math
 import os
+import queue
 import shlex
 import shutil
 import signal
 import subprocess
 import sys
-import tempfile
 import threading
 import time
 import uuid
@@ -44,6 +45,7 @@ PROGRESS_MAX_MILESTONES = 32
 PROGRESS_MAX_ACTORS = 32
 COORDINATOR_TERMINATE_GRACE_SECONDS = 1.0
 COORDINATOR_KILL_GRACE_SECONDS = 5.0
+APP_SERVER_REQUEST_TIMEOUT_SECONDS = 45.0
 PROGRESS_STAGES = {
     "coordinating",
     "searching",
@@ -90,6 +92,21 @@ PROGRESS_TERMINAL_STATES = {
     "interrupted",
 }
 GLOBAL_MODEL_ENV = "BONAPARTE_MODEL"
+DEFAULT_SOFT_PHASE_BUDGET_SECONDS = 300.0
+SOFT_BUDGET_CONTINUE_QUESTION = (
+    "Soft phase budget reached. Resume this token with Continue."
+)
+SOFT_BUDGET_STEER = (
+    "The configured soft phase budget has expired. Enter wrap-up mode now. "
+    "Start no new subagents, root diagnostics, or tool calls. Ask already-running "
+    "bounded children for practical reports when possible, incorporate completed "
+    "evidence, and mark every unfinished proof obligation unverified. Return the "
+    "existing schema-valid needs-input receipt. Its question must be exactly "
+    f"'{SOFT_BUDGET_CONTINUE_QUESTION}' or start with 'Clarification required:' "
+    "and state one material user decision. The summary must explicitly identify "
+    "unfinished proof obligations as unverified. Do not discard in-flight work "
+    "and do not claim unverified obligations passed."
+)
 
 RECEIPT_SCHEMA = {
     "type": "object",
@@ -959,6 +976,22 @@ class EventObserver:
                 self._actor(identifier),
             )
 
+    def _observe_subagent_activity(self, item: dict) -> None:
+        kind = item.get("kind")
+        stage_and_status = {
+            "started": ("subagent-assignment", "started"),
+            "interacted": ("subagent-assignment", "in-progress"),
+            "interrupted": ("subagent-completion", "interrupted"),
+        }.get(kind if isinstance(kind, str) else None)
+        if stage_and_status is None:
+            return
+        receivers = item.get("receiver_thread_ids")
+        identifier = (
+            receivers[0] if isinstance(receivers, list) and receivers else None
+        )
+        stage, status = stage_and_status
+        self._update_progress(stage, "subagent", status, self._actor(identifier))
+
     def feed(self, line: str) -> None:
         try:
             event = json.loads(line)
@@ -982,6 +1015,8 @@ class EventObserver:
         status = self._event_status(event_type, item)
         if item_type == "collab_tool_call":
             self._observe_collab(event_type, item)
+        elif item_type == "subagent_activity":
+            self._observe_subagent_activity(item)
         mapping = {
             "web_search": ("searching", "search"),
             "mcp_tool_call": ("tool-use", "tool"),
@@ -1164,21 +1199,18 @@ def resolve_reasoning(override: str | None = None) -> str:
     return reasoning
 
 
-def agent_config(description: str, model: str | None, reasoning: str) -> str:
-    values = {
-        "description": description,
-        "model_reasoning_effort": reasoning,
-    }
-    if model:
-        values["model"] = model
-    return (
-        "{"
-        + ",".join(
-            f"{key}={json.dumps(value, ensure_ascii=False)}"
-            for key, value in values.items()
+def resolve_soft_phase_budget(value: object) -> float:
+    try:
+        budget = float(value)
+    except (TypeError, ValueError) as error:
+        raise RuntimeError(
+            "soft phase budget requires one positive finite seconds value"
+        ) from error
+    if not math.isfinite(budget) or budget <= 0:
+        raise RuntimeError(
+            "soft phase budget requires one positive finite seconds value"
         )
-        + "}"
-    )
+    return budget
 
 
 def require_pull_request(receipt: dict, phase: str) -> None:
@@ -1190,6 +1222,248 @@ def require_pull_request(receipt: dict, phase: str) -> None:
         raise RuntimeError(f"completed {phase} is missing its pull request")
 
 
+class AppServerPhaseDriver:
+    """Drive one native app-server turn without retaining its raw event stream."""
+
+    _EOF = object()
+
+    def __init__(self, repository: Path, observer: EventObserver):
+        self.observer = observer
+        self.process = subprocess.Popen(
+            [find_codex(), "app-server"],
+            cwd=repository,
+            env=child_environment(),
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+            start_new_session=True,
+        )
+        if self.process.stdin is None or self.process.stdout is None:
+            raise RuntimeError("Codex app-server pipes are unavailable")
+        self._messages: queue.Queue = queue.Queue(maxsize=64)
+        self._request_id = 0
+        self._last_agent_message: str | None = None
+        self._receipt_thread_id: str | None = None
+        self._receipt_turn_id: str | None = None
+        self._reader = threading.Thread(target=self._read, daemon=True)
+        self._reader.start()
+
+    def _read(self) -> None:
+        chunks: list[str] = []
+        line_bytes = 0
+        discarding = False
+
+        def emit_line(line: str) -> bool:
+            try:
+                message = json.loads(line)
+            except (json.JSONDecodeError, UnicodeError):
+                self._messages.put(
+                    RuntimeError("Codex app-server returned malformed JSON")
+                )
+                return False
+            if not isinstance(message, dict):
+                self._messages.put(
+                    RuntimeError("Codex app-server returned a malformed message")
+                )
+                return False
+            self._messages.put(message)
+            return True
+
+        try:
+            while True:
+                chunk = self.process.stdout.readline(64 * 1024)
+                if not chunk:
+                    break
+                ends_line = chunk.endswith("\n")
+                if not discarding:
+                    line_bytes += len(chunk.encode("utf-8"))
+                    if line_bytes > PROGRESS_MAX_LINE_BYTES:
+                        chunks.clear()
+                        discarding = True
+                    else:
+                        chunks.append(chunk)
+                if ends_line:
+                    if not discarding and not emit_line("".join(chunks)):
+                        return
+                    chunks.clear()
+                    line_bytes = 0
+                    discarding = False
+            if chunks and not emit_line("".join(chunks)):
+                return
+        except BaseException as error:
+            self._messages.put(error)
+        finally:
+            self._messages.put(self._EOF)
+
+    def send(self, method: str, params: dict) -> int:
+        self._request_id += 1
+        try:
+            self.process.stdin.write(
+                json.dumps(
+                    {"id": self._request_id, "method": method, "params": params},
+                    ensure_ascii=False,
+                )
+                + "\n"
+            )
+            self.process.stdin.flush()
+        except (BrokenPipeError, OSError, ValueError) as error:
+            raise RuntimeError("Codex app-server stopped") from error
+        return self._request_id
+
+    def next_message(self, timeout: float | None = None) -> dict:
+        try:
+            message = self._messages.get(timeout=timeout)
+        except queue.Empty as error:
+            raise TimeoutError from error
+        if message is self._EOF:
+            raise RuntimeError("Codex app-server stopped")
+        if isinstance(message, BaseException):
+            if isinstance(message, RuntimeError):
+                raise message
+            raise RuntimeError("Codex app-server reader failed") from message
+        return message
+
+    @staticmethod
+    def _legacy_item(item: dict) -> dict:
+        item_type = item.get("type")
+        mapping = {
+            "collabAgentToolCall": "collab_tool_call",
+            "collabToolCall": "collab_tool_call",
+            "subAgentActivity": "subagent_activity",
+            "webSearch": "web_search",
+            "mcpToolCall": "mcp_tool_call",
+            "fileChange": "file_change",
+            "commandExecution": "command_execution",
+        }
+        legacy = dict(item)
+        legacy["type"] = mapping.get(item_type, item_type)
+        legacy["exit_code"] = item.get("exitCode")
+        native_receivers = item.get("receiverThreadIds")
+        if isinstance(native_receivers, list):
+            legacy["receiver_thread_ids"] = [
+                identifier
+                for identifier in native_receivers
+                if isinstance(identifier, str) and identifier
+            ]
+        else:
+            legacy["receiver_thread_ids"] = [
+                identifier
+                for identifier in (
+                    item.get("receiverThreadId"),
+                    item.get("newThreadId"),
+                    item.get("agentThreadId"),
+                )
+                if isinstance(identifier, str) and identifier
+            ]
+        native_status = item.get("status")
+        legacy["status"] = {
+            "inProgress": "in_progress",
+        }.get(native_status, native_status)
+        legacy["tool"] = {
+            "spawnAgent": "spawn_agent",
+            "sendInput": "send_input",
+            "resumeAgent": "resume_agent",
+            "closeAgent": "close_agent",
+        }.get(item.get("tool"), item.get("tool"))
+        native_states = item.get("agentsStates")
+        if isinstance(native_states, dict):
+            legacy["agents_states"] = {
+                identifier: {
+                    **state,
+                    "status": {
+                        "pendingInit": "pending_init",
+                        "notFound": "not_found",
+                    }.get(state.get("status"), state.get("status")),
+                }
+                for identifier, state in native_states.items()
+                if isinstance(identifier, str) and isinstance(state, dict)
+            }
+        elif isinstance(item.get("agentStatus"), str) and legacy["receiver_thread_ids"]:
+            legacy["agents_states"] = {
+                legacy["receiver_thread_ids"][0]: {
+                    "status": {
+                        "inProgress": "running",
+                    }.get(item["agentStatus"], item["agentStatus"])
+                }
+            }
+        return legacy
+
+    def observe_notification(self, message: dict) -> tuple[str | None, dict | None]:
+        method = message.get("method")
+        params = message.get("params")
+        if not isinstance(method, str) or not isinstance(params, dict):
+            raise RuntimeError("Codex app-server returned a malformed notification")
+        if "id" in message:
+            raise RuntimeError(f"unsupported app-server request: {method}")
+        if method == "thread/started":
+            thread = params.get("thread")
+            if isinstance(thread, dict) and isinstance(thread.get("id"), str):
+                self.observer.feed(
+                    json.dumps({"type": "thread.started", "thread_id": thread["id"]})
+                )
+        if method in {"item/started", "item/completed"}:
+            item = params.get("item")
+            if not isinstance(item, dict):
+                raise RuntimeError("Codex app-server item notification is malformed")
+            if (
+                method == "item/completed"
+                and item.get("type") == "agentMessage"
+                and params.get("threadId") == getattr(self, "_receipt_thread_id", None)
+                and params.get("turnId") == getattr(self, "_receipt_turn_id", None)
+            ):
+                text = item.get("text")
+                if isinstance(text, str):
+                    self._last_agent_message = text
+            self.observer.feed(
+                json.dumps(
+                    {
+                        "type": "item.started"
+                        if method == "item/started"
+                        else "item.completed",
+                        "item": self._legacy_item(item),
+                    }
+                )
+            )
+        if method == "turn/completed":
+            turn = params.get("turn")
+            if not isinstance(turn, dict):
+                raise RuntimeError("Codex app-server turn completion is malformed")
+            return method, turn
+        return method, None
+
+    def request(self, method: str, params: dict) -> dict:
+        request_id = self.send(method, params)
+        deadline = time.monotonic() + APP_SERVER_REQUEST_TIMEOUT_SECONDS
+        while True:
+            try:
+                message = self.next_message(max(0.0, deadline - time.monotonic()))
+            except TimeoutError as error:
+                raise RuntimeError(
+                    f"Codex app-server timed out during {method}"
+                ) from error
+            if "method" in message:
+                self.observe_notification(message)
+                continue
+            if message.get("id") != request_id:
+                raise RuntimeError("Codex app-server response correlation failed")
+            if "error" in message:
+                raise RuntimeError(
+                    f"Codex app-server rejected {method}: {message['error']}"
+                )
+            result = message.get("result")
+            if not isinstance(result, dict):
+                raise RuntimeError(f"Codex app-server returned no result for {method}")
+            return result
+
+    @property
+    def last_agent_message(self) -> str | None:
+        return self._last_agent_message
+
+    def close(self, *, failed: bool) -> None:
+        terminate_and_reap(self.process)
+
+
 def run_phase(
     repository: Path,
     phase: str,
@@ -1199,7 +1473,9 @@ def run_phase(
     reasoning: str = COORDINATOR_EFFORT,
     observation: dict | None = None,
     replayed_answer: bool = False,
+    soft_phase_budget_seconds: float = DEFAULT_SOFT_PHASE_BUDGET_SECONDS,
 ) -> dict:
+    soft_phase_budget_seconds = resolve_soft_phase_budget(soft_phase_budget_seconds)
     workflow_name, assignment = WORKFLOWS[phase]
     workflow = (Path(__file__).resolve().parent / "workflows" / workflow_name).read_text()
     child_configs = {
@@ -1210,8 +1486,12 @@ def run_phase(
             "runtime, dependencies, data, infrastructure, and external boundaries"
         ),
     }
-    child_configs = {
-        role: agent_config(description, model, reasoning)
+    child_config_values = {
+        role: {
+            "description": description,
+            "model_reasoning_effort": reasoning,
+            **({"model": model} if model else {}),
+        }
         for role, description in child_configs.items()
     }
     expected_branch = None
@@ -1302,100 +1582,159 @@ def run_phase(
             "invites confirmation or correction. Do not bundle independent questions.\n\n"
             f"Repository: {repository}\n\n{input_label}:\n{phase_input}{context_end}"
         )
-    with tempfile.TemporaryDirectory(prefix=f"bonaparte-{phase}-") as temporary:
-        temporary_path = Path(temporary)
-        schema_path = temporary_path / "schema.json"
-        receipt_path = temporary_path / "receipt.json"
-        schema_path.write_text(json.dumps(RECEIPT_SCHEMA))
-        command = [find_codex(), "exec"]
-        command.extend(["resume"] if resume_session_id else ["-C", str(repository)])
+    observer = EventObserver()
+    driver = None
+    failed = True
+    try:
+        driver = AppServerPhaseDriver(repository, observer)
+        driver.request(
+            "initialize", {"clientInfo": {"name": "bonaparte", "version": "1"}}
+        )
+        driver.process.stdin.write('{"method":"initialized","params":{}}\n')
+        driver.process.stdin.flush()
+        thread_params = {
+            "cwd": str(repository),
+            "approvalPolicy": "never",
+            "sandbox": "danger-full-access",
+            "config": {
+                "model_reasoning_effort": reasoning,
+                "agents": child_config_values,
+            },
+        }
         if model:
-            command.extend(["-m", model])
-        command.extend(
-            [
-                "-c",
-                f"model_reasoning_effort={json.dumps(reasoning)}",
-                "-c",
-                f"agents.default={child_configs['default']}",
-                "-c",
-                f"agents.worker={child_configs['worker']}",
-                "-c",
-                f"agents.explorer={child_configs['explorer']}",
-                "--dangerously-bypass-approvals-and-sandbox",
-                "--output-schema",
-                str(schema_path),
-                "--output-last-message",
-                str(receipt_path),
-                "--json",
-            ]
-        )
-        command.extend(
-            [resume_session_id, "-"]
-            if resume_session_id
-            else ["--color", "never", "-"]
-        )
-        with tempfile.TemporaryFile(mode="w+", encoding="utf-8") as diagnostics:
-            stderr_target = subprocess.DEVNULL if phase == "review" else diagnostics
-            observer = EventObserver()
-            process = None
-            try:
-                process = subprocess.Popen(
-                    command,
-                    cwd=repository,
-                    env=child_environment(),
-                    stdin=subprocess.PIPE,
-                    stdout=subprocess.PIPE,
-                    stderr=stderr_target,
-                    start_new_session=True,
-                )
-                if process.stdin is None or process.stdout is None:
-                    raise RuntimeError("Codex coordinator pipes are unavailable")
-                process.stdin.write(prompt.encode("utf-8"))
-                process.stdin.close()
-                drain_jsonl(process.stdout, observer)
-                process.stdout.close()
-                returncode = process.wait()
-            except BaseException:
-                if process is not None:
-                    try:
-                        terminate_and_reap(process)
-                    except BaseException:
-                        pass
-                if observation is not None:
-                    try:
-                        observation.update(observer.finish())
-                    except BaseException:
-                        pass
-                raise
-            observed = observer.finish()
-            if observation is not None:
-                observation.update(observed)
-            session_id = observed["session_id"] or resume_session_id
-            diagnostics.flush()
-            diagnostics.seek(0)
-            diagnostic_lines = diagnostics.read().strip().splitlines()
-        if (
-            resume_session_id
-            and observed["session_id"]
-            and observed["session_id"] != resume_session_id
-        ):
+            thread_params["model"] = model
+        if resume_session_id:
+            thread_params["threadId"] = resume_session_id
+            thread_result = driver.request("thread/resume", thread_params)
+        else:
+            thread_result = driver.request("thread/start", thread_params)
+        thread = thread_result.get("thread")
+        if not isinstance(thread, dict) or not isinstance(thread.get("id"), str):
+            raise RuntimeError("Codex app-server returned no thread identity")
+        session_id = thread["id"]
+        observer.observation["session_id"] = session_id
+        if resume_session_id and session_id != resume_session_id:
             raise RuntimeError("Codex resumed a different session")
-        if returncode:
-            if phase == "review":
-                raise RuntimeError(
-                    f"{phase} coordinator failed (exit status {returncode})"
+        turn_params = {
+            "threadId": session_id,
+            "input": [{"type": "text", "text": prompt}],
+            "cwd": str(repository),
+            "approvalPolicy": "never",
+            "effort": reasoning,
+            "outputSchema": RECEIPT_SCHEMA,
+        }
+        if model:
+            turn_params["model"] = model
+        turn_result = driver.request("turn/start", turn_params)
+        turn = turn_result.get("turn")
+        if not isinstance(turn, dict) or not isinstance(turn.get("id"), str):
+            raise RuntimeError("Codex app-server returned no turn identity")
+        turn_id = turn["id"]
+        driver._receipt_thread_id = session_id
+        driver._receipt_turn_id = turn_id
+        deadline = time.monotonic() + soft_phase_budget_seconds
+        steered = False
+        steer_acknowledged = False
+        terminal = None
+        post_steer_work = False
+        while terminal is None or (steered and not steer_acknowledged):
+            timeout = None if steered else max(0.0, deadline - time.monotonic())
+            try:
+                message = driver.next_message(timeout)
+            except TimeoutError:
+                try:
+                    message = driver.next_message(0)
+                except TimeoutError:
+                    message = None
+                if message is not None:
+                    if "method" in message:
+                        _method, completed_turn = driver.observe_notification(message)
+                        if completed_turn is not None:
+                            if completed_turn.get("id") != turn_id:
+                                raise RuntimeError(
+                                    "Codex app-server completed the wrong turn"
+                                )
+                            terminal = completed_turn
+                        continue
+                    raise RuntimeError("Codex app-server response correlation failed")
+                steer_id = driver.send(
+                    "turn/steer",
+                    {
+                        "threadId": session_id,
+                        "expectedTurnId": turn_id,
+                        "input": [{"type": "text", "text": SOFT_BUDGET_STEER}],
+                    },
                 )
+                steered = True
+                continue
+            if "method" in message:
+                if steer_acknowledged and message.get("method") == "item/started":
+                    params = message.get("params")
+                    item = params.get("item") if isinstance(params, dict) else None
+                    item_type = item.get("type") if isinstance(item, dict) else None
+                    if isinstance(params, dict) and params.get("threadId") == session_id:
+                        post_steer_work = post_steer_work or item_type in {
+                            "commandExecution",
+                            "dynamicToolCall",
+                            "fileChange",
+                            "imageGeneration",
+                            "mcpToolCall",
+                            "webSearch",
+                        } or (
+                            item_type in {"collabAgentToolCall", "collabToolCall"}
+                            and item.get("tool") in {"spawnAgent", "spawn_agent"}
+                        ) or (
+                            item_type == "subAgentActivity"
+                            and item.get("kind") == "started"
+                        )
+                _method, completed_turn = driver.observe_notification(message)
+                if completed_turn is not None:
+                    if completed_turn.get("id") != turn_id:
+                        raise RuntimeError("Codex app-server completed the wrong turn")
+                    terminal = completed_turn
+                continue
+            if not steered or message.get("id") != steer_id:
+                raise RuntimeError("Codex app-server response correlation failed")
+            if "error" in message:
+                raise RuntimeError(
+                    f"Codex app-server rejected turn/steer: {message['error']}"
+                )
+            result = message.get("result")
+            if not isinstance(result, dict) or result.get("turnId") != turn_id:
+                raise RuntimeError("Codex app-server returned an invalid steer result")
+            steer_acknowledged = True
+        if terminal.get("status") != "completed":
+            detail = terminal.get("error")
             raise RuntimeError(
-                diagnostic_lines[-1][:800] if diagnostic_lines else f"{phase} failed"
+                f"{phase} coordinator failed: {detail or terminal.get('status')}"
             )
-        receipt = json.loads(receipt_path.read_text())
+        if post_steer_work:
+            raise RuntimeError("coordinator started new work after soft-budget steer")
+        if not driver.last_agent_message:
+            items = terminal.get("items")
+            if isinstance(items, list):
+                for item in reversed(items):
+                    if isinstance(item, dict) and item.get("type") == "agentMessage":
+                        text = item.get("text")
+                        if isinstance(text, str):
+                            driver._last_agent_message = text
+                            break
+        if not driver.last_agent_message:
+            raise RuntimeError("Codex app-server returned no final receipt")
+        receipt = json.loads(driver.last_agent_message)
+        failed = False
+    finally:
+        observed = observer.finish()
+        if observation is not None:
+            observation.update(observed)
+        if driver is not None:
+            try:
+                driver.close(failed=failed)
+            except BaseException:
+                if not failed:
+                    raise
 
-    if phase == "review":
-        validate_schema(receipt, RECEIPT_SCHEMA)
-    elif not isinstance(receipt, dict) or set(receipt) != set(
-        RECEIPT_SCHEMA["required"]
-    ):
-        raise RuntimeError("Codex returned an invalid receipt")
+    validate_schema(receipt, RECEIPT_SCHEMA)
     if receipt["phase"] != phase:
         raise RuntimeError("Codex returned the wrong phase")
     if receipt["state"] == "completed" and (
@@ -1408,6 +1747,18 @@ def run_phase(
         raise RuntimeError(f"completed {phase} returned the wrong result")
     if receipt["state"] == "needs-input" and not receipt["question"]:
         raise RuntimeError("phase requested input without a question")
+    if steered:
+        if receipt["state"] != "needs-input":
+            raise RuntimeError("soft-budget wrap-up did not request continuation")
+        question = receipt["question"]
+        if question != SOFT_BUDGET_CONTINUE_QUESTION and not question.startswith(
+            "Clarification required:"
+        ):
+            raise RuntimeError("soft-budget wrap-up returned an invalid question")
+        if "unverified" not in receipt["summary"].casefold():
+            raise RuntimeError(
+                "soft-budget wrap-up omitted unverified proof obligations"
+            )
     if receipt["state"] == "needs-input":
         receipt["resume_session_id"] = session_id
     else:
@@ -1521,6 +1872,7 @@ def new_question_checkpoint(
     reasoning: str,
     observation: dict,
     base_git: dict,
+    soft_phase_budget_seconds: float = DEFAULT_SOFT_PHASE_BUDGET_SECONDS,
 ) -> dict:
     current_git = capture_git_state(repository, base_git.get("head"))
     if not current_git["git_dir"]:
@@ -1536,6 +1888,9 @@ def new_question_checkpoint(
         "identity_head": current_git.get("head"),
         "model": model,
         "reasoning": reasoning,
+        "soft_phase_budget_seconds": resolve_soft_phase_budget(
+            soft_phase_budget_seconds
+        ),
         "question": receipt["question"],
         "pending_answer": None,
         "receipt": _coordinator_receipt(receipt),
@@ -1689,6 +2044,7 @@ def resume_checkpoint(
     answer: str,
     model_override: str | None,
     reasoning_override: str | None,
+    soft_phase_budget_override: float | None = None,
 ) -> tuple[dict, int]:
     pending = checkpoint.get("pending_answer")
     replayed_answer = bool(pending)
@@ -1717,6 +2073,10 @@ def resume_checkpoint(
         checkpoint["model"] = resolve_model(model_override)
     if reasoning_override is not None:
         checkpoint["reasoning"] = resolve_reasoning(reasoning_override)
+    if soft_phase_budget_override is not None:
+        checkpoint["soft_phase_budget_seconds"] = resolve_soft_phase_budget(
+            soft_phase_budget_override
+        )
     checkpoint.update(activity="coordinating", blocker=None, updated_at=utc_now())
     write_checkpoint(checkpoint)
 
@@ -1736,6 +2096,7 @@ def resume_checkpoint(
             checkpoint["reasoning"],
             observation,
             replayed_answer,
+            checkpoint["soft_phase_budget_seconds"],
         )
     except KeyboardInterrupt:
         _update_checkpoint_observation(checkpoint, observation)
@@ -1798,6 +2159,7 @@ def run_and_checkpoint(
     session_id: str | None,
     model: str | None,
     reasoning: str,
+    soft_phase_budget_seconds: float = DEFAULT_SOFT_PHASE_BUDGET_SECONDS,
 ) -> dict:
     base_git = capture_git_state(repository) if session_id is None else None
     observation: dict = {}
@@ -1809,6 +2171,7 @@ def run_and_checkpoint(
         model,
         reasoning,
         observation=observation,
+        soft_phase_budget_seconds=soft_phase_budget_seconds,
     )
     if receipt["state"] != "needs-input":
         return receipt
@@ -1824,11 +2187,14 @@ def run_and_checkpoint(
         reasoning,
         observation,
         base_git or capture_git_state(repository),
+        soft_phase_budget_seconds,
     )
     return checkpoint_receipt(checkpoint)
 
 
-def parse() -> tuple[Path, str | None, str, str | None, str | None, str | None]:
+def parse() -> tuple[
+    Path, str | None, str, str | None, str | None, str | None, float | None
+]:
     parser = argparse.ArgumentParser(
         prog="bonaparte",
         description="Run one isolated Linear-backed software delivery phase.",
@@ -1847,6 +2213,10 @@ def parse() -> tuple[Path, str | None, str, str | None, str | None, str | None]:
         help=(
             "reasoning effort for this phase or resume; defaults to medium"
         ),
+    )
+    parser.add_argument(
+        "--soft-phase-budget-seconds",
+        help="positive finite soft target for each coordinator turn (default: 300)",
     )
     parser.add_argument("command")
     parser.add_argument("input", nargs=argparse.REMAINDER)
@@ -1906,6 +2276,11 @@ def parse() -> tuple[Path, str | None, str, str | None, str | None, str | None]:
         resume_session_id,
         args.model if command == "resume" else resolve_model(args.model),
         args.reasoning if command == "resume" else resolve_reasoning(args.reasoning),
+        (
+            resolve_soft_phase_budget(args.soft_phase_budget_seconds)
+            if args.soft_phase_budget_seconds is not None
+            else (None if command == "resume" else DEFAULT_SOFT_PHASE_BUDGET_SECONDS)
+        ),
     )
 
 
@@ -1943,6 +2318,7 @@ def main() -> int:
                 session_id,
                 selected_model,
                 selected_reasoning,
+                selected_soft_phase_budget,
             ) = parse()
             checkpoint_exists = session_id is not None and os.path.lexists(
                 checkpoint_path(session_id, ensure_directory=False)
@@ -1969,6 +2345,7 @@ def main() -> int:
                         supplied_input,
                         selected_model,
                         selected_reasoning,
+                        selected_soft_phase_budget,
                     )
             elif session_id is not None:
                 selected_model = resolve_model(selected_model)
@@ -1983,6 +2360,8 @@ def main() -> int:
                     session_id,
                     selected_model,
                     selected_reasoning,
+                    selected_soft_phase_budget
+                    or DEFAULT_SOFT_PHASE_BUDGET_SECONDS,
                 )
             else:
                 progress = acquire_progress_reporter(True, selected_phase)
@@ -1995,6 +2374,8 @@ def main() -> int:
                     None,
                     selected_model,
                     selected_reasoning,
+                    selected_soft_phase_budget
+                    or DEFAULT_SOFT_PHASE_BUDGET_SECONDS,
                 )
             progress.stop_heartbeat()
             progress.report("finalizing")
