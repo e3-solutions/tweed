@@ -22,7 +22,9 @@ jobs:
           fetch-depth: 0
       - name: Smoke-test runner
         run: |
-          python -m py_compile bonaparte bonaparte-launcher
+          python -m py_compile \
+            bonaparte bonaparte-launcher bonaparte_checkpoint.py \
+            bonaparte_linear.py bonaparte_native.py bonaparte_progress.py
           sh -n install
           ./bonaparte --help
       - name: Test versioned installation and updates

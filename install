@@ -44,7 +44,10 @@ if [ ! -e "$release_dir" ]; then
     python3 -m py_compile \
         "$staging/bundle/bonaparte" \
         "$staging/bundle/bonaparte-launcher" \
-        "$staging/bundle/bonaparte_checkpoint.py"
+        "$staging/bundle/bonaparte_checkpoint.py" \
+        "$staging/bundle/bonaparte_linear.py" \
+        "$staging/bundle/bonaparte_native.py" \
+        "$staging/bundle/bonaparte_progress.py"
     BONAPARTE_AUTO_UPDATE=0 python3 "$staging/bundle/bonaparte" --help >/dev/null
     rm -rf "$staging/bundle/__pycache__"
     mv "$staging/bundle" "$release_dir"
