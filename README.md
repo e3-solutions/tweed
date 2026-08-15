@@ -276,3 +276,17 @@ channel. Regardless of progress availability, stdout remains exactly one final
 JSON receipt of at most 4 KiB and stderr remains the diagnostic channel.
 Progress is advisory: it does not establish phase success or replace the final
 receipt.
+
+## Runtime layout
+
+The executable runner owns phase orchestration only. Supporting boundaries stay
+in small importable modules:
+
+- `bonaparte_native.py` owns Codex app-server transport and process groups.
+- `bonaparte_progress.py` owns progress records and native event normalization.
+- `bonaparte_linear.py` reads deterministic Linear intake through that transport.
+- `bonaparte_checkpoint.py` validates and atomically stores resumable questions.
+
+Tests mirror those boundaries. Current native protocol examples live under
+`tests/fixtures`; update the fixture and its focused tests together when Codex's
+event ABI changes.

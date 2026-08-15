@@ -13,41 +13,19 @@ import uuid
 from contextlib import contextmanager
 from pathlib import Path
 
+from bonaparte_progress import (
+    PROGRESS_ACTIVITIES as SEMANTIC_ACTIVITIES,
+    PROGRESS_MAX_MILESTONES as MAX_SEMANTIC_MILESTONES,
+    PROGRESS_STAGES as SEMANTIC_STAGES,
+    PROGRESS_STATUSES as SEMANTIC_STATUSES,
+)
+
 VERSION = 3
 DEFAULT_SOFT_PHASE_BUDGET_SECONDS = 300.0
 MAX_BYTES = 1 << 20
-MAX_SEMANTIC_MILESTONES = 32
 MAX_SEMANTIC_COUNT = 2**31 - 1
 STATUSES = {"waiting-input", "completed", "blocked"}
 PHASES = {"create", "rca", "scope", "implement", "review", "publish"}
-SEMANTIC_STAGES = {
-    "coordinating",
-    "searching",
-    "tool-use",
-    "checking",
-    "file-changes",
-    "subagent-assignment",
-    "subagent-completion",
-    "waiting-input",
-    "finalizing",
-    "terminal",
-}
-SEMANTIC_ACTIVITIES = {
-    "lifecycle",
-    "search",
-    "tool",
-    "check",
-    "file-change",
-    "subagent",
-}
-SEMANTIC_STATUSES = {
-    "started",
-    "in-progress",
-    "completed",
-    "failed",
-    "waiting",
-    "interrupted",
-}
 SEMANTIC_FIELDS = {"stage", "actor", "activity", "status", "count"}
 _SUBAGENT_ACTOR = re.compile(r"subagent-([1-9][0-9]{0,9})\Z")
 

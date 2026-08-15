@@ -77,10 +77,17 @@ class InstallationTests(unittest.TestCase):
         self.run_command(str(self.source / "install"))
         return (self.home / "current").resolve().name
 
-    def test_release_bundle_requires_the_checkpoint_runtime(self):
-        self.assertIn("bonaparte_checkpoint.py", LAUNCHER.REQUIRED)
+    def test_release_bundle_requires_all_runtime_modules(self):
+        runtime_modules = {
+            "bonaparte_checkpoint.py",
+            "bonaparte_linear.py",
+            "bonaparte_native.py",
+            "bonaparte_progress.py",
+        }
+        self.assertTrue(runtime_modules.issubset(LAUNCHER.REQUIRED))
         self.install()
-        self.assertTrue((self.home / "current/bonaparte_checkpoint.py").exists())
+        release = self.home / "current"
+        self.assertTrue(all((release / name).exists() for name in runtime_modules))
 
     def publish(self, tag):
         readme = self.source / "README.md"
