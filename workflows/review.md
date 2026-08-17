@@ -3,37 +3,19 @@
 Independently review the supplied latest implementation handoff. It carries the
 approved outcome, acceptance criteria, non-goals, risks, implementation, and
 verification needed by this phase. The runner supplies only that implementation
-or an existing review result, plus issue metadata. Use Linear only to publish
-and verify the final review. Children must not use Linear. Apply only
-evidence-backed, in-contract corrections and stop at a clean reviewed local
-commit. Push verified correction commits to the implementation draft PR, but do
-not create another PR, change its metadata or readiness, merge, or deploy.
+or an existing review, plus issue metadata. Apply only evidence-backed,
+in-contract corrections and stop at a clean reviewed commit. Push verified
+corrections to the existing draft PR. Do not create another PR, change its
+metadata or readiness, merge, or deploy. Use Linear only to publish and verify
+the final review comment.
 
 ## Contract and safety
 
-- If an `existing` review was supplied, validate it under the current gate and
-  comment schema, then verify its branch, commit, and recorded PR. The PR may be
-  draft or already published, but it must remain open in the canonical
-  repository at that exact reviewed head. Return a current-schema review without
-  duplicating the phase only when every check passes; a stale current-schema
-  review returns `blocked` with the missing fact. The immediately preceding
-  legacy schema is handled by the next rule. Without an `existing` review,
-  require the supplied implementation handoff and extract its recorded branch,
-  commit, and draft PR.
-- Treat an `existing` review as the immediately preceding legacy schema only
-  when it contains its review basis, final axis results, findings, changes,
-  `### Verification`, remaining concerns, Git handoff, and review map, but lacks
-  `### Evidence ledger`. For that case only, rebuild the ledger from its carried
-  acceptance criteria and changed boundaries at the exact recorded head, run
-  the current independent verification workflow, and publish one refreshed
-  current-schema review comment when the completion gate passes. Legacy checks
-  are evidence candidates, not inherited `pass` results. The missing ledger
-  alone is not a blocker; any missing contract or provenance fact, failed or
-  unverified obligation, or required unsafe correction follows the normal
-  blocked or finding rules.
-- Treat its carried-forward outcome, non-goals, acceptance criteria, risks, and
-  validation as the contract. Treat implementation claims as provenance, not
-  as proof of quality.
+- Without an existing review, require the implementation handoff and extract its
+  branch, commit, and draft PR.
+- Treat the implementation handoff's outcome, non-goals, acceptance criteria,
+  risks, and validation as the contract. Treat implementation claims as
+  provenance, not proof of quality.
 - Implementation-author tests and diagnostics remain provisional. Green tests
   introduced by the patch do not alone prove an external or native contract.
 - For a new review, require the implementation handoff's draft PR URL. Derive
@@ -52,6 +34,18 @@ not create another PR, change its metadata or readiness, merge, or deploy.
 - Agent agreement does not make a finding material; reproducible evidence does.
 - Research exact installed versions and primary sources before claiming custom
   code duplicates an existing library or framework capability.
+
+Handle an existing review by schema state:
+
+- Current (`### Contract and quality result`): validate the gate, branch, commit,
+  and canonical open PR. Return it without another comment only when all still
+  match; otherwise return `blocked` with the stale fact.
+- Immediately preceding schema (`### Final axis results` and `### Review map`, but
+  no current result): treat carried checks as evidence candidates, rerun
+  independent verification at the recorded head, and rewrite the review in the
+  current schema when the gate passes.
+- Incomplete, older, failed, or unverified: follow the normal blocked or finding
+  path. Never inherit a `pass` result without fresh evidence.
 
 ## Preflight
 
@@ -78,8 +72,12 @@ recorded head—and changed-path inventory; recompute both after corrections.
    the author's conclusions. It must inspect the implementation and run the
    smallest decisive checks. Record each obligation as `pass`, `fail`, or
    `unverified`; tracing cannot close a boundary requiring runtime evidence.
-2. The coordinator owns the baseline whole-diff review and combines applicable
-   axes for a narrow diff. Add zero to three non-writing reviewers only for
+2. The coordinator owns two independent judgments: contract fidelity (does the
+   diff deliver the approved behavior and nothing else?) and engineering quality
+   (is the delivered change simple, correct, robust, compatible, and proven?). Do
+   not let a clean result on one substitute for the other. The coordinator owns
+   the baseline whole-diff review and combines applicable axes for a narrow diff.
+   Add zero to three non-writing reviewers only for
    separable questions that can change the verdict:
    - **Simplicity, clarity, reuse, and scope fidelity:** seek deletion and
      reduction; challenge unnecessary hunks, nesting, abstractions,
@@ -99,7 +97,8 @@ recorded head—and changed-path inventory; recompute both after corrections.
      untested failures, and unexplained check failures.
 3. Give each reviewer the canonical range and affected consumers. Require actual
    code and repository evidence, not implementation summaries. Add a specialist
-   only for a concrete changed-boundary risk.
+   only for a concrete changed-boundary risk. Each reviewer returns at most 400
+   words and only material findings in the format required by step 4.
 4. Require every proposed finding to include a stable ID, axis, material
    consequence, violated contract, file:line or runtime evidence, owning
    surface, minimum correction, and proving check.
@@ -121,7 +120,9 @@ recorded head—and changed-path inventory; recompute both after corrections.
    applicable axes; otherwise the baseline review is final. Then run the exact
    acceptance checks and only the broader build, type, lint, contract,
    integration, and test suites justified by the affected surface. A new
-   material finding re-enters the bounded fix and re-review loop.
+   material finding re-enters the bounded fix and re-review loop. Immediately
+   before a ready verdict, run fresh final checks against the exact final commit;
+   earlier or delegated success is not proof of current state.
 9. If fixes were made, stage only review-owned changes and create one additional
    commit containing the issue ID. Never rewrite the implementation commit.
    Rerun the proving checks, push the correction normally to the same draft PR,
@@ -174,31 +175,25 @@ this schema and contains the evidence required by the completion gate.
 **Verdict:** Ready to publish
 
 ### Review basis
-- Contract carried forward: [outcome, acceptance criteria, non-goals, and risks from the implementation handoff]
+- Contract: [outcome, acceptance criteria, non-goals, and risks]
 - Implementation reviewed: [branch and full implementation commit]
 - Review target: [changed files, boundaries, interfaces, and consumers]
 
-### Final axis results
-| Axis | Result | Evidence | Remaining concern |
-|---|---|---|---|
-| Simplicity and scope fidelity | [clean/finding] | [diff/repository evidence] | [None or concern] |
-| Correctness and robustness | [clean/finding] | [runtime/test evidence] | [None or concern] |
-| Compatibility and integration | [clean/finding] | [caller/consumer evidence] | [None or concern] |
-| Performance and resource use | [clean/finding] | [path/measurement evidence] | [None or concern] |
-| Verification quality | [clean/finding] | [criterion/check mapping] | [None or concern] |
+### Contract and quality result
+| Judgment | Result | Decisive evidence |
+|---|---|---|
+| Contract fidelity | Pass | [scope-to-diff and acceptance evidence] |
+| Engineering quality | Pass | [decisive quality evidence] |
 
 ### Findings
-| ID | Axis | Material consequence/contract | Evidence | Disposition | Fix | Re-review |
-|---|---|---|---|---|---|---|
-| [ID or None] | [axis] | [consequence and violated contract] | [`file:line` or diagnostic] | [accepted/rejected and why] | [commit/file result or None] | [independent proof] |
-
-### Changes made
-- [Finding ID and minimum correction, or “None.”]
+| ID / axis | Consequence and evidence | Disposition / fix | Re-review |
+|---|---|---|---|
+| [ID/axis or None] | [consequence + evidence] | [minimum fix or None] | [proof] |
 
 ### Evidence ledger
-| Acceptance criterion | Boundary and proof obligation | Owner | Exact command or diagnostic | Status | Observed evidence |
-|---|---|---|---|---|---|
-| [criterion] | [boundary and required proof] | [coordinator/verifier] | `[check]` | [pass/fail/unverified] | [observed result] |
+| Criterion | Boundary / owner | Check | Result / evidence |
+|---|---|---|---|
+| [criterion] | [boundary; owner] | `[exact check]` | [status; observed result] |
 
 ### Remaining concerns
 [Non-blocking operational or CI caveat, or “None.”]
@@ -209,18 +204,11 @@ this schema and contains the evidence required by the completion gate.
 - Reviewed commit: `[full final commit]`
 - Draft PR: `[URL]`
 - Worktree: clean
-
-### Review map
-| Role | Material conclusion | Evidence | Affected surface | Confidence | Relationship |
-|---|---|---|---|---|---|
-| [Reviewer/fixer role] | [substantive finding or fix result] | [`file:line` or diagnostic] | [files/boundary] | [high/medium/low and why] | [reviewed/fixed/challenged] |
-
-**Final clean pass:** [Evidence-backed result across the whole diff and why
-zero unresolved material findings remain.]
 ```
 
-Include every reviewer, specialist, and fixer once. Do not include transcripts,
-tool logs, hashes, or unscoped tips.
+Publish the final judgments, accepted material corrections, direct proof, and Git
+handoff—not the review process. Do not include agent identities, transcripts,
+tool logs, unrelated hash data, or unscoped tips.
 
 ## Receipt
 

@@ -2,17 +2,18 @@
 
 Finalize the reviewed Bonaparte draft pull request, mark it ready for review, and
 record it in Linear. The runner supplies only the latest review or existing
-publish result plus issue metadata. Use Linear only to publish and verify the
-final comment, and use the installed authenticated `git` and `gh` CLIs for
-GitHub. Do not spawn subagents, change code, push commits, create another PR,
+publish result plus issue metadata. Use authenticated `git` and `gh` for GitHub.
+Do not spawn subagents, change code, push commits, create another PR,
 merge, deploy, delete branches, or mutate anything outside the existing PR's
 metadata, readiness, and final Linear comment.
 
 ## Preconditions
 
-- If an `existing` publish result was supplied, validate its complete delivery
-  state and matching open PR before returning it. Otherwise require a complete
-  `## Bonaparte · Implementation Review`; it is the complete publish handoff.
+- Existing publish result: reverify its exact ready PR and Linear delivery
+  comment, then return it without another write. If either is stale or missing,
+  return `blocked` with that fact.
+- New publish: require a complete `## Bonaparte · Implementation Review` as the
+  publish handoff.
 - Extract the exact reviewed branch and commit. Require a clean local worktree
   on that branch, with `HEAD` equal to the reviewed commit.
 - Require a configured GitHub `origin`, a working authenticated `gh`, and an
@@ -27,12 +28,6 @@ metadata, readiness, and final Linear comment.
   interrupted publish satisfies the exact recovery checks in step 3. A missing,
   duplicate, closed, merged, unexpectedly non-draft, or mismatched PR is unsafe;
   return `blocked` without changing it.
-- When an `existing` publish result was supplied, return it without another
-  comment only after its delivery state and all GitHub facts are re-verified;
-  otherwise return `blocked` and name the missing or stale fact. When a review
-  handoff was supplied, continue with the finalization workflow below.
-- Never force-push, rewrite history, change code, rerun implementation, merge,
-  create another PR, deploy, or close or change another PR.
 
 ## Publish workflow
 

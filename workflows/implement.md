@@ -1,24 +1,17 @@
 # Bonaparte Implementation
 
-Implement the approved Bonaparte scope from the supplied deterministic Linear
-handoff, using bounded Codex subagents only when delegation has a distinct
-purpose. The runner supplies only the latest scope or existing implementation
-result plus issue metadata. Use Linear only to
-publish and verify the final handoff. Children must not use Linear. Work only in
-the supplied local repository. Create or recover one draft pull request for the
-official Linear branch and push only verified implementation commits to it. Do
-not mark it ready, merge, deploy, or mutate other remote services or data.
+Implement the approved scope in the supplied repository. The runner provides the
+latest scope or existing implementation plus issue metadata. Create or recover
+one draft pull request on the official Linear branch and push only verified
+implementation commits. Do not mark it ready, merge, or deploy.
 
 ## Contract and safety
 
-- A new implementation requires a complete `## Bonaparte · Solution Scope`; it
-  is the complete implementation contract. An `existing` implementation must
-  carry the complete current schema or qualify only for the bounded legacy
-  upgrade in preflight. Otherwise return `blocked` before editing or publishing
-  remote state.
-- Treat the scope's outcome, change surface, steps, non-goals, acceptance
-  criteria, and validation as the approved contract. Do not redesign or broaden
-  it during implementation.
+- A new implementation requires a complete `## Bonaparte · Solution Scope` as
+  its implementation contract. Otherwise return `blocked` before editing.
+- Treat the scope's outcome, change surface, implementation slices, acceptance
+  and proof table, and guardrails as the approved contract. Do not redesign or
+  broaden it during implementation.
 - Writer-authored tests and implementation claims are provisional evidence;
   they cannot close an obligation that requires independent verification.
 - Prefer the scope's verified project utilities, built-ins, and installed
@@ -36,54 +29,52 @@ not mark it ready, merge, deploy, or mutate other remote services or data.
 
 ## Preflight
 
-1. Read the supplied handoff. If it contains an `existing` implementation,
-   validate its evidence and comment schema, then verify its branch, commit, and
-   recorded PR. Return it without reimplementing only when the commit exists
-   locally and the PR belongs to the repository derived from `origin`, is open,
-   uses the exact branch and base, and points at that commit or a later reviewed
-   descendant. A PR already marked ready is valid only as later publish state.
-   Treat it as the immediately preceding legacy schema only when it contains its
-   review contract, delivered behavior, changed-file responsibilities,
-   `### Verification`, findings, deviations, remaining work, Git handoff, and
-   implementation map, but lacks `### Evidence ledger`. For that case only,
-   reconstruct obligations from its carried acceptance criteria and changed
-   boundaries, run steps 2 and 7–9 at the exact recorded candidate, and publish
-   one refreshed current-schema implementation handoff without reimplementing
-   when the completion gate passes. Legacy checks are evidence candidates, not
-   inherited `pass` results. The missing ledger alone is not a blocker; a
-   missing contract or provenance fact, failed or unverified obligation, or
-   required code change follows the normal blocked or correction rules. If only
-   the PR handoff is missing, recover or create it from the verified existing
-   branch and commit, then publish one refreshed implementation handoff;
-   otherwise return `blocked` with the stale fact.
-2. Record repository identity, current branch, `HEAD`, staged, unstaged, and
+Handle an existing implementation by schema state:
+
+- Current (`**Status:** Implemented`): validate its contract, evidence, branch,
+  commit, and PR. Return it without reimplementation only when the local commit
+  and canonical open PR still match. A ready PR is valid only when later publish
+  state already records it.
+- Immediately preceding schema (`### Evidence ledger` and
+  `### Implementation map`, but no current status): treat carried checks as
+  evidence candidates, rerun final verification at the recorded candidate, and
+  rewrite the handoff in the current schema without reimplementation when the
+  gate passes.
+- Missing only the PR: recover or create the draft from the verified branch and
+  commit, then publish the current handoff.
+- Any other stale, incomplete, failed, or unverified state: return `blocked` with
+  the exact fact or correction required.
+
+Then run preflight:
+
+1. Record repository identity, current branch, `HEAD`, staged, unstaged, and
    untracked paths. Require `issue.git_branch_name` in the supplied metadata and
    validate it with `git check-ref-format --branch`. Use that exact Linear branch
    name; do not generate or substitute another branch name.
-3. If the worktree is clean, create or switch to that issue branch without
+2. If the worktree is clean, create or switch to that issue branch without
    rewriting history. Reuse an existing issue branch only when its ancestry and
    contents are consistent with this issue.
-4. If the expected issue branch contains uncommitted work from an interrupted
+3. If the expected issue branch contains uncommitted work from an interrupted
    attempt, continue only when every changed path and hunk can be mapped to the
    approved scope. Otherwise return `blocked` and preserve it exactly. Any
    unrelated dirty state blocks automatic implementation.
-5. Verify that the scoped files, interfaces, dependencies, and tests still
+4. Verify that the scoped files, interfaces, dependencies, and tests still
    match current repository behavior. Return `blocked` when the scope is
    materially stale or requires an external action beyond the permitted draft
    PR workflow.
-6. Require a configured GitHub `origin`, authenticated `gh`, and an identifiable
+5. Require a configured GitHub `origin`, authenticated `gh`, and an identifiable
    base named by trusted supplemental input or, when absent, GitHub's default
    base. Derive one canonical `[host/]owner/repository` selector
    from `origin`; never use ambient `GH_REPO` or infer a repository from the
    working directory. Scope every `gh` read and write explicitly to that
    selector. Require the selected base to exist in the canonical remote. Require
    the issue branch to descend from it and reject unrelated commits before pushing.
-7. Search all PR states for the exact head branch and inspect every match. Reuse
+6. Search all PR states for the exact head branch and inspect every match. Reuse
    exactly one only when its host, head repository, head branch, and base match
    the canonical repository and expected refs. Before implementation completes,
    it must be open and draft. A duplicate, closed, merged, cross-repository, or
    otherwise mismatched PR is ambiguous; return `blocked` without changing it.
-8. If no matching PR exists, ensure the issue branch differs from the base and
+7. If no matching PR exists, ensure the issue branch differs from the base and
    record that a draft must be created after the first meaningful, coherent,
    passing implementation commit. Do not create an empty kickoff commit or push
    merely to reserve the branch. When creating the draft, use `gh pr create
@@ -94,11 +85,14 @@ not mark it ready, merge, deploy, or mutate other remote services or data.
 
 ## Implementation workflow
 
-1. Translate the approved steps into dependency-aware work packets. Each packet
-   must name its owned paths, required behavior and non-goals, dependencies,
-   proving checks, and stop conditions for stale scope or unexpected state.
-2. Create an evidence ledger from the scope's proof obligations. Give each one
-   an owner and record `pass`, `fail`, or `unverified`: only observed direct
+1. Translate the approved implementation slices into dependency-aware work
+   packets. Each packet must name its owned paths, required behavior and non-goals,
+   dependencies, proving checks, and stop conditions for stale scope or unexpected
+   state.
+   Prefer the smallest complete vertical slice that leaves the repository in a
+   runnable, verifiable state.
+2. Create an evidence ledger from the scope's acceptance and proof table. Give
+   each obligation an owner and record `pass`, `fail`, or `unverified`. Only direct
    evidence is `pass`; a reproduced contradiction is `fail`; missing or
    insufficient evidence is `unverified`. Only `pass` closes an obligation.
 3. The coordinator may implement one narrow coherent packet directly. Otherwise
@@ -109,11 +103,13 @@ not mark it ready, merge, deploy, or mutate other remote services or data.
    migrations, and global checks. The coordinator alone owns staging, commits,
    pushes, GitHub, and Linear.
 4. Require each writer to re-read its assigned files before editing and return
-   only: completed scope items, files changed, checks and results, blocker, and
-   deviation. Writers may not create new product or architecture decisions. If
-   a necessary path or command is outside the packet, stop and report it.
+   at most 300 words containing only: completed scope items, files changed, checks
+   and results, blocker, and deviation. Writers may not create new product or
+   architecture decisions. If a necessary path or command is outside the packet,
+   stop and report it.
 5. After every wave, inspect the actual diff, map every hunk to an approved
-   step, and rerun focused checks. A coherent bounded unit may be committed
+   step, update the coverage map, and rerun focused checks only when relevant
+   state changed. A coherent bounded unit may be committed
    locally with the issue ID, but do not push every wave. Keep an incomplete wave
    local until it is coherent; do not manufacture commits. If a writer fails,
    inspect the workspace before reassigning and never assume it made no changes.
@@ -137,8 +133,8 @@ not mark it ready, merge, deploy, or mutate other remote services or data.
    sufficient for a mechanical correction. Do not add arbitrary review rounds.
 9. Run the smallest checks proving each acceptance criterion, then only the
    broader repository-supported build, type, lint, and test checks justified by
-   the affected surface. For a bug fix, add a regression check that fails for
-   the original mechanism when feasible.
+   the affected surface. For a bug fix, observe the regression check fail against
+   the pre-fix behavior when feasible, then pass against the candidate.
 10. Reinspect the final diff and Git status. Commit any remaining coherent
    implementation-owned changes with the issue ID and push the final verified
    head normally. Create the one draft PR now if preflight found none. Never
@@ -186,53 +182,38 @@ this schema and contains the evidence required by the completion gate.
 ```markdown
 ## Bonaparte · Implementation
 
+**Status:** Implemented
+
 ### Review contract
 - Outcome: [approved behavior this implementation must deliver]
 - Acceptance criteria: [observable criteria carried forward from scope]
 - Non-goals: [boundaries the review must preserve]
 - Risks and safeguards: [material risks and required safeguards]
 
-### Delivered behavior
-- [Observable behavior] → [scope item/acceptance criterion] → [files]
-
 ### Changed files and responsibilities
 | File or boundary | Responsibility delivered | Interfaces/callers affected | Evidence |
 |---|---|---|---|
-| [`file` or boundary] | [exact change] | [consumer effect or None] | [`file:line`, diff fact, or diagnostic] |
+| [`file` or boundary] | [responsibility] | [effect or None] | [`file:line` or check] |
 
 ### Evidence ledger
-| Acceptance criterion | Boundary and proof obligation | Owner | Exact command or diagnostic | Status | Observed evidence |
-|---|---|---|---|---|---|
-| [criterion] | [boundary and required proof] | [coordinator/verifier] | `[check]` | [pass/fail/unverified] | [observed result] |
-
-### Review findings
-| Finding | Evidence and consequence | Disposition/fix | Recheck |
+| Criterion | Boundary / owner | Check | Result / evidence |
 |---|---|---|---|
-| [Finding or None] | [file/runtime evidence] | [fixed/rejected and why] | [proof] |
+| [criterion] | [boundary; owner] | `[exact check]` | [status; observed result] |
 
-### Deviations
-[Narrow clarification, or “None.”]
-
-### Remaining work
-[Non-blocking follow-up outside this phase, or “None.”]
+### Deviations and remaining work
+- Deviations: [narrow contract clarification, or “None.”]
+- Remaining: [non-blocking follow-up outside this phase, or “None.”]
 
 ### Git handoff
 - Branch: `[branch]`
 - Commit: `[full commit]`
 - Draft PR: `[URL]`
 - Worktree: clean
-
-### Implementation map
-| Role | Material conclusion | Evidence | Affected surface | Confidence | Relationship |
-|---|---|---|---|---|---|
-| [Agent role] | [substantive authored/review finding] | [`file:line` or diagnostic] | [files/boundary] | [high/medium/low and why] | [authored/reviewed/challenged] |
-
-**Synthesis:** [How scope items map to the commit and passing evidence, how
-material findings were resolved, and why review can begin from this comment.]
 ```
 
-Include every writer and reviewer once. Do not include transcripts, tool logs,
-hash manifests, or unrelated refactoring ideas.
+Publish the review contract, final diff responsibilities, direct proof, and Git
+handoff—not the implementation process. Do not include agent identities,
+transcripts, tool logs, hash manifests, or unrelated refactoring ideas.
 
 ## Receipt
 

@@ -1,18 +1,14 @@
 # Bonaparte Bug RCA
 
-Investigate the bug from the supplied deterministic Linear handoff and publish
-one evidence-backed root cause analysis as its first Bonaparte comment. The runner
-has already selected the issue intake or latest existing RCA. Use bounded,
-read-only subagents only for distinct evidence questions so the invoking task
-receives only the bounded receipt.
+Investigate the supplied bug handoff and publish one evidence-backed root cause
+analysis. The runner has selected the issue intake or latest existing RCA.
+Use Linear only to publish and verify the final RCA comment.
 
 ## Boundaries
 
 - The input must identify an existing Linear bug issue. If it does not, return
   `needs-input`; never create or guess an issue. If the issue is a feature,
   return `blocked` because features proceed directly to scope.
-- The coordinator may use Linear only to publish and verify the final comment.
-  Do not fetch other issue content or comments. Children must not use Linear.
 - Do not change the issue title or description, modify project files, install
   dependencies, add helper code, create a branch, propose a fix, or implement
   anything. All diagnostics and evidence access must be read-only; do not mutate
@@ -23,8 +19,6 @@ receives only the bounded receipt.
 - Treat the issue report as a symptom, not as a proven explanation.
 - Prefer runtime, test, repository, configuration, and history evidence over
   agent opinion.
-- Inspect available evidence and tools before asking the user. Ask only when one
-  material fact cannot be discovered through an authorized source.
 
 ## Investigation workflow
 
@@ -40,13 +34,18 @@ receives only the bounded receipt.
    integrations such as subscriptions, leases, tokens, or webhooks, follow
    create, persist, renew or reconnect, expire or revoke, and deliver. Correlate
    local and dependency/provider telemetry or status by timestamp or request ID.
-4. Use zero to three read-only investigators, combining related work for a
-   narrow path. Delegate only distinct questions about artifact/timeline,
-   execution or runtime boundaries, or falsifying the leading explanation.
-5. Brief each child under the coordinator's delegation policy. Additionally name
+4. Build the phase coverage map from the causal path. Put exact artifact and
+   timeline facts, boundary behavior, competing explanations, and missing proof
+   on the frontier. Form a small set of falsifiable hypotheses only when they are
+   materially distinct; test the highest-information hypothesis first.
+5. Use zero to three read-only investigators total for the phase, including any
+   follow-up. Combine related work for a narrow path. Delegate only distinct
+   frontier assignments about artifact/timeline, execution or runtime boundaries,
+   or falsifying the leading explanation.
+6. Brief each child under the coordinator's delegation policy. Additionally name
    the diagnostic and what would support or falsify the claim. Keep initial
    conclusions blind when that reduces anchoring.
-6. Require each return to be at most 500 words and contain only:
+7. Require each return to be at most 300 words and contain only:
 
    ```text
    Conclusion: precise claim
@@ -56,16 +55,16 @@ receives only the bounded receipt.
    Relationship: supports | challenges | unresolved
    ```
 
-7. Reconcile the independent results. Identify the best-supported causal chain,
-   the strongest credible alternative, contradictions, and the exact evidence
-   still missing from the completion gate. Route each material gap to an
-   available diagnostic, one user-only fact, or a specifically unavailable
-   source; do not confuse an unattempted query with unavailable evidence.
-8. Use a targeted follow-up investigator only when a concrete diagnostic can
-   resolve a named gap or contradiction. Share relevant claims and evidence,
-   not raw transcripts. Do not add agents or rounds that cannot change the
-   conclusion.
-9. Immediately before reporting, re-read every cited source and rerun
+8. Reconcile the results and update the coverage map. Identify the best-supported
+   causal chain, strongest credible alternative, contradictions, and evidence
+   still missing from the completion gate. Route each material gap to an available
+   diagnostic, one user-only fact, or a specifically unavailable source. An
+   unattempted query is not unavailable evidence.
+9. Within the same zero-to-three total, use a targeted follow-up investigator
+   only when a concrete diagnostic can resolve a named gap or contradiction.
+   Share relevant claims and evidence, not raw transcripts. Do not add agents or
+   rounds that cannot change the conclusion.
+10. Immediately before reporting, re-read every cited source and rerun
    the smallest confirming diagnostic when feasible. If relevant repository
    state changed during the investigation, reconcile the conclusion against the
    new state.
@@ -90,25 +89,31 @@ Direct evidence can include a reproduction, execution trace, failing test,
 focused diagnostic, logs, telemetry, or configuration/history records. A
 plausible theory, code smell, or investigator consensus is not enough.
 
-If one user answer could close the evidence gap, return `needs-input` with one
-concise question containing concrete options and the evidence-backed recommended
-answer when one exists, so the user can confirm or correct it. Use `summary` to
-explain why it matters and `next_action` to mirror useful detail. Do not write a
-Linear comment yet. If available authorized evidence cannot establish the cause
-and no single answer will do so, report `not-established` and name the smallest
-next diagnostic. Do not return `not-established` while a targeted, read-only,
-bounded diagnostic could still change the conclusion.
+When the gate does not pass:
+
+- Run any remaining bounded, read-only diagnostic that can change the conclusion.
+- If one user answer can close the gap, return `needs-input`; explain its effect in
+  `summary`, mirror useful detail in `next_action`, and do not write Linear yet.
+- Otherwise return `blocked` with `result: not-established` and name the smallest
+  unavailable or next diagnostic.
 
 ## First Bonaparte comment
 
-Treat an `existing` RCA as a hypothesis. Recheck it against the original intake
-and current gate. Reuse it if it passes; otherwise investigate its gaps and
-update `existing_comment_id` only after a fresh terminal result passes. If that
-ID is unavailable, return `blocked`; never append a competing RCA. With no
-existing RCA, add exactly one comment in this form:
+After `needs-input` has been ruled out, keep one durable RCA slot in Linear. If
+the gate passes, its status is `Established`. If the gate does not pass and no
+RCA comment exists, create that slot with status `Not established`; do not add
+another comment or overwrite an existing RCA with a second inconclusive attempt.
 
-After writing, re-read the comment and return `completed` only if it matches
-this schema and contains the evidence required by the completion gate.
+Handle the selected RCA deterministically:
+
+- No existing RCA: add one comment in the schema below.
+- Existing RCA: treat it as a hypothesis and recheck it against the original
+  intake and current gate. Reuse it unchanged if it passes. Otherwise investigate
+  its gaps and update `existing_comment_id` only after a fresh terminal result
+  passes. If the ID is unavailable, return `blocked`. Never append a competing RCA.
+
+After adding or updating, re-read the comment. Return `completed` only when the
+selected comment matches this schema and satisfies the completion gate.
 
 ```markdown
 ## Bonaparte · Root Cause Analysis
@@ -118,9 +123,10 @@ this schema and contains the evidence required by the completion gate.
 ### Root cause
 [Precise causal statement, or “Root cause not established.”]
 
-### Problem definition
-[Observed behavior, expected behavior, affected surface, and triggering
-conditions now known.]
+### Incident
+- Observed: [behavior and affected surface]
+- Expected: [expected behavior]
+- Trigger/window: [trigger, artifact, environment, and incident window]
 
 ### Causal chain
 1. [Trigger]
@@ -128,20 +134,14 @@ conditions now known.]
 3. [Observed failure]
 
 ### Evidence
-
-#### Reproduction and runtime
-- [Reproduction, diagnostic, trace, log, or runtime result and what it proves]
-
-#### Repository, configuration, and history
-- [`file:line`, configuration, dependency, or history evidence and what it proves]
-
-### Affected boundaries and files
-- [`path` or external boundary]: [failure contribution and affected consumers]
+| Claim | Evidence | What it proves |
+|---|---|---|
+| [causal claim] | [source + time/ID, diagnostic, or `file:line`] | [direct implication] |
 
 ### Alternatives checked
-| Alternative | Evidence tested | Result | Why weaker than the conclusion |
-|---|---|---|---|
-| [Credible alternative] | [diagnostic or repository evidence] | [rejected/unresolved] | [reason] |
+| Alternative | Decisive check | Result |
+|---|---|---|
+| [strongest alternative] | [check] | [rejected/unresolved — reason] |
 
 ### Remaining uncertainty
 [Material unknowns, or “None.”]
@@ -150,19 +150,11 @@ conditions now known.]
 - Repository: [absolute path]
 - HEAD: [commit, or “not a Git repository”]
 - Worktree: [clean or relevant dirty/untracked state]
-
-### Investigation map
-| Role | Material conclusion | Evidence | Affected surface | Confidence | Relationship |
-|---|---|---|---|---|---|
-| [Agent role] | [substantive finding] | [diagnostic and `file:line`] | [files/boundary] | [high/medium/low and why] | [supports/challenges/unresolved] |
-
-**Synthesis:** [Reconciled causal chain, why the gate passed or failed, and how
-conflicting evidence was resolved.]
 ```
 
-Include every investigator and targeted follow-up once in the map. Keep claims
-traceable to evidence. Never include transcripts, tool logs, hidden metadata,
-hashes, solution ideas, or implementation steps.
+Keep each material claim traceable to evidence. Never include agent identities,
+transcripts, tool logs, hidden metadata, unrelated hash data, solution ideas, or
+implementation steps.
 
 ## Receipt
 
@@ -173,7 +165,8 @@ Return only the runner-provided JSON receipt with `phase: rca`:
 - One material question remains: `state: needs-input`,
   `result: needs-input`, and exactly one question.
 - Cause not established: `state: blocked`, `result: not-established`, and the
-  smallest next diagnostic.
+  smallest next diagnostic. Set `remote_state_changed` to true only when this
+  turn created the first `Not established` comment; otherwise set it to false.
 
 Set all Git and pull-request receipt fields to null.
 
