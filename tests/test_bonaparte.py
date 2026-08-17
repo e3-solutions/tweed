@@ -432,7 +432,7 @@ class BonaparteRunnerTests(unittest.TestCase):
         for filename, markers in required_markers.items():
             workflow = (ROOT / "workflows" / filename).read_text()
             with self.subTest(workflow=filename):
-                self.assertIn("After writing, re-read the comment", workflow)
+                self.assertIn("re-read the comment", workflow)
                 for marker in markers:
                     self.assertIn(marker, workflow)
 
@@ -441,11 +441,12 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertNotIn("bonaparte/<issue-id>", implementation)
         for filename in ("bug-rca.md", "scope.md", "implement.md", "review.md"):
             workflow = (ROOT / "workflows" / filename).read_text()
+            current_schema = workflow.split("```markdown", 1)[1].split("```", 1)[0]
             with self.subTest(clean_receipt=filename):
-                self.assertNotIn("### Investigation map", workflow)
-                self.assertNotIn("### Debate map", workflow)
-                self.assertNotIn("### Implementation map", workflow)
-                self.assertNotIn("### Review map", workflow)
+                self.assertNotIn("### Investigation map", current_schema)
+                self.assertNotIn("### Debate map", current_schema)
+                self.assertNotIn("### Implementation map", current_schema)
+                self.assertNotIn("### Review map", current_schema)
 
     def test_verification_ownership_depends_on_changed_boundary(self):
         scope = (ROOT / "workflows/scope.md").read_text()
@@ -454,10 +455,10 @@ class BonaparteRunnerTests(unittest.TestCase):
 
         for boundary in (
             "Simple local logic",
-            "external/native protocol",
-            "process lifecycle",
-            "persistence/concurrency",
-            "producer-consumer boundary",
+            "External/native protocol",
+            "Process lifecycle",
+            "Persistence/concurrency",
+            "Producer-consumer boundary",
         ):
             self.assertIn(boundary, scope)
         self.assertRegex(scope, r"Do not waive it as\s+safe degradation")
@@ -478,34 +479,34 @@ class BonaparteRunnerTests(unittest.TestCase):
         implementation = (ROOT / "workflows/implement.md").read_text()
         review = (ROOT / "workflows/review.md").read_text()
 
-        self.assertIn("immediately preceding legacy schema", scope)
-        self.assertIn("but lacks\n`**Status:** Scoped`", scope)
+        self.assertIn("Immediately preceding schema", scope)
+        self.assertIn("no current status", scope)
         self.assertIn("without redesigning it", scope)
-        for workflow in (implementation, review):
-            self.assertIn("immediately preceding legacy schema", workflow)
-            self.assertRegex(
-                workflow, r"evidence candidates, not inherited\s+`pass`"
-            )
+        self.assertIn("Immediately preceding schema", implementation)
+        self.assertIn("evidence candidates", implementation)
+        self.assertIn("Immediately preceding schema", review)
+        self.assertIn("evidence candidates", review)
+        self.assertIn("Never inherit a `pass`", review)
         self.assertIn("`**Status:** Implemented`", implementation)
         self.assertIn("`### Contract and quality result`", review)
-        self.assertIn("without reimplementing", implementation)
-        self.assertIn("exact recorded head", review)
+        self.assertIn("without reimplementation", implementation)
+        self.assertIn("recorded head", review)
 
     def test_coordinator_owns_a_bounded_coverage_frontier(self):
         runner = (ROOT / "bonaparte").read_text()
         for marker in (
-            "The coordinator owns a coverage map",
-            "frontier is the unresolved items",
-            "frontier item as a fact, decision",
-            "test risks with a falsifiable diagnostic",
-            "Prioritize the smallest",
-            "low-cost check that can change the result",
-            "After each material result, update",
-            "Do not finish merely",
-            "durable conclusions and evidence",
+            "Maintain a working coverage map",
+            "frontier contains unresolved items",
+            "- Fact: investigate it",
+            "- Decision: resolve it",
+            "- Risk: run a falsifiable check",
+            "smallest low-cost check that can change the result",
+            "After each material result, update the map",
+            "Finish only when the completion gate passes",
+            "Publish only durable",
         ):
             self.assertIn(marker, runner)
-        self.assertIn("self-contained, plain-language question", runner)
+        self.assertIn("self-contained plain-language question", runner)
         self.assertIn("impact times uncertainty", (ROOT / "workflows/scope.md").read_text())
         self.assertIn("two independent judgments", (ROOT / "workflows/review.md").read_text())
 
@@ -546,12 +547,14 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertIn("Trace only boundaries implicated by the reported path", rca)
         self.assertIn("subscriptions, leases, tokens, or webhooks", rca)
         self.assertIn("dependency/provider telemetry or status", rca)
-        self.assertIn("do not confuse an unattempted query", rca)
+        self.assertIn("unattempted query is not unavailable evidence", rca)
         self.assertIn("Static evidence proves susceptibility, not the incident", rca)
         self.assertIn("smallest conclusion-changing diagnostics", rca)
-        self.assertIn("Treat an `existing` RCA as a hypothesis", rca)
+        self.assertRegex(rca, r"Existing RCA: treat it as a hypothesis")
         self.assertIn("update `existing_comment_id`", rca)
         self.assertIn("All diagnostics and evidence access must be read-only", rca)
+        self.assertIn("keep one durable RCA slot in Linear", rca)
+        self.assertIn("first `Not established` comment", rca)
 
         self.assertNotIn("Spawn exactly three", scope)
         self.assertIn("Use zero to three read-only agents", scope)
@@ -590,8 +593,8 @@ class BonaparteRunnerTests(unittest.TestCase):
         skill = (ROOT / "skills/use-bonaparte/SKILL.md").read_text()
         self.assertIn("ready-for-review", skill)
         self.assertIn("options and a recommendation", skill)
-        self.assertIn("Never answer for the user", skill)
-        self.assertIn("combine independent\nquestions", skill)
+        self.assertRegex(skill, r"Never\s+answer for the user")
+        self.assertIn("combine independent questions", skill)
         self.assertIn("safely quoted argument", skill)
         self.assertIn("resume <receipt.resume_token> <answer>", skill)
         self.assertIn("another material question, repeat the exchange", skill)

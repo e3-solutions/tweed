@@ -1,6 +1,12 @@
 ---
 name: use-bonaparte
-description: Orchestrate a software bug or feature from clean Linear intake through isolated coordinator-owned phases and a ready-for-review GitHub pull request. Bugs require evidence-backed RCA before scope; features start at scope. Use when the user asks Bonaparte to record, investigate, scope, implement, review, publish, or resume a software request without loading phase work into the invoking task.
+description: >-
+  Run Bonaparte's isolated Linear-to-GitHub delivery workflow for software bugs
+  and features through a ready-for-review pull request. Use when asked to record,
+  investigate, scope, implement, review, publish, or resume a Bonaparte request.
+  Bugs require evidence-backed RCA before scope; features begin at scope. Keeps
+  the invoking task thin while phase coordinators own detailed work and return
+  bounded receipts.
 ---
 
 # Use Bonaparte
@@ -93,17 +99,16 @@ The channel is best effort; its absence or permanent failure requires no retry
 or fallback. It never replaces the single stdout receipt of at most 4 KiB. The
 invoking task remains thin and waits once for that final receipt.
 
-On `needs-input`, relay only `question`; it should be self-contained, explain why
-the answer changes the result, and include supported options and a recommendation
-when evidence allows. Never answer for the user or combine independent
-questions. Soft-budget expiry uses an exact instruction to resume
-the token with `Continue`; otherwise the question is a material clarification. Relay the exact question
-before continuing the same coordinator with the user's answer, passing it as one
-safely quoted argument or structured process argument; never interpolate answer
-text into shell syntax. A token resume reuses the saved model, reasoning,
-repository, phase, soft phase budget, and exact native Codex thread. Supply
-model, reasoning, or soft-budget flags only when the user intentionally overrides
-them:
+On `needs-input`, relay only `question`. It should explain what the answer changes
+and include supported options and a recommendation when evidence allows. Never
+answer for the user or combine independent questions.
+
+Soft-budget expiry asks the user to resume with `Continue`; any other question is
+a material clarification. Continue the same coordinator with the exact user
+answer as one safely quoted argument or structured process argument. Never
+interpolate the answer into shell syntax. A token resume retains the model, reasoning,
+repository, phase, budget, and native Codex thread. Pass configuration flags only
+when the user intentionally overrides them:
 
 ```sh
 bonaparte --repo <repository> [--model <model>] [--reasoning <effort>] \

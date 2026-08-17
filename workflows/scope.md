@@ -4,16 +4,15 @@ Turn the supplied Linear request into the smallest implementation-ready solution
 scope. For a bug, start from its established RCA. For a feature, start from the
 requested outcome and verified repository behavior. The runner supplies only
 the selected intake, latest RCA, or latest existing scope needed for this phase.
-Use Linear only to publish and verify the final scope. Children must not use
-Linear. Do not modify repository files, implement the change, create a branch,
-or perform any other external write.
+Keep repository work read-only. Use Linear only to publish and verify the final
+scope comment; keep every other external-system interaction read-only.
 
 ## Boundaries
 
 - Use the supplied issue kind. A bug requires an established
   `## Bonaparte · Root Cause Analysis` handoff. A feature receives its intake and
-  must not invent or require an RCA. If the kind is missing or a bug lacks its
-  RCA handoff, return `needs-input` or `blocked`.
+  must not invent or require an RCA. A missing kind returns `needs-input`; a bug
+  without an established RCA returns `blocked`.
 - Treat the supplied feature intake or bug RCA as the durable request contract.
   Verify material repository claims before relying on them.
 - Reuse existing structures, language or framework capabilities, project
@@ -34,8 +33,6 @@ or perform any other external write.
   production verification out of implementation. For each state-changing
   external prerequisite, record safe ordering, verification, and rollback; do
   not call it non-blocking when safe operation depends on it.
-- Ask the user only when an irreducible product, safety, compatibility, or
-  architecture decision prevents a valid scope.
 
 ## Scoping workflow
 
@@ -63,22 +60,22 @@ or perform any other external write.
      compatibility, security, data, concurrency, performance, and operational
      risks; translate supported risks into bounded safeguards and proving
      checks.
-4. Require a concise recommendation with source locations, rejected excess,
-   material risks, confidence, and missing information. Keep conclusions blind
-   when that reduces anchoring.
+4. Require each child to return at most 350 words: recommendation, source
+   locations, rejected excess, material risks, confidence, and missing
+   information. Keep conclusions blind when that reduces anchoring.
 5. Synthesize the smallest complete candidate. Every proposed change must map
    to the bug's RCA mechanism, the feature's requested outcome, or an observable
    acceptance criterion.
-6. Classify each acceptance criterion's proving boundary and record its smallest
-   decisive proof and owner. Simple local logic may use a coordinator-owned
-   deterministic check. A changed external/native protocol, process lifecycle,
-   persistence/concurrency invariant, or producer-consumer boundary requires
-   fresh read-only verification in both implementation and review, using,
-   respectively: the installed primary contract plus
-   captured/live behavior; injected exit/error/interruption with resource
-   cleanup proof; interruption/retry/competing-access proof; or an end-to-end
-   consumer canary. Combine compatible obligations under one verifier and do
-   not verify boundaries the change does not touch.
+6. Give every acceptance criterion one smallest decisive proof and owner:
+   - **Simple local logic:** a coordinator-owned deterministic check may suffice.
+   - **External/native protocol:** verify the installed primary contract and
+     captured or live behavior.
+   - **Process lifecycle:** inject exit, error, or interruption and prove cleanup.
+   - **Persistence/concurrency:** prove interruption, retry, and competing access.
+   - **Producer-consumer boundary:** run an end-to-end consumer canary.
+   Changed non-local boundaries require fresh read-only verification in both
+   implementation and review. Combine compatible obligations under one verifier;
+   do not verify boundaries the change does not touch.
 7. Express the candidate as the smallest complete vertical slices that preserve a
    runnable, verifiable state. Put a risky contract or test seam early when that
    reduces uncertainty; do not create horizontal layer tickets with no observable
@@ -119,25 +116,23 @@ Call the solution scoped only when:
   verifiable; and
 - no material evidence-backed objection remains unresolved.
 
-If one user decision can close the gap, return `needs-input` with one exact
-question containing supported options and a recommendation for confirmation or
-correction. Explain its consequence in `summary`. Otherwise return `blocked`
-with the smallest missing investigation; never invent architecture.
+If one user decision can close the gap, return `needs-input` and explain its
+consequence in `summary`. Otherwise return `blocked` with the smallest missing
+investigation; never invent architecture.
 
 ## Linear comment
 
-If an `existing` solution scope was supplied, validate it under the current
-gate. Treat it as the immediately preceding legacy schema only when it contains
-the handoff basis, outcome, repository evidence, reuse decision, change surface,
-implementation steps, non-goals, acceptance criteria, proof obligations, risks,
-validation, decisions, repository state, and debate map, but lacks
-`**Status:** Scoped`. For that case only, compact the carried contract into the
-current schema without redesigning it, revalidate material repository facts,
-and publish one refreshed scope. A missing contract fact, design change, or
-unresolved design-affecting uncertainty is a blocker. A complete current scope
-may be returned only after validation; any other incomplete scope returns
-`blocked`.
-For a new or upgraded scope, publish one terminal `scoped` comment:
+Handle an existing scope by schema state:
+
+- Current (`**Status:** Scoped`): validate it against the completion gate and
+  return it without another comment only when it passes.
+- Immediately preceding schema (`### Proof obligations` and `### Debate map`, but
+  no current status): carry its contract forward, revalidate material repository
+  facts, and rewrite it in the current schema without redesigning it.
+- Incomplete, stale, or older: return `blocked` with the missing contract fact or
+  investigation.
+
+For a new or upgraded scope, publish one terminal `scoped` comment.
 
 After writing, re-read the comment and return `completed` only if it matches
 this schema and contains the evidence required by the completion gate.
@@ -158,7 +153,7 @@ this schema and contains the evidence required by the completion gate.
 ### Change surface
 | File or boundary | Current evidence | Exact responsibility | Interface/caller effect |
 |---|---|---|---|
-| [`path` or boundary] | [`file:line` or repository result] | [bounded change] | [consumer effect or None] |
+| [`path` or boundary] | [`file:line` or result] | [bounded change] | [effect or None] |
 
 ### Implementation slices
 1. **[Step]**
@@ -170,7 +165,7 @@ this schema and contains the evidence required by the completion gate.
 ### Acceptance and proof
 | Observable criterion | Boundary | Smallest decisive check | Owner |
 |---|---|---|---|
-| [trigger and observable outcome] | [local logic/protocol/process/persistence/concurrency/producer-consumer] | [direct evidence required] | [coordinator or fresh read-only verifier] |
+| [trigger → outcome] | [boundary type] | [direct check] | [coordinator/verifier] |
 
 ### Guardrails
 - Non-goals: [excluded work and why]
@@ -184,7 +179,6 @@ this schema and contains the evidence required by the completion gate.
 - Repository: [absolute path]
 - HEAD: [commit]
 - Worktree: [clean or relevant dirty state]
-
 ```
 
 Publish the durable contract, not the scoping process. Do not include agent
