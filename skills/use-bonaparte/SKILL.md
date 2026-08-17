@@ -1,6 +1,6 @@
 ---
 name: use-bonaparte
-description: Take a software bug or feature from standardized Linear intake through the applicable isolated phases and a ready-for-review GitHub pull request using bounded receipts. Bugs use evidence-backed RCA before solution scoping; features proceed directly to scope. Use when the user asks Bonaparte to record, investigate, build, solve, implement, review, or publish a software request, or asks for one Bonaparte phase on an existing Linear issue without loading child work into the current context.
+description: Orchestrate a software bug or feature from clean Linear intake through isolated coordinator-owned phases and a ready-for-review GitHub pull request. Bugs require evidence-backed RCA before scope; features start at scope. Use when the user asks Bonaparte to record, investigate, scope, implement, review, publish, or resume a software request without loading phase work into the invoking task.
 ---
 
 # Use Bonaparte
@@ -93,9 +93,10 @@ The channel is best effort; its absence or permanent failure requires no retry
 or fallback. It never replaces the single stdout receipt of at most 4 KiB. The
 invoking task remains thin and waits once for that final receipt.
 
-On `needs-input`, ask only `question`; it should already include a recommendation
-when the phase has evidence for one. Never answer for the user or combine
-independent questions. Soft-budget expiry uses an exact instruction to resume
+On `needs-input`, relay only `question`; it should be self-contained, explain why
+the answer changes the result, and include supported options and a recommendation
+when evidence allows. Never answer for the user or combine independent
+questions. Soft-budget expiry uses an exact instruction to resume
 the token with `Continue`; otherwise the question is a material clarification. Relay the exact question
 before continuing the same coordinator with the user's answer, passing it as one
 safely quoted argument or structured process argument; never interpolate answer

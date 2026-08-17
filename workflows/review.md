@@ -22,15 +22,13 @@ not create another PR, change its metadata or readiness, merge, or deploy.
   commit, and draft PR.
 - Treat an `existing` review as the immediately preceding legacy schema only
   when it contains its review basis, final axis results, findings, changes,
-  `### Verification`, remaining concerns, Git handoff, and review map, but lacks
-  `### Evidence ledger`. For that case only, rebuild the ledger from its carried
-  acceptance criteria and changed boundaries at the exact recorded head, run
-  the current independent verification workflow, and publish one refreshed
-  current-schema review comment when the completion gate passes. Legacy checks
-  are evidence candidates, not inherited `pass` results. The missing ledger
-  alone is not a blocker; any missing contract or provenance fact, failed or
-  unverified obligation, or required unsafe correction follows the normal
-  blocked or finding rules.
+  evidence ledger, remaining concerns, Git handoff, and review map, but lacks
+  the current `### Contract and quality result`. For that case only, rerun the
+  independent verification workflow at the exact recorded head and publish one
+  compact current-schema review when the completion gate passes. Carried checks
+  are evidence candidates, not inherited `pass` results. Any missing contract or
+  provenance fact, failed or unverified obligation, or required unsafe correction
+  follows the normal blocked or finding rules.
 - Treat its carried-forward outcome, non-goals, acceptance criteria, risks, and
   validation as the contract. Treat implementation claims as provenance, not
   as proof of quality.
@@ -78,8 +76,12 @@ recorded head—and changed-path inventory; recompute both after corrections.
    the author's conclusions. It must inspect the implementation and run the
    smallest decisive checks. Record each obligation as `pass`, `fail`, or
    `unverified`; tracing cannot close a boundary requiring runtime evidence.
-2. The coordinator owns the baseline whole-diff review and combines applicable
-   axes for a narrow diff. Add zero to three non-writing reviewers only for
+2. The coordinator owns two independent judgments: contract fidelity (does the
+   diff deliver the approved behavior and nothing else?) and engineering quality
+   (is the delivered change simple, correct, robust, compatible, and proven?). Do
+   not let a clean result on one substitute for the other. The coordinator owns
+   the baseline whole-diff review and combines applicable axes for a narrow diff.
+   Add zero to three non-writing reviewers only for
    separable questions that can change the verdict:
    - **Simplicity, clarity, reuse, and scope fidelity:** seek deletion and
      reduction; challenge unnecessary hunks, nesting, abstractions,
@@ -121,7 +123,9 @@ recorded head—and changed-path inventory; recompute both after corrections.
    applicable axes; otherwise the baseline review is final. Then run the exact
    acceptance checks and only the broader build, type, lint, contract,
    integration, and test suites justified by the affected surface. A new
-   material finding re-enters the bounded fix and re-review loop.
+   material finding re-enters the bounded fix and re-review loop. Immediately
+   before a ready verdict, run fresh final checks against the exact final commit;
+   earlier or delegated success is not proof of current state.
 9. If fixes were made, stage only review-owned changes and create one additional
    commit containing the issue ID. Never rewrite the implementation commit.
    Rerun the proving checks, push the correction normally to the same draft PR,
@@ -178,27 +182,21 @@ this schema and contains the evidence required by the completion gate.
 - Implementation reviewed: [branch and full implementation commit]
 - Review target: [changed files, boundaries, interfaces, and consumers]
 
-### Final axis results
-| Axis | Result | Evidence | Remaining concern |
-|---|---|---|---|
-| Simplicity and scope fidelity | [clean/finding] | [diff/repository evidence] | [None or concern] |
-| Correctness and robustness | [clean/finding] | [runtime/test evidence] | [None or concern] |
-| Compatibility and integration | [clean/finding] | [caller/consumer evidence] | [None or concern] |
-| Performance and resource use | [clean/finding] | [path/measurement evidence] | [None or concern] |
-| Verification quality | [clean/finding] | [criterion/check mapping] | [None or concern] |
+### Contract and quality result
+| Judgment | Result | Decisive evidence |
+|---|---|---|
+| Contract fidelity | Pass | [scope-to-diff and acceptance evidence] |
+| Engineering quality | Pass | [simplicity, correctness, failure, compatibility, resource, and verification evidence] |
 
 ### Findings
-| ID | Axis | Material consequence/contract | Evidence | Disposition | Fix | Re-review |
-|---|---|---|---|---|---|---|
-| [ID or None] | [axis] | [consequence and violated contract] | [`file:line` or diagnostic] | [accepted/rejected and why] | [commit/file result or None] | [independent proof] |
-
-### Changes made
-- [Finding ID and minimum correction, or “None.”]
+| ID / axis | Consequence and evidence | Disposition / fix | Re-review |
+|---|---|---|---|
+| [ID or None; axis] | [material consequence, contract, and `file:line` or diagnostic] | [accepted/rejected and why; minimum fix or None] | [independent proof] |
 
 ### Evidence ledger
-| Acceptance criterion | Boundary and proof obligation | Owner | Exact command or diagnostic | Status | Observed evidence |
-|---|---|---|---|---|---|
-| [criterion] | [boundary and required proof] | [coordinator/verifier] | `[check]` | [pass/fail/unverified] | [observed result] |
+| Criterion | Boundary / owner | Check | Result / evidence |
+|---|---|---|---|
+| [criterion] | [boundary; coordinator/verifier] | `[exact check]` | [pass/fail/unverified; observed result] |
 
 ### Remaining concerns
 [Non-blocking operational or CI caveat, or “None.”]
@@ -210,17 +208,11 @@ this schema and contains the evidence required by the completion gate.
 - Draft PR: `[URL]`
 - Worktree: clean
 
-### Review map
-| Role | Material conclusion | Evidence | Affected surface | Confidence | Relationship |
-|---|---|---|---|---|---|
-| [Reviewer/fixer role] | [substantive finding or fix result] | [`file:line` or diagnostic] | [files/boundary] | [high/medium/low and why] | [reviewed/fixed/challenged] |
-
-**Final clean pass:** [Evidence-backed result across the whole diff and why
-zero unresolved material findings remain.]
 ```
 
-Include every reviewer, specialist, and fixer once. Do not include transcripts,
-tool logs, hashes, or unscoped tips.
+Publish the final judgments, material finding dispositions, direct proof, and Git
+handoff—not the review process. Do not include agent identities, transcripts,
+tool logs, unrelated hash data, or unscoped tips.
 
 ## Receipt
 

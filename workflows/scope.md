@@ -46,8 +46,13 @@ or perform any other external write.
    `HEAD`, and relevant clean/dirty worktree state. If repository evidence
    materially contradicts the handoff, return `blocked` with the smallest
    re-investigation needed.
-2. Use zero to three read-only agents only for distinct decisions; the
-   coordinator may combine applicable axes for a narrow change:
+2. Scan the coverage map for material gaps in outcome, interfaces and consumers,
+   failure behavior, data and compatibility, operations, and proof. Prioritize by
+   impact times uncertainty. Investigate facts; ask only when a user-owned choice
+   can change the solution contract.
+3. Use zero to three read-only agents total for the phase, including any reviewer
+   or specialist, and only for distinct frontier assignments. The coordinator may
+   combine applicable axes for a narrow change:
    - **Repository and reuse:** inventory internal utilities, framework or
      language built-ins, installed libraries and versions, integration points,
      tests, and conventions relevant to the fix.
@@ -58,13 +63,13 @@ or perform any other external write.
      compatibility, security, data, concurrency, performance, and operational
      risks; translate supported risks into bounded safeguards and proving
      checks.
-3. Require a concise recommendation with source locations, rejected excess,
+4. Require a concise recommendation with source locations, rejected excess,
    material risks, confidence, and missing information. Keep conclusions blind
    when that reduces anchoring.
-4. Synthesize the smallest complete candidate. Every proposed change must map
+5. Synthesize the smallest complete candidate. Every proposed change must map
    to the bug's RCA mechanism, the feature's requested outcome, or an observable
    acceptance criterion.
-5. Classify each acceptance criterion's proving boundary and record its smallest
+6. Classify each acceptance criterion's proving boundary and record its smallest
    decisive proof and owner. Simple local logic may use a coordinator-owned
    deterministic check. A changed external/native protocol, process lifecycle,
    persistence/concurrency invariant, or producer-consumer boundary requires
@@ -74,15 +79,19 @@ or perform any other external write.
    cleanup proof; interruption/retry/competing-access proof; or an end-to-end
    consumer canary. Combine compatible obligations under one verifier and do
    not verify boundaries the change does not touch.
-6. If the request cannot fit one coherent implementation packet, propose ordered
+7. Express the candidate as the smallest complete vertical slices that preserve a
+   runnable, verifiable state. Put a risky contract or test seam early when that
+   reduces uncertainty; do not create horizontal layer tickets with no observable
+   outcome.
+8. If the request cannot fit one coherent implementation packet, propose ordered
    valuable packets and ask which comes first. Do not publish an omnibus scope.
-7. Apply adversarial checks directly, delegating to one fresh reviewer only for
-   a named objection or unresolved decision. Require only material objections
-   and the minimum correction.
-8. Add one specialist only when a named unresolved risk cannot be decided from
-   repository evidence or the coordinator's current analysis. Do not add an
-   agent or round without a specific unresolved question.
-9. Reconcile supported objections. Re-read cited evidence and confirm `HEAD`
+9. Apply adversarial checks directly, delegating within the zero-to-three total to
+   one fresh reviewer only for a named objection or unresolved decision. Require
+   only material objections and the minimum correction.
+10. Add one specialist within that same total only when a named unresolved risk
+   cannot be decided from repository evidence or the coordinator's current
+   analysis. Do not add an agent or round without a specific unresolved question.
+11. Reconcile supported objections. Re-read cited evidence and confirm `HEAD`
    and relevant worktree state before reporting.
 
 ## Completion gate
@@ -106,7 +115,7 @@ Call the solution scoped only when:
   suites only when justified;
 - every acceptance criterion has a classified proof obligation and owner, and
   no design-affecting uncertainty remains unresolved;
-- implementation steps are ordered, locally executable, and independently
+- implementation slices are ordered, locally executable, and independently
   verifiable; and
 - no material evidence-backed objection remains unresolved.
 
@@ -119,15 +128,15 @@ with the smallest missing investigation; never invent architecture.
 
 If an `existing` solution scope was supplied, validate it under the current
 gate. Treat it as the immediately preceding legacy schema only when it contains
-the outcome, repository evidence, reuse decision, change surface,
-implementation steps, non-goals, acceptance criteria, risks and safeguards,
-validation, decisions and assumptions, and repository state, but lacks
-`### Proof obligations`. For that case only, classify the carried acceptance
-criteria under step 5 without redesigning the accepted scope, revalidate
-material repository facts, and publish one refreshed current-schema scope. The
-missing table alone is not a blocker; any missing contract fact, design change,
-or unresolved design-affecting uncertainty is. A complete current scope may be
-returned only after validation; any other incomplete scope returns `blocked`.
+the handoff basis, outcome, repository evidence, reuse decision, change surface,
+implementation steps, non-goals, acceptance criteria, proof obligations, risks,
+validation, decisions, repository state, and debate map, but lacks
+`**Status:** Scoped`. For that case only, compact the carried contract into the
+current schema without redesigning it, revalidate material repository facts,
+and publish one refreshed scope. A missing contract fact, design change, or
+unresolved design-affecting uncertainty is a blocker. A complete current scope
+may be returned only after validation; any other incomplete scope returns
+`blocked`.
 For a new or upgraded scope, publish one terminal `scoped` comment:
 
 After writing, re-read the comment and return `completed` only if it matches
@@ -136,83 +145,51 @@ this schema and contains the evidence required by the completion gate.
 ```markdown
 ## Bonaparte · Solution Scope
 
+**Status:** Scoped
+
 ### Handoff basis
 - RCA basis: [causal chain and responsible boundary, or “Not applicable — feature”]
 - Constraints carried forward: [material issue/RCA constraints]
+- Reuse: [verified built-in, project utility, or installed library; custom gap if any]
 
 ### Outcome
 [Smallest complete outcome and how it resolves the bug or delivers the feature.]
-
-### Repository evidence
-- [`file:line` or repository result supporting a material boundary]
-
-### Reuse decision
-- [Built-in, project utility, or installed library and version]: [reuse choice]
-- Custom code required: [narrow uncovered gap, or “None.”]
 
 ### Change surface
 | File or boundary | Current evidence | Exact responsibility | Interface/caller effect |
 |---|---|---|---|
 | [`path` or boundary] | [`file:line` or repository result] | [bounded change] | [consumer effect or None] |
 
-### Implementation steps
+### Implementation slices
 1. **[Step]**
    - Target: [component/path]
    - Depends on: [step or “None”]
    - Change: [bounded responsibility]
    - Verify: [proving check]
 
-### Non-goals
-- [Excluded work and why]
-
-### Acceptance criteria
-- [Observable behavior proving the fix]
-
-### Proof obligations
-| Acceptance criterion | Boundary type | Direct evidence required | Verification owner |
+### Acceptance and proof
+| Observable criterion | Boundary | Smallest decisive check | Owner |
 |---|---|---|---|
-| [criterion] | [local logic/protocol/process/persistence/concurrency/producer-consumer] | [smallest decisive check] | [coordinator or fresh read-only verifier] |
+| [trigger and observable outcome] | [local logic/protocol/process/persistence/concurrency/producer-consumer] | [direct evidence required] | [coordinator or fresh read-only verifier] |
 
-### Risks and safeguards
-| Risk | Evidence and affected boundary | Safeguard | Proving check |
-|---|---|---|---|
-| [Evidence-backed risk] | [repository fact and surface] | [proportional safeguard] | [validation] |
-
-### Validation
-- [Regression, focused, and broader project checks]
-
-### Post-merge follow-up
-- [External rollout/live validation, or “None.”]
-
-### Alternatives considered
-| Alternative | Evidence | Decision and reason |
-|---|---|---|
-| [Alternative] | [repository or dependency evidence] | [rejected/partially reused and why] |
-
-### Decisions and assumptions
-- Decision: [direction] — Basis: [evidence]
-- Assumption: [unverified condition, or “None.”]
-- Open decision: None
+### Guardrails
+- Non-goals: [excluded work and why]
+- Risks/safeguards: [evidence-backed risk → proportional safeguard and proving check]
+- Decision basis: [chosen direction and evidence; strongest rejected alternative]
+- Assumptions/open decisions: None
+- Broader validation: [justified repository-supported checks, or “None.”]
+- Post-merge: [external rollout/live validation, or “None.”]
 
 ### Repository state
 - Repository: [absolute path]
 - HEAD: [commit]
 - Worktree: [clean or relevant dirty state]
 
-### Debate map
-| Axis/role | Material conclusion | Evidence | Affected surface | Confidence | Relationship |
-|---|---|---|---|---|---|
-| [Agent axis] | [substantive finding] | [`file:line`, version, or diagnostic] | [files/boundary] | [high/medium/low and why] | [supports/challenges/resolved] |
-
-**Adversarial review:** [Material objection, evidence, and minimum correction,
-or “No material objection after evidence review.”]
-
-**Synthesis:** [Why this is the smallest complete scope, how supported
-objections were resolved, and why the completion gate passed.]
 ```
 
-Include every agent used once. Do not include transcripts, tool logs, hashes,
-patches, or implementation work.
+Publish the durable contract, not the scoping process. Do not include agent
+identities, transcripts, tool logs, unrelated hash data, patches, or
+implementation work.
 
 ## Receipt
 

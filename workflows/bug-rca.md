@@ -40,13 +40,18 @@ receives only the bounded receipt.
    integrations such as subscriptions, leases, tokens, or webhooks, follow
    create, persist, renew or reconnect, expire or revoke, and deliver. Correlate
    local and dependency/provider telemetry or status by timestamp or request ID.
-4. Use zero to three read-only investigators, combining related work for a
-   narrow path. Delegate only distinct questions about artifact/timeline,
-   execution or runtime boundaries, or falsifying the leading explanation.
-5. Brief each child under the coordinator's delegation policy. Additionally name
+4. Build the phase coverage map from the causal path. Put exact artifact and
+   timeline facts, boundary behavior, competing explanations, and missing proof
+   on the frontier. Form a small set of falsifiable hypotheses only when they are
+   materially distinct; test the highest-information hypothesis first.
+5. Use zero to three read-only investigators total for the phase, including any
+   follow-up. Combine related work for a narrow path. Delegate only distinct
+   frontier assignments about artifact/timeline, execution or runtime boundaries,
+   or falsifying the leading explanation.
+6. Brief each child under the coordinator's delegation policy. Additionally name
    the diagnostic and what would support or falsify the claim. Keep initial
    conclusions blind when that reduces anchoring.
-6. Require each return to be at most 500 words and contain only:
+7. Require each return to be at most 500 words and contain only:
 
    ```text
    Conclusion: precise claim
@@ -56,16 +61,17 @@ receives only the bounded receipt.
    Relationship: supports | challenges | unresolved
    ```
 
-7. Reconcile the independent results. Identify the best-supported causal chain,
+8. Reconcile the independent results. Update the coverage map, identify the
+   best-supported causal chain,
    the strongest credible alternative, contradictions, and the exact evidence
    still missing from the completion gate. Route each material gap to an
    available diagnostic, one user-only fact, or a specifically unavailable
    source; do not confuse an unattempted query with unavailable evidence.
-8. Use a targeted follow-up investigator only when a concrete diagnostic can
-   resolve a named gap or contradiction. Share relevant claims and evidence,
-   not raw transcripts. Do not add agents or rounds that cannot change the
-   conclusion.
-9. Immediately before reporting, re-read every cited source and rerun
+9. Within the same zero-to-three total, use a targeted follow-up investigator
+   only when a concrete diagnostic can resolve a named gap or contradiction.
+   Share relevant claims and evidence, not raw transcripts. Do not add agents or
+   rounds that cannot change the conclusion.
+10. Immediately before reporting, re-read every cited source and rerun
    the smallest confirming diagnostic when feasible. If relevant repository
    state changed during the investigation, reconcile the conclusion against the
    new state.
@@ -118,9 +124,10 @@ this schema and contains the evidence required by the completion gate.
 ### Root cause
 [Precise causal statement, or “Root cause not established.”]
 
-### Problem definition
-[Observed behavior, expected behavior, affected surface, and triggering
-conditions now known.]
+### Incident
+- Observed: [behavior and affected surface]
+- Expected: [expected behavior]
+- Trigger/window: [trigger, artifact, environment, and incident window]
 
 ### Causal chain
 1. [Trigger]
@@ -128,20 +135,14 @@ conditions now known.]
 3. [Observed failure]
 
 ### Evidence
-
-#### Reproduction and runtime
-- [Reproduction, diagnostic, trace, log, or runtime result and what it proves]
-
-#### Repository, configuration, and history
-- [`file:line`, configuration, dependency, or history evidence and what it proves]
-
-### Affected boundaries and files
-- [`path` or external boundary]: [failure contribution and affected consumers]
+| Claim | Evidence | What it proves |
+|---|---|---|
+| [Material causal claim] | [reproduction, runtime source/time range, diagnostic, `file:line`, configuration, dependency, or history result] | [direct implication] |
 
 ### Alternatives checked
-| Alternative | Evidence tested | Result | Why weaker than the conclusion |
-|---|---|---|---|
-| [Credible alternative] | [diagnostic or repository evidence] | [rejected/unresolved] | [reason] |
+| Alternative | Decisive check | Result |
+|---|---|---|
+| [Strongest credible alternative] | [diagnostic or repository evidence] | [rejected or unresolved, with reason] |
 
 ### Remaining uncertainty
 [Material unknowns, or “None.”]
@@ -151,18 +152,11 @@ conditions now known.]
 - HEAD: [commit, or “not a Git repository”]
 - Worktree: [clean or relevant dirty/untracked state]
 
-### Investigation map
-| Role | Material conclusion | Evidence | Affected surface | Confidence | Relationship |
-|---|---|---|---|---|---|
-| [Agent role] | [substantive finding] | [diagnostic and `file:line`] | [files/boundary] | [high/medium/low and why] | [supports/challenges/unresolved] |
-
-**Synthesis:** [Reconciled causal chain, why the gate passed or failed, and how
-conflicting evidence was resolved.]
 ```
 
-Include every investigator and targeted follow-up once in the map. Keep claims
-traceable to evidence. Never include transcripts, tool logs, hidden metadata,
-hashes, solution ideas, or implementation steps.
+Keep each material claim traceable to evidence. Never include agent identities,
+transcripts, tool logs, hidden metadata, unrelated hash data, solution ideas, or
+implementation steps.
 
 ## Receipt
 
