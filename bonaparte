@@ -246,6 +246,12 @@ def select_handoff(
     issue: dict, comments: list[dict], phase: str, supplemental: str | None = None
 ) -> dict:
     kind = issue_kind(issue)
+    if (
+        phase == "scope"
+        and kind is None
+        and latest_comment_record(comments, PHASE_HEADERS["rca"]) is not None
+    ):
+        kind = "bug"
     current_record = latest_comment_record(comments, PHASE_HEADERS[phase])
     current = current_record["body"] if current_record else None
     context = {"existing": current} if current else {}
