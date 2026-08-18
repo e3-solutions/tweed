@@ -5,6 +5,21 @@ latest scope or existing implementation plus issue metadata. Create or recover
 one draft pull request on the official Linear branch and push only verified
 implementation commits. Do not mark it ready, merge, or deploy.
 
+## Durable phase boundary
+
+- This is a fresh phase coordinator. Its only request-specific input is the
+  Linear issue identifier. Read the issue description and every completed Tweed
+  comment from Linear. Do not expect or accept inherited coordinator/subagent
+  context, a scope injected into the prompt, hidden files, or local phase state.
+- Treat the Linear scope and RCA as the complete durable contract. The compact
+  JSON receipt is control-plane data only. Resuming this same coordinator after
+  `needs-input` is the only within-phase context exception.
+- Before returning `completed`, publish and re-read the implementation comment.
+  It must give a fresh review coordinator the complete implementation and
+  validation provenance using only Linear plus the repository. If any material
+  changed responsibility, evidence, risk, finding, deviation, or unresolved
+  item remains only in this coordinator's context, do not complete the phase.
+
 ## Contract and safety
 
 - A new implementation requires a complete `## Bonaparte · Solution Scope` as
@@ -164,6 +179,13 @@ Call the phase implemented only when:
 - one verified open PR contains that exact commit. It is draft for a new
   implementation; an idempotent retry may observe a later reviewed head or
   published readiness only when those facts are already recorded downstream.
+
+The verified Linear comment must independently prove this gate and serve as a
+complete review handoff: branch and commit, delivered behavior, acceptance
+mapping, changed files and responsibilities, affected interfaces/consumers,
+exact tests and results, material findings and dispositions, deviations, risks,
+and unresolved work. A passing result known only to this coordinator is not a
+completed phase.
 
 If no edit was made and work cannot proceed, return `blocked`. If implementation
 changes exist but a blocker, failed check, interruption, deviation, or finding

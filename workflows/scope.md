@@ -7,6 +7,22 @@ the selected intake, latest RCA, or latest existing scope needed for this phase.
 Keep repository work read-only. Use Linear only to publish and verify the final
 scope comment; keep every other external-system interaction read-only.
 
+## Durable phase boundary
+
+- This is a fresh phase coordinator. Its only request-specific input is the
+  Linear issue identifier. Read the issue description and all completed prior
+  Tweed comments from Linear. Do not expect or accept inherited coordinator or
+  subagent context, a prior report injected into the prompt, hidden files, or
+  local phase state.
+- The issue description and completed Tweed comments are the complete durable
+  handoff. The compact JSON receipt is control-plane data only. Resuming this
+  same coordinator after `needs-input` is the sole within-phase exception.
+- Before returning `completed`, publish and re-read the scope comment. It must
+  be sufficient for a fresh implementation coordinator that knows only the
+  issue identifier. If any material basis, file responsibility, decision,
+  ordering constraint, risk, or proving check remains only in this
+  coordinator's context, do not complete the phase.
+
 ## Boundaries
 
 - Use the supplied issue kind. A bug requires an established
@@ -146,6 +162,11 @@ this schema and contains the evidence required by the completion gate.
 - RCA basis: [causal chain and responsible boundary, or “Not applicable — feature”]
 - Constraints carried forward: [material issue/RCA constraints]
 - Reuse: [verified built-in, project utility, or installed library; custom gap if any]
+
+### Handoff basis
+- Request outcome: [exact issue outcome this scope delivers]
+- RCA link (bug): [established causal chain and responsible boundary, or “Not applicable — feature”]
+- Constraints carried forward: [material issue/RCA constraints]
 
 ### Outcome
 [Smallest complete outcome and how it resolves the bug or delivers the feature.]

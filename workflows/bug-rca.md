@@ -4,6 +4,21 @@ Investigate the supplied bug handoff and publish one evidence-backed root cause
 analysis. The runner has selected the issue intake or latest existing RCA.
 Use Linear only to publish and verify the final RCA comment.
 
+## Durable phase boundary
+
+- This is a fresh phase coordinator. Its only request-specific input is the
+  Linear issue identifier. Read the issue description and completed Tweed
+  comments from Linear; do not expect or request inherited coordinator or
+  subagent context, a prior report in the prompt, hidden files, or local phase
+  state.
+- The JSON receipt is control-plane data only. Never treat its summary as a
+  handoff or put report content in it. Resuming this coordinator after
+  `needs-input` is the only within-phase context exception.
+- Before returning `completed`, publish and re-read the Linear comment. It must
+  contain every material fact the scope phase will need without access to this
+  coordinator's context. If the write cannot be verified or the comment is
+  incomplete, do not return `completed`.
+
 ## Boundaries
 
 - The input must identify an existing Linear bug issue. If it does not, return
