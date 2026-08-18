@@ -475,10 +475,14 @@ class PhaseRuntimeTests(unittest.TestCase):
                 )
             return result, instances[0]
 
-        def started(item):
+        def started(item, *, thread_id=SESSION_ID, turn_id="turn-1"):
             return {
                 "method": "item/started",
-                "params": {"threadId": SESSION_ID, "item": item},
+                "params": {
+                    "threadId": thread_id,
+                    "turnId": turn_id,
+                    "item": item,
+                },
             }
 
         forbidden = [
@@ -502,7 +506,8 @@ class PhaseRuntimeTests(unittest.TestCase):
         for item in forbidden:
             with self.subTest(item=item):
                 with self.assertRaisesRegex(
-                    RuntimeError, "started new work after soft-budget steer"
+                    RuntimeError,
+                    "soft-budget guard observed root work after steer acknowledgement",
                 ):
                     run_case(after_ack=[started(item)])
 
@@ -511,6 +516,10 @@ class PhaseRuntimeTests(unittest.TestCase):
             after_ack=[
                 started({"type": "agentMessage"}),
                 started({"type": "collabAgentToolCall", "tool": "wait"}),
+                started({"type": "commandExecution"}, turn_id="turn-0"),
+                started(
+                    {"type": "commandExecution"}, thread_id=SUBAGENT_ID
+                ),
             ],
         )
         self.assertEqual(result["state"], "needs-input")

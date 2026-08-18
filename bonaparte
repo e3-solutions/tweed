@@ -638,13 +638,19 @@ def run_phase(
                     },
                 )
                 steered = True
+                if observation is not None:
+                    observation["soft_budget_steered"] = True
                 continue
             if "method" in message:
                 if steer_acknowledged and message.get("method") == "item/started":
                     params = message.get("params")
                     item = params.get("item") if isinstance(params, dict) else None
                     item_type = item.get("type") if isinstance(item, dict) else None
-                    if isinstance(params, dict) and params.get("threadId") == session_id:
+                    if (
+                        isinstance(params, dict)
+                        and params.get("threadId") == session_id
+                        and params.get("turnId") == turn_id
+                    ):
                         post_steer_work = post_steer_work or item_type in {
                             "commandExecution",
                             "dynamicToolCall",
@@ -681,7 +687,9 @@ def run_phase(
                 f"{phase} coordinator failed: {detail or terminal.get('status')}"
             )
         if post_steer_work:
-            raise RuntimeError("coordinator started new work after soft-budget steer")
+            raise RuntimeError(
+                "soft-budget guard observed root work after steer acknowledgement"
+            )
         if not driver.last_agent_message:
             items = terminal.get("items")
             if isinstance(items, list):
@@ -1132,21 +1140,68 @@ def run_and_checkpoint(
     model: str | None,
     reasoning: str,
     soft_phase_budget_seconds: float = DEFAULT_SOFT_PHASE_BUDGET_SECONDS,
-) -> dict:
+) -> tuple[dict, int]:
     base_git = capture_git_state(repository) if session_id is None else None
     observation: dict = {}
-    receipt = run_phase(
-        repository,
-        phase,
-        phase_input,
-        session_id,
-        model,
-        reasoning,
-        observation=observation,
-        soft_phase_budget_seconds=soft_phase_budget_seconds,
-    )
+    try:
+        receipt = run_phase(
+            repository,
+            phase,
+            phase_input,
+            session_id,
+            model,
+            reasoning,
+            observation=observation,
+            soft_phase_budget_seconds=soft_phase_budget_seconds,
+        )
+    except (Exception, KeyboardInterrupt) as error:
+        if observation.get("soft_budget_steered") is not True:
+            raise
+        coordinator_session = observation.get("session_id")
+        if not coordinator_session or (
+            session_id is not None and coordinator_session != session_id
+        ):
+            raise
+        recovery_receipt = {
+            "phase": phase,
+            "state": "needs-input",
+            "issue": None,
+            "linear_url": None,
+            "result": None,
+            "summary": "Coordinator stopped; unfinished proof obligations are unverified.",
+            "question": SOFT_BUDGET_CONTINUE_QUESTION,
+            "next_action": "Resume this token to continue the same Codex session.",
+            "branch": None,
+            "commit": None,
+            "pull_request_url": None,
+            "remote_state_changed": None,
+        }
+        checkpoint = new_question_checkpoint(
+            repository,
+            phase,
+            recovery_receipt,
+            coordinator_session,
+            model,
+            reasoning,
+            observation,
+            base_git or capture_git_state(repository),
+            soft_phase_budget_seconds,
+        )
+        summary = (
+            "Bonaparte was interrupted."
+            if isinstance(error, KeyboardInterrupt)
+            else str(error).replace("\n", " ")[:800]
+        )
+        return (
+            _checkpoint_failure(
+                checkpoint,
+                summary,
+                remote_uncertain=True,
+            ),
+            130 if isinstance(error, KeyboardInterrupt) else 1,
+        )
     if receipt["state"] != "needs-input":
-        return receipt
+        return receipt, 0
     coordinator_session = observation.get("session_id") or session_id
     if not coordinator_session:
         raise RuntimeError("Codex requested input without a resumable session")
@@ -1161,7 +1216,7 @@ def run_and_checkpoint(
         base_git or capture_git_state(repository),
         soft_phase_budget_seconds,
     )
-    return checkpoint_receipt(checkpoint)
+    return checkpoint_receipt(checkpoint), 0
 
 
 def parse() -> tuple[
@@ -1325,7 +1380,7 @@ def main() -> int:
                 progress = acquire_progress_reporter(True, selected_phase)
                 _ACTIVE_PROGRESS = progress
                 progress.start()
-                result_receipt = run_and_checkpoint(
+                result_receipt, exit_code = run_and_checkpoint(
                     repo,
                     selected_phase,
                     supplied_input,
@@ -1339,7 +1394,7 @@ def main() -> int:
                 progress = acquire_progress_reporter(True, selected_phase)
                 _ACTIVE_PROGRESS = progress
                 progress.start()
-                result_receipt = run_and_checkpoint(
+                result_receipt, exit_code = run_and_checkpoint(
                     repo,
                     selected_phase,
                     supplied_input,

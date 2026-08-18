@@ -712,6 +712,146 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertIsNone(stored["pending_answer"])
         self.assertEqual(stored["checks_completed_total_count"], 1)
 
+    def test_fresh_phase_failure_after_session_is_durably_resumable(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            stdout = io.StringIO()
+            with mock.patch.dict(
+                os.environ, {"BONAPARTE_HOME": temporary}, clear=False
+            ):
+                def failed_phase(*_arguments, **keywords):
+                    keywords["observation"].update(
+                        session_id=SESSION_ID, soft_budget_steered=True
+                    )
+                    raise RuntimeError(
+                        "soft-budget guard observed root work after steer acknowledgement"
+                    )
+
+                with (
+                    mock.patch.object(
+                        RUNNER,
+                        "parse",
+                        return_value=(
+                            ROOT,
+                            "rca",
+                            "COR-1",
+                            None,
+                            "saved-model",
+                            "high",
+                            RUNNER.DEFAULT_SOFT_PHASE_BUDGET_SECONDS,
+                        ),
+                    ),
+                    mock.patch.object(
+                        RUNNER, "run_phase", side_effect=failed_phase
+                    ),
+                    mock.patch.object(sys, "stdout", stdout),
+                ):
+                    exit_code = RUNNER.main()
+                result = json.loads(stdout.getvalue())
+                stored = RUNNER.read_checkpoint(SESSION_ID, active_only=True)
+                waiting_checkpoint = dict(stored)
+
+                observed = {}
+
+                def completed_phase(*arguments):
+                    observed["prompt"] = arguments[2]
+                    observed["session_id"] = arguments[3]
+                    arguments[-3].update(session_id=SESSION_ID)
+                    return receipt("completed")
+
+                with mock.patch.object(
+                    RUNNER, "run_phase", side_effect=completed_phase
+                ):
+                    completed, completed_exit = RUNNER.resume_checkpoint(
+                        stored, "Continue", None, None
+                    )
+
+        self.assertEqual(exit_code, 1)
+        self.assertEqual(result["state"], "failed")
+        self.assertEqual(result["resume_token"], SESSION_ID)
+        self.assertEqual(result["question"], RUNNER.SOFT_BUDGET_CONTINUE_QUESTION)
+        self.assertIsNone(result["remote_state_changed"])
+        self.assertEqual(waiting_checkpoint["status"], "waiting-input")
+        self.assertIsNone(waiting_checkpoint["pending_answer"])
+        self.assertEqual(observed["prompt"], "Continue")
+        self.assertEqual(observed["session_id"], SESSION_ID)
+        self.assertEqual(completed_exit, 0)
+        self.assertEqual(completed["state"], "completed")
+
+    def test_only_soft_budget_failures_create_new_checkpoints(self):
+        other_session = str(uuid.uuid4())
+        cases = (
+            ("initialize", None, {}, "timed out during initialize"),
+            (
+                "turn start",
+                None,
+                {"session_id": SESSION_ID},
+                "timed out during turn/start",
+            ),
+            (
+                "legacy mismatch",
+                SESSION_ID,
+                {"session_id": other_session},
+                "Codex resumed a different session",
+            ),
+        )
+        for label, requested_session, observed, message in cases:
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as temporary:
+                def failed_phase(*_arguments, **keywords):
+                    keywords["observation"].update(observed)
+                    raise RuntimeError(message)
+
+                with (
+                    mock.patch.dict(
+                        os.environ, {"BONAPARTE_HOME": temporary}, clear=False
+                    ),
+                    mock.patch.object(
+                        RUNNER, "run_phase", side_effect=failed_phase
+                    ),
+                    self.assertRaisesRegex(RuntimeError, message),
+                ):
+                    RUNNER.run_and_checkpoint(
+                        ROOT,
+                        "rca",
+                        "COR-1",
+                        requested_session,
+                        None,
+                        "medium",
+                    )
+
+                self.assertEqual(list(Path(temporary).rglob("*.json")), [])
+
+    def test_soft_budget_interruption_after_session_is_durably_resumable(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            def interrupted_phase(*_arguments, **keywords):
+                keywords["observation"].update(
+                    session_id=SESSION_ID, soft_budget_steered=True
+                )
+                raise KeyboardInterrupt
+
+            with (
+                mock.patch.dict(
+                    os.environ, {"BONAPARTE_HOME": temporary}, clear=False
+                ),
+                mock.patch.object(
+                    RUNNER, "run_phase", side_effect=interrupted_phase
+                ),
+            ):
+                result, exit_code = RUNNER.run_and_checkpoint(
+                    ROOT,
+                    "rca",
+                    "COR-1",
+                    None,
+                    None,
+                    "medium",
+                )
+                stored = RUNNER.read_checkpoint(SESSION_ID, active_only=True)
+
+        self.assertEqual(exit_code, 130)
+        self.assertEqual(result["state"], "failed")
+        self.assertEqual(result["resume_token"], SESSION_ID)
+        self.assertEqual(result["summary"], "Bonaparte was interrupted.")
+        self.assertEqual(stored["status"], "waiting-input")
+
     def test_checkpoint_observation_replaces_only_complete_semantic_snapshots(self):
         stale_semantic = {
             "stage": "coordinating",
