@@ -7,7 +7,7 @@ Use Linear only to publish and verify the final RCA comment.
 ## Durable phase boundary
 
 - This is a fresh phase coordinator. Its only request-specific input is the
-  Linear issue identifier. Read the issue description and completed Tweed
+  Linear issue identifier. Read the issue description and completed Bonaparte
   comments from Linear; do not expect or request inherited coordinator or
   subagent context, a prior report in the prompt, hidden files, or local phase
   state.

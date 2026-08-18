@@ -12,7 +12,7 @@ the final review comment.
 ## Durable phase boundary
 
 - This is a fresh phase coordinator. Its only request-specific input is the
-  Linear issue identifier. Read the issue description and all completed Tweed
+  Linear issue identifier. Read the issue description and all completed Bonaparte
   comments from Linear. Do not expect or accept inherited coordinator/subagent
   context, implementation material injected into the prompt, hidden files, or
   local phase state.

@@ -11,7 +11,7 @@ scope comment; keep every other external-system interaction read-only.
 
 - This is a fresh phase coordinator. Its only request-specific input is the
   Linear issue identifier. Read the issue description and all completed prior
-  Tweed comments from Linear. Do not expect or accept inherited coordinator or
+  Bonaparte comments from Linear. Do not expect or accept inherited coordinator or
   subagent context, a prior report injected into the prompt, hidden files, or
   local phase state.
 - The issue description and completed Tweed comments are the complete durable

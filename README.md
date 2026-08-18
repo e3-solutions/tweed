@@ -17,7 +17,7 @@ Feature: create → scope → implement → review → publish
 ```
 
 Every phase after creation receives only the Linear issue identifier. Its fresh
-coordinator reads the issue description and completed Tweed comments, performs
+coordinator reads the issue description and completed Bonaparte comments, performs
 bounded internal work, and writes one self-contained evidence-bearing comment
 before it can complete. Coordinator and subagent conversations are never
 transferred between phases, and there are no hidden report files or local state
