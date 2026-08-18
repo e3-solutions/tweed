@@ -107,6 +107,9 @@ class InstallationTests(unittest.TestCase):
             (self.bin / "bonaparte").resolve(), current / "bonaparte-launcher"
         )
         self.assertEqual(
+            (self.bin / "autoresearch").resolve(), current / "autoresearch"
+        )
+        self.assertEqual(
             (self.codex / "skills/use-bonaparte").resolve(),
             current / "skills/use-bonaparte",
         )
@@ -115,6 +118,22 @@ class InstallationTests(unittest.TestCase):
             str(self.bin / "bonaparte"), "--help", environment=self.environment
         )
         self.assertIn("usage: bonaparte", result.stdout)
+        result = self.run_command(
+            str(self.bin / "autoresearch"), "--help", environment=self.environment
+        )
+        self.assertIn("usage: autoresearch", result.stdout)
+
+    def test_install_refuses_a_non_symlink_autoresearch_target(self):
+        self.bin.mkdir()
+        target = self.bin / "autoresearch"
+        target.write_text("keep me")
+
+        result = self.run_command(str(self.source / "install"), check=False)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("refusing to replace non-symlink", result.stderr)
+        self.assertEqual(target.read_text(), "keep me")
+        self.assertFalse((self.home / "current").exists())
 
     def test_update_switches_to_a_complete_snapshot(self):
         self.install()
@@ -125,9 +144,73 @@ class InstallationTests(unittest.TestCase):
         )
         self.assertEqual((self.home / "current").resolve().name, "v1.1.0")
 
+    def test_legacy_launcher_bootstraps_autoresearch_on_second_invocation(self):
+        legacy = self.root / "legacy-source"
+        installer_revisions = self.run_command(
+            "git", "-C", str(ROOT), "rev-list", "origin/main", "--", "install"
+        ).stdout.splitlines()
+        legacy_revision = next(
+            revision
+            for revision in installer_revisions
+            if self.run_command(
+                "git",
+                "-C",
+                str(ROOT),
+                "cat-file",
+                "-e",
+                f"{revision}:autoresearch",
+                check=False,
+            ).returncode
+            != 0
+        )
+        self.run_command(
+            "git", "clone", "-q", "--no-hardlinks", str(ROOT), str(legacy)
+        )
+        self.run_command(
+            "git", "-C", str(legacy), "checkout", "-q", "--detach", legacy_revision
+        )
+        self.assertFalse((legacy / "autoresearch").exists())
+        self.run_command(str(legacy / "install"))
+        self.assertFalse((self.bin / "autoresearch").exists())
+
+        result = self.run_command(str(self.bin / "bonaparte"), "update")
+
+        self.assertIn("Updated Bonaparte to v1.0.0", result.stdout)
+        current = (self.home / "current").resolve()
+        self.assertEqual(current.name, "v1.0.0")
+        self.assertFalse((self.bin / "autoresearch").exists())
+
+        result = self.run_command(str(self.bin / "bonaparte"), "--help")
+        self.assertIn("usage: bonaparte", result.stdout)
+        self.assertEqual(
+            (self.bin / "autoresearch").resolve(), current / "autoresearch"
+        )
+        result = self.run_command(str(self.bin / "autoresearch"), "--help")
+        self.assertIn("usage: autoresearch", result.stdout)
+
+    def test_update_refuses_a_non_symlink_autoresearch_target(self):
+        original = self.install()
+        target = self.bin / "autoresearch"
+        target.unlink()
+        target.write_text("keep me")
+        bonaparte_link = (self.bin / "bonaparte").readlink()
+        skill_link = (self.codex / "skills/use-bonaparte").readlink()
+        self.publish("v1.1.0")
+
+        result = self.run_command(str(self.bin / "bonaparte"), "update", check=False)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("refusing to replace non-symlink", result.stderr)
+        self.assertEqual(target.read_text(), "keep me")
+        self.assertEqual((self.home / "current").resolve().name, original)
+        self.assertEqual((self.bin / "bonaparte").readlink(), bonaparte_link)
+        self.assertEqual(
+            (self.codex / "skills/use-bonaparte").readlink(), skill_link
+        )
+
     def test_failed_update_keeps_the_current_runtime_usable(self):
         original = self.install()
-        (self.source / "workflows/scope.md").unlink()
+        (self.source / "workflows/autoresearch-critic.md").unlink()
         self.git("add", "-u")
         self.git("commit", "-qm", "incomplete")
         self.git("tag", "v1.1.0")
