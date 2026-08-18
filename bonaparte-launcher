@@ -17,7 +17,7 @@ REPOSITORY = os.environ.get(
 )
 TAG_PATTERN = re.compile(r"v(\d+)\.(\d+)\.(\d+)")
 CHECK_INTERVAL = 24 * 60 * 60
-REQUIRED = """bonaparte bonaparte-launcher bonaparte_checkpoint.py
+REQUIRED = """bonaparte bonaparte-launcher autoresearch bonaparte_checkpoint.py
 bonaparte_native.py bonaparte_progress.py
 bonaparte_linear.py
 skills/use-bonaparte/SKILL.md
@@ -58,6 +58,22 @@ def migrate_autoresearch_link(home: Path) -> None:
     if not (current_release(home) / "autoresearch").is_file():
         return
     atomic_link(str(home / "current" / "autoresearch"), link)
+
+
+def managed_targets(home: Path) -> tuple[Path, ...]:
+    bin_dir = Path(os.environ.get("BONAPARTE_BIN_DIR", Path.home() / ".local/bin"))
+    codex_home = Path(os.environ.get("CODEX_HOME", Path.home() / ".codex"))
+    return (
+        bin_dir / "bonaparte",
+        bin_dir / "autoresearch",
+        codex_home / "skills/use-bonaparte",
+    )
+
+
+def preflight_managed_targets(home: Path) -> None:
+    for target in managed_targets(home):
+        if target.exists() and not target.is_symlink():
+            raise RuntimeError(f"refusing to replace non-symlink: {target}")
 
 
 def current_release(home: Path) -> Path:
@@ -153,7 +169,13 @@ def fetch_release(home: Path, tag: str, expected_oid: str) -> Path:
         git(staging, "checkout", "-q", "--detach", "FETCH_HEAD")
         validate_release(staging)
         shutil.rmtree(staging / ".git")
-        staging.rename(destination)
+        try:
+            staging.rename(destination)
+        except OSError:
+            # Another updater may have completed the same immutable snapshot.
+            if not destination.exists():
+                raise
+            validate_release(destination)
         return destination
     finally:
         if staging.exists():
@@ -161,12 +183,12 @@ def fetch_release(home: Path, tag: str, expected_oid: str) -> Path:
 
 
 def update(home: Path) -> str | None:
-    migrate_autoresearch_link(home)
     tag, oid = latest_tag()
     current = current_release(home)
     current_version = tag_version(current.name)
     if current_version and current_version >= tag_version(tag):
         return None
+    preflight_managed_targets(home)
     release = fetch_release(home, tag, oid)
     current_version = tag_version(current_release(home).name)
     if current_version and current_version >= tag_version(tag):
@@ -174,6 +196,28 @@ def update(home: Path) -> str | None:
     atomic_link(f"releases/{release.name}", home / "current")
     migrate_autoresearch_link(home)
     return tag
+
+
+def status(home: Path) -> int:
+    installed = current_release(home).name
+    print(f"installed: {installed}")
+    try:
+        tag, _ = latest_tag()
+    except Exception:
+        print("latest: unavailable")
+        print("current: unknown")
+        return 1
+    print(f"latest: {tag}")
+    installed_version = tag_version(installed)
+    print(
+        "current: "
+        + (
+            "unknown"
+            if installed_version is None
+            else "yes" if installed_version >= tag_version(tag) else "no"
+        )
+    )
+    return 0
 
 
 def automatic_update(home: Path) -> None:
@@ -184,15 +228,25 @@ def automatic_update(home: Path) -> None:
         return
     try:
         checked.touch()
-        update(home)
-    except Exception as error:
-        print(f"bonaparte: automatic update failed: {error}", file=sys.stderr)
+        tag, _ = latest_tag()
+        installed = current_release(home).name
+        installed_version = tag_version(installed)
+        if installed_version is not None and installed_version < tag_version(tag):
+            print(
+                f"bonaparte: update available: {tag} (installed: {installed}); "
+                "run 'bonaparte update'",
+                file=sys.stderr,
+            )
+    except Exception:
+        # Ordinary commands remain quiet and runnable when the check is offline.
+        return
 
 
 def main() -> int:
     home = bonaparte_home()
     try:
-        migrate_autoresearch_link(home)
+        if sys.argv[1:] == ["status"]:
+            return status(home)
         if sys.argv[1:] == ["update"]:
             tag = update(home)
             print(
@@ -201,6 +255,7 @@ def main() -> int:
                 else "Bonaparte is already current."
             )
             return 0
+        migrate_autoresearch_link(home)
         automatic_update(home)
         runner = current_release(home) / "bonaparte"
         os.execv(sys.executable, [sys.executable, str(runner), *sys.argv[1:]])

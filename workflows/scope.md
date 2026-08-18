@@ -14,7 +14,7 @@ scope comment; keep every other external-system interaction read-only.
   Bonaparte comments from Linear. Do not expect or accept inherited coordinator or
   subagent context, a prior report injected into the prompt, hidden files, or
   local phase state.
-- The issue description and completed Tweed comments are the complete durable
+- The issue description and completed Bonaparte comments are the complete durable
   handoff. The compact JSON receipt is control-plane data only. Resuming this
   same coordinator after `needs-input` is the sole within-phase exception.
 - Before returning `completed`, publish and re-read the scope comment. It must
@@ -162,11 +162,6 @@ this schema and contains the evidence required by the completion gate.
 - RCA basis: [causal chain and responsible boundary, or “Not applicable — feature”]
 - Constraints carried forward: [material issue/RCA constraints]
 - Reuse: [verified built-in, project utility, or installed library; custom gap if any]
-
-### Handoff basis
-- Request outcome: [exact issue outcome this scope delivers]
-- RCA link (bug): [established causal chain and responsible boundary, or “Not applicable — feature”]
-- Constraints carried forward: [material issue/RCA constraints]
 
 ### Outcome
 [Smallest complete outcome and how it resolves the bug or delivers the feature.]

@@ -4,6 +4,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -85,9 +86,26 @@ class InstallationTests(unittest.TestCase):
             "bonaparte_progress.py",
         }
         self.assertTrue(runtime_modules.issubset(LAUNCHER.REQUIRED))
+        self.assertIn("autoresearch", LAUNCHER.REQUIRED)
         self.install()
         release = self.home / "current"
         self.assertTrue(all((release / name).exists() for name in runtime_modules))
+
+    def test_readme_documents_the_release_contract(self):
+        readme = (ROOT / "README.md").read_text()
+        for marker in (
+            "bonaparte status",
+            "latest: unavailable",
+            "BONAPARTE_AUTO_UPDATE=0",
+            "bonaparte update",
+            "local-v0.3.0-8b75b707dce8",
+            "unique staging directory",
+            "use-bonaparte",
+            "`autoresearch` companion command",
+            "higher corrective stable tag",
+        ):
+            with self.subTest(marker=marker):
+                self.assertIn(marker, readme)
 
     def publish(self, tag):
         readme = self.source / "README.md"
@@ -135,34 +153,110 @@ class InstallationTests(unittest.TestCase):
         self.assertEqual(target.read_text(), "keep me")
         self.assertFalse((self.home / "current").exists())
 
-    def test_update_switches_to_a_complete_snapshot(self):
+    def test_status_reports_installed_latest_and_current(self):
+        installed = self.install()
+
+        result = self.run_command(str(self.bin / "bonaparte"), "status")
+
+        self.assertEqual(
+            result.stdout.splitlines(),
+            [f"installed: {installed}", "latest: v1.0.0", "current: yes"],
+        )
+        self.publish("v1.1.0")
+        result = self.run_command(str(self.bin / "bonaparte"), "status")
+        self.assertEqual(
+            result.stdout.splitlines()[-2:], ["latest: v1.1.0", "current: no"]
+        )
+
+    def test_status_ignores_nonstable_tags_and_reports_offline(self):
+        installed = self.install()
+        self.git("tag", "v9.0.0-rc1")
+        result = self.run_command(str(self.bin / "bonaparte"), "status")
+        self.assertEqual(
+            result.stdout.splitlines()[-2:], ["latest: v1.0.0", "current: yes"]
+        )
+        before = (self.home / "current").readlink()
+        releases = sorted(path.name for path in (self.home / "releases").iterdir())
+        environment = {
+            **self.environment,
+            "BONAPARTE_REPOSITORY": str(self.root / "offline"),
+        }
+
+        result = self.run_command(
+            str(self.bin / "bonaparte"),
+            "status",
+            check=False,
+            environment=environment,
+        )
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(
+            result.stdout.splitlines(),
+            [f"installed: {installed}", "latest: unavailable", "current: unknown"],
+        )
+        self.assertEqual((self.home / "current").readlink(), before)
+        self.assertEqual(
+            sorted(path.name for path in (self.home / "releases").iterdir()), releases
+        )
+
+    def test_ordinary_check_alerts_once_without_installing(self):
         self.install()
         self.publish("v1.1.0")
-        environment = {**self.environment, "BONAPARTE_AUTO_UPDATE": "1"}
-        self.run_command(
+        fake_bin = self.root / "fake-bin"
+        fake_bin.mkdir()
+        calls = self.root / "git-calls"
+        fake_git = fake_bin / "git"
+        fake_git.write_text(
+            "#!/usr/bin/env python3\n"
+            "import os, pathlib, sys\n"
+            f"path = pathlib.Path({str(calls)!r})\n"
+            "with path.open('a') as output: output.write(' '.join(sys.argv[1:]) + '\\n')\n"
+            "print('1' * 40, 'refs/tags/v1.1.0')\n"
+        )
+        fake_git.chmod(0o755)
+        environment = {
+            **self.environment,
+            "BONAPARTE_AUTO_UPDATE": "1",
+            "PATH": f"{fake_bin}{os.pathsep}{self.environment['PATH']}",
+        }
+        before = (self.home / "current").readlink()
+        releases = sorted(path.name for path in (self.home / "releases").iterdir())
+
+        first = self.run_command(
             str(self.bin / "bonaparte"), "--help", environment=environment
         )
-        self.assertEqual((self.home / "current").resolve().name, "v1.1.0")
-
-    def test_legacy_launcher_bootstraps_autoresearch_on_second_invocation(self):
-        legacy = self.root / "legacy-source"
-        installer_revisions = self.run_command(
-            "git", "-C", str(ROOT), "rev-list", "origin/main", "--", "install"
-        ).stdout.splitlines()
-        legacy_revision = next(
-            revision
-            for revision in installer_revisions
-            if self.run_command(
-                "git",
-                "-C",
-                str(ROOT),
-                "cat-file",
-                "-e",
-                f"{revision}:autoresearch",
-                check=False,
-            ).returncode
-            != 0
+        second = self.run_command(
+            str(self.bin / "bonaparte"), "--help", environment=environment
         )
+
+        self.assertIn("run 'bonaparte update'", first.stderr)
+        self.assertNotIn("update available", second.stderr)
+        self.assertEqual(
+            calls.read_text().splitlines(),
+            [f"ls-remote --tags --refs {self.source}"],
+        )
+        self.assertEqual((self.home / "current").readlink(), before)
+        self.assertEqual(
+            sorted(path.name for path in (self.home / "releases").iterdir()), releases
+        )
+
+    def test_explicit_update_switches_to_a_complete_snapshot(self):
+        self.install()
+        self.publish("v1.1.0")
+
+        self.run_command(str(self.bin / "bonaparte"), "update")
+
+        self.assertEqual((self.home / "current").resolve().name, "v1.1.0")
+        self.assertEqual((self.bin / "bonaparte").resolve().parent.name, "v1.1.0")
+        self.assertEqual((self.bin / "autoresearch").resolve().parent.name, "v1.1.0")
+        self.assertEqual(
+            (self.codex / "skills/use-bonaparte").resolve().parents[1].name,
+            "v1.1.0",
+        )
+
+    def test_exact_v030_launcher_upgrades_with_one_update_command(self):
+        legacy = self.root / "legacy-source"
+        legacy_revision = "8b75b707dce819bab5aeeea5f90ae482495d5ce9"
         self.run_command(
             "git", "clone", "-q", "--no-hardlinks", str(ROOT), str(legacy)
         )
@@ -180,6 +274,11 @@ class InstallationTests(unittest.TestCase):
         self.assertEqual(current.name, "v1.0.0")
         self.assertFalse((self.bin / "autoresearch").exists())
 
+        result = self.run_command(str(self.bin / "bonaparte"), "status")
+        self.assertEqual(
+            result.stdout.splitlines()[-2:], ["latest: v1.0.0", "current: yes"]
+        )
+        self.assertFalse((self.bin / "autoresearch").exists())
         result = self.run_command(str(self.bin / "bonaparte"), "--help")
         self.assertIn("usage: bonaparte", result.stdout)
         self.assertEqual(
@@ -188,25 +287,33 @@ class InstallationTests(unittest.TestCase):
         result = self.run_command(str(self.bin / "autoresearch"), "--help")
         self.assertIn("usage: autoresearch", result.stdout)
 
-    def test_update_refuses_a_non_symlink_autoresearch_target(self):
+    def test_update_preflights_every_managed_target(self):
         original = self.install()
-        target = self.bin / "autoresearch"
-        target.unlink()
-        target.write_text("keep me")
-        bonaparte_link = (self.bin / "bonaparte").readlink()
-        skill_link = (self.codex / "skills/use-bonaparte").readlink()
         self.publish("v1.1.0")
-
-        result = self.run_command(str(self.bin / "bonaparte"), "update", check=False)
-
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn("refusing to replace non-symlink", result.stderr)
-        self.assertEqual(target.read_text(), "keep me")
-        self.assertEqual((self.home / "current").resolve().name, original)
-        self.assertEqual((self.bin / "bonaparte").readlink(), bonaparte_link)
-        self.assertEqual(
-            (self.codex / "skills/use-bonaparte").readlink(), skill_link
+        launcher = (self.home / "current" / "bonaparte-launcher").resolve()
+        targets = (
+            self.bin / "bonaparte",
+            self.bin / "autoresearch",
+            self.codex / "skills/use-bonaparte",
         )
+        for target in targets:
+            with self.subTest(target=target):
+                saved_link = target.readlink()
+                target.unlink()
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text("keep me")
+                result = self.run_command(
+                    sys.executable,
+                    str(launcher),
+                    "update",
+                    check=False,
+                )
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("refusing to replace non-symlink", result.stderr)
+                self.assertEqual(target.read_text(), "keep me")
+                self.assertEqual((self.home / "current").resolve().name, original)
+                target.unlink()
+                target.symlink_to(saved_link)
 
     def test_failed_update_keeps_the_current_runtime_usable(self):
         original = self.install()
@@ -217,6 +324,9 @@ class InstallationTests(unittest.TestCase):
         result = self.run_command(str(self.bin / "bonaparte"), "update", check=False)
         self.assertNotEqual(result.returncode, 0)
         self.assertEqual((self.home / "current").resolve().name, original)
+        self.assertFalse(
+            any(path.name.startswith(".update-") for path in self.home.iterdir())
+        )
 
         environment = {**self.environment, "BONAPARTE_AUTO_UPDATE": "1"}
         result = self.run_command(
@@ -224,6 +334,128 @@ class InstallationTests(unittest.TestCase):
         )
         self.assertIn("usage: bonaparte", result.stdout)
         self.assertEqual((self.home / "current").resolve().name, original)
+
+    def test_moved_tag_is_rejected_and_staging_is_cleaned(self):
+        self.home.mkdir()
+        (self.home / "releases").mkdir()
+
+        def fake_git(_directory, *arguments, output=False):
+            if arguments == ("rev-parse", "FETCH_HEAD"):
+                return mock.Mock(stdout="b" * 40 + "\n")
+            return mock.Mock()
+
+        with mock.patch.object(LAUNCHER, "git", side_effect=fake_git):
+            with self.assertRaisesRegex(RuntimeError, "tag v1.1.0 moved"):
+                LAUNCHER.fetch_release(self.home, "v1.1.0", "a" * 40)
+
+        self.assertFalse(
+            any(path.name.startswith(".update-") for path in self.home.iterdir())
+        )
+
+    def test_smoke_failure_keeps_old_release_and_cleans_staging(self):
+        original = self.install()
+        (self.source / "bonaparte").write_text(
+            "#!/usr/bin/env python3\nraise SystemExit(1)\n"
+        )
+        self.git("add", "bonaparte")
+        self.git("commit", "-qm", "broken smoke test")
+        self.git("tag", "v1.1.0")
+
+        result = self.run_command(str(self.bin / "bonaparte"), "update", check=False)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual((self.home / "current").resolve().name, original)
+        self.assertIn("returned non-zero exit status", result.stderr)
+        self.assertFalse(
+            any(path.name.startswith(".update-") for path in self.home.iterdir())
+        )
+        help_result = self.run_command(str(self.bin / "bonaparte"), "--help")
+        self.assertIn("usage: bonaparte", help_result.stdout)
+
+    def test_interruption_exposes_only_the_old_or_new_complete_release(self):
+        original = self.install()
+        self.publish("v1.1.0")
+        real_atomic_link = LAUNCHER.atomic_link
+
+        with mock.patch.object(LAUNCHER, "REPOSITORY", str(self.source)):
+            with mock.patch.object(
+                LAUNCHER,
+                "atomic_link",
+                side_effect=KeyboardInterrupt("before activation"),
+            ):
+                with self.assertRaises(KeyboardInterrupt):
+                    LAUNCHER.update(self.home)
+
+        self.assertEqual((self.home / "current").resolve().name, original)
+        self.assertFalse(
+            any(path.name.startswith(".update-") for path in self.home.iterdir())
+        )
+        self.assertIn(
+            "usage: bonaparte",
+            self.run_command(str(self.bin / "bonaparte"), "--help").stdout,
+        )
+
+        def activate_then_interrupt(target, link):
+            real_atomic_link(target, link)
+            raise KeyboardInterrupt("after activation")
+
+        with mock.patch.object(LAUNCHER, "REPOSITORY", str(self.source)):
+            with mock.patch.object(
+                LAUNCHER, "atomic_link", side_effect=activate_then_interrupt
+            ):
+                with self.assertRaises(KeyboardInterrupt):
+                    LAUNCHER.update(self.home)
+
+        release = (self.home / "current").resolve()
+        self.assertEqual(release.name, "v1.1.0")
+        LAUNCHER.validate_release(release)
+        self.assertFalse(
+            any(path.name.startswith(".update-") for path in self.home.iterdir())
+        )
+        self.assertIn(
+            "usage: bonaparte",
+            self.run_command(str(self.bin / "bonaparte"), "--help").stdout,
+        )
+        self.assertIn(
+            "usage: autoresearch",
+            self.run_command(str(self.bin / "autoresearch"), "--help").stdout,
+        )
+
+    def test_competing_updates_publish_one_complete_release(self):
+        self.install()
+        self.publish("v1.1.0")
+        command = [str(self.bin / "bonaparte"), "update"]
+
+        first = subprocess.Popen(
+            command,
+            cwd=self.source,
+            env=self.environment,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        second = subprocess.Popen(
+            command,
+            cwd=self.source,
+            env=self.environment,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        first_output = first.communicate(timeout=45)
+        second_output = second.communicate(timeout=45)
+
+        self.assertEqual(
+            (first.returncode, second.returncode),
+            (0, 0),
+            (first_output, second_output),
+        )
+        release = (self.home / "current").resolve()
+        self.assertEqual(release.name, "v1.1.0")
+        LAUNCHER.validate_release(release)
+        self.assertFalse(
+            any(path.name.startswith(".update-") for path in self.home.iterdir())
+        )
 
     def test_release_validation_scrubs_the_host_progress_channel(self):
         environment = {**os.environ, "BONAPARTE_PROGRESS_FD": "37"}
