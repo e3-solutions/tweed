@@ -80,7 +80,7 @@ read back every write so an interrupted retry can continue idempotently.
    - [Main implementation responsibility]
 
    ## Verification
-   - [Exact checks reported by implementation/review]
+   - [Exact checks reported by review]
 
    ## Linear
    - [Issue identifier and URL]
