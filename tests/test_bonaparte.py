@@ -500,6 +500,13 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertIn("replace the existing review comment", review)
         self.assertIn("A non-descendant head", review)
 
+    def test_publish_can_reconcile_a_reviewed_descendant_without_duplication(self):
+        publish = (ROOT / "workflows/publish.md").read_text()
+
+        self.assertIn("newer complete review for the same open PR and branch", publish)
+        self.assertRegex(publish, r"update\s+`existing_comment_id` in place")
+        self.assertIn("Never add a duplicate", publish)
+
     def test_coordinator_owns_a_bounded_coverage_frontier(self):
         runner = (ROOT / "bonaparte").read_text()
         for marker in (

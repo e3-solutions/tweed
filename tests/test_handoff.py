@@ -81,6 +81,21 @@ class HandoffTests(unittest.TestCase):
         self.assertIn("WEAK-RCA", handoff["context"]["existing"])
         self.assertEqual(handoff["context"]["existing_comment_id"], "WEAK-RCA")
 
+    def test_existing_publish_keeps_latest_review_for_safe_reconciliation(self):
+        review = comment("review", "REVIEWED-DESCENDANT", "4")
+        published = comment("publish", "STALE-PUBLISH", "5")
+
+        handoff = select_handoff(issue(), [review, published], "publish")
+
+        self.assertEqual(
+            handoff["context"],
+            {
+                "existing": published["body"],
+                "review": review["body"],
+                "existing_comment_id": "STALE-PUBLISH",
+            },
+        )
+
     def test_immediately_preceding_legacy_handoffs_reach_the_upgrade_workflow(self):
         legacy_sections = {
             "scope": "### Outcome\nPrior scope\n\n### Validation\n- old check",
