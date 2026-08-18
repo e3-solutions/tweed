@@ -378,6 +378,30 @@ class InstallationTests(unittest.TestCase):
             (retained / LAUNCHER.RELEASE_OID_FILE).read_text(), f"{oid_a}\n"
         )
 
+    def test_oidless_legacy_cache_is_verified_and_attested(self):
+        self.install()
+        self.publish("v1.1.0")
+        expected_oid = self.git("rev-parse", "v1.1.0").stdout.strip()
+        legacy = self.home / "releases" / "v1.1.0"
+        with mock.patch.object(LAUNCHER, "REPOSITORY", str(self.source)):
+            LAUNCHER.fetch_release(self.home, "v1.1.0", expected_oid)
+        (legacy / LAUNCHER.RELEASE_OID_FILE).unlink()
+
+        with mock.patch.object(LAUNCHER, "REPOSITORY", str(self.source)):
+            retained = LAUNCHER.fetch_release(self.home, "v1.1.0", expected_oid)
+
+        self.assertEqual(retained, legacy)
+        self.assertEqual(
+            (legacy / LAUNCHER.RELEASE_OID_FILE).read_text(), f"{expected_oid}\n"
+        )
+
+        (legacy / LAUNCHER.RELEASE_OID_FILE).unlink()
+        (legacy / "README.md").write_text("altered")
+        with mock.patch.object(LAUNCHER, "REPOSITORY", str(self.source)):
+            with self.assertRaisesRegex(RuntimeError, "cannot be verified"):
+                LAUNCHER.fetch_release(self.home, "v1.1.0", expected_oid)
+        self.assertFalse((legacy / LAUNCHER.RELEASE_OID_FILE).exists())
+
     def test_required_directory_is_rejected_and_current_remains_usable(self):
         original = self.install()
         workflow = self.source / "workflows/autoresearch-critic.md"
