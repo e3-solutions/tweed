@@ -114,6 +114,16 @@ class HandoffTests(unittest.TestCase):
             {"missing": HEADERS["scope"]},
         )
 
+    def test_existing_rca_selects_bug_scope_for_legacy_untyped_issue(self):
+        legacy = issue()
+        legacy["description"] = "Legacy issue without a kind marker"
+        rca = comment("rca", "ESTABLISHED-RCA", "1")
+
+        handoff = select_handoff(legacy, [rca], "scope")
+
+        self.assertEqual(handoff["issue"]["kind"], "bug")
+        self.assertEqual(handoff["context"], {"rca": rca["body"]})
+
 
 if __name__ == "__main__":
     unittest.main()

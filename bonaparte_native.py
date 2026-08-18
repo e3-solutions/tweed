@@ -306,7 +306,15 @@ class AppServerPhaseDriver:
             turn = params.get("turn")
             if not isinstance(turn, dict):
                 raise RuntimeError("Codex app-server turn completion is malformed")
-            return method, turn
+            thread_id = params.get("threadId")
+            if (
+                turn.get("id") == self._receipt_turn_id
+                and (
+                    thread_id is None
+                    or thread_id == self._receipt_thread_id
+                )
+            ):
+                return method, turn
         return method, None
 
     def request(self, method: str, params: dict) -> dict:

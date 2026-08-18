@@ -21,6 +21,33 @@ from tests.test_bonaparte import (
 
 
 class PhaseRuntimeTests(unittest.TestCase):
+    def test_child_turn_completion_does_not_terminate_coordinator_turn(self):
+        expected = receipt()
+
+        def emit_child_completion(fixture, message, output):
+            if message.get("method") == "turn/start":
+                fixture._emit(
+                    output,
+                    {
+                        "method": "turn/completed",
+                        "params": {
+                            "threadId": SUBAGENT_ID,
+                            "turn": {"id": "turn-child", "status": "completed"},
+                        },
+                    },
+                )
+            return False
+
+        server = AppServerFixture(expected, handler=emit_child_completion)
+        with (
+            mock.patch.object(NATIVE, "find_codex", return_value="/bin/codex"),
+            mock.patch.object(RUNNER.subprocess, "Popen", side_effect=server),
+        ):
+            result = RUNNER.run_phase(ROOT, "rca", "Continue.", SESSION_ID)
+
+        self.assertEqual(result["state"], "completed")
+        self.assertEqual(result["summary"], expected["summary"])
+
     def test_needs_input_exposes_the_marked_coordinator_session(self):
         server = AppServerFixture(receipt("needs-input"))
 
