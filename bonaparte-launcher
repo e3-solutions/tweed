@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import fcntl
 import os
 import re
 import shutil
@@ -17,6 +18,7 @@ REPOSITORY = os.environ.get(
 )
 TAG_PATTERN = re.compile(r"v(\d+)\.(\d+)\.(\d+)")
 CHECK_INTERVAL = 24 * 60 * 60
+RELEASE_OID_FILE = ".bonaparte-release-oid"
 REQUIRED = """bonaparte bonaparte-launcher autoresearch bonaparte_checkpoint.py
 bonaparte_native.py bonaparte_progress.py
 bonaparte_linear.py
@@ -110,7 +112,11 @@ def latest_tag() -> tuple[str, str]:
 
 
 def validate_release(release: Path) -> None:
-    missing = [name for name in REQUIRED if not (release / name).exists()]
+    missing = [
+        name
+        for name in REQUIRED
+        if (release / name).is_symlink() or not (release / name).is_file()
+    ]
     if missing:
         raise RuntimeError(f"release is missing {', '.join(missing)}")
     for name in (
@@ -143,6 +149,27 @@ def validate_release(release: Path) -> None:
     )
 
 
+def record_release_oid(release: Path, expected_oid: str) -> None:
+    marker = release / RELEASE_OID_FILE
+    if marker.exists() or marker.is_symlink():
+        raise RuntimeError(f"release contains reserved metadata: {RELEASE_OID_FILE}")
+    with marker.open("x") as output:
+        output.write(f"{expected_oid}\n")
+    marker.chmod(0o444)
+
+
+def validate_release_oid(release: Path, expected_oid: str) -> None:
+    marker = release / RELEASE_OID_FILE
+    if (
+        marker.is_symlink()
+        or not marker.is_file()
+        or marker.read_text() != f"{expected_oid}\n"
+    ):
+        raise RuntimeError(
+            f"release {release.name} does not match its advertised object"
+        )
+
+
 def git(directory: Path, *arguments: str, output: bool = False):
     return subprocess.run(
         ["git", "-C", directory, *arguments],
@@ -158,6 +185,7 @@ def fetch_release(home: Path, tag: str, expected_oid: str) -> Path:
     destination = home / "releases" / tag
     if destination.exists():
         validate_release(destination)
+        validate_release_oid(destination, expected_oid)
         return destination
     staging = Path(tempfile.mkdtemp(prefix=".update-", dir=home))
     try:
@@ -169,6 +197,7 @@ def fetch_release(home: Path, tag: str, expected_oid: str) -> Path:
         git(staging, "checkout", "-q", "--detach", "FETCH_HEAD")
         validate_release(staging)
         shutil.rmtree(staging / ".git")
+        record_release_oid(staging, expected_oid)
         try:
             staging.rename(destination)
         except OSError:
@@ -176,6 +205,7 @@ def fetch_release(home: Path, tag: str, expected_oid: str) -> Path:
             if not destination.exists():
                 raise
             validate_release(destination)
+            validate_release_oid(destination, expected_oid)
         return destination
     finally:
         if staging.exists():
@@ -224,22 +254,37 @@ def automatic_update(home: Path) -> None:
     if os.environ.get("BONAPARTE_AUTO_UPDATE") == "0":
         return
     checked = home / "last-check"
-    if checked.exists() and time.time() - checked.stat().st_mtime < CHECK_INTERVAL:
-        return
+    claim = home / "last-check.lock"
     try:
-        checked.touch()
-        tag, _ = latest_tag()
-        installed = current_release(home).name
-        installed_version = tag_version(installed)
-        if installed_version is not None and installed_version < tag_version(tag):
-            print(
-                f"bonaparte: update available: {tag} (installed: {installed}); "
-                "run 'bonaparte update'",
-                file=sys.stderr,
-            )
-    except Exception:
-        # Ordinary commands remain quiet and runnable when the check is offline.
+        lock = claim.open("a")
+    except OSError:
         return
+    with lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            return
+        try:
+            if (
+                checked.exists()
+                and time.time() - checked.stat().st_mtime < CHECK_INTERVAL
+            ):
+                return
+            checked.touch()
+            tag, _ = latest_tag()
+            installed = current_release(home).name
+            installed_version = tag_version(installed)
+            if installed_version is not None and installed_version < tag_version(tag):
+                print(
+                    f"bonaparte: update available: {tag} (installed: {installed}); "
+                    "run 'bonaparte update'",
+                    file=sys.stderr,
+                )
+        except Exception:
+            # Ordinary commands remain quiet and runnable when the check is offline.
+            return
+        finally:
+            fcntl.flock(lock, fcntl.LOCK_UN)
 
 
 def main() -> int:

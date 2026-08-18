@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -352,6 +353,72 @@ class InstallationTests(unittest.TestCase):
             any(path.name.startswith(".update-") for path in self.home.iterdir())
         )
 
+    def test_retained_release_for_old_tag_object_is_not_activated(self):
+        original = self.install()
+        self.publish("v1.1.0")
+        oid_a = self.git("rev-parse", "v1.1.0").stdout.strip()
+        with mock.patch.object(LAUNCHER, "REPOSITORY", str(self.source)):
+            retained = LAUNCHER.fetch_release(self.home, "v1.1.0", oid_a)
+        LAUNCHER.validate_release(retained)
+
+        readme = self.source / "README.md"
+        readme.write_text(readme.read_text() + "\nmoved v1.1.0\n")
+        self.git("add", "README.md")
+        self.git("commit", "-qm", "move v1.1.0")
+        self.git("tag", "-f", "v1.1.0")
+        oid_b = self.git("rev-parse", "v1.1.0").stdout.strip()
+        self.assertNotEqual(oid_a, oid_b)
+
+        with mock.patch.object(LAUNCHER, "REPOSITORY", str(self.source)):
+            with self.assertRaisesRegex(RuntimeError, "advertised object"):
+                LAUNCHER.update(self.home)
+
+        self.assertEqual((self.home / "current").resolve().name, original)
+        self.assertEqual(
+            (retained / LAUNCHER.RELEASE_OID_FILE).read_text(), f"{oid_a}\n"
+        )
+
+    def test_required_directory_is_rejected_and_current_remains_usable(self):
+        original = self.install()
+        workflow = self.source / "workflows/autoresearch-critic.md"
+        workflow.unlink()
+        workflow.mkdir()
+        (workflow / "not-a-workflow").write_text("invalid bundle entry\n")
+        self.git("add", "-A")
+        self.git("commit", "-qm", "directory in required manifest")
+        self.git("tag", "v1.1.0")
+
+        result = self.run_command(str(self.bin / "bonaparte"), "update", check=False)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("release is missing workflows/autoresearch-critic.md", result.stderr)
+        self.assertEqual((self.home / "current").resolve().name, original)
+        self.assertFalse(
+            any(path.name.startswith(".update-") for path in self.home.iterdir())
+        )
+        help_result = self.run_command(str(self.bin / "bonaparte"), "--help")
+        self.assertIn("usage: bonaparte", help_result.stdout)
+
+    def test_required_symlink_is_rejected_and_current_remains_usable(self):
+        original = self.install()
+        workflow = self.source / "workflows/autoresearch-critic.md"
+        workflow.unlink()
+        workflow.symlink_to("scope.md")
+        self.git("add", "-A")
+        self.git("commit", "-qm", "symlink in required manifest")
+        self.git("tag", "v1.1.0")
+
+        result = self.run_command(str(self.bin / "bonaparte"), "update", check=False)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("release is missing workflows/autoresearch-critic.md", result.stderr)
+        self.assertEqual((self.home / "current").resolve().name, original)
+        self.assertFalse(
+            any(path.name.startswith(".update-") for path in self.home.iterdir())
+        )
+        help_result = self.run_command(str(self.bin / "bonaparte"), "--help")
+        self.assertIn("usage: bonaparte", help_result.stdout)
+
     def test_smoke_failure_keeps_old_release_and_cleans_staging(self):
         original = self.install()
         (self.source / "bonaparte").write_text(
@@ -456,6 +523,75 @@ class InstallationTests(unittest.TestCase):
         self.assertFalse(
             any(path.name.startswith(".update-") for path in self.home.iterdir())
         )
+
+    def test_concurrent_ordinary_checks_claim_the_daily_interval_once(self):
+        self.install()
+        fake_bin = self.root / "fake-bin"
+        fake_bin.mkdir()
+        calls = self.root / "git-calls"
+        started = self.root / "git-started"
+        release = self.root / "release-git"
+        fake_git = fake_bin / "git"
+        fake_git.write_text(
+            "#!/usr/bin/env python3\n"
+            "import pathlib, time\n"
+            f"calls = pathlib.Path({str(calls)!r})\n"
+            "with calls.open('a') as output: output.write('ls-remote\\n')\n"
+            f"pathlib.Path({str(started)!r}).touch()\n"
+            f"release = pathlib.Path({str(release)!r})\n"
+            "while not release.exists(): time.sleep(0.01)\n"
+            "print('1' * 40, 'refs/tags/v1.1.0')\n"
+        )
+        fake_git.chmod(0o755)
+        environment = {
+            **self.environment,
+            "BONAPARTE_AUTO_UPDATE": "1",
+            "PATH": f"{fake_bin}{os.pathsep}{self.environment['PATH']}",
+        }
+        command = [str(self.bin / "bonaparte"), "--help"]
+        first = subprocess.Popen(
+            command,
+            cwd=self.source,
+            env=environment,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        deadline = time.monotonic() + 10
+        while not started.exists() and time.monotonic() < deadline:
+            time.sleep(0.01)
+        self.assertTrue(started.exists(), "first update check did not start")
+
+        second = subprocess.run(
+            command,
+            cwd=self.source,
+            env=environment,
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        release.touch()
+        first_output = first.communicate(timeout=10)
+
+        self.assertEqual(first.returncode, 0, first_output)
+        self.assertEqual(calls.read_text().splitlines(), ["ls-remote"])
+        alerts = sum(
+            "bonaparte: update available:" in stderr
+            for stderr in (first_output[1], second.stderr)
+        )
+        self.assertLessEqual(alerts, 1)
+
+    def test_failed_daily_claim_does_not_block_ordinary_command(self):
+        self.install()
+        (self.home / "last-check.lock").mkdir()
+        environment = {**self.environment, "BONAPARTE_AUTO_UPDATE": "1"}
+
+        result = self.run_command(
+            str(self.bin / "bonaparte"), "--help", environment=environment
+        )
+
+        self.assertIn("usage: bonaparte", result.stdout)
 
     def test_release_validation_scrubs_the_host_progress_channel(self):
         environment = {**os.environ, "BONAPARTE_PROGRESS_FD": "37"}
