@@ -115,6 +115,16 @@ class InstallationTests(unittest.TestCase):
         self.git("commit", "-qm", tag)
         self.git("tag", tag)
 
+    def prepare_oidless_cache(self, tag="v1.1.0"):
+        original = self.install()
+        self.publish(tag)
+        expected_oid = self.git("rev-parse", tag).stdout.strip()
+        cached = self.home / "releases" / tag
+        with mock.patch.object(LAUNCHER, "REPOSITORY", str(self.source)):
+            LAUNCHER.fetch_release(self.home, tag, expected_oid)
+        (cached / LAUNCHER.RELEASE_OID_FILE).unlink()
+        return original, cached, expected_oid
+
     def test_install_is_independent_of_the_checkout(self):
         old_skill = self.root / "old-skill"
         old_skill.mkdir()
@@ -288,33 +298,60 @@ class InstallationTests(unittest.TestCase):
         result = self.run_command(str(self.bin / "autoresearch"), "--help")
         self.assertIn("usage: autoresearch", result.stdout)
 
-    def test_update_preflights_every_managed_target(self):
+    def test_update_preflights_managed_autoresearch_target(self):
         original = self.install()
         self.publish("v1.1.0")
         launcher = (self.home / "current" / "bonaparte-launcher").resolve()
-        targets = (
-            self.bin / "bonaparte",
-            self.bin / "autoresearch",
-            self.codex / "skills/use-bonaparte",
+        target = self.bin / "autoresearch"
+        target.unlink()
+        target.write_text("keep me")
+
+        result = self.run_command(
+            sys.executable,
+            str(launcher),
+            "update",
+            check=False,
         )
-        for target in targets:
-            with self.subTest(target=target):
-                saved_link = target.readlink()
-                target.unlink()
-                target.parent.mkdir(parents=True, exist_ok=True)
-                target.write_text("keep me")
-                result = self.run_command(
-                    sys.executable,
-                    str(launcher),
-                    "update",
-                    check=False,
-                )
-                self.assertNotEqual(result.returncode, 0)
-                self.assertIn("refusing to replace non-symlink", result.stderr)
-                self.assertEqual(target.read_text(), "keep me")
-                self.assertEqual((self.home / "current").resolve().name, original)
-                target.unlink()
-                target.symlink_to(saved_link)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("refusing to replace non-symlink", result.stderr)
+        self.assertEqual(target.read_text(), "keep me")
+        self.assertEqual((self.home / "current").resolve().name, original)
+
+    def test_custom_install_update_ignores_unrelated_default_targets(self):
+        self.install()
+        self.publish("v1.1.0")
+        default_home = self.root / "default-home"
+        default_bin = default_home / ".local/bin"
+        default_skill = default_home / ".codex/skills/use-bonaparte"
+        default_bin.mkdir(parents=True)
+        default_skill.parent.mkdir(parents=True)
+        for target in (
+            default_bin / "bonaparte",
+            default_bin / "autoresearch",
+            default_skill,
+        ):
+            target.write_text("unrelated\n")
+        environment = {
+            key: value
+            for key, value in self.environment.items()
+            if key not in {"BONAPARTE_BIN_DIR", "CODEX_HOME"}
+        }
+        environment["HOME"] = str(default_home)
+
+        result = self.run_command(
+            str(self.bin / "bonaparte"), "update", environment=environment
+        )
+
+        self.assertIn("Updated Bonaparte to v1.1.0", result.stdout)
+        self.assertEqual((self.home / "current").resolve().name, "v1.1.0")
+        self.assertEqual((self.bin / "autoresearch").resolve().parent.name, "v1.1.0")
+        for target in (
+            default_bin / "bonaparte",
+            default_bin / "autoresearch",
+            default_skill,
+        ):
+            self.assertEqual(target.read_text(), "unrelated\n")
 
     def test_failed_update_keeps_the_current_runtime_usable(self):
         original = self.install()
@@ -379,13 +416,10 @@ class InstallationTests(unittest.TestCase):
         )
 
     def test_oidless_legacy_cache_is_verified_and_attested(self):
-        self.install()
-        self.publish("v1.1.0")
-        expected_oid = self.git("rev-parse", "v1.1.0").stdout.strip()
-        legacy = self.home / "releases" / "v1.1.0"
-        with mock.patch.object(LAUNCHER, "REPOSITORY", str(self.source)):
-            LAUNCHER.fetch_release(self.home, "v1.1.0", expected_oid)
-        (legacy / LAUNCHER.RELEASE_OID_FILE).unlink()
+        _, legacy, expected_oid = self.prepare_oidless_cache()
+        bytecode = legacy / "__pycache__"
+        bytecode.mkdir()
+        (bytecode / "bonaparte_native.cpython-legacy.pyc").write_bytes(b"legacy")
 
         with mock.patch.object(LAUNCHER, "REPOSITORY", str(self.source)):
             retained = LAUNCHER.fetch_release(self.home, "v1.1.0", expected_oid)
@@ -394,6 +428,7 @@ class InstallationTests(unittest.TestCase):
         self.assertEqual(
             (legacy / LAUNCHER.RELEASE_OID_FILE).read_text(), f"{expected_oid}\n"
         )
+        self.assertFalse(bytecode.exists())
 
         (legacy / LAUNCHER.RELEASE_OID_FILE).unlink()
         (legacy / "README.md").write_text("altered")
@@ -401,6 +436,83 @@ class InstallationTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "cannot be verified"):
                 LAUNCHER.fetch_release(self.home, "v1.1.0", expected_oid)
         self.assertFalse((legacy / LAUNCHER.RELEASE_OID_FILE).exists())
+
+    def test_oidless_tampered_module_is_rejected_before_smoke_execution(self):
+        original, legacy, expected_oid = self.prepare_oidless_cache()
+        sentinel = self.root / "tampered-module-executed"
+        module = legacy / "bonaparte_native.py"
+        module.write_text(
+            module.read_text()
+            + "\nfrom pathlib import Path\n"
+            + f"Path({str(sentinel)!r}).write_text('executed')\n"
+        )
+
+        with mock.patch.object(LAUNCHER, "REPOSITORY", str(self.source)):
+            with self.assertRaisesRegex(RuntimeError, "cannot be verified"):
+                LAUNCHER.fetch_release(self.home, "v1.1.0", expected_oid)
+
+        self.assertFalse(sentinel.exists())
+        self.assertFalse((legacy / LAUNCHER.RELEASE_OID_FILE).exists())
+        self.assertEqual((self.home / "current").resolve().name, original)
+
+    def test_marked_tampered_cache_is_rejected_before_smoke_execution(self):
+        original = self.install()
+        self.publish("v1.1.0")
+        expected_oid = self.git("rev-parse", "v1.1.0").stdout.strip()
+        with mock.patch.object(LAUNCHER, "REPOSITORY", str(self.source)):
+            cached = LAUNCHER.fetch_release(self.home, "v1.1.0", expected_oid)
+        sentinel = self.root / "marked-tampered-module-executed"
+        module = cached / "bonaparte_native.py"
+        module.write_text(
+            module.read_text()
+            + "\nfrom pathlib import Path\n"
+            + f"Path({str(sentinel)!r}).write_text('executed')\n"
+        )
+
+        with mock.patch.object(LAUNCHER, "REPOSITORY", str(self.source)):
+            with self.assertRaisesRegex(RuntimeError, "cannot be verified"):
+                LAUNCHER.fetch_release(self.home, "v1.1.0", expected_oid)
+
+        self.assertFalse(sentinel.exists())
+        self.assertEqual(
+            (cached / LAUNCHER.RELEASE_OID_FILE).read_text(), f"{expected_oid}\n"
+        )
+        self.assertEqual((self.home / "current").resolve().name, original)
+
+    def test_oidless_cache_with_untracked_directory_is_rejected(self):
+        original, legacy, expected_oid = self.prepare_oidless_cache()
+        extra = legacy / "untracked" / "nested"
+        extra.mkdir(parents=True)
+        (extra / "payload").write_text("unexpected\n")
+
+        with mock.patch.object(LAUNCHER, "REPOSITORY", str(self.source)):
+            with self.assertRaisesRegex(RuntimeError, "cannot be verified"):
+                LAUNCHER.fetch_release(self.home, "v1.1.0", expected_oid)
+
+        self.assertFalse((legacy / LAUNCHER.RELEASE_OID_FILE).exists())
+        self.assertEqual((self.home / "current").resolve().name, original)
+
+        shutil.rmtree(legacy / "untracked")
+        (legacy / ".git").mkdir()
+        (legacy / ".git" / "config").write_text("unexpected\n")
+        with mock.patch.object(LAUNCHER, "REPOSITORY", str(self.source)):
+            with self.assertRaisesRegex(RuntimeError, "cannot be verified"):
+                LAUNCHER.fetch_release(self.home, "v1.1.0", expected_oid)
+
+        self.assertFalse((legacy / LAUNCHER.RELEASE_OID_FILE).exists())
+        self.assertEqual((self.home / "current").resolve().name, original)
+
+    def test_oidless_cache_with_executable_mode_mismatch_is_rejected(self):
+        original, legacy, expected_oid = self.prepare_oidless_cache()
+        launcher = legacy / "bonaparte-launcher"
+        launcher.chmod(0o650)
+
+        with mock.patch.object(LAUNCHER, "REPOSITORY", str(self.source)):
+            with self.assertRaisesRegex(RuntimeError, "cannot be verified"):
+                LAUNCHER.fetch_release(self.home, "v1.1.0", expected_oid)
+
+        self.assertFalse((legacy / LAUNCHER.RELEASE_OID_FILE).exists())
+        self.assertEqual((self.home / "current").resolve().name, original)
 
     def test_required_directory_is_rejected_and_current_remains_usable(self):
         original = self.install()
@@ -616,6 +728,20 @@ class InstallationTests(unittest.TestCase):
         )
 
         self.assertIn("usage: bonaparte", result.stdout)
+
+    def test_failed_daily_lock_does_not_block_ordinary_check(self):
+        self.home.mkdir()
+
+        with mock.patch.object(LAUNCHER.fcntl, "flock", side_effect=OSError("lock")):
+            LAUNCHER.automatic_update(self.home)
+
+        with mock.patch.object(
+            LAUNCHER.fcntl,
+            "flock",
+            side_effect=[None, OSError("unlock")],
+        ):
+            with mock.patch.object(LAUNCHER, "latest_tag", side_effect=OSError("offline")):
+                LAUNCHER.automatic_update(self.home)
 
     def test_release_validation_scrubs_the_host_progress_channel(self):
         environment = {**os.environ, "BONAPARTE_PROGRESS_FD": "37"}
