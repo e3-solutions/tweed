@@ -259,6 +259,12 @@ def select_handoff(
         context["intake"] = issue["description"]
         if isinstance(current_record.get("id"), str):
             context["existing_comment_id"] = current_record["id"]
+    if phase == "publish" and current:
+        review = latest_comment(comments, PHASE_HEADERS["review"])
+        if review:
+            context["review"] = review
+        if isinstance(current_record.get("id"), str):
+            context["existing_comment_id"] = current_record["id"]
     key = f"scope:{kind}" if phase == "scope" else phase
     if not current and key not in PHASE_INPUTS:
         context = {"missing": "**Kind:** Bug | Feature"}

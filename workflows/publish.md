@@ -10,8 +10,13 @@ metadata, readiness, and final Linear comment.
 ## Preconditions
 
 - Existing publish result: reverify its exact ready PR and Linear delivery
-  comment, then return it without another write. If either is stale or missing,
-  return `blocked` with that fact.
+  comment, then return it without another write when they still match. When the
+  runner also supplies a newer complete review for the same open PR and branch,
+  require its reviewed commit to be a clean descendant of the recorded publish
+  commit, validate it with the normal publish gate, and update
+  `existing_comment_id` in place after the gate passes. Never add a duplicate
+  delivery comment. A changed PR or branch, non-descendant commit, missing
+  review, dirty worktree, or unverifiable ancestry remains blocked.
 - New publish: require a complete `## Bonaparte · Implementation Review` as the
   publish handoff.
 - Extract the exact reviewed branch and commit. Require a clean local worktree
@@ -71,7 +76,8 @@ read back every write so an interrupted retry can continue idempotently.
    canonical head repository, reviewed branch, and reviewed commit, and reports
    no immediately visible update error. Do not claim CI has passed unless GitHub
    shows it.
-7. Add exactly one Linear comment after the PR is verified:
+7. Create exactly one Linear comment after the PR is verified, or update the
+   supplied `existing_comment_id` in place when reconciling a reviewed descendant:
 
    After writing, re-read the comment and return `completed` only if it matches
    this schema and contains the delivery facts required above.
@@ -96,7 +102,8 @@ read back every write so an interrupted retry can continue idempotently.
    ```
 
 If PR finalization succeeds but the Linear write fails, a retry must recover the
-same ready PR and add only the missing comment. Never open a duplicate PR.
+same ready PR and add only the missing comment or update only the supplied stale
+comment. Never open a duplicate PR.
 
 ## Completion gate
 
