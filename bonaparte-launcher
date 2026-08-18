@@ -3,8 +3,6 @@
 
 from __future__ import annotations
 
-import fcntl
-import json
 import os
 import re
 import shutil
@@ -12,8 +10,6 @@ import subprocess
 import sys
 import tempfile
 import time
-import uuid
-from datetime import datetime, timezone
 from pathlib import Path
 
 REPOSITORY = os.environ.get(
@@ -29,6 +25,14 @@ skills/use-bonaparte/agents/openai.yaml workflows/create.md workflows/bug-rca.md
 workflows/scope.md workflows/implement.md workflows/review.md workflows/publish.md
 workflows/autoresearch-setup.md workflows/autoresearch-worker.md
 workflows/autoresearch-critic.md""".split()
+
+
+def updater_environment() -> dict[str, str]:
+    """Keep the host progress channel private to the final runner exec."""
+
+    environment = os.environ.copy()
+    environment.pop("BONAPARTE_PROGRESS_FD", None)
+    return environment
 
 
 def bonaparte_home() -> Path:
@@ -74,6 +78,7 @@ def tag_version(tag: str) -> tuple[int, int, int] | None:
 def latest_tag() -> tuple[str, str]:
     output = subprocess.check_output(
         ["git", "ls-remote", "--tags", "--refs", REPOSITORY],
+        env=updater_environment(),
         text=True,
         timeout=15,
     )
@@ -102,7 +107,7 @@ def validate_release(release: Path) -> None:
     ):
         source = release / name
         compile(source.read_text(), str(source), "exec")
-    environment = os.environ.copy()
+    environment = updater_environment()
     environment["BONAPARTE_AUTO_UPDATE"] = "0"
     subprocess.run(
         [sys.executable, str(release / "bonaparte"), "--help"],
@@ -127,6 +132,7 @@ def git(directory: Path, *arguments: str, output: bool = False):
         ["git", "-C", directory, *arguments],
         check=True,
         capture_output=output,
+        env=updater_environment(),
         text=output,
         timeout=30,
     )
@@ -195,19 +201,9 @@ def main() -> int:
                 else "Bonaparte is already current."
             )
             return 0
-        if sys.argv[1:2] == ["status"]:
-            run_id = sys.argv[2] if len(sys.argv) == 3 else None
-            if len(sys.argv) > 3:
-                raise RuntimeError("use: bonaparte status [run-id]")
-            print(json.dumps(read_activity(home, run_id), separators=(",", ":")))
-            return 0
         automatic_update(home)
         runner = current_release(home) / "bonaparte"
-        arguments = sys.argv[1:]
-        phase = phase_from_arguments(arguments)
-        if phase is None:
-            os.execv(sys.executable, [sys.executable, str(runner), *arguments])
-        return run_tracked(home, runner, arguments, phase)
+        os.execv(sys.executable, [sys.executable, str(runner), *sys.argv[1:]])
     except Exception as error:
         print(f"bonaparte: {error}", file=sys.stderr)
         return 1

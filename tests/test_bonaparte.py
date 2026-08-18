@@ -1,10 +1,12 @@
 import importlib.machinery
 import importlib.util
+import io
 import json
 import os
 import queue
 import subprocess
 import sys
+import tempfile
 import unittest
 import uuid
 from pathlib import Path
