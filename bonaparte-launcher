@@ -22,7 +22,9 @@ bonaparte_native.py bonaparte_progress.py
 bonaparte_linear.py
 skills/use-bonaparte/SKILL.md
 skills/use-bonaparte/agents/openai.yaml workflows/create.md workflows/bug-rca.md
-workflows/scope.md workflows/implement.md workflows/review.md workflows/publish.md""".split()
+workflows/scope.md workflows/implement.md workflows/review.md workflows/publish.md
+workflows/autoresearch-setup.md workflows/autoresearch-worker.md
+workflows/autoresearch-critic.md""".split()
 
 
 def updater_environment() -> dict[str, str]:
@@ -46,6 +48,16 @@ def atomic_link(target: str, link: Path) -> None:
     temporary.unlink(missing_ok=True)
     temporary.symlink_to(target)
     os.replace(temporary, link)
+
+
+def migrate_autoresearch_link(home: Path) -> None:
+    bin_dir = Path(os.environ.get("BONAPARTE_BIN_DIR", Path.home() / ".local/bin"))
+    link = bin_dir / "autoresearch"
+    if link.exists() and not link.is_symlink():
+        raise RuntimeError(f"refusing to replace non-symlink: {link}")
+    if not (current_release(home) / "autoresearch").is_file():
+        return
+    atomic_link(str(home / "current" / "autoresearch"), link)
 
 
 def current_release(home: Path) -> Path:
@@ -105,6 +117,13 @@ def validate_release(release: Path) -> None:
         env=environment,
         timeout=10,
     )
+    subprocess.run(
+        [sys.executable, str(release / "autoresearch"), "--help"],
+        check=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.PIPE,
+        timeout=10,
+    )
 
 
 def git(directory: Path, *arguments: str, output: bool = False):
@@ -141,6 +160,7 @@ def fetch_release(home: Path, tag: str, expected_oid: str) -> Path:
 
 
 def update(home: Path) -> str | None:
+    migrate_autoresearch_link(home)
     tag, oid = latest_tag()
     current = current_release(home)
     current_version = tag_version(current.name)
@@ -151,6 +171,7 @@ def update(home: Path) -> str | None:
     if current_version and current_version >= tag_version(tag):
         return None
     atomic_link(f"releases/{release.name}", home / "current")
+    migrate_autoresearch_link(home)
     return tag
 
 
@@ -170,6 +191,7 @@ def automatic_update(home: Path) -> None:
 def main() -> int:
     home = bonaparte_home()
     try:
+        migrate_autoresearch_link(home)
         if sys.argv[1:] == ["update"]:
             tag = update(home)
             print(
