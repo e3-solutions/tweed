@@ -1,28 +1,11 @@
-import importlib.machinery
-import importlib.util
-import json
 import os
 import shutil
 import subprocess
 import tempfile
 import unittest
 from pathlib import Path
-from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
-
-
-def load_launcher():
-    loader = importlib.machinery.SourceFileLoader(
-        "bonaparte_launcher", str(ROOT / "bonaparte-launcher")
-    )
-    spec = importlib.util.spec_from_loader(loader.name, loader)
-    module = importlib.util.module_from_spec(spec)
-    loader.exec_module(module)
-    return module
-
-
-LAUNCHER = load_launcher()
 
 
 class InstallationTests(unittest.TestCase):
