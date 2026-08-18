@@ -492,6 +492,14 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertIn("without reimplementation", implementation)
         self.assertIn("recorded head", review)
 
+    def test_review_can_refresh_a_stale_verdict_for_descendant_corrections(self):
+        review = (ROOT / "workflows/review.md").read_text()
+
+        self.assertIn("clean\n  descendant of the recorded reviewed commit", review)
+        self.assertIn("review only the added range", review)
+        self.assertIn("replace the existing review comment", review)
+        self.assertIn("A non-descendant head", review)
+
     def test_coordinator_owns_a_bounded_coverage_frontier(self):
         runner = (ROOT / "bonaparte").read_text()
         for marker in (
