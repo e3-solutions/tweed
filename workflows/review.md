@@ -9,6 +9,22 @@ corrections to the existing draft PR. Do not create another PR, change its
 metadata or readiness, merge, or deploy. Use Linear only to publish and verify
 the final review comment.
 
+## Durable phase boundary
+
+- This is a fresh phase coordinator. Its only request-specific input is the
+  Linear issue identifier. Read the issue description and all completed Bonaparte
+  comments from Linear. Do not expect or accept inherited coordinator/subagent
+  context, implementation material injected into the prompt, hidden files, or
+  local phase state.
+- The completed Linear comments are the complete durable review input. The JSON
+  receipt is control-plane data only. Resuming this same coordinator after
+  `needs-input` is the sole within-phase context exception.
+- Before returning `completed`, publish and re-read the review comment. It must
+  let a fresh publish coordinator establish readiness, provenance, validation,
+  and remaining concerns using only Linear and the repository. If any material
+  finding, evidence, fix, validation result, or concern remains only in this
+  coordinator's context, do not complete the phase.
+
 ## Contract and safety
 
 - Without an existing review, require the implementation handoff and extract its
@@ -160,6 +176,12 @@ Call the phase reviewed only when:
 - the worktree is clean and the verified PR points at the final reviewed commit.
   It is draft for a new review; an idempotent retry may observe later published
   readiness only when the existing review records the same PR and commit.
+
+The verified Linear comment must itself carry all findings (including rejected
+ones that were material enough to investigate), their evidence and disposition,
+every fix and re-review, the final branch/commit, complete validation mapped to
+the contract, remaining concerns, and an explicit readiness decision. Facts
+present only in coordinator memory do not satisfy the gate.
 
 If no review edit was made and review cannot complete, return `blocked`. If
 review edits exist but a finding, failed check, interruption, or contract-crossing

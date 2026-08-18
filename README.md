@@ -16,6 +16,21 @@ Bug:     create → RCA → scope → implement → review → publish
 Feature: create → scope → implement → review → publish
 ```
 
+Every phase after creation receives only the Linear issue identifier. Its fresh
+coordinator reads the issue description and completed Bonaparte comments, performs
+bounded internal work, and writes one self-contained evidence-bearing comment
+before it can complete. Coordinator and subagent conversations are never
+transferred between phases, and there are no hidden report files or local state
+channels. The JSON receipt stays below 4 KiB and carries control state and
+provenance only. Resuming the same coordinator after `needs-input` is the sole
+within-phase context exception.
+
+The durable comments intentionally retain the material information needed by
+the next phase: causal and repository evidence, affected files and boundaries,
+decisions and objections, confidence and unresolved gaps, ordered work,
+validation, Git provenance, review dispositions, and final delivery state. Raw
+subagent transcripts and tool logs are never published.
+
 ## Install
 
 Bonaparte uses your local Codex installation and its authenticated Linear MCP. The

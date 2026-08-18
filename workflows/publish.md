@@ -7,6 +7,22 @@ Do not spawn subagents, change code, push commits, create another PR,
 merge, deploy, delete branches, or mutate anything outside the existing PR's
 metadata, readiness, and final Linear comment.
 
+## Durable phase boundary
+
+- This is a fresh phase coordinator. Its only request-specific input is the
+  Linear issue identifier. Read the issue description and every completed Bonaparte
+  comment from Linear. Do not expect or accept inherited coordinator/subagent
+  context, a review report injected into the prompt, hidden files, or local
+  phase state.
+- The completed Linear comments are the complete durable delivery contract.
+  The compact JSON receipt is control-plane data only; it is not a report or a
+  second handoff channel.
+- Before returning `completed`, publish and re-read the final Linear comment.
+  It must record the exact PR, branch, reviewed commit, base, observed CI/PR
+  state, readiness, and remaining delivery conditions. If the write cannot be
+  verified or any of those facts remains only in coordinator context, do not
+  complete the phase.
+
 ## Preconditions
 
 - Existing publish result: reverify its exact ready PR and Linear delivery
@@ -112,6 +128,9 @@ its repository/base/head match, its title and required body sections identify th
 issue, local `HEAD` and clean worktree are unchanged, and one verified Linear
 delivery comment records it. Never duplicate that comment or claim ready to
 merge while CI or approvals remain pending or unobserved.
+
+The phase is not complete merely because the push or pull request succeeded.
+Completion requires the verified self-contained Linear delivery comment above.
 
 ## Receipt
 
