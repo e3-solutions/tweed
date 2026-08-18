@@ -39,7 +39,13 @@ Handle an existing review by schema state:
 
 - Current (`### Contract and quality result`): validate the gate, branch, commit,
   and canonical open PR. Return it without another comment only when all still
-  match; otherwise return `blocked` with the stale fact.
+  match. When the same open PR has advanced on the same branch to a clean
+  descendant of the recorded reviewed commit, treat the existing review as the
+  carried contract and review only the added range plus every obligation the
+  added commits invalidate. Rebuild the final whole-diff evidence at the new
+  head and replace the existing review comment only after the normal completion
+  gate passes. A non-descendant head, changed PR or branch, dirty worktree, or
+  unverifiable ancestry remains blocked with the stale fact.
 - Immediately preceding schema (`### Final axis results` and `### Review map`, but
   no current result): treat carried checks as evidence candidates, rerun
   independent verification at the recorded head, and rewrite the review in the
