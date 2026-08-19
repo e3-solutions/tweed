@@ -3,9 +3,11 @@
 
 from __future__ import annotations
 
+import fcntl
 import os
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
@@ -17,7 +19,8 @@ REPOSITORY = os.environ.get(
 )
 TAG_PATTERN = re.compile(r"v(\d+)\.(\d+)\.(\d+)")
 CHECK_INTERVAL = 24 * 60 * 60
-REQUIRED = """bonaparte bonaparte-launcher bonaparte_checkpoint.py
+RELEASE_OID_FILE = ".bonaparte-release-oid"
+REQUIRED = """bonaparte bonaparte-launcher autoresearch bonaparte_checkpoint.py
 bonaparte_native.py bonaparte_progress.py
 bonaparte_linear.py
 skills/use-bonaparte/SKILL.md
@@ -51,13 +54,29 @@ def atomic_link(target: str, link: Path) -> None:
 
 
 def migrate_autoresearch_link(home: Path) -> None:
-    bin_dir = Path(os.environ.get("BONAPARTE_BIN_DIR", Path.home() / ".local/bin"))
+    bin_dir = installed_bin_dir()
     link = bin_dir / "autoresearch"
     if link.exists() and not link.is_symlink():
         raise RuntimeError(f"refusing to replace non-symlink: {link}")
     if not (current_release(home) / "autoresearch").is_file():
         return
     atomic_link(str(home / "current" / "autoresearch"), link)
+
+
+def installed_bin_dir() -> Path:
+    configured = os.environ.get("BONAPARTE_BIN_DIR")
+    if configured:
+        return Path(configured)
+    invoked = Path(sys.argv[0])
+    if invoked.name == "bonaparte":
+        return invoked.absolute().parent
+    return Path.home() / ".local/bin"
+
+
+def preflight_managed_targets() -> None:
+    target = installed_bin_dir() / "autoresearch"
+    if target.exists() and not target.is_symlink():
+        raise RuntimeError(f"refusing to replace non-symlink: {target}")
 
 
 def current_release(home: Path) -> Path:
@@ -94,7 +113,11 @@ def latest_tag() -> tuple[str, str]:
 
 
 def validate_release(release: Path) -> None:
-    missing = [name for name in REQUIRED if not (release / name).exists()]
+    missing = [
+        name
+        for name in REQUIRED
+        if (release / name).is_symlink() or not (release / name).is_file()
+    ]
     if missing:
         raise RuntimeError(f"release is missing {', '.join(missing)}")
     for name in (
@@ -109,6 +132,7 @@ def validate_release(release: Path) -> None:
         compile(source.read_text(), str(source), "exec")
     environment = updater_environment()
     environment["BONAPARTE_AUTO_UPDATE"] = "0"
+    environment["PYTHONDONTWRITEBYTECODE"] = "1"
     subprocess.run(
         [sys.executable, str(release / "bonaparte"), "--help"],
         check=True,
@@ -127,6 +151,33 @@ def validate_release(release: Path) -> None:
     )
 
 
+def record_release_oid(release: Path, expected_oid: str) -> None:
+    marker = release / RELEASE_OID_FILE
+    temporary = release / f".{RELEASE_OID_FILE}.{os.getpid()}.{time.time_ns()}"
+    try:
+        with temporary.open("x") as output:
+            output.write(f"{expected_oid}\n")
+        temporary.chmod(0o444)
+        try:
+            os.link(temporary, marker)
+        except FileExistsError:
+            validate_release_oid(release, expected_oid)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def validate_release_oid(release: Path, expected_oid: str) -> None:
+    marker = release / RELEASE_OID_FILE
+    if (
+        marker.is_symlink()
+        or not marker.is_file()
+        or marker.read_text() != f"{expected_oid}\n"
+    ):
+        raise RuntimeError(
+            f"release {release.name} does not match its advertised object"
+        )
+
+
 def git(directory: Path, *arguments: str, output: bool = False):
     return subprocess.run(
         ["git", "-C", directory, *arguments],
@@ -138,11 +189,77 @@ def git(directory: Path, *arguments: str, output: bool = False):
     )
 
 
+def matches_checkout(release: Path, checkout: Path) -> bool:
+    entries = git(checkout, "ls-files", "--stage", "-z", output=True).stdout
+    tracked = {}
+    for entry in filter(None, entries.split("\0")):
+        metadata, name = entry.split("\t", 1)
+        tracked[name] = metadata.split(" ", 1)[0]
+
+    expected_paths = set(tracked)
+    for name in tracked:
+        expected_paths.update(
+            str(parent)
+            for parent in Path(name).parents
+            if parent != Path(".")
+        )
+
+    actual_paths = set()
+    pending = [(release, Path())]
+    while pending:
+        directory, relative_directory = pending.pop()
+        with os.scandir(directory) as children:
+            for child in children:
+                relative = relative_directory / child.name
+                if relative_directory == Path() and (
+                    child.name == RELEASE_OID_FILE
+                    or (
+                        child.name.startswith(f".{RELEASE_OID_FILE}.")
+                        and child.is_file(follow_symlinks=False)
+                    )
+                ):
+                    continue
+                actual_paths.add(str(relative))
+                if child.is_dir(follow_symlinks=False):
+                    pending.append((Path(child.path), relative))
+    if actual_paths != expected_paths:
+        return False
+
+    for name, mode in tracked.items():
+        expected = checkout / name
+        cached = release / name
+        if mode == "120000":
+            if (
+                not cached.is_symlink()
+                or os.readlink(cached) != os.readlink(expected)
+            ):
+                return False
+        else:
+            cached_mode = cached.lstat().st_mode
+            if (
+                not stat.S_ISREG(cached_mode)
+                or bool(cached_mode & stat.S_IXUSR) != (mode == "100755")
+                or cached.read_bytes() != expected.read_bytes()
+            ):
+                return False
+    return True
+
+
+def remove_legacy_bytecode(release: Path) -> None:
+    bytecode = release / "__pycache__"
+    if bytecode.is_dir() and not bytecode.is_symlink():
+        try:
+            shutil.rmtree(bytecode)
+        except FileNotFoundError:
+            pass
+
+
 def fetch_release(home: Path, tag: str, expected_oid: str) -> Path:
     destination = home / "releases" / tag
     if destination.exists():
-        validate_release(destination)
-        return destination
+        marker = destination / RELEASE_OID_FILE
+        if marker.exists() or marker.is_symlink():
+            validate_release_oid(destination, expected_oid)
     staging = Path(tempfile.mkdtemp(prefix=".update-", dir=home))
     try:
         git(staging, "init", "-q")
@@ -152,8 +269,25 @@ def fetch_release(home: Path, tag: str, expected_oid: str) -> Path:
             raise RuntimeError(f"tag {tag} moved while updating")
         git(staging, "checkout", "-q", "--detach", "FETCH_HEAD")
         validate_release(staging)
+        if destination.exists():
+            remove_legacy_bytecode(destination)
+            if not matches_checkout(destination, staging):
+                raise RuntimeError(
+                    f"cached release {tag} cannot be verified against its tag object"
+                )
+            validate_release(destination)
+            record_release_oid(destination, expected_oid)
+            return destination
         shutil.rmtree(staging / ".git")
-        staging.rename(destination)
+        record_release_oid(staging, expected_oid)
+        try:
+            staging.rename(destination)
+        except OSError:
+            # Another updater may have completed the same immutable snapshot.
+            if not destination.exists():
+                raise
+            validate_release(destination)
+            validate_release_oid(destination, expected_oid)
         return destination
     finally:
         if staging.exists():
@@ -161,12 +295,12 @@ def fetch_release(home: Path, tag: str, expected_oid: str) -> Path:
 
 
 def update(home: Path) -> str | None:
-    migrate_autoresearch_link(home)
     tag, oid = latest_tag()
     current = current_release(home)
     current_version = tag_version(current.name)
     if current_version and current_version >= tag_version(tag):
         return None
+    preflight_managed_targets()
     release = fetch_release(home, tag, oid)
     current_version = tag_version(current_release(home).name)
     if current_version and current_version >= tag_version(tag):
@@ -176,23 +310,73 @@ def update(home: Path) -> str | None:
     return tag
 
 
+def status(home: Path) -> int:
+    installed = current_release(home).name
+    print(f"installed: {installed}")
+    try:
+        tag, _ = latest_tag()
+    except Exception:
+        print("latest: unavailable")
+        print("current: unknown")
+        return 1
+    print(f"latest: {tag}")
+    installed_version = tag_version(installed)
+    print(
+        "current: "
+        + (
+            "unknown"
+            if installed_version is None
+            else "yes" if installed_version >= tag_version(tag) else "no"
+        )
+    )
+    return 0
+
+
 def automatic_update(home: Path) -> None:
     if os.environ.get("BONAPARTE_AUTO_UPDATE") == "0":
         return
     checked = home / "last-check"
-    if checked.exists() and time.time() - checked.stat().st_mtime < CHECK_INTERVAL:
-        return
+    claim = home / "last-check.lock"
     try:
-        checked.touch()
-        update(home)
-    except Exception as error:
-        print(f"bonaparte: automatic update failed: {error}", file=sys.stderr)
+        lock = claim.open("a")
+    except OSError:
+        return
+    with lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError:
+            return
+        try:
+            if (
+                checked.exists()
+                and time.time() - checked.stat().st_mtime < CHECK_INTERVAL
+            ):
+                return
+            checked.touch()
+            tag, _ = latest_tag()
+            installed = current_release(home).name
+            installed_version = tag_version(installed)
+            if installed_version is not None and installed_version < tag_version(tag):
+                print(
+                    f"bonaparte: update available: {tag} (installed: {installed}); "
+                    "run 'bonaparte update'",
+                    file=sys.stderr,
+                )
+        except Exception:
+            # Ordinary commands remain quiet and runnable when the check is offline.
+            return
+        finally:
+            try:
+                fcntl.flock(lock, fcntl.LOCK_UN)
+            except OSError:
+                pass
 
 
 def main() -> int:
     home = bonaparte_home()
     try:
-        migrate_autoresearch_link(home)
+        if sys.argv[1:] == ["status"]:
+            return status(home)
         if sys.argv[1:] == ["update"]:
             tag = update(home)
             print(
@@ -201,6 +385,7 @@ def main() -> int:
                 else "Bonaparte is already current."
             )
             return 0
+        migrate_autoresearch_link(home)
         automatic_update(home)
         runner = current_release(home) / "bonaparte"
         os.execv(sys.executable, [sys.executable, str(runner), *sys.argv[1:]])

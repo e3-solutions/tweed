@@ -448,6 +448,11 @@ class BonaparteRunnerTests(unittest.TestCase):
                 self.assertNotIn("### Implementation map", current_schema)
                 self.assertNotIn("### Review map", current_schema)
 
+        scope = (ROOT / "workflows/scope.md").read_text()
+        scope_schema = scope.split("```markdown", 1)[1].split("```", 1)[0]
+        self.assertEqual(scope_schema.count("### Handoff basis"), 1)
+        self.assertNotIn("Tweed comments", scope)
+
     def test_verification_ownership_depends_on_changed_boundary(self):
         scope = (ROOT / "workflows/scope.md").read_text()
         implementation = (ROOT / "workflows/implement.md").read_text()

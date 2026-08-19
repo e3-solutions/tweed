@@ -95,21 +95,45 @@ gh auth status
 For a non-default location, set `BONAPARTE_BIN_DIR`, `BONAPARTE_HOME`, or `CODEX_HOME`
 when running `./install`.
 
-## Updates
+## Status and updates
 
-At most once per day, Bonaparte checks the public repository for the highest stable
-`vX.Y.Z` tag. It fetches that exact Git ref into a new directory and smoke-tests
-it before switching the active release atomically. A failed check never prevents
-the installed runtime from starting.
+Inspect the exact installed release identifier and the highest published stable
+`vX.Y.Z` tag without changing the installation:
+
+```sh
+bonaparte status
+```
+
+The command prints exactly `installed: IDENTIFIER`, `latest: vX.Y.Z`, and
+`current: yes|no`. If the repository is unavailable, it preserves the installed
+line, prints `latest: unavailable` and `current: unknown`, and exits nonzero.
+
+At most once per 24 hours, an ordinary Bonaparte invocation makes the same
+bounded stable-tag check. When a newer release exists it prints one concise
+alert directing you to the update command. It remains silent when current or
+offline and never fetches, validates, or switches a release automatically.
+Set `BONAPARTE_AUTO_UPDATE=0` to disable this check while retaining explicit
+status and update commands.
+
+Only this explicit command installs an update:
 
 ```sh
 bonaparte update
 ```
 
-When upgrading an installation from before the `autoresearch` CLI was shipped,
-the first command above runs the old launcher: it switches the active release
-but cannot create a link it does not know about. Invoke Bonaparte once more so
-the now-current launcher safely creates the missing link, then verify it:
+The updater fetches the advertised Git object for the highest stable tag into a
+unique staging directory, verifies that the tag did not move, validates the
+complete bundle and both CLI smoke tests, and commits the release with one
+atomic switch of the shared `current` symlink. The bundle contains the launcher,
+phase runner and runtime modules, every workflow (including autoresearch
+workflows), the `use-bonaparte` skill, and the `autoresearch` companion command.
+All managed consumers resolve through that one release.
+
+An installation from exact legacy release
+`local-v0.3.0-8b75b707dce8` needs only one `bonaparte update` command. Its old
+launcher switches the complete bundle; the first subsequent invocation of the
+new launcher safely materializes the previously absent autoresearch link. Verify
+the result with:
 
 ```sh
 bonaparte --help
@@ -117,14 +141,20 @@ autoresearch --help
 ```
 
 The migration replaces only a missing link or an existing symlink. It refuses
-and preserves a non-symlink at the autoresearch target path.
+and preserves a non-symlink at any managed CLI or skill target path. Validation,
+network, interruption, or competing-update failure leaves either the old complete
+release or the new complete release active. Retry `bonaparte update` after fixing
+the reported cause; versioned releases are retained, so recovery never requires
+deleting the current snapshot. Run `./bonaparte` directly when developing against
+a live checkout.
 
-Set `BONAPARTE_AUTO_UPDATE=0` to disable the daily check. Run `./bonaparte` directly
-when developing against a live checkout.
-
-Maintainers publish an update by pushing a stable tag such as `v0.2.0`. Configure
-the public repository to protect `v*` tags from modification. No release archive
-or package registry is required.
+Maintainers publish an update only after the reviewed commit's archived bundle
+passes the manifest and CLI smoke checks. Push one new immutable stable tag such
+as `v0.4.0`, verify that it resolves to that reviewed commit, then verify status
+and the legacy upgrade canary. Protect `v*` tags from modification. Roll back by
+publishing a higher corrective stable tag and directing users to
+`bonaparte update`; never move or delete a published tag. No release archive or
+package registry is required.
 
 ## Standalone autoresearch
 
