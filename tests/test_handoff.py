@@ -25,6 +25,8 @@ def live_pr(
                 "headRefOid": commit,
                 "baseRefName": base,
                 "isDraft": draft,
+                "headRepository": {"name": "r"},
+                "headRepositoryOwner": {"login": "o"},
                 "state": "OPEN",
                 "url": "https://github.com/o/r/pull/1",
             }
@@ -57,13 +59,24 @@ class HandoffTests(unittest.TestCase):
         def output(_repository, *arguments):
             if arguments == ("remote", "get-url", "origin"):
                 return "git@github.com:e3-solutions/tweed.git"
-            if arguments == (
-                "symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD"
-            ):
-                return "origin/main"
             return None
 
-        with mock.patch.dict(RUNNER_GLOBALS, {"git_output": output}):
+        github = SimpleNamespace(
+            returncode=0,
+            stdout=json.dumps(
+                {
+                    "nameWithOwner": "e3-solutions/tweed",
+                    "defaultBranchRef": {"name": "main"},
+                }
+            ),
+        )
+        with mock.patch.dict(
+            RUNNER_GLOBALS,
+            {
+                "git_output": output,
+                "_SUBPROCESS_RUN": mock.Mock(return_value=github),
+            },
+        ):
             self.assertEqual(
                 trusted_git_target(Path(".")),
                 ("e3-solutions/tweed", "main"),
@@ -207,6 +220,29 @@ class HandoffTests(unittest.TestCase):
         recovered = recover_terminal_receipt(
             issue(), [review], "implement", ("other/repository", "main")
         )
+        self.assertEqual(recovered["state"], "blocked")
+
+    def test_terminal_recovery_blocks_fork_head_repository(self):
+        review = comment("review", "unused", "5")
+        review["body"] = (
+            HEADERS["review"]
+            + "\n\n**Verdict:** Ready to publish\n\n### Git handoff\n"
+            + "- Branch: `arya/lin-1-example`\n"
+            + "- Reviewed commit: `" + "b" * 40 + "`\n"
+            + "- Draft PR: `https://github.com/o/r/pull/1`\n"
+            + "- Base: `main`"
+        )
+        fork = live_pr()
+        payload = json.loads(fork.stdout)
+        payload["headRepositoryOwner"] = {"login": "fork-owner"}
+        fork.stdout = json.dumps(payload)
+        with mock.patch.dict(
+            RUNNER_GLOBALS,
+            {"_SUBPROCESS_RUN": mock.Mock(return_value=fork)},
+        ):
+            recovered = recover_terminal_receipt(
+                issue(), [review], "implement", ("o/r", "main")
+            )
         self.assertEqual(recovered["state"], "blocked")
 
     def test_supplemental_guidance_disables_terminal_fast_path(self):

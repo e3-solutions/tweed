@@ -324,7 +324,11 @@ def validate_terminal_pull_request(
         process = _SUBPROCESS_RUN(
             [
                 "gh", "pr", "view", pull_request,
-                "--json", "baseRefName,headRefName,headRefOid,isDraft,state,url",
+                "--json",
+                (
+                    "baseRefName,headRefName,headRefOid,headRepository,"
+                    "headRepositoryOwner,isDraft,state,url"
+                ),
             ],
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
@@ -344,16 +348,20 @@ def validate_terminal_pull_request(
         and current.get("baseRefName") == expected_base
         and current.get("headRefName") == branch
         and current.get("headRefOid") == commit
+        and isinstance(current.get("headRepository"), dict)
+        and isinstance(current.get("headRepositoryOwner"), dict)
+        and (
+            f"{current['headRepositoryOwner'].get('login')}/"
+            f"{current['headRepository'].get('name')}"
+        ).casefold()
+        == expected_repository.casefold()
         and current.get("isDraft") is expect_draft
     )
 
 
 def trusted_git_target(repository: Path) -> tuple[str, str] | None:
     remote = git_output(repository, "remote", "get-url", "origin")
-    remote_head = git_output(
-        repository, "symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD"
-    )
-    if not remote or not remote_head or not remote_head.startswith("origin/"):
+    if not remote:
         return None
     match = re.fullmatch(
         r"(?:https://github\.com/|git@github\.com:)([^/\s]+/[^/\s]+?)(?:\.git)?$",
@@ -361,7 +369,35 @@ def trusted_git_target(repository: Path) -> tuple[str, str] | None:
     )
     if match is None:
         return None
-    return match.group(1), remote_head.removeprefix("origin/")
+    repository_name = match.group(1)
+    try:
+        process = _SUBPROCESS_RUN(
+            [
+                "gh", "repo", "view", repository_name,
+                "--json", "defaultBranchRef,nameWithOwner",
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+            timeout=15,
+            check=False,
+        )
+        if process.returncode != 0:
+            return None
+        current = json.loads(process.stdout)
+    except (OSError, subprocess.SubprocessError, json.JSONDecodeError):
+        return None
+    if not isinstance(current, dict):
+        return None
+    default = current.get("defaultBranchRef")
+    if (
+        current.get("nameWithOwner", "").casefold() != repository_name.casefold()
+        or not isinstance(default, dict)
+        or not isinstance(default.get("name"), str)
+        or not default["name"]
+    ):
+        return None
+    return repository_name, default["name"]
 
 
 def recover_terminal_receipt(
