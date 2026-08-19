@@ -18,6 +18,11 @@ PHASE_CHILD_ENV = "BONAPARTE_PHASE_CHILD"
 COORDINATOR_TERMINATE_GRACE_SECONDS = 1.0
 COORDINATOR_KILL_GRACE_SECONDS = 5.0
 APP_SERVER_REQUEST_TIMEOUT_SECONDS = 45.0
+APP_SERVER_INTERRUPT_TIMEOUT_SECONDS = 0.25
+NATIVE_LIFECYCLE_MAX_EVENTS = 32
+_SAFE_NATIVE_LABEL_CHARS = frozenset(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ._+/()-"
+)
 
 
 def find_codex() -> str:
@@ -121,8 +126,110 @@ class AppServerPhaseDriver:
         self._last_agent_message: str | None = None
         self._receipt_thread_id: str | None = None
         self._receipt_turn_id: str | None = None
+        self._active_items: set[tuple[str, str, str]] = set()
+        self._native = {
+            "initialize": {"user_agent": None, "runtime": None},
+            "capabilities": {
+                "steer": {"support": "unknown", "outcome": "not_attempted"},
+                "interrupt": {"support": "unknown", "outcome": "not_attempted"},
+                "side_effect_fencing": "unavailable",
+                "quiescence": "unknown",
+            },
+            "turn": {
+                "status": "unknown",
+                "active_items": 0,
+                "started_items": 0,
+                "completed_items": 0,
+            },
+            "lifecycle": [],
+            "lifecycle_total_count": 0,
+            "lifecycle_truncated": False,
+        }
+        observation = getattr(observer, "observation", None)
+        if isinstance(observation, dict):
+            observation["native"] = self._native
         self._reader = threading.Thread(target=self._read, daemon=True)
         self._reader.start()
+
+    @staticmethod
+    def _safe_native_label(value: object) -> str | None:
+        if (
+            isinstance(value, str)
+            and 0 < len(value) <= 128
+            and all(character in _SAFE_NATIVE_LABEL_CHARS for character in value)
+        ):
+            return value
+        return None
+
+    @classmethod
+    def _safe_runtime(cls, value: object) -> str | dict[str, str] | None:
+        label = cls._safe_native_label(value)
+        if label is not None:
+            return label
+        if not isinstance(value, dict):
+            return None
+        runtime = {
+            key: safe
+            for key in ("name", "version", "channel")
+            if (safe := cls._safe_native_label(value.get(key))) is not None
+        }
+        return runtime or None
+
+    def _lifecycle(self, event: str) -> None:
+        lifecycle = self._native["lifecycle"]
+        self._native["lifecycle_total_count"] += 1
+        if len(lifecycle) == NATIVE_LIFECYCLE_MAX_EVENTS:
+            lifecycle.pop(0)
+            self._native["lifecycle_truncated"] = True
+        lifecycle.append(event)
+
+    @staticmethod
+    def _declared_support(capabilities: object, method: str) -> str:
+        if isinstance(capabilities, dict):
+            value = capabilities.get(method)
+            if isinstance(value, bool):
+                return "supported" if value else "unsupported"
+            methods = capabilities.get("methods")
+            if isinstance(methods, list) and all(
+                isinstance(item, str) for item in methods
+            ):
+                return "supported" if method in methods else "unsupported"
+        if isinstance(capabilities, list) and all(
+            isinstance(item, str) for item in capabilities
+        ):
+            return "supported" if method in capabilities else "unsupported"
+        return "unknown"
+
+    def _observe_response(self, method: str, result: dict) -> None:
+        if method == "initialize":
+            self._native["initialize"] = {
+                "user_agent": self._safe_native_label(result.get("userAgent")),
+                "runtime": self._safe_runtime(result.get("runtime")),
+            }
+            capabilities = result.get("capabilities")
+            for name, native_method in (
+                ("steer", "turn/steer"),
+                ("interrupt", "turn/interrupt"),
+            ):
+                self._native["capabilities"][name]["support"] = (
+                    self._declared_support(capabilities, native_method)
+                )
+            self._lifecycle("initialized")
+        elif method in {"turn/steer", "turn/interrupt"}:
+            name = method.removeprefix("turn/")
+            capability = self._native["capabilities"][name]
+            capability.update(support="supported", outcome="accepted")
+            self._lifecycle(f"{name}_accepted")
+
+    def _observe_rejection(self, method: str, error: object) -> None:
+        if method not in {"turn/steer", "turn/interrupt"}:
+            return
+        name = method.removeprefix("turn/")
+        capability = self._native["capabilities"][name]
+        capability["outcome"] = "rejected"
+        if isinstance(error, dict) and error.get("code") == -32601:
+            capability["support"] = "unsupported"
+        self._lifecycle(f"{name}_rejected")
 
     def _read(self) -> None:
         chunks: list[str] = []
@@ -265,6 +372,22 @@ class AppServerPhaseDriver:
         return legacy
 
     def observe_notification(self, message: dict) -> tuple[str | None, dict | None]:
+        if not hasattr(self, "_lifecycle"):
+            self._lifecycle = lambda _event: None
+        if not hasattr(self, "_active_items"):
+            self._active_items = set()
+        if not hasattr(self, "_native"):
+            self._native = {
+                "turn": {"status": "unknown", "active_items": 0, "started_items": 0, "completed_items": 0},
+                "capabilities": {
+                    "steer": {"support": "unknown", "outcome": "not_attempted"},
+                    "interrupt": {"support": "unknown", "outcome": "not_attempted"},
+                    "side_effect_fencing": "unavailable",
+                    "quiescence": "unknown",
+                },
+                "lifecycle": [], "lifecycle_total_count": 0,
+                "lifecycle_truncated": False,
+            }
         method = message.get("method")
         params = message.get("params")
         if not isinstance(method, str) or not isinstance(params, dict):
@@ -281,6 +404,21 @@ class AppServerPhaseDriver:
             item = params.get("item")
             if not isinstance(item, dict):
                 raise RuntimeError("Codex app-server item notification is malformed")
+            correlation = (
+                params.get("threadId"),
+                params.get("turnId"),
+                item.get("id"),
+            )
+            if all(isinstance(value, str) and value for value in correlation):
+                if method == "item/started" and correlation not in self._active_items:
+                    self._active_items.add(correlation)
+                    self._native["turn"]["started_items"] += 1
+                    self._lifecycle("item_started")
+                elif correlation in self._active_items:
+                    self._active_items.remove(correlation)
+                    self._native["turn"]["completed_items"] += 1
+                    self._lifecycle("item_completed")
+                self._native["turn"]["active_items"] = len(self._active_items)
             if (
                 method == "item/completed"
                 and item.get("type") == "agentMessage"
@@ -314,12 +452,23 @@ class AppServerPhaseDriver:
                     or thread_id == self._receipt_thread_id
                 )
             ):
+                status = turn.get("status")
+                self._native["turn"]["status"] = (
+                    status if isinstance(status, str) else "unknown"
+                )
+                self._lifecycle("turn_completed")
                 return method, turn
         return method, None
 
-    def request(self, method: str, params: dict) -> dict:
+    def request(
+        self, method: str, params: dict, timeout_seconds: float | None = None
+    ) -> dict:
         request_id = self.send(method, params)
-        deadline = time.monotonic() + APP_SERVER_REQUEST_TIMEOUT_SECONDS
+        deadline = time.monotonic() + (
+            APP_SERVER_REQUEST_TIMEOUT_SECONDS
+            if timeout_seconds is None
+            else timeout_seconds
+        )
         while True:
             try:
                 message = self.next_message(max(0.0, deadline - time.monotonic()))
@@ -333,12 +482,12 @@ class AppServerPhaseDriver:
             if message.get("id") != request_id:
                 raise RuntimeError("Codex app-server response correlation failed")
             if "error" in message:
-                raise RuntimeError(
-                    f"Codex app-server rejected {method}: {message['error']}"
-                )
+                self._observe_rejection(method, message.get("error"))
+                raise RuntimeError(f"Codex app-server rejected {method}")
             result = message.get("result")
             if not isinstance(result, dict):
                 raise RuntimeError(f"Codex app-server returned no result for {method}")
+            self._observe_response(method, result)
             return result
 
     @property
@@ -346,4 +495,31 @@ class AppServerPhaseDriver:
         return self._last_agent_message
 
     def close(self, *, failed: bool) -> None:
-        terminate_and_reap(self.process)
+        if not hasattr(self, "_native"):
+            terminate_and_reap(self.process)
+            return
+        self._lifecycle("cleanup_started")
+        try:
+            if (
+                failed
+                and self._receipt_thread_id
+                and self._receipt_turn_id
+                and self._native["turn"]["status"] == "unknown"
+            ):
+                try:
+                    self.request(
+                        "turn/interrupt",
+                        {
+                            "threadId": self._receipt_thread_id,
+                            "turnId": self._receipt_turn_id,
+                        },
+                        timeout_seconds=APP_SERVER_INTERRUPT_TIMEOUT_SECONDS,
+                    )
+                    self._native["capabilities"]["interrupt"].update(
+                        support="supported", outcome="accepted"
+                    )
+                except (RuntimeError, TimeoutError):
+                    pass
+            terminate_and_reap(self.process)
+        finally:
+            self._lifecycle("cleanup_completed")

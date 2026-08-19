@@ -343,6 +343,7 @@ bonaparte implement LIN-123
 bonaparte review LIN-123
 bonaparte publish LIN-123
 bonaparte resume <resume-token> "clarification answer"
+bonaparte inspect <phase-token>
 ```
 
 Each coordinator turn has a soft, cooperative time budget. The default is 300
@@ -354,12 +355,13 @@ bonaparte --soft-phase-budget-seconds 600 implement LIN-123
 bonaparte --soft-phase-budget-seconds 120 resume <resume-token> "Continue"
 ```
 
-The budget starts fresh for each coordinator turn. On expiry Bonaparte sends
-exactly one native steer asking the coordinator to finish its current bounded
-work and return a receipt. This is not a hard deadline or kill: work already in
-progress may overrun the budget and report its result. Bonaparte requires a
-Codex app-server that supports this native steering contract and fails clearly
-when that contract is unavailable.
+The budget starts fresh for each coordinator turn. On expiry Bonaparte persists
+`finalizing`, sends at most one native steer, and waits for a bounded finalization
+window (`--finalization-window-seconds`, default 30). Settled work may return a
+receipt; otherwise Bonaparte attempts native interruption and records a
+failed-resumable result requiring reconciliation. A steering acknowledgement is
+not a quiescence guarantee. Unsupported, rejected, delayed, or unobservable
+capabilities are reported explicitly.
 
 ## Model selection
 
@@ -418,12 +420,29 @@ Bonaparte does not copy their transcript.
 
 Before resuming, Bonaparte exclusively locks the token and durably records the
 answer. A later question reuses the same token. Completed and blocked records
-remain on disk for audit but cannot be resumed. If native delivery becomes
+remain on disk as authoritative receipts; repeated resume returns the committed
+receipt without rerunning. Only `waiting-input` and `failed-resumable` records
+may resume. If native delivery becomes
 ambiguous, Bonaparte preserves the pending answer and reports the token instead
 of silently restarting the phase. Token resumes reuse the saved model and
 reasoning unless an explicit override is supplied. They also reuse the saved
 soft phase budget unless `--soft-phase-budget-seconds` explicitly overrides it
 for that resumed turn.
+
+Every phase allocates a durable phase token before native coordinator work.
+Receipt protocol v2 adds `phase_token`, `reason_code`, `user_action_required`,
+`input_kind`, `safe_to_resume`, `reconciliation_required`, `remote_state`,
+`runtime_version`, `receipt_protocol`, and `progress_abi`; the older
+`remote_state_changed` boolean remains as a compatibility projection.
+`bonaparte inspect <phase-token>` performs read-only Git, exact PR, and Linear
+phase-artifact observations and never persists or writes. Resume repeats this
+reconciliation immediately before answer delivery and fails closed on a changed
+or unknown observation.
+
+Stable update availability is advisory and never changes an active phase's
+runtime. An explicit update affects only the next process. After updating, stop
+the phase chain and reload the installed skill before starting another phase;
+in-memory Codex skill-cache invalidation is upstream and is not claimed here.
 
 ## Semantic progress for trusted hosts
 
@@ -436,9 +455,9 @@ descriptor when it replaces itself with the final runner. Update subprocesses
 do not inherit the descriptor or its environment variable. No other transport
 or progress setting exists.
 
-The channel is UTF-8 JSON Lines using progress ABI version 2. Each record has
-exactly `version`, `sequence`, `phase`, `state`, `elapsed_seconds`, and
-`semantic`. `version` is `2`; `sequence` is a strictly increasing integer for
+The channel is UTF-8 JSON Lines using progress ABI version 3. Each record has
+`version`, `sequence`, `phase`, `state`, `elapsed_seconds`, `runtime_version`,
+`update_state`, and `semantic`. `version` is `3`; `sequence` is a strictly increasing integer for
 one process; `phase` is one of `create`, `rca`, `scope`, `implement`, `review`,
 or `publish`; and `elapsed_seconds` is a nonnegative monotonic duration rounded
 to milliseconds. A resume starts a new process sequence and elapsed clock while
@@ -449,7 +468,7 @@ restoring only its safe durable semantic snapshot.
 its bounded `milestones` list:
 
 ```json
-{"version":2,"sequence":7,"phase":"implement","state":"active","elapsed_seconds":30.004,"semantic":{"stage":"checking","actor":"subagent-1","activity":"check","status":"completed","count":3,"milestones":[{"stage":"searching","actor":"coordinator","activity":"search","status":"completed","count":2},{"stage":"checking","actor":"subagent-1","activity":"check","status":"completed","count":3}],"milestones_total_count":2,"milestones_truncated":false}}
+{"version":3,"sequence":7,"phase":"implement","state":"active","elapsed_seconds":30.004,"runtime_version":"v0.4.0","update_state":"current","semantic":{"stage":"checking","actor":"subagent-1","activity":"check","status":"completed","count":3,"milestones":[],"milestones_total_count":0,"milestones_truncated":false}}
 ```
 
 The snapshot and every milestone have exactly five typed fields: `stage`,
@@ -506,8 +525,8 @@ permanently disables progress for that process. Bonaparte does not retry and
 never falls back to stdout, stderr, a file, or a service. There is no watchdog,
 timeout, or cancellation behavior associated with progress.
 
-Progress ABI version 2 is intentionally incompatible with the former exact
-review-only version 1 record. Hosts must update their parser before enabling the
+Progress ABI version 3 is intentionally incompatible with earlier records.
+Hosts must negotiate ABI 3 before enabling the
 channel. Regardless of progress availability, stdout remains exactly one final
 JSON receipt of at most 4 KiB and stderr remains the diagnostic channel.
 Progress is advisory: it does not establish phase success or replace the final

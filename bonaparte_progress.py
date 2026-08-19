@@ -10,7 +10,9 @@ import time
 from pathlib import Path
 
 PROGRESS_FD_ENV = "BONAPARTE_PROGRESS_FD"
-PROGRESS_VERSION = 2
+PROGRESS_RUNTIME_ENV = "BONAPARTE_RUNTIME_VERSION"
+PROGRESS_UPDATE_ENV = "BONAPARTE_STABLE_UPDATE"
+PROGRESS_VERSION = 3
 PROGRESS_HEARTBEAT_SECONDS = 10.0
 PROGRESS_MAX_BYTES = 4096
 PROGRESS_MAX_LINE_BYTES = 1024 * 1024
@@ -49,6 +51,7 @@ PROGRESS_STATUSES = {
 }
 PROGRESS_STATES = {
     "started",
+    "update-available",
     "active",
     "finalizing",
     "completed",
@@ -57,6 +60,7 @@ PROGRESS_STATES = {
     "failed",
     "interrupted",
 }
+PROGRESS_UPDATE_STATES = {"current", "available", "unknown"}
 PROGRESS_TERMINAL_STATES = {
     "completed",
     "needs-input",
@@ -102,12 +106,41 @@ def safe_semantic(value: dict | None) -> dict:
     return semantic
 
 
+def safe_runtime_version(value: object) -> str | None:
+    """Allow only stable or locally built release tokens, never arbitrary paths."""
+    if not isinstance(value, str) or len(value) > 64:
+        return None
+    parts = value.removeprefix("v").split(".")
+    stable = value.startswith("v") and len(parts) == 3 and all(
+        part.isascii() and part.isdecimal() for part in parts
+    )
+    local_parts = value.split("-")
+    local = (
+        len(local_parts) == 3
+        and local_parts[0] == "local"
+        and safe_runtime_version(local_parts[1]) == local_parts[1]
+        and 7 <= len(local_parts[2]) <= 40
+        and all(character in "0123456789abcdef" for character in local_parts[2])
+    )
+    return value if stable or local else None
+
+
 class ProgressReporter:
     """Emit privacy-bounded semantic lifecycle events to an isolated descriptor."""
 
-    def __init__(self, descriptor: int | None, phase: str = "review"):
+    def __init__(
+        self,
+        descriptor: int | None,
+        phase: str = "review",
+        runtime_version: str | None = None,
+        update_state: str = "unknown",
+    ):
         self._descriptor = descriptor
         self._phase = phase if phase in PHASES else "review"
+        self._runtime_version = safe_runtime_version(runtime_version)
+        self._update_state = (
+            update_state if update_state in PROGRESS_UPDATE_STATES else "unknown"
+        )
         self._started_at = time.monotonic()
         self._sequence = 0
         self._last_state: str | None = None
@@ -192,10 +225,13 @@ class ProgressReporter:
                 return
             if (
                 (state == "started" and self._last_state is not None)
-                or (state == "active" and self._last_state not in {"started", "active"})
+                or (
+                    state == "active"
+                    and self._last_state not in {"started", "update-available", "active"}
+                )
                 or (
                     state == "finalizing"
-                    and self._last_state not in {"started", "active"}
+                    and self._last_state not in {"started", "update-available", "active"}
                 )
                 or (
                     state in PROGRESS_TERMINAL_STATES
@@ -206,9 +242,12 @@ class ProgressReporter:
             sequence = self._sequence + 1
             event = {
                 "version": PROGRESS_VERSION,
+                "progress_abi": PROGRESS_VERSION,
                 "sequence": sequence,
                 "phase": self._phase,
                 "state": state,
+                "runtime_version": self._runtime_version,
+                "update_state": self._update_state,
                 "elapsed_seconds": round(
                     max(0.0, time.monotonic() - self._started_at), 3
                 ),
@@ -290,6 +329,8 @@ class ProgressReporter:
             return
         self._start_attempted = True
         self.report("started")
+        if self._update_state == "available":
+            self.report("update-available")
         if self._descriptor is None:
             return
         heartbeat = None
@@ -339,24 +380,29 @@ def acquire_progress_reporter(
     """Consume the inherited descriptor without ever exposing it to a child."""
 
     raw_descriptor = os.environ.pop(PROGRESS_FD_ENV, None)
+    runtime_version = os.environ.get(PROGRESS_RUNTIME_ENV)
+    update_state = os.environ.get(PROGRESS_UPDATE_ENV, "unknown")
+
+    def reporter(descriptor):
+        return ProgressReporter(descriptor, phase, runtime_version, update_state)
     if (
         raw_descriptor is None
         or not raw_descriptor.isascii()
         or not raw_descriptor.isdecimal()
     ):
-        return ProgressReporter(None, phase)
+        return reporter(None)
     try:
         original = int(raw_descriptor)
     except ValueError:
-        return ProgressReporter(None, phase)
+        return reporter(None)
     if original < 3:
-        return ProgressReporter(None, phase)
+        return reporter(None)
     if not enabled:
         try:
             os.close(original)
         except (OSError, OverflowError):
             pass
-        return ProgressReporter(None, phase)
+        return reporter(None)
     duplicate = None
     try:
         duplicate = os.dup(original)
@@ -370,13 +416,13 @@ def acquire_progress_reporter(
                 os.close(duplicate)
             except (OSError, OverflowError):
                 pass
-        return ProgressReporter(None, phase)
+        return reporter(None)
     finally:
         try:
             os.close(original)
         except (OSError, OverflowError):
             pass
-    return ProgressReporter(duplicate, phase)
+    return reporter(duplicate)
 
 
 class EventObserver:
@@ -595,11 +641,21 @@ class EventObserver:
         self.observation["checks_completed_total_count"] += 1
         checks = self.observation["checks_completed"]
         if len(checks) < MAX_COMPLETED_CHECKS:
+            if executable in {"pytest", "unittest"} or set(words[1:]).intersection(
+                {"test", "pytest", "unittest"}
+            ):
+                kind = "test"
+            elif executable in {"ruff", "black"} or "lint" in words[1:]:
+                kind = "lint"
+            elif "build" in words[1:]:
+                kind = "build"
+            else:
+                kind = "check"
             checks.append(
                 {
-                    "name": command,
+                    "kind": kind,
                     "status": "passed" if exit_code == 0 else "failed",
-                    "exit_code": exit_code if isinstance(exit_code, int) else None,
+                    "exit": exit_code if isinstance(exit_code, int) else None,
                 }
             )
         else:

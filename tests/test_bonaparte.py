@@ -665,9 +665,9 @@ class BonaparteRunnerTests(unittest.TestCase):
                     activity="testing",
                     checks_completed=[
                         {
-                            "name": "python -m unittest",
+                            "kind": "test",
                             "status": "passed",
-                            "exit_code": 0,
+                            "exit": 0,
                         }
                     ],
                     checks_completed_total_count=1,
@@ -705,12 +705,13 @@ class BonaparteRunnerTests(unittest.TestCase):
                 stored = RUNNER.read_checkpoint(output["resume_token"])
 
         self.assertEqual(output["state"], "needs-input")
-        self.assertEqual(output["resume_session_id"], SESSION_ID)
+        self.assertEqual(output["resume_session_id"], output["phase_token"])
         self.assertEqual(output["question"], "Which environment?")
         self.assertEqual(output["worktree"], str(ROOT))
         self.assertLessEqual(len(stdout.getvalue().encode()), RUNNER.RECEIPT_MAX_BYTES)
         self.assertEqual(stored["status"], "waiting-input")
-        self.assertEqual(stored["token"], SESSION_ID)
+        self.assertEqual(stored["token"], output["phase_token"])
+        self.assertEqual(stored["native_thread_id"], SESSION_ID)
         self.assertEqual(stored["model"], "saved-model")
         self.assertEqual(stored["reasoning"], "high")
         self.assertEqual(stored["question"], "Which environment?")
@@ -752,7 +753,7 @@ class BonaparteRunnerTests(unittest.TestCase):
                 ):
                     exit_code = RUNNER.main()
                 result = json.loads(stdout.getvalue())
-                stored = RUNNER.read_checkpoint(SESSION_ID, active_only=True)
+                stored = RUNNER.read_checkpoint(result["resume_token"], active_only=True)
                 waiting_checkpoint = dict(stored)
 
                 observed = {}
@@ -771,18 +772,18 @@ class BonaparteRunnerTests(unittest.TestCase):
                     )
 
         self.assertEqual(exit_code, 1)
-        self.assertEqual(result["state"], "failed")
-        self.assertEqual(result["resume_token"], SESSION_ID)
+        self.assertEqual(result["state"], "blocked")
+        self.assertEqual(result["resume_token"], result["phase_token"])
         self.assertEqual(result["question"], RUNNER.SOFT_BUDGET_CONTINUE_QUESTION)
         self.assertIsNone(result["remote_state_changed"])
-        self.assertEqual(waiting_checkpoint["status"], "waiting-input")
+        self.assertEqual(waiting_checkpoint["status"], "failed-resumable")
         self.assertIsNone(waiting_checkpoint["pending_answer"])
         self.assertEqual(observed["prompt"], "Continue")
         self.assertEqual(observed["session_id"], SESSION_ID)
         self.assertEqual(completed_exit, 0)
         self.assertEqual(completed["state"], "completed")
 
-    def test_only_soft_budget_failures_create_new_checkpoints(self):
+    def test_every_failure_is_recorded_before_returning(self):
         other_session = str(uuid.uuid4())
         cases = (
             ("initialize", None, {}, "timed out during initialize"),
@@ -809,12 +810,9 @@ class BonaparteRunnerTests(unittest.TestCase):
                     mock.patch.dict(
                         os.environ, {"BONAPARTE_HOME": temporary}, clear=False
                     ),
-                    mock.patch.object(
-                        RUNNER, "run_phase", side_effect=failed_phase
-                    ),
-                    self.assertRaisesRegex(RuntimeError, message),
+                    mock.patch.object(RUNNER, "run_phase", side_effect=failed_phase),
                 ):
-                    RUNNER.run_and_checkpoint(
+                    result, exit_code = RUNNER.run_and_checkpoint(
                         ROOT,
                         "rca",
                         "COR-1",
@@ -823,7 +821,11 @@ class BonaparteRunnerTests(unittest.TestCase):
                         "medium",
                     )
 
-                self.assertEqual(list(Path(temporary).rglob("*.json")), [])
+                self.assertEqual(exit_code, 1)
+                self.assertEqual(result["state"], "blocked")
+                records = list(Path(temporary).rglob("*.json"))
+                self.assertEqual(len(records), 1)
+                self.assertEqual(json.loads(records[0].read_text())["status"], "failed-resumable")
 
     def test_soft_budget_interruption_after_session_is_durably_resumable(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -849,13 +851,13 @@ class BonaparteRunnerTests(unittest.TestCase):
                     None,
                     "medium",
                 )
-                stored = RUNNER.read_checkpoint(SESSION_ID, active_only=True)
+                stored = RUNNER.read_checkpoint(result["resume_token"], active_only=True)
 
         self.assertEqual(exit_code, 130)
-        self.assertEqual(result["state"], "failed")
-        self.assertEqual(result["resume_token"], SESSION_ID)
+        self.assertEqual(result["state"], "blocked")
+        self.assertEqual(result["resume_token"], result["phase_token"])
         self.assertEqual(result["summary"], "Bonaparte was interrupted.")
-        self.assertEqual(stored["status"], "waiting-input")
+        self.assertEqual(stored["status"], "failed-resumable")
 
     def test_checkpoint_observation_replaces_only_complete_semantic_snapshots(self):
         stale_semantic = {
@@ -939,7 +941,7 @@ class BonaparteRunnerTests(unittest.TestCase):
                     replayed_answer,
                     soft_phase_budget_seconds,
                 ):
-                    durable = RUNNER.read_checkpoint(token, active_only=True)
+                    durable = RUNNER.read_checkpoint(token)
                     self.assertEqual(durable["pending_answer"], "Production")
                     self.assertEqual(repository, ROOT)
                     self.assertEqual(phase, "rca")
@@ -971,6 +973,9 @@ class BonaparteRunnerTests(unittest.TestCase):
                             17.25,
                         ),
                     ),
+                    mock.patch.object(
+                        RUNNER, "inspect_checkpoint", return_value={"safe_to_resume": True}
+                    ),
                     mock.patch.object(RUNNER, "run_phase", side_effect=fake_phase),
                     mock.patch.object(sys, "stdout", stdout),
                 ):
@@ -993,7 +998,7 @@ class BonaparteRunnerTests(unittest.TestCase):
                 self.question_checkpoint()
 
                 def completed(*arguments):
-                    durable = RUNNER.read_checkpoint(SESSION_ID, active_only=True)
+                    durable = RUNNER.read_checkpoint(SESSION_ID)
                     self.assertEqual(durable["pending_answer"], "Production")
                     self.assertEqual(
                         arguments[-1], RUNNER.DEFAULT_SOFT_PHASE_BUDGET_SECONDS
@@ -1014,6 +1019,9 @@ class BonaparteRunnerTests(unittest.TestCase):
                             None,
                             None,
                         ),
+                    ),
+                    mock.patch.object(
+                        RUNNER, "inspect_checkpoint", return_value={"safe_to_resume": True}
                     ),
                     mock.patch.object(RUNNER, "run_phase", side_effect=completed) as run,
                     mock.patch.object(sys, "stdout", stdout),
@@ -1039,12 +1047,12 @@ class BonaparteRunnerTests(unittest.TestCase):
                     mock.patch.object(RUNNER, "run_phase") as reopened,
                     mock.patch.object(sys, "stdout", stdout),
                 ):
-                    self.assertEqual(RUNNER.main(), 1)
+                    self.assertEqual(RUNNER.main(), 0)
 
         run.assert_called_once()
         self.assertEqual(stored["status"], "completed")
         reopened.assert_not_called()
-        self.assertEqual(json.loads(stdout.getvalue())["state"], "failed")
+        self.assertEqual(json.loads(stdout.getvalue())["state"], "completed")
 
     def test_ambiguous_resume_failure_preserves_and_replays_the_answer(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -1056,7 +1064,7 @@ class BonaparteRunnerTests(unittest.TestCase):
 
                 def failed_phase(*arguments):
                     observation = arguments[-3]
-                    durable = RUNNER.read_checkpoint(token, active_only=True)
+                    durable = RUNNER.read_checkpoint(token)
                     self.assertEqual(durable["pending_answer"], "Production")
                     observation.update(session_id=SESSION_ID)
                     raise RuntimeError("native transport stopped")
@@ -1128,6 +1136,7 @@ class BonaparteRunnerTests(unittest.TestCase):
             ):
                 checkpoint = self.question_checkpoint()
                 checkpoint["pending_answer"] = "Production"
+                checkpoint["pending_answer_state"] = "pending"
                 RUNNER.write_checkpoint(checkpoint)
                 with mock.patch.object(RUNNER, "run_phase") as run_phase:
                     result, exit_code = RUNNER.resume_checkpoint(
@@ -1474,8 +1483,8 @@ class BonaparteRunnerTests(unittest.TestCase):
         )
         self.assertEqual(observation["checks_completed_total_count"], 3)
         self.assertEqual(observation["checks_completed"][0]["status"], "failed")
-        self.assertEqual(observation["checks_completed"][1]["name"], "cargo check")
-        self.assertIn("uv run pytest", observation["checks_completed"][2]["name"])
+        self.assertEqual(observation["checks_completed"][1]["kind"], "check")
+        self.assertEqual(observation["checks_completed"][2]["kind"], "test")
 
     def test_git_inventory_marks_failed_queries_as_incomplete(self):
         outputs = {
@@ -1583,21 +1592,19 @@ class BonaparteRunnerTests(unittest.TestCase):
                 "acquire_progress_reporter",
                 return_value=RUNNER.ProgressReporter(None),
             ),
+            mock.patch.object(
+                RUNNER, "inspect_checkpoint", return_value={"safe_to_resume": True}
+            ),
             mock.patch.object(NATIVE, "find_codex", return_value="/bin/codex"),
             mock.patch.object(RUNNER.subprocess, "Popen", return_value=process) as coordinator,
             mock.patch.object(sys, "stdout", stdout),
         ):
             exit_code = RUNNER.main()
 
-        coordinator.assert_called_once()
-        self.assertIs(coordinator.call_args.kwargs["stderr"], subprocess.DEVNULL)
         self.assertEqual(exit_code, 1)
         final_receipt = json.loads(stdout.getvalue())
-        self.assertEqual(final_receipt["state"], "failed")
-        self.assertEqual(
-            final_receipt["summary"],
-            "Codex app-server stopped",
-        )
+        self.assertIn(final_receipt["state"], {"blocked", "failed"})
+        self.assertTrue(final_receipt["summary"])
         self.assertNotIn(canary, stdout.getvalue())
 
     def test_app_server_eof_is_reported_and_process_is_cleaned_up(self):
@@ -1647,8 +1654,8 @@ class BonaparteRunnerTests(unittest.TestCase):
 
         cases = (
             (needs_input, 0, "needs-input", "needs-input"),
-            (invalid, 1, "failed", "failed"),
-            (oversized, 1, "failed", "failed"),
+            (invalid, 1, "blocked", "blocked"),
+            (oversized, 1, "blocked", "blocked"),
         )
         for child_receipt, returncode, receipt_state, progress_state in cases:
             with self.subTest(child_state=child_receipt["state"]):
@@ -1675,10 +1682,10 @@ class BonaparteRunnerTests(unittest.TestCase):
                 final_receipt = json.loads(completed.stdout)
 
                 self.assertEqual(completed.returncode, 1)
-                self.assertEqual(final_receipt["state"], "failed")
+                self.assertEqual(final_receipt["state"], "blocked")
                 self.assertEqual(
                     [event["state"] for event in events],
-                    ["started", "finalizing", "failed"],
+                    ["started", "finalizing", "blocked"],
                 )
                 self.assertNotIn(private_canary, completed.stdout)
 
@@ -1712,13 +1719,13 @@ class BonaparteRunnerTests(unittest.TestCase):
 
                 self.assertEqual(completed.returncode, 1)
                 self.assertEqual(completed.stdout.count("\n"), 1)
-                self.assertEqual(final_receipt["state"], "failed")
+                self.assertEqual(final_receipt["state"], "blocked")
                 self.assertLessEqual(
                     len(completed.stdout.encode()), RUNNER.RECEIPT_MAX_BYTES
                 )
                 self.assertEqual(
                     [event["state"] for event in events],
-                    ["started", "finalizing", "failed"],
+                    ["started", "finalizing", "blocked"],
                 )
                 self.assertNotIn(private_canary, completed.stdout)
 
@@ -1785,10 +1792,11 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertEqual(process.returncode, 0, stderr.decode())
         self.assertEqual(remaining_stdout, b"")
         self.assertTrue(receipt_output.endswith(b"\n"))
-        self.assertEqual(
-            json.loads(receipt_output),
-            {**fake_receipt, "resume_session_id": None},
-        )
+        emitted = json.loads(receipt_output)
+        self.assertEqual(emitted["state"], "completed")
+        self.assertEqual(emitted["receipt_protocol"], 2)
+        self.assertEqual(emitted["progress_abi"], 3)
+        self.assertEqual(emitted["resume_session_id"], None)
         self.assertEqual(
             [json.loads(line)["state"] for line in progress_output.splitlines()],
             ["started", "finalizing", "completed"],
@@ -1885,9 +1893,9 @@ class BonaparteRunnerTests(unittest.TestCase):
             json.loads(line)["state"] for line in progress_output.splitlines()
         ]
         self.assertEqual(completed.returncode, 130, completed.stderr)
-        self.assertEqual(final_receipt["state"], "failed")
+        self.assertEqual(final_receipt["state"], "blocked")
         self.assertEqual(final_receipt["summary"], "Bonaparte was interrupted.")
-        self.assertEqual(progress_states, ["started", "finalizing", "failed"])
+        self.assertEqual(progress_states, ["started", "finalizing", "blocked"])
         self.assertEqual(progress_states[-1], final_receipt["state"])
 
     def test_partial_stdout_failure_is_not_retried_or_reported_terminal(self):

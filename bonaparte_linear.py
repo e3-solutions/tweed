@@ -8,6 +8,8 @@ from pathlib import Path
 from bonaparte_native import AppServerPhaseDriver
 from bonaparte_progress import EventObserver
 
+LINEAR_ARTIFACT_MAX_BYTES = 64 * 1024
+
 
 def _tool(
     driver: AppServerPhaseDriver,
@@ -91,3 +93,47 @@ def call_linear(repository: Path, issue_identifier: str) -> tuple[dict, list[dic
         return issue, comments
     finally:
         driver.close(failed=False)
+
+
+def read_linear_phase_artifact(
+    repository: Path,
+    issue_identifier: str,
+    header: str,
+    comment_id: str | None = None,
+) -> dict | None:
+    """Read one exact, bounded, top-level Linear phase artifact without writes."""
+
+    if not isinstance(header, str) or not header or "\n" in header or "\0" in header:
+        raise ValueError("Linear artifact header must be one non-empty line")
+    if comment_id is not None and (
+        not isinstance(comment_id, str) or not comment_id or "\0" in comment_id
+    ):
+        raise ValueError("Linear artifact comment ID must be non-empty text")
+
+    _issue, comments = call_linear(repository, issue_identifier)
+    matches = []
+    for comment in comments:
+        if not isinstance(comment, dict):
+            continue
+        if comment.get("parentId") is not None or comment.get("quotedText") is not None:
+            continue
+        identifier = comment.get("id")
+        body = comment.get("body")
+        created_at = comment.get("createdAt")
+        if not all(isinstance(value, str) for value in (identifier, body, created_at)):
+            continue
+        if comment_id is not None and identifier != comment_id:
+            continue
+        if body.split("\n", 1)[0] != header:
+            continue
+        if len(body.encode("utf-8")) > LINEAR_ARTIFACT_MAX_BYTES:
+            raise RuntimeError("Linear phase artifact exceeds the read limit")
+        matches.append({"id": identifier, "body": body, "createdAt": created_at})
+
+    if comment_id is not None:
+        if len(matches) > 1:
+            raise RuntimeError("Linear returned a duplicate exact comment ID")
+        return matches[0] if matches else None
+    if not matches:
+        return None
+    return max(matches, key=lambda value: (value["createdAt"], value["id"]))

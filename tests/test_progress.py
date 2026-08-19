@@ -62,14 +62,20 @@ class ProgressAndEventTests(unittest.TestCase):
                 set(event),
                 {
                     "version",
+                    "progress_abi",
                     "sequence",
                     "phase",
                     "state",
+                    "runtime_version",
+                    "update_state",
                     "elapsed_seconds",
                     "semantic",
                 },
             )
-            self.assertEqual(event["version"], 2)
+            self.assertEqual(event["version"], 3)
+            self.assertEqual(event["progress_abi"], 3)
+            self.assertIsNone(event["runtime_version"])
+            self.assertEqual(event["update_state"], "unknown")
             self.assertEqual(event["phase"], "review")
             self.assertLessEqual(len(json.dumps(event).encode()), 4096)
 
@@ -83,6 +89,7 @@ class ProgressAndEventTests(unittest.TestCase):
             ):
                 progress = RUNNER.acquire_progress_reporter(True)
                 self.assertNotIn(RUNNER.PROGRESS_FD_ENV, os.environ)
+
                 self.assertNotIn(RUNNER.PROGRESS_FD_ENV, NATIVE.child_environment())
                 progress.close()
         os.fstat(2)
@@ -112,6 +119,42 @@ class ProgressAndEventTests(unittest.TestCase):
                 os.fstat(write_descriptor)
             progress.close()
         os.close(read_descriptor)
+
+    def test_runtime_and_stable_update_notice_are_fixed_and_nonblocking(self):
+        read_descriptor, write_descriptor = os.pipe()
+        os.set_blocking(write_descriptor, False)
+        with mock.patch.dict(
+            os.environ,
+            {
+                RUNNER.PROGRESS_FD_ENV: str(write_descriptor),
+                "BONAPARTE_RUNTIME_VERSION": "v0.4.0",
+                "BONAPARTE_STABLE_UPDATE": "available",
+            },
+            clear=False,
+        ):
+            progress = RUNNER.acquire_progress_reporter(True, "scope")
+            progress.start()
+            progress.stop_heartbeat()
+            progress.report("finalizing")
+            progress.report("completed")
+            progress.close()
+        events = [
+            json.loads(line)
+            for line in os.read(read_descriptor, 16384).splitlines()
+        ]
+        os.close(read_descriptor)
+        self.assertEqual(
+            [event["state"] for event in events],
+            ["started", "update-available", "finalizing", "completed"],
+        )
+        self.assertTrue(
+            all(
+                event["runtime_version"] == "v0.4.0"
+                and event["update_state"] == "available"
+                and event["progress_abi"] == 3
+                for event in events
+            )
+        )
 
     def test_progress_fd_requires_nonblocking_without_perturbing_host_duplicate(self):
         for blocking in (True, False):
@@ -221,7 +264,7 @@ class ProgressAndEventTests(unittest.TestCase):
         events = [json.loads(line) for line in payload.splitlines()]
         self.assertNotIn(canary, payload.decode())
         self.assertTrue(
-            all(event["version"] == 2 and event["phase"] == "scope" for event in events)
+            all(event["version"] == 3 and event["phase"] == "scope" for event in events)
         )
         self.assertLessEqual(len(events[1]["semantic"].get("milestones", [])), 32)
         self.assertTrue(
@@ -680,11 +723,11 @@ class ProgressAndEventTests(unittest.TestCase):
 
             self.assertEqual(completed.returncode, 0, completed.stderr)
             self.assertEqual(completed.stderr, "")
-            expected_receipt = {**fake_receipt, "resume_session_id": None}
-            self.assertEqual(
-                completed.stdout.splitlines(),
-                [json.dumps(expected_receipt, separators=(",", ":"))],
-            )
+            emitted = json.loads(completed.stdout)
+            self.assertEqual(emitted["state"], fake_receipt["state"])
+            self.assertEqual(emitted["receipt_protocol"], 2)
+            self.assertEqual(emitted["progress_abi"], 3)
+            self.assertIsNone(emitted["resume_session_id"])
             self.assertEqual(coordinator_calls.read_text().splitlines(), ["called"])
             self.assertEqual(heartbeat_joins.read_text().splitlines(), ["joined"])
             self.assertEqual(

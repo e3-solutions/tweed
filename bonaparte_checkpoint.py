@@ -1,4 +1,4 @@
-"""Private atomic storage for resumable Bonaparte questions."""
+"""Private atomic storage for durable per-phase Bonaparte run ledgers."""
 
 from __future__ import annotations
 
@@ -20,11 +20,23 @@ from bonaparte_progress import (
     PROGRESS_STATUSES as SEMANTIC_STATUSES,
 )
 
-VERSION = 3
+VERSION = 4
 DEFAULT_SOFT_PHASE_BUDGET_SECONDS = 300.0
 MAX_BYTES = 1 << 20
 MAX_SEMANTIC_COUNT = 2**31 - 1
-STATUSES = {"waiting-input", "completed", "blocked"}
+STATUSES = {
+    "starting",
+    "running",
+    "finalizing",
+    "waiting-input",
+    "failed-resumable",
+    "completed",
+    "blocked",
+    "failed-terminal",
+}
+RESUMABLE_STATUSES = {"waiting-input", "failed-resumable"}
+TERMINAL_STATUSES = {"completed", "blocked", "failed-terminal"}
+PENDING_ANSWER_STATES = {"none", "pending", "delivering", "delivered"}
 PHASES = {"create", "rca", "scope", "implement", "review", "publish"}
 SEMANTIC_FIELDS = {"stage", "actor", "activity", "status", "count"}
 _SUBAGENT_ACTOR = re.compile(r"subagent-([1-9][0-9]{0,9})\Z")
@@ -61,7 +73,17 @@ V2_FIELDS = V1_FIELDS | {
     "semantic_milestones_total_count",
     "semantic_milestones_truncated",
 }
-FIELDS = V2_FIELDS | {"soft_phase_budget_seconds"}
+V3_FIELDS = V2_FIELDS | {"soft_phase_budget_seconds"}
+FIELDS = V3_FIELDS | {
+    "phase_token",
+    "native_thread_id",
+    "native_turn_id",
+    "protocol",
+    "runtime",
+    "capabilities",
+    "pending_answer_state",
+    "final_receipt",
+}
 
 
 def canonical_token(value: object, label: str = "checkpoint token") -> str:
@@ -214,6 +236,44 @@ def _validate_common(value: dict, token=None) -> None:
             or (not truncated and total != len(items))
         ):
             raise RuntimeError(f"checkpoint {field} inventory is invalid")
+    if value.get("version") == VERSION:
+        for check in value["checks_completed"]:
+            if (
+                not isinstance(check, dict)
+                or set(check) != {"kind", "status", "exit"}
+                or check["kind"] not in {"test", "lint", "build", "check"}
+                or check["status"] not in {"passed", "failed"}
+                or (
+                    check["exit"] is not None
+                    and (type(check["exit"]) is not int or not -255 <= check["exit"] <= 255)
+                )
+            ):
+                raise RuntimeError("checkpoint check evidence is invalid")
+
+
+def _validate_metadata(value: object, label: str) -> None:
+    if not isinstance(value, dict):
+        raise RuntimeError(f"checkpoint {label} metadata must be an object")
+    try:
+        _json_bytes(value)
+    except RuntimeError as error:
+        raise RuntimeError(f"checkpoint {label} metadata is invalid") from error
+
+
+def is_resume_eligible(value: dict) -> bool:
+    """Return whether a validated ledger may enter the native resume path."""
+
+    validate(value)
+    return value["status"] in RESUMABLE_STATUSES
+
+
+def authoritative_receipt(value: dict) -> dict | None:
+    """Return only a terminal receipt committed by the durable ledger."""
+
+    validate(value)
+    if value["status"] not in TERMINAL_STATUSES:
+        return None
+    return dict(value["final_receipt"])
 
 
 def _validate_soft_phase_budget(value: object) -> None:
@@ -238,6 +298,28 @@ def validate(value: object, token=None) -> dict:
         raise RuntimeError("checkpoint version is invalid")
     _validate_common(value, token)
     _validate_soft_phase_budget(value["soft_phase_budget_seconds"])
+    canonical_token(value["phase_token"], "phase token")
+    for field in ("native_thread_id", "native_turn_id"):
+        identity = value[field]
+        if identity is not None and (
+            not isinstance(identity, str) or not identity or "\0" in identity
+        ):
+            raise RuntimeError(f"checkpoint {field} must be non-empty text or null")
+    for field in ("protocol", "runtime", "capabilities"):
+        _validate_metadata(value[field], field)
+    answer_state = value["pending_answer_state"]
+    if answer_state not in PENDING_ANSWER_STATES:
+        raise RuntimeError("checkpoint pending answer state is invalid")
+    if answer_state in {"pending", "delivering"} and not value["pending_answer"]:
+        raise RuntimeError("checkpoint pending answer state is missing its answer")
+    if answer_state in {"none", "delivered"} and value["pending_answer"] is not None:
+        raise RuntimeError("checkpoint pending answer state conflicts with its answer")
+    final_receipt = value["final_receipt"]
+    if value["status"] in TERMINAL_STATUSES:
+        if not isinstance(final_receipt, dict):
+            raise RuntimeError("terminal checkpoint is missing its final receipt")
+    elif final_receipt is not None:
+        raise RuntimeError("non-terminal checkpoint has a final receipt")
     if value["semantic"] is not None:
         _validate_semantic(value["semantic"], "semantic snapshot")
     milestones = value["semantic_milestones"]
@@ -267,23 +349,44 @@ def _normalize_read(value: object, token: str) -> dict:
         _validate_common(value, token)
         normalized = dict(value)
         normalized.update(
-            version=VERSION,
             soft_phase_budget_seconds=DEFAULT_SOFT_PHASE_BUDGET_SECONDS,
             semantic=None,
             semantic_milestones=[],
             semantic_milestones_total_count=0,
             semantic_milestones_truncated=False,
         )
-        return validate(normalized, token)
+        return validate(_upgrade_legacy(normalized), token)
     if type(version) is int and version == 2 and set(value) == V2_FIELDS:
         _validate_common(value, token)
         normalized = dict(value)
-        normalized.update(
-            version=VERSION,
-            soft_phase_budget_seconds=DEFAULT_SOFT_PHASE_BUDGET_SECONDS,
-        )
-        return validate(normalized, token)
+        normalized.update(soft_phase_budget_seconds=DEFAULT_SOFT_PHASE_BUDGET_SECONDS)
+        return validate(_upgrade_legacy(normalized), token)
+    if type(version) is int and version == 3 and set(value) == V3_FIELDS:
+        _validate_common(value, token)
+        _validate_soft_phase_budget(value["soft_phase_budget_seconds"])
+        return validate(_upgrade_legacy(value), token)
     return validate(value, token)
+
+
+def _upgrade_legacy(value: dict) -> dict:
+    normalized = dict(value)
+    terminal = normalized["status"] in {"completed", "blocked"}
+    legacy_check_total = normalized.get("checks_completed_total_count", 0)
+    normalized.update(
+        version=VERSION,
+        phase_token=normalized["token"],
+        native_thread_id=normalized["token"],
+        native_turn_id=None,
+        protocol={"legacy_checkpoint_version": value["version"]},
+        runtime={},
+        capabilities={},
+        pending_answer_state=("pending" if normalized["pending_answer"] else "none"),
+        final_receipt=(dict(normalized["receipt"]) if terminal else None),
+        checks_completed=[],
+        checks_completed_total_count=legacy_check_total,
+        checks_completed_truncated=bool(legacy_check_total),
+    )
+    return normalized
 
 
 def _open_regular(path: Path, flags: int, mode=0o600) -> int:
@@ -313,8 +416,8 @@ def read_checkpoint(token, home=None, *, active_only=False) -> dict:
         checkpoint = _normalize_read(json.loads(payload.decode("utf-8")), canonical)
     except (UnicodeDecodeError, json.JSONDecodeError) as error:
         raise RuntimeError("checkpoint JSON is invalid") from error
-    if active_only and checkpoint["status"] != "waiting-input":
-        raise RuntimeError("checkpoint is no longer waiting for input")
+    if active_only and checkpoint["status"] not in RESUMABLE_STATUSES:
+        raise RuntimeError("checkpoint is not resumable")
     return checkpoint
 
 
