@@ -381,9 +381,13 @@ setting unless the resume command explicitly overrides it.
 The budget starts fresh for each coordinator turn. On expiry Bonaparte sends
 exactly one native steer asking the coordinator to finish its current bounded
 work and return a receipt. This is not a hard deadline or kill: work already in
-progress may overrun the budget and report its result. Bonaparte requires a
-Codex app-server that supports this native steering contract and fails clearly
-when that contract is unavailable.
+progress may overrun the budget and report its result. Notifications delivered
+after the steer acknowledgement are not treated as proof that new work began:
+the app-server does not provide an ordering guarantee that distinguishes queued
+pre-steer events from post-steer work. The coordinator must still return the
+strict continuation receipt, which Bonaparte validates before checkpointing.
+Bonaparte requires a Codex app-server that supports this native steering
+contract and fails clearly when that contract is unavailable.
 
 ## Model selection
 

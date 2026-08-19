@@ -535,7 +535,7 @@ class PhaseRuntimeTests(unittest.TestCase):
         )
         self.assertFalse(instances[0].closed_failed)
 
-    def test_post_ack_root_work_is_rejected_but_in_flight_and_wrap_up_are_allowed(self):
+    def test_post_ack_events_do_not_invalidate_a_compliant_wrap_up(self):
         final = receipt("needs-input")
         final["summary"] = "One proof obligation remains unverified."
         final["question"] = RUNNER.SOFT_BUDGET_CONTINUE_QUESTION
@@ -619,7 +619,7 @@ class PhaseRuntimeTests(unittest.TestCase):
                 },
             }
 
-        forbidden = [
+        root_work = [
             {"type": item_type}
             for item_type in (
                 "commandExecution",
@@ -637,13 +637,11 @@ class PhaseRuntimeTests(unittest.TestCase):
                 "agentThreadId": SUBAGENT_ID,
             },
         ]
-        for item in forbidden:
+        for item in root_work:
             with self.subTest(item=item):
-                with self.assertRaisesRegex(
-                    RuntimeError,
-                    "soft-budget guard observed root work after steer acknowledgement",
-                ):
-                    run_case(after_ack=[started(item)])
+                result, instance = run_case(after_ack=[started(item)])
+                self.assertEqual(result["state"], "needs-input")
+                self.assertFalse(instance.closed_failed)
 
         result, instance = run_case(
             before_ack=[started({"type": "commandExecution"})],
