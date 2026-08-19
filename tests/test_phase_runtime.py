@@ -439,6 +439,23 @@ class PhaseRuntimeTests(unittest.TestCase):
         self.assertEqual(result["state"], "completed")
         self.assertNotIn("turn/steer", [item.get("method") for item in server.requests])
 
+    def test_disabled_soft_budget_waits_without_steering(self):
+        server = AppServerFixture(receipt())
+        with (
+            mock.patch.object(NATIVE, "find_codex", return_value="/bin/codex"),
+            mock.patch.object(RUNNER.subprocess, "Popen", side_effect=server),
+        ):
+            result = RUNNER.run_phase(
+                ROOT,
+                "rca",
+                "Continue.",
+                SESSION_ID,
+                soft_phase_budget_seconds=None,
+            )
+
+        self.assertEqual(result["state"], "completed")
+        self.assertNotIn("turn/steer", [item.get("method") for item in server.requests])
+
     def test_active_budget_expiry_sends_exactly_one_steer_at_queue_boundary(self):
         final = receipt("needs-input")
         final["summary"] = "One proof obligation remains unverified."

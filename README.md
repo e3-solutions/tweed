@@ -354,6 +354,30 @@ bonaparte --soft-phase-budget-seconds 600 implement LIN-123
 bonaparte --soft-phase-budget-seconds 120 resume <resume-token> "Continue"
 ```
 
+Disable the soft budget for one fresh or resumed coordinator turn with
+`--no-soft-phase-budget`:
+
+```sh
+bonaparte --no-soft-phase-budget implement LIN-123
+bonaparte --no-soft-phase-budget resume <resume-token> "Continue"
+```
+
+The disable flag and `--soft-phase-budget-seconds` are mutually exclusive. A
+disabled budget is saved in a needs-input checkpoint and reused by later
+resumes unless a resume explicitly supplies either budget option.
+
+To make disabled budgets the persistent default for new phases, set this in
+your shell configuration:
+
+```sh
+export BONAPARTE_SOFT_PHASE_BUDGET=off
+```
+
+Bonaparte still ships with the 300-second default when the variable is unset.
+The variable may also contain positive finite seconds. Explicit command-line
+budget options take precedence. Existing resume checkpoints keep their saved
+setting unless the resume command explicitly overrides it.
+
 The budget starts fresh for each coordinator turn. On expiry Bonaparte sends
 exactly one native steer asking the coordinator to finish its current bounded
 work and return a receipt. This is not a hard deadline or kill: work already in
@@ -422,8 +446,8 @@ remain on disk for audit but cannot be resumed. If native delivery becomes
 ambiguous, Bonaparte preserves the pending answer and reports the token instead
 of silently restarting the phase. Token resumes reuse the saved model and
 reasoning unless an explicit override is supplied. They also reuse the saved
-soft phase budget unless `--soft-phase-budget-seconds` explicitly overrides it
-for that resumed turn.
+soft phase budget unless either budget option explicitly overrides it for that
+resumed turn.
 
 ## Semantic progress for trusted hosts
 

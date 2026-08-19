@@ -368,6 +368,73 @@ class BonaparteRunnerTests(unittest.TestCase):
             ):
                 self.assertEqual(RUNNER.parse()[-1], expected)
 
+        with mock.patch.object(
+            sys,
+            "argv",
+            ["bonaparte", "--no-soft-phase-budget", "RCA", "COR-1"],
+        ):
+            self.assertIs(RUNNER.parse()[-1], RUNNER.DISABLE_SOFT_PHASE_BUDGET)
+
+        for configured, expected in (
+            ("off", RUNNER.DISABLE_SOFT_PHASE_BUDGET),
+            ("42.5", 42.5),
+        ):
+            with (
+                self.subTest(configured=configured),
+                mock.patch.object(sys, "argv", ["bonaparte", "RCA", "COR-1"]),
+                mock.patch.dict(
+                    os.environ,
+                    {RUNNER.GLOBAL_SOFT_PHASE_BUDGET_ENV: configured},
+                    clear=True,
+                ),
+            ):
+                actual = RUNNER.parse()[-1]
+                if expected is RUNNER.DISABLE_SOFT_PHASE_BUDGET:
+                    self.assertIs(actual, expected)
+                    self.assertIsNone(RUNNER.materialize_soft_phase_budget(actual))
+                else:
+                    self.assertEqual(actual, expected)
+
+        with mock.patch.object(
+            sys,
+            "argv",
+            ["bonaparte", "--soft-phase-budget-seconds", "12", "RCA", "COR-1"],
+        ), mock.patch.dict(
+            os.environ,
+            {RUNNER.GLOBAL_SOFT_PHASE_BUDGET_ENV: "off"},
+            clear=True,
+        ):
+            self.assertEqual(RUNNER.parse()[-1], 12.0)
+
+        for invalid_default in ("", "0", "nan", "forever"):
+            with self.subTest(invalid_default=invalid_default), self.assertRaisesRegex(
+                RuntimeError, RUNNER.GLOBAL_SOFT_PHASE_BUDGET_ENV
+            ):
+                RUNNER.resolve_default_soft_phase_budget(
+                    {RUNNER.GLOBAL_SOFT_PHASE_BUDGET_ENV: invalid_default}
+                )
+
+        with mock.patch.object(
+            sys,
+            "argv",
+            [
+                "bonaparte",
+                "--no-soft-phase-budget",
+                "--soft-phase-budget-seconds",
+                "12",
+                "RCA",
+                "COR-1",
+            ],
+        ), self.assertRaises(SystemExit):
+            RUNNER.parse()
+
+        with mock.patch.object(
+            sys,
+            "argv",
+            ["bonaparte", "resume", SESSION_ID, "Continue"],
+        ):
+            self.assertIsNone(RUNNER.parse()[-1])
+
         for invalid in ("0", "-1", "nan", "inf", "not-seconds"):
             stdout = io.StringIO()
             with (
@@ -1115,6 +1182,32 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertEqual(observed["prompt"], "Production")
         self.assertTrue(observed["replayed"])
         self.assertEqual(stored["status"], "completed")
+
+    def test_resume_can_disable_and_persist_the_soft_budget(self):
+        with tempfile.TemporaryDirectory() as temporary, mock.patch.dict(
+            os.environ, {"BONAPARTE_HOME": temporary}, clear=False
+        ):
+            checkpoint = self.question_checkpoint()
+
+            def completed(*arguments):
+                self.assertIsNone(arguments[-1])
+                arguments[-3].update(session_id=SESSION_ID)
+                return receipt("completed")
+
+            with mock.patch.object(RUNNER, "run_phase", side_effect=completed):
+                result, exit_code = RUNNER.resume_checkpoint(
+                    checkpoint,
+                    "Production",
+                    None,
+                    None,
+                    RUNNER.DISABLE_SOFT_PHASE_BUDGET,
+                )
+
+            self.assertEqual(exit_code, 0)
+            self.assertEqual(result["state"], "completed")
+            self.assertIsNone(
+                RUNNER.read_checkpoint(SESSION_ID)["soft_phase_budget_seconds"]
+            )
 
     def test_resume_session_mismatch_does_not_retarget_the_checkpoint(self):
         with tempfile.TemporaryDirectory() as temporary:
