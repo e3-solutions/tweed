@@ -30,8 +30,24 @@ class PhaseRuntimeTests(unittest.TestCase):
         driver._disposition = "terminal"
         responses = iter(
             [
-                {"data": [{"id": "child-1"}], "nextCursor": "next"},
-                {"data": [{"id": "child-2"}], "nextCursor": None},
+                {
+                    "data": [
+                        {"id": "child-1", "parentThreadId": "root"},
+                    ],
+                    "nextCursor": "next",
+                },
+                {
+                    "data": [
+                        {"id": "child-direct", "parentThreadId": "root"}
+                    ],
+                    "nextCursor": None,
+                },
+                {
+                    "data": [{"id": "child-2", "parentThreadId": "child-1"}],
+                    "nextCursor": None,
+                },
+                {"data": [], "nextCursor": None},
+                {"data": [], "nextCursor": None},
                 {},
             ]
         )
@@ -51,15 +67,55 @@ class PhaseRuntimeTests(unittest.TestCase):
             [method for method, _params in calls],
             [
                 "thread/list",
-                "thread/metadata/update",
                 "thread/list",
+                "thread/list",
+                "thread/list",
+                "thread/list",
+                "thread/metadata/update",
+                "thread/metadata/update",
                 "thread/metadata/update",
                 "thread/archive",
             ],
         )
-        self.assertEqual(calls[2][1]["cursor"], "next")
+        self.assertEqual(calls[1][1]["cursor"], "next")
+        self.assertNotIn("ancestorThreadId", calls[0][1])
+        self.assertEqual(calls[0][1]["parentThreadId"], "root")
         self.assertEqual(
-            calls[1][1]["gitInfo"]["branch"], "arya/cor-1-example"
+            [
+                params["threadId"]
+                for method, params in calls
+                if method == "thread/metadata/update"
+            ],
+            ["child-1", "child-direct", "child-2"],
+        )
+        cleanup.assert_called_once_with(driver.process)
+
+    def test_descendant_discovery_fails_closed_before_mutation_on_record_cap(self):
+        driver = object.__new__(RUNNER.AppServerPhaseDriver)
+        driver.process = mock.Mock()
+        driver._receipt_thread_id = "root"
+        driver._receipt_turn_id = "turn"
+        driver._issue_branch = "arya/cor-1-example"
+        driver._disposition = "terminal"
+        driver.request = mock.Mock(
+            return_value={
+                "data": [
+                    {"id": f"thread-{index}", "parentThreadId": "root"}
+                    for index in range(NATIVE.THREAD_LIST_MAX_RECORDS + 1)
+                ],
+                "nextCursor": None,
+            }
+        )
+
+        with (
+            mock.patch.object(NATIVE, "terminate_and_reap") as cleanup,
+            self.assertRaisesRegex(RuntimeError, "record limit"),
+        ):
+            driver.close(failed=False)
+
+        self.assertEqual(
+            [call.args[0] for call in driver.request.call_args_list],
+            ["thread/list"],
         )
         cleanup.assert_called_once_with(driver.process)
 
