@@ -11,6 +11,10 @@ if [ "$#" -ne 0 ]; then
     echo "usage: ./install" >&2
     exit 2
 fi
+if ! command -v uv >/dev/null 2>&1; then
+    echo "Bonaparte requires uv: https://docs.astral.sh/uv/" >&2
+    exit 1
+fi
 
 refuse_regular_target() {
     target=$1
@@ -42,24 +46,17 @@ if [ ! -e "$release_dir" ]; then
     mkdir "$staging/bundle"
     git -C "$repo_dir" archive --format=tar -o "$staging/source.tar" HEAD
     tar -xf "$staging/source.tar" -C "$staging/bundle"
-    python3 -m py_compile \
-        "$staging/bundle/bonaparte" \
-        "$staging/bundle/bonaparte-launcher" \
-        "$staging/bundle/bonaparte_checkpoint.py" \
-        "$staging/bundle/bonaparte_linear.py" \
-        "$staging/bundle/bonaparte_native.py" \
-        "$staging/bundle/bonaparte_progress.py"
-    BONAPARTE_AUTO_UPDATE=0 python3 "$staging/bundle/bonaparte" --help >/dev/null
+    python3 -m py_compile "$staging/bundle/bonaparte" "$staging/bundle/autoresearch"
+    uv run --script "$staging/bundle/bonaparte" --help >/dev/null
     python3 "$staging/bundle/autoresearch" --help >/dev/null
     rm -rf "$staging/bundle/__pycache__"
     mv "$staging/bundle" "$release_dir"
 fi
 
 atomic_link "releases/$runtime_id" "$bonaparte_home/current"
-atomic_link "$bonaparte_home/current/bonaparte-launcher" "$bin_dir/bonaparte"
+atomic_link "$bonaparte_home/current/bonaparte" "$bin_dir/bonaparte"
 atomic_link "$bonaparte_home/current/autoresearch" "$bin_dir/autoresearch"
 atomic_link "$bonaparte_home/current/skills/use-bonaparte" "$codex_dir/skills/use-bonaparte"
-rm -f "$bonaparte_home/last-check"
 
 trap - EXIT HUP INT TERM
 rm -rf "$staging"
