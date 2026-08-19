@@ -4,12 +4,15 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import os
 import re
+import stat
 import subprocess
 import sys
+import tempfile
 import time
 import uuid
 from datetime import datetime, timezone
@@ -18,6 +21,7 @@ from pathlib import Path
 from bonaparte_checkpoint import (
     VERSION as CHECKPOINT_VERSION,
     checkpoint_lease,
+    checkpoint_directory,
     checkpoint_path,
     read_checkpoint,
     write_checkpoint,
@@ -364,7 +368,8 @@ def trusted_git_target(repository: Path) -> tuple[str, str] | None:
     if not remote:
         return None
     match = re.fullmatch(
-        r"(?:https://github\.com/|git@github\.com:)([^/\s]+/[^/\s]+?)(?:\.git)?$",
+        r"(?:https://github\.com/|git@github\.com:|ssh://git@github\.com/)"
+        r"([^/\s]+/[^/\s]+?)(?:\.git)?$",
         remote,
     )
     if match is None:
@@ -398,6 +403,144 @@ def trusted_git_target(repository: Path) -> tuple[str, str] | None:
     ):
         return None
     return repository_name, default["name"]
+
+
+def _finalization_path(thread_id: str) -> Path:
+    digest = hashlib.sha256(thread_id.encode("utf-8")).hexdigest()
+    return checkpoint_directory() / f"finalization-{digest}.json"
+
+
+def _fsync_directory(directory: Path) -> None:
+    descriptor = os.open(
+        directory,
+        os.O_RDONLY
+        | getattr(os, "O_DIRECTORY", 0)
+        | getattr(os, "O_CLOEXEC", 0),
+    )
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def write_pending_finalization(
+    driver: AppServerPhaseDriver, repository: Path, branch: str | None
+) -> str:
+    """Durably record the exact native threads owned by this terminal phase."""
+    directory = checkpoint_directory()
+    thread_id = driver._receipt_thread_id
+    if not thread_id:
+        raise RuntimeError("terminal finalization is missing its root thread")
+    payload = {
+        "version": 1,
+        "branch": branch,
+        "repository": str(repository.resolve()),
+        "root_thread_id": thread_id,
+        "started_thread_ids": sorted(driver._started_thread_ids),
+    }
+    descriptor, temporary = tempfile.mkstemp(prefix=".finalization-", dir=directory)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+            os.fchmod(stream.fileno(), 0o600)
+            json.dump(payload, stream, separators=(",", ":"), sort_keys=True)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, _finalization_path(thread_id))
+        _fsync_directory(directory)
+    finally:
+        try:
+            os.unlink(temporary)
+        except FileNotFoundError:
+            pass
+    return thread_id
+
+
+def clear_pending_finalization(thread_id: str) -> None:
+    path = _finalization_path(thread_id)
+    try:
+        path.unlink()
+        _fsync_directory(path.parent)
+    except FileNotFoundError:
+        pass
+
+
+def _read_pending_finalization(path: Path) -> dict:
+    try:
+        descriptor = os.open(
+            path,
+            os.O_RDONLY
+            | getattr(os, "O_NOFOLLOW", 0)
+            | getattr(os, "O_CLOEXEC", 0),
+        )
+        with os.fdopen(descriptor, "r", encoding="utf-8") as stream:
+            if not stat.S_ISREG(os.fstat(stream.fileno()).st_mode):
+                raise RuntimeError("pending terminal finalization is invalid")
+            raw = stream.read(16 * 1024 + 1)
+        if len(raw) > 16 * 1024:
+            raise RuntimeError("pending terminal finalization is invalid")
+        payload = json.loads(raw)
+    except FileNotFoundError:
+        return {}
+    except (OSError, json.JSONDecodeError) as error:
+        raise RuntimeError("pending terminal finalization is unreadable") from error
+    if not isinstance(payload, dict) or payload.get("version") != 1:
+        raise RuntimeError("pending terminal finalization is invalid")
+    return payload
+
+
+def retry_pending_finalizations(repository: Path) -> None:
+    """Retry owned terminal archives without starting a coordinator turn."""
+    paths = sorted(checkpoint_directory().glob("finalization-*.json"))
+    if not paths:
+        return
+    if len(paths) > 64:
+        raise RuntimeError("too many pending terminal finalizations")
+    for path in paths:
+        payload = _read_pending_finalization(path)
+        if not payload or payload.get("repository") != str(repository.resolve()):
+            continue
+        _retry_pending_finalization(repository, path, payload)
+
+
+def _retry_pending_finalization(
+    repository: Path, path: Path, payload: dict
+) -> None:
+    root = payload.get("root_thread_id")
+    started = payload.get("started_thread_ids")
+    branch = payload.get("branch")
+    if (
+        not isinstance(root, str)
+        or not root
+        or (branch is not None and (not isinstance(branch, str) or not branch))
+        or not isinstance(started, list)
+        or any(not isinstance(item, str) or not item for item in started)
+        or len(started) > 64
+    ):
+        raise RuntimeError("pending terminal finalization is invalid")
+    driver = AppServerPhaseDriver(repository, EventObserver(None))
+    try:
+        driver.request(
+            "initialize",
+            {
+                "clientInfo": {"name": "bonaparte-finalizer", "version": "1"},
+                "capabilities": {"experimentalApi": True},
+            },
+        )
+        driver.process.stdin.write('{"method":"initialized","params":{}}\n')
+        driver.process.stdin.flush()
+        driver._receipt_thread_id = root
+        driver._issue_branch = branch
+        driver._started_thread_ids = set(started)
+        driver.close(disposition="terminal")
+    except BaseException:
+        if driver.process.poll() is None:
+            driver.close(disposition="ephemeral")
+        raise
+    try:
+        path.unlink()
+        _fsync_directory(path.parent)
+    except FileNotFoundError:
+        pass
 
 
 def recover_terminal_receipt(
@@ -661,6 +804,7 @@ def run_phase(
     replayed_answer: bool = False,
     soft_phase_budget_seconds: float = DEFAULT_SOFT_PHASE_BUDGET_SECONDS,
 ) -> dict:
+    retry_pending_finalizations(repository)
     soft_phase_budget_seconds = resolve_soft_phase_budget(soft_phase_budget_seconds)
     workflow_name, assignment = WORKFLOWS[phase]
     workflow = (Path(__file__).resolve().parent / "workflows" / workflow_name).read_text()
@@ -817,6 +961,7 @@ def run_phase(
     observer = EventObserver(_ACTIVE_PROGRESS)
     driver = None
     failed = True
+    pending_finalization_thread = None
     try:
         driver = AppServerPhaseDriver(repository, observer)
         driver._disposition = None
@@ -1021,6 +1166,10 @@ def run_phase(
         driver._disposition = (
             "resumable" if receipt["state"] == "needs-input" else "terminal"
         )
+        if driver._disposition == "terminal":
+            pending_finalization_thread = write_pending_finalization(
+                driver, repository, expected_branch
+            )
         failed = False
     finally:
         observed = observer.finish()
@@ -1029,6 +1178,8 @@ def run_phase(
         if driver is not None:
             try:
                 driver.close(failed=failed)
+                if not failed and pending_finalization_thread:
+                    clear_pending_finalization(pending_finalization_thread)
             except BaseException:
                 if not failed:
                     raise

@@ -1,5 +1,7 @@
 import runpy
 import json
+import os
+import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
@@ -56,11 +58,6 @@ def comment(phase, marker, date, **extra):
 
 class HandoffTests(unittest.TestCase):
     def test_trusted_git_target_uses_origin_and_default_base(self):
-        def output(_repository, *arguments):
-            if arguments == ("remote", "get-url", "origin"):
-                return "git@github.com:e3-solutions/tweed.git"
-            return None
-
         github = SimpleNamespace(
             returncode=0,
             stdout=json.dumps(
@@ -70,17 +67,21 @@ class HandoffTests(unittest.TestCase):
                 }
             ),
         )
-        with mock.patch.dict(
-            RUNNER_GLOBALS,
-            {
-                "git_output": output,
-                "_SUBPROCESS_RUN": mock.Mock(return_value=github),
-            },
+        for remote in (
+            "git@github.com:e3-solutions/tweed.git",
+            "ssh://git@github.com/e3-solutions/tweed.git",
         ):
-            self.assertEqual(
-                trusted_git_target(Path(".")),
-                ("e3-solutions/tweed", "main"),
-            )
+            with self.subTest(remote=remote), mock.patch.dict(
+                RUNNER_GLOBALS,
+                {
+                    "git_output": mock.Mock(return_value=remote),
+                    "_SUBPROCESS_RUN": mock.Mock(return_value=github),
+                },
+            ):
+                self.assertEqual(
+                    trusted_git_target(Path(".")),
+                    ("e3-solutions/tweed", "main"),
+                )
 
     def test_current_or_downstream_terminal_evidence_recovers_without_driver(self):
         git_handoff = (
@@ -116,6 +117,61 @@ class HandoffTests(unittest.TestCase):
         self.assertEqual(receipt["result"], "implemented")
         self.assertEqual(receipt["commit"], "b" * 40)
         driver.assert_not_called()
+
+    def test_terminal_recovery_retries_pending_native_finalization(self):
+        review = comment("review", "unused", "5")
+        review["body"] = (
+            HEADERS["review"]
+            + "\n\n**Verdict:** Ready to publish\n\n### Git handoff\n"
+            + "- Branch: `arya/lin-1-example`\n"
+            + "- Reviewed commit: `" + "b" * 40 + "`\n"
+            + "- Draft PR: `https://github.com/o/r/pull/1`\n"
+            + "- Base: `main`"
+        )
+        retry = mock.Mock()
+        with (
+            mock.patch.dict(
+                RUNNER_GLOBALS,
+                {
+                    "call_linear": mock.Mock(return_value=(issue(), [review])),
+                    "_SUBPROCESS_RUN": mock.Mock(return_value=live_pr()),
+                    "trusted_git_target": mock.Mock(return_value=("o/r", "main")),
+                    "retry_pending_finalizations": retry,
+                },
+            ),
+        ):
+            result = RUNNER["run_phase"](Path("."), "implement", "LIN-1")
+        self.assertEqual(result["state"], "completed")
+        retry.assert_called_once_with(Path("."))
+
+    def test_pending_finalization_is_retried_and_cleared_without_coordinator(self):
+        branch = "arya/lin-1-example"
+        driver = mock.Mock()
+        driver.process.stdin = mock.Mock()
+        driver.process.poll.return_value = None
+        with tempfile.TemporaryDirectory() as temporary, mock.patch.dict(
+            os.environ, {"BONAPARTE_HOME": temporary}, clear=False
+        ), mock.patch.dict(
+            RUNNER_GLOBALS, {"AppServerPhaseDriver": mock.Mock(return_value=driver)}
+        ):
+            path = RUNNER["_finalization_path"]("root")
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(
+                json.dumps(
+                    {
+                        "version": 1,
+                        "branch": branch,
+                        "repository": str(Path(".").resolve()),
+                        "root_thread_id": "root",
+                        "started_thread_ids": ["root", "child"],
+                    }
+                )
+            )
+            RUNNER["retry_pending_finalizations"](Path("."))
+            self.assertFalse(path.exists())
+        driver.close.assert_called_once_with(disposition="terminal")
+        self.assertEqual(driver._receipt_thread_id, "root")
+        self.assertEqual(driver._started_thread_ids, {"root", "child"})
 
     def test_terminal_recovery_fails_closed_on_missing_git_provenance(self):
         review = comment("review", "unused", "5")
