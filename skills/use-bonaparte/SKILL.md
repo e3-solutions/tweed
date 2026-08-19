@@ -90,7 +90,7 @@ KiB. Do not open coordinator/subagent tasks, Linear, or logs.
 
 For every fresh or resumed phase, a trusted host may optionally open and
 explicitly inherit a nonblocking file descriptor numbered 3 or higher, then set
-`BONAPARTE_PROGRESS_FD` to its number. Progress JSONL uses ABI version 2 and
+`BONAPARTE_PROGRESS_FD` to its number. Progress JSONL uses ABI version 3 and
 contains only fixed semantic stages, activities, statuses, counts, opaque actor
 ordinals, and at most 32 deduplicated milestones. A host may continuously drain
 and render those records while the one phase command runs, but must not poll
@@ -99,8 +99,10 @@ The channel is best effort; its absence or permanent failure requires no retry
 or fallback. It never replaces the single stdout receipt of at most 4 KiB. The
 invoking task remains thin and waits once for that final receipt.
 
-On `needs-input`, relay only `question`. It should explain what the answer changes
-and include supported options and a recommendation when evidence allows. Never
+On `needs-input`, relay the compact action summary: `summary`, `question`, the
+consequence in `next_action`, `remote_state`, `safe_to_resume`,
+`reconciliation_required`, and the exact `resume <phase_token> <answer>` action.
+Include supported options and a recommendation when evidence allows. Never
 answer for the user or combine independent questions.
 
 Soft-budget expiry asks the user to resume with `Continue`; any other question is
@@ -113,12 +115,25 @@ when the user intentionally overrides them:
 ```sh
 bonaparte --repo <repository> [--model <model>] [--reasoning <effort>] \
   [--soft-phase-budget-seconds <seconds>] \
+  [--finalization-window-seconds <seconds>] \
   resume <receipt.resume_token> <answer>
 ```
 
-If the resumed phase returns another material question, repeat the exchange with
+Use `bonaparte inspect <phase_token>` before recovery whenever remote state is
+unknown or reconciliation is required. Inspect is read-only and does not
+authorize a retry. If the resumed phase returns another material question, repeat the exchange with
 the same token. For a legacy receipt without `resume_token`, use
 `resume <receipt.phase> <receipt.resume_session_id> <answer>` when its session ID
 is present. Stop on `blocked` or `failed`; if a failed receipt includes a token,
 report it with the blocker because the durable checkpoint remains available, but
 never retry or reorder a phase automatically.
+
+If `safe_to_resume` is false, do not run the receipt's resume command. Run the
+exact `bonaparte inspect <phase_token>` action first and relay the reconciliation
+result. A create receipt recovered through the durable phase-token marker is an
+exact provider readback; title or fuzzy-search matches are never sufficient.
+
+An `update-available` progress notice is nonblocking. The active phase keeps its
+fixed runtime. After an explicit `bonaparte update`, stop the chain and reload
+the installed skill before starting the next phase; in-memory Codex cache
+invalidation is upstream behavior and is not claimed as enforced.

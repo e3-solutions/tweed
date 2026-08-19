@@ -21,6 +21,169 @@ from tests.test_bonaparte import (
 
 
 class PhaseRuntimeTests(unittest.TestCase):
+    def test_native_observation_is_allowlisted_and_correlates_item_lifecycle(self):
+        observation = {}
+
+        def native_metadata_and_item(fixture, message, output):
+            request_id = message.get("id")
+            if message.get("method") == "initialize":
+                fixture._emit(
+                    output,
+                    {
+                        "id": request_id,
+                        "result": {
+                            "userAgent": "codex-cli/1.2.3",
+                            "runtime": {
+                                "name": "native",
+                                "version": "4.5.6",
+                                "privateUrl": "https://secret.example/token",
+                            },
+                            "capabilities": {
+                                "turn/steer": True,
+                                "turn/interrupt": False,
+                            },
+                            "raw": "must-not-survive",
+                        },
+                    },
+                )
+                return True
+            if message.get("method") == "turn/start":
+                fixture._emit(
+                    output,
+                    {
+                        "method": "item/started",
+                        "params": {
+                            "threadId": SESSION_ID,
+                            "turnId": "turn-1",
+                            "item": {
+                                "id": "item-final",
+                                "type": "agentMessage",
+                                "text": "private-started-payload",
+                            },
+                        },
+                    },
+                )
+            return False
+
+        server = AppServerFixture(receipt(), handler=native_metadata_and_item)
+        with (
+            mock.patch.object(NATIVE, "find_codex", return_value="/bin/codex"),
+            mock.patch.object(RUNNER.subprocess, "Popen", side_effect=server),
+        ):
+            RUNNER.run_phase(
+                ROOT, "rca", "Continue.", SESSION_ID, observation=observation
+            )
+
+        native = observation["native"]
+        self.assertEqual(
+            native["initialize"],
+            {
+                "user_agent": "codex-cli/1.2.3",
+                "runtime": {"name": "native", "version": "4.5.6"},
+            },
+        )
+        self.assertEqual(native["capabilities"]["steer"]["support"], "supported")
+        self.assertEqual(
+            native["capabilities"]["interrupt"]["support"], "unsupported"
+        )
+        self.assertEqual(
+            native["capabilities"]["side_effect_fencing"], "unavailable"
+        )
+        self.assertEqual(native["capabilities"]["quiescence"], "unknown")
+        self.assertEqual(
+            native["turn"],
+            {
+                "status": "completed",
+                "active_items": 0,
+                "started_items": 1,
+                "completed_items": 1,
+            },
+        )
+        self.assertEqual(
+            native["lifecycle"],
+            [
+                "initialized",
+                "item_started",
+                "item_completed",
+                "turn_completed",
+                "cleanup_started",
+                "cleanup_completed",
+            ],
+        )
+        self.assertNotIn("private", json.dumps(native))
+        self.assertNotIn("secret", json.dumps(native))
+
+    def test_native_rejected_method_outcome_is_structural_and_redacted(self):
+        def reject_interrupt(fixture, message, output):
+            if message.get("method") == "turn/interrupt":
+                fixture._emit(
+                    output,
+                    {
+                        "id": message["id"],
+                        "error": {
+                            "code": -32601,
+                            "message": "secret native rejection detail",
+                        },
+                    },
+                )
+                return True
+            return False
+
+        observer = PROGRESS.EventObserver()
+        server = AppServerFixture(handler=reject_interrupt)
+        with (
+            mock.patch.object(NATIVE, "find_codex", return_value="/bin/codex"),
+            mock.patch.object(NATIVE.subprocess, "Popen", side_effect=server),
+        ):
+            driver = NATIVE.AppServerPhaseDriver(ROOT, observer)
+            driver.request("initialize", {})
+            with self.assertRaisesRegex(RuntimeError, "rejected turn/interrupt") as raised:
+                driver.request(
+                    "turn/interrupt",
+                    {"threadId": SESSION_ID, "turnId": "turn-1"},
+                )
+            driver.close(failed=False)
+
+        capability = observer.finish()["native"]["capabilities"]["interrupt"]
+        self.assertEqual(
+            capability, {"support": "unsupported", "outcome": "rejected"}
+        )
+        self.assertNotIn("secret", str(raised.exception))
+
+    def test_failed_close_attempts_bounded_interrupt_before_process_cleanup(self):
+        def accept_interrupt(fixture, message, output):
+            if message.get("method") == "turn/interrupt":
+                fixture._emit(
+                    output,
+                    {"id": message["id"], "result": {"turnId": "turn-1"}},
+                )
+                return True
+            return False
+
+        observer = PROGRESS.EventObserver()
+        server = AppServerFixture(handler=accept_interrupt)
+        with (
+            mock.patch.object(NATIVE, "find_codex", return_value="/bin/codex"),
+            mock.patch.object(NATIVE.subprocess, "Popen", side_effect=server),
+            mock.patch.object(NATIVE, "terminate_and_reap") as reap,
+        ):
+            driver = NATIVE.AppServerPhaseDriver(ROOT, observer)
+            driver.request("initialize", {})
+            driver._receipt_thread_id = SESSION_ID
+            driver._receipt_turn_id = "turn-1"
+            driver.close(failed=True)
+
+        reap.assert_called_once_with(server.process)
+        native = observer.finish()["native"]
+        self.assertEqual(
+            native["capabilities"]["interrupt"],
+            {"support": "supported", "outcome": "accepted"},
+        )
+        self.assertEqual(
+            native["lifecycle"][-3:],
+            ["cleanup_started", "interrupt_accepted", "cleanup_completed"],
+        )
+
     def test_child_turn_completion_does_not_terminate_coordinator_turn(self):
         expected = receipt()
 
@@ -380,11 +543,13 @@ class PhaseRuntimeTests(unittest.TestCase):
             mock.patch.object(RUNNER, "AppServerPhaseDriver", Driver),
             mock.patch.object(RUNNER.time, "monotonic", side_effect=[100.0, 101.0]),
         ):
+            observation = {}
             result = RUNNER.run_phase(
                 ROOT,
                 "rca",
                 "Continue.",
                 SESSION_ID,
+                observation=observation,
                 soft_phase_budget_seconds=1,
             )
 
@@ -400,6 +565,7 @@ class PhaseRuntimeTests(unittest.TestCase):
             },
         )
         self.assertFalse(instances[0].closed_failed)
+        self.assertEqual(observation["steer_outcome"], "accepted")
 
     def test_post_ack_root_work_is_rejected_but_in_flight_and_wrap_up_are_allowed(self):
         final = receipt("needs-input")
@@ -563,19 +729,22 @@ class PhaseRuntimeTests(unittest.TestCase):
             mock.patch.object(RUNNER.time, "monotonic", side_effect=[10.0, 11.0]),
             self.assertRaisesRegex(RuntimeError, "rejected turn/steer"),
         ):
+            observation = {}
             RUNNER.run_phase(
                 ROOT,
                 "rca",
                 "Continue.",
                 SESSION_ID,
+                observation=observation,
                 soft_phase_budget_seconds=1,
             )
 
         self.assertEqual(len(instances[0].sent), 1)
         self.assertEqual(instances[0].sent[0][0], "turn/steer")
         self.assertTrue(instances[0].closed_failed)
+        self.assertEqual(observation["steer_outcome"], "rejected")
 
-    def test_terminal_before_steer_rejection_still_fails(self):
+    def test_terminal_before_steer_rejection_preserves_completed_turn(self):
         instances = []
         observe_notification = RUNNER.AppServerPhaseDriver.observe_notification
 
@@ -615,15 +784,18 @@ class PhaseRuntimeTests(unittest.TestCase):
             def observe_notification(self, message):
                 return observe_notification(self, message)
 
+            @property
+            def last_agent_message(self):
+                return json.dumps(receipt("completed"))
+
             def close(self, *, failed):
                 self.closed_failed = failed
 
         with (
             mock.patch.object(RUNNER, "AppServerPhaseDriver", Driver),
             mock.patch.object(RUNNER.time, "monotonic", side_effect=[20.0, 21.0]),
-            self.assertRaisesRegex(RuntimeError, "rejected turn/steer"),
         ):
-            RUNNER.run_phase(
+            result = RUNNER.run_phase(
                 ROOT,
                 "rca",
                 "Continue.",
@@ -631,7 +803,74 @@ class PhaseRuntimeTests(unittest.TestCase):
                 soft_phase_budget_seconds=1,
             )
 
-        self.assertTrue(instances[0].closed_failed)
+        self.assertEqual(result["state"], "completed")
+        self.assertFalse(instances[0].closed_failed)
+
+    def test_soft_budget_receipt_keeps_continuation_semantics_before_steer_ack(self):
+        observe_notification = RUNNER.AppServerPhaseDriver.observe_notification
+
+        class Driver:
+            def __init__(self, _repository, observer):
+                self.observer = observer
+                self.process = mock.Mock(stdin=io.StringIO())
+                self.messages = iter(
+                    [
+                        TimeoutError(),
+                        TimeoutError(),
+                        {
+                            "method": "turn/completed",
+                            "params": {
+                                "turn": {"id": "turn-1", "status": "completed"}
+                            },
+                        },
+                        {"id": 4, "error": "too late"},
+                    ]
+                )
+
+            def request(self, method, _params):
+                return {
+                    "initialize": {},
+                    "thread/resume": {"thread": {"id": SESSION_ID}},
+                    "turn/start": {"turn": {"id": "turn-1"}},
+                }[method]
+
+            def next_message(self, _timeout=None):
+                value = next(self.messages)
+                if isinstance(value, BaseException):
+                    raise value
+                return value
+
+            def send(self, _method, _params):
+                return 4
+
+            def observe_notification(self, message):
+                return observe_notification(self, message)
+
+            @property
+            def last_agent_message(self):
+                value = receipt("needs-input")
+                value["question"] = RUNNER.SOFT_BUDGET_CONTINUE_QUESTION
+                return json.dumps(value)
+
+            def close(self, *, failed):
+                self.closed_failed = failed
+
+        with (
+            mock.patch.object(RUNNER, "AppServerPhaseDriver", Driver),
+            mock.patch.object(RUNNER.time, "monotonic", side_effect=[20.0, 21.0]),
+        ):
+            result = RUNNER.run_phase(
+                ROOT,
+                "rca",
+                "Continue.",
+                SESSION_ID,
+                soft_phase_budget_seconds=1,
+            )
+
+        self.assertEqual(result["state"], "needs-input")
+        self.assertEqual(result["reason_code"], "soft-budget")
+        self.assertEqual(result["input_kind"], "continuation")
+        self.assertIn("bonaparte resume", result["next_action"])
 
     def test_resume_uses_the_same_session_and_can_switch_models(self):
         argv = [

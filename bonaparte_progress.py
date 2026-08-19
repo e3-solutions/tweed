@@ -10,12 +10,16 @@ import time
 from pathlib import Path
 
 PROGRESS_FD_ENV = "BONAPARTE_PROGRESS_FD"
-PROGRESS_VERSION = 2
+PROGRESS_RUNTIME_ENV = "BONAPARTE_RUNTIME_VERSION"
+PROGRESS_UPDATE_ENV = "BONAPARTE_STABLE_UPDATE"
+PROGRESS_VERSION = 3
 PROGRESS_HEARTBEAT_SECONDS = 10.0
 PROGRESS_MAX_BYTES = 4096
 PROGRESS_MAX_LINE_BYTES = 1024 * 1024
 PROGRESS_MAX_MILESTONES = 32
 PROGRESS_MAX_ACTORS = 32
+PROGRESS_MAX_EVENT_ACTORS = 32
+PROGRESS_MAX_COUNT = 2**31 - 1
 MAX_COMPLETED_CHECKS = 100
 
 PHASES = {"create", "rca", "scope", "implement", "review", "publish"}
@@ -49,6 +53,7 @@ PROGRESS_STATUSES = {
 }
 PROGRESS_STATES = {
     "started",
+    "update-available",
     "active",
     "finalizing",
     "completed",
@@ -57,6 +62,7 @@ PROGRESS_STATES = {
     "failed",
     "interrupted",
 }
+PROGRESS_UPDATE_STATES = {"current", "available", "unknown"}
 PROGRESS_TERMINAL_STATES = {
     "completed",
     "needs-input",
@@ -102,12 +108,41 @@ def safe_semantic(value: dict | None) -> dict:
     return semantic
 
 
+def safe_runtime_version(value: object) -> str | None:
+    """Allow only stable or locally built release tokens, never arbitrary paths."""
+    if not isinstance(value, str) or len(value) > 64:
+        return None
+    parts = value.removeprefix("v").split(".")
+    stable = value.startswith("v") and len(parts) == 3 and all(
+        part.isascii() and part.isdecimal() for part in parts
+    )
+    local_parts = value.split("-")
+    local = (
+        len(local_parts) == 3
+        and local_parts[0] == "local"
+        and safe_runtime_version(local_parts[1]) == local_parts[1]
+        and 7 <= len(local_parts[2]) <= 40
+        and all(character in "0123456789abcdef" for character in local_parts[2])
+    )
+    return value if stable or local else None
+
+
 class ProgressReporter:
     """Emit privacy-bounded semantic lifecycle events to an isolated descriptor."""
 
-    def __init__(self, descriptor: int | None, phase: str = "review"):
+    def __init__(
+        self,
+        descriptor: int | None,
+        phase: str = "review",
+        runtime_version: str | None = None,
+        update_state: str = "unknown",
+    ):
         self._descriptor = descriptor
         self._phase = phase if phase in PHASES else "review"
+        self._runtime_version = safe_runtime_version(runtime_version)
+        self._update_state = (
+            update_state if update_state in PROGRESS_UPDATE_STATES else "unknown"
+        )
         self._started_at = time.monotonic()
         self._sequence = 0
         self._last_state: str | None = None
@@ -142,7 +177,9 @@ class ProgressReporter:
         with self._lock:
             self._semantic = safe
             if milestone and safe not in self._milestones:
-                self._milestones_total_count += 1
+                self._milestones_total_count = min(
+                    self._milestones_total_count + 1, PROGRESS_MAX_COUNT
+                )
                 self._milestones.append(dict(safe))
                 if len(self._milestones) > PROGRESS_MAX_MILESTONES:
                     del self._milestones[0]
@@ -164,7 +201,7 @@ class ProgressReporter:
                 "semantic_milestones_total_count", len(self._milestones)
             )
             self._milestones_total_count = (
-                total
+                min(total, PROGRESS_MAX_COUNT)
                 if isinstance(total, int)
                 and not isinstance(total, bool)
                 and total >= len(self._milestones)
@@ -192,10 +229,13 @@ class ProgressReporter:
                 return
             if (
                 (state == "started" and self._last_state is not None)
-                or (state == "active" and self._last_state not in {"started", "active"})
+                or (
+                    state == "active"
+                    and self._last_state not in {"started", "update-available", "active"}
+                )
                 or (
                     state == "finalizing"
-                    and self._last_state not in {"started", "active"}
+                    and self._last_state not in {"started", "update-available", "active"}
                 )
                 or (
                     state in PROGRESS_TERMINAL_STATES
@@ -206,9 +246,12 @@ class ProgressReporter:
             sequence = self._sequence + 1
             event = {
                 "version": PROGRESS_VERSION,
+                "progress_abi": PROGRESS_VERSION,
                 "sequence": sequence,
                 "phase": self._phase,
                 "state": state,
+                "runtime_version": self._runtime_version,
+                "update_state": self._update_state,
                 "elapsed_seconds": round(
                     max(0.0, time.monotonic() - self._started_at), 3
                 ),
@@ -290,6 +333,8 @@ class ProgressReporter:
             return
         self._start_attempted = True
         self.report("started")
+        if self._update_state == "available":
+            self.report("update-available")
         if self._descriptor is None:
             return
         heartbeat = None
@@ -339,24 +384,29 @@ def acquire_progress_reporter(
     """Consume the inherited descriptor without ever exposing it to a child."""
 
     raw_descriptor = os.environ.pop(PROGRESS_FD_ENV, None)
+    runtime_version = os.environ.get(PROGRESS_RUNTIME_ENV)
+    update_state = os.environ.get(PROGRESS_UPDATE_ENV, "unknown")
+
+    def reporter(descriptor):
+        return ProgressReporter(descriptor, phase, runtime_version, update_state)
     if (
         raw_descriptor is None
         or not raw_descriptor.isascii()
         or not raw_descriptor.isdecimal()
     ):
-        return ProgressReporter(None, phase)
+        return reporter(None)
     try:
         original = int(raw_descriptor)
     except ValueError:
-        return ProgressReporter(None, phase)
+        return reporter(None)
     if original < 3:
-        return ProgressReporter(None, phase)
+        return reporter(None)
     if not enabled:
         try:
             os.close(original)
         except (OSError, OverflowError):
             pass
-        return ProgressReporter(None, phase)
+        return reporter(None)
     duplicate = None
     try:
         duplicate = os.dup(original)
@@ -370,13 +420,13 @@ def acquire_progress_reporter(
                 os.close(duplicate)
             except (OSError, OverflowError):
                 pass
-        return ProgressReporter(None, phase)
+        return reporter(None)
     finally:
         try:
             os.close(original)
         except (OSError, OverflowError):
             pass
-    return ProgressReporter(duplicate, phase)
+    return reporter(duplicate)
 
 
 class EventObserver:
@@ -398,7 +448,7 @@ class EventObserver:
             return "coordinator"
         if identifier not in self._actors:
             if len(self._actors) >= PROGRESS_MAX_ACTORS:
-                return f"subagent-{PROGRESS_MAX_ACTORS + 1}"
+                return f"subagent-{PROGRESS_MAX_ACTORS}"
             self._actors[identifier] = f"subagent-{len(self._actors) + 1}"
         return self._actors[identifier]
 
@@ -424,22 +474,35 @@ class EventObserver:
     def _collab_agents(item: dict) -> list[tuple[str, str | None]]:
         states = item.get("agents_states")
         if isinstance(states, dict) and states:
-            return [
-                (identifier, state.get("status"))
-                for identifier, state in states.items()
-                if isinstance(identifier, str)
-                and identifier
-                and isinstance(state, dict)
-                and isinstance(state.get("status"), str)
-            ]
+            values = []
+            seen = set()
+            for identifier, state in states.items():
+                if (
+                    not isinstance(identifier, str)
+                    or not identifier
+                    or identifier in seen
+                    or not isinstance(state, dict)
+                    or not isinstance(state.get("status"), str)
+                ):
+                    continue
+                seen.add(identifier)
+                values.append((identifier, state["status"]))
+                if len(values) == PROGRESS_MAX_EVENT_ACTORS:
+                    break
+            return values
         receivers = item.get("receiver_thread_ids")
         if not isinstance(receivers, list):
             return []
-        return [
-            (identifier, None)
-            for identifier in receivers
-            if isinstance(identifier, str) and identifier
-        ]
+        values = []
+        seen = set()
+        for identifier in receivers:
+            if not isinstance(identifier, str) or not identifier or identifier in seen:
+                continue
+            seen.add(identifier)
+            values.append((identifier, None))
+            if len(values) == PROGRESS_MAX_EVENT_ACTORS:
+                break
+        return values
 
     @staticmethod
     def _agent_status(native_status: str | None) -> str | None:
@@ -457,10 +520,12 @@ class EventObserver:
         self, stage: str, activity: str, status: str, actor: str = "coordinator"
     ) -> None:
         if status in {"completed", "failed", "interrupted"}:
-            self._counts[activity] += 1
+            self._counts[activity] = min(
+                self._counts[activity] + 1, PROGRESS_MAX_COUNT
+            )
             count = self._counts[activity]
         else:
-            count = self._counts[activity] + 1
+            count = min(self._counts[activity] + 1, PROGRESS_MAX_COUNT)
         if self._progress is not None:
             self._progress.update_semantic(
                 {
@@ -592,19 +657,32 @@ class EventObserver:
         )
         if not (known_runner or known_subcommand):
             return
-        self.observation["checks_completed_total_count"] += 1
+        self.observation["checks_completed_total_count"] = min(
+            self.observation["checks_completed_total_count"] + 1,
+            PROGRESS_MAX_COUNT,
+        )
         checks = self.observation["checks_completed"]
         if len(checks) < MAX_COMPLETED_CHECKS:
+            if executable in {"pytest", "unittest"} or set(words[1:]).intersection(
+                {"test", "pytest", "unittest"}
+            ):
+                kind = "test"
+            elif executable in {"ruff", "black"} or "lint" in words[1:]:
+                kind = "lint"
+            elif "build" in words[1:]:
+                kind = "build"
+            else:
+                kind = "check"
             checks.append(
                 {
-                    "name": command,
+                    "kind": kind,
                     "status": "passed" if exit_code == 0 else "failed",
-                    "exit_code": exit_code if isinstance(exit_code, int) else None,
+                    "exit": exit_code if isinstance(exit_code, int) else None,
                 }
             )
         else:
             self.observation["checks_completed_truncated"] = True
-        self._counts["check"] += 1
+        self._counts["check"] = min(self._counts["check"] + 1, PROGRESS_MAX_COUNT)
         if self._progress is not None:
             self._progress.update_semantic(
                 {

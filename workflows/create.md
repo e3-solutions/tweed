@@ -31,11 +31,17 @@ or workflow, and original request.]
 [Known trigger or workflow, examples, environment, frequency, constraints, and
 supplied evidence. Describe inputs and desired outcomes, not a speculative
 implementation.]
+
+Bonaparte phase token: [exact runner-supplied canonical token]
 ```
 
 Preserve useful specifics and rewrite for clarity. Use `Unknown` for missing
 facts. Never fabricate behavior, impact, reproduction, requirements, cause, or
-solution. Add no comments: RCA owns the first Bonaparte comment for a bug, while
+solution. For a newly created issue, the runner supplies the exact correlation
+line separately; preserve it verbatim inside `## How`. It is private control
+metadata used only for exact receipt-loss readback and must not be replaced by a
+title or fuzzy search. Do not mutate a reused pre-existing issue solely to add a
+marker. Add no comments: RCA owns the first Bonaparte comment for a bug, while
 scope owns it for a feature.
 
 After creation or reuse, re-read the selected issue and verify its destination,

@@ -10,6 +10,7 @@ from unittest import mock
 import bonaparte_checkpoint as checkpoint
 
 TOKEN = "01234567-89ab-4def-8123-456789abcdef"
+PHASE_TOKEN = "11234567-89ab-4def-8123-456789abcdef"
 
 
 def semantic(**overrides):
@@ -28,8 +29,14 @@ def record(status="waiting-input", **overrides):
     value = {
         "version": checkpoint.VERSION,
         "token": TOKEN,
+        "phase_token": PHASE_TOKEN,
         "status": status,
         "phase": "rca",
+        "native_thread_id": "019fd385-da76-77f3-bd3a-2f1e4e49b936",
+        "native_turn_id": "turn-1",
+        "protocol": {"name": "codex-app-server", "version": "1"},
+        "runtime": {"name": "bonaparte", "version": "test"},
+        "capabilities": {"native_resume": True, "answer_replay": True},
         "soft_phase_budget_seconds": 300.0,
         "worktree": "/tmp/worktree",
         "git_dir": "/tmp/repository/.git",
@@ -39,12 +46,14 @@ def record(status="waiting-input", **overrides):
         "reasoning": "medium",
         "question": "Was the subscription active?",
         "pending_answer": None,
+        "pending_answer_state": "none",
         "receipt": {"phase": "rca", "state": "needs-input"},
+        "final_receipt": None,
         "branch": "arya/example",
         "files_changed": [{"path": "README.md", "status": " M"}],
         "files_changed_total_count": 1,
         "files_changed_truncated": False,
-        "checks_completed": ["git status --short"],
+        "checks_completed": [{"kind": "check", "status": "passed", "exit": 0}],
         "checks_completed_total_count": 1,
         "checks_completed_truncated": False,
         "activity": "waiting for incident identity",
@@ -57,6 +66,12 @@ def record(status="waiting-input", **overrides):
         "semantic_milestones_truncated": False,
     }
     value.update(overrides)
+    if (
+        isinstance(status, str)
+        and status in checkpoint.TERMINAL_STATUSES
+        and "final_receipt" not in overrides
+    ):
+        value["final_receipt"] = dict(value["receipt"])
     return value
 
 
@@ -100,6 +115,28 @@ class ValidationTests(unittest.TestCase):
             with self.subTest(status=status):
                 self.assertIs(checkpoint.validate(value), value)
 
+    def test_resume_and_terminal_receipt_authority_are_lifecycle_bound(self):
+        for status in checkpoint.STATUSES:
+            value = record(status, question=None)
+            if status == "waiting-input":
+                value["question"] = "Which environment?"
+            with self.subTest(status=status):
+                self.assertEqual(
+                    checkpoint.is_resume_eligible(value),
+                    status in checkpoint.RESUMABLE_STATUSES,
+                )
+                expected = (
+                    value["final_receipt"]
+                    if status in checkpoint.TERMINAL_STATUSES
+                    else None
+                )
+                self.assertEqual(checkpoint.authoritative_receipt(value), expected)
+
+        with self.assertRaisesRegex(RuntimeError, "final receipt"):
+            checkpoint.validate(record("completed", final_receipt=None, question=None))
+        with self.assertRaisesRegex(RuntimeError, "non-terminal"):
+            checkpoint.validate(record(final_receipt={"state": "completed"}))
+
     def test_envelope_is_exact_and_safety_relevant_types_are_strict(self):
         invalid = []
         missing = record()
@@ -107,7 +144,7 @@ class ValidationTests(unittest.TestCase):
         invalid.append(missing)
         invalid.append({**record(), "extra": True})
         invalid.append(record(version=True))
-        invalid.append(record(status="running"))
+        invalid.append(record(status="unknown"))
         invalid.append(record(status=[]))
         invalid.append(record(phase="unknown"))
         invalid.append(record(phase=[]))
@@ -116,6 +153,12 @@ class ValidationTests(unittest.TestCase):
         invalid.append(record(remote_state_changed="unknown"))
         invalid.append(record(files_changed_total_count=True))
         invalid.append(record(files_changed_total_count=2))
+        invalid.append(record(phase_token="not-a-uuid"))
+        invalid.append(record(native_thread_id=""))
+        invalid.append(record(native_turn_id=[]))
+        invalid.append(record(protocol=[]))
+        invalid.append(record(runtime=None))
+        invalid.append(record(capabilities=[]))
         for value in invalid:
             with self.subTest(value=value), self.assertRaises(RuntimeError):
                 checkpoint.validate(value)
@@ -123,6 +166,27 @@ class ValidationTests(unittest.TestCase):
     def test_waiting_input_requires_question(self):
         with self.assertRaisesRegex(RuntimeError, "question"):
             checkpoint.validate(record(question=None))
+
+    def test_pending_answer_replay_state_is_consistent(self):
+        for state in checkpoint.PENDING_ANSWER_STATES:
+            value = record(
+                pending_answer=(
+                    "Production" if state in {"pending", "delivering"} else None
+                ),
+                pending_answer_state=state,
+            )
+            with self.subTest(state=state):
+                self.assertIs(checkpoint.validate(value), value)
+
+        for value in (
+            record(pending_answer="Production", pending_answer_state="none"),
+            record(pending_answer=None, pending_answer_state="pending"),
+            record(pending_answer_state="unknown"),
+        ):
+            with self.subTest(value=value), self.assertRaisesRegex(
+                RuntimeError, "answer"
+            ):
+                checkpoint.validate(value)
 
     def test_soft_phase_budget_accepts_only_positive_finite_numbers(self):
         for budget in (1, 0.25, 300.0):
@@ -204,7 +268,12 @@ class ValidationTests(unittest.TestCase):
 
     def test_serialized_envelope_is_bounded(self):
         with self.assertRaisesRegex(RuntimeError, "1 MiB"):
-            checkpoint.validate(record(pending_answer="x" * checkpoint.MAX_BYTES))
+            checkpoint.validate(
+                record(
+                    pending_answer="x" * checkpoint.MAX_BYTES,
+                    pending_answer_state="pending",
+                )
+            )
 
 
 class PersistenceTests(unittest.TestCase):
@@ -241,7 +310,8 @@ class PersistenceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             home = Path(temporary)
             legacy = record()
-            del legacy["soft_phase_budget_seconds"]
+            for field in set(legacy) - checkpoint.V2_FIELDS:
+                del legacy[field]
             legacy["version"] = 2
             path = checkpoint.checkpoint_path(TOKEN, home)
             path.write_text(json.dumps(legacy))
@@ -253,6 +323,31 @@ class PersistenceTests(unittest.TestCase):
                 normalized["soft_phase_budget_seconds"],
                 checkpoint.DEFAULT_SOFT_PHASE_BUDGET_SECONDS,
             )
+
+    def test_v3_checkpoint_is_read_and_normalized_to_ledger_defaults(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            legacy = record("completed", question=None)
+            for field in set(legacy) - checkpoint.V3_FIELDS:
+                del legacy[field]
+            legacy["version"] = 3
+            path = checkpoint.checkpoint_path(TOKEN, temporary)
+            path.write_text(json.dumps(legacy))
+
+            normalized = checkpoint.read_checkpoint(TOKEN, temporary)
+
+            self.assertEqual(normalized["version"], checkpoint.VERSION)
+            self.assertEqual(normalized["phase_token"], TOKEN)
+            self.assertEqual(normalized["native_thread_id"], TOKEN)
+            self.assertIsNone(normalized["native_turn_id"])
+            self.assertEqual(
+                normalized["protocol"],
+                {
+                    "legacy_checkpoint_version": 3,
+                    "initial_remote": {"status": "legacy-unavailable"},
+                },
+            )
+            self.assertEqual(normalized["pending_answer_state"], "none")
+            self.assertEqual(normalized["final_receipt"], legacy["receipt"])
 
     def test_configured_budget_survives_atomic_round_trip_and_lease_reuse(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -308,7 +403,7 @@ class PersistenceTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "JSON"):
                 checkpoint.read_checkpoint(TOKEN, home)
 
-    def test_active_read_accepts_only_waiting_input(self):
+    def test_active_read_accepts_only_resumable_lifecycles(self):
         with tempfile.TemporaryDirectory() as temporary:
             checkpoint.write_checkpoint(record(), temporary)
             self.assertEqual(
@@ -321,8 +416,32 @@ class PersistenceTests(unittest.TestCase):
                 record("completed", question=None),
                 temporary,
             )
-            with self.assertRaisesRegex(RuntimeError, "no longer waiting"):
+            with self.assertRaisesRegex(RuntimeError, "not resumable"):
                 checkpoint.read_checkpoint(TOKEN, temporary, active_only=True)
+
+            checkpoint.write_checkpoint(
+                record("failed-resumable", question=None), temporary
+            )
+            self.assertEqual(
+                checkpoint.read_checkpoint(TOKEN, temporary, active_only=True)[
+                    "status"
+                ],
+                "failed-resumable",
+            )
+
+    def test_failed_atomic_replace_preserves_the_committed_ledger(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            original = record(activity="committed")
+            path = checkpoint.write_checkpoint(original, temporary)
+            replacement = record(activity="uncommitted")
+
+            with mock.patch.object(
+                checkpoint.os, "replace", side_effect=OSError("crash before rename")
+            ), self.assertRaises(OSError):
+                checkpoint.write_checkpoint(replacement, temporary)
+
+            self.assertEqual(checkpoint.read_checkpoint(TOKEN, temporary), original)
+            self.assertEqual(list(path.parent.glob(".checkpoint-*")), [])
 
     @unittest.skipUnless(hasattr(os, "O_NOFOLLOW"), "requires O_NOFOLLOW")
     def test_symlinks_are_never_followed(self):

@@ -332,26 +332,26 @@ def status(home: Path) -> int:
     return 0
 
 
-def automatic_update(home: Path) -> None:
+def automatic_update(home: Path) -> str:
     if os.environ.get("BONAPARTE_AUTO_UPDATE") == "0":
-        return
+        return "unknown"
     checked = home / "last-check"
     claim = home / "last-check.lock"
     try:
         lock = claim.open("a")
     except OSError:
-        return
+        return "unknown"
     with lock:
         try:
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except OSError:
-            return
+            return "unknown"
         try:
             if (
                 checked.exists()
                 and time.time() - checked.stat().st_mtime < CHECK_INTERVAL
             ):
-                return
+                return os.environ.get("BONAPARTE_STABLE_UPDATE", "unknown")
             checked.touch()
             tag, _ = latest_tag()
             installed = current_release(home).name
@@ -362,9 +362,11 @@ def automatic_update(home: Path) -> None:
                     "run 'bonaparte update'",
                     file=sys.stderr,
                 )
+                return "available"
+            return "current"
         except Exception:
             # Ordinary commands remain quiet and runnable when the check is offline.
-            return
+            return "unknown"
         finally:
             try:
                 fcntl.flock(lock, fcntl.LOCK_UN)
@@ -386,9 +388,19 @@ def main() -> int:
             )
             return 0
         migrate_autoresearch_link(home)
-        automatic_update(home)
-        runner = current_release(home) / "bonaparte"
-        os.execv(sys.executable, [sys.executable, str(runner), *sys.argv[1:]])
+        active_release = current_release(home)
+        update_state = automatic_update(home)
+        runner = active_release / "bonaparte"
+        environment = {
+            **os.environ,
+            "BONAPARTE_RUNTIME_VERSION": active_release.name,
+            "BONAPARTE_STABLE_UPDATE": update_state,
+        }
+        os.execve(
+            sys.executable,
+            [sys.executable, str(runner), *sys.argv[1:]],
+            environment,
+        )
     except Exception as error:
         print(f"bonaparte: {error}", file=sys.stderr)
         return 1
