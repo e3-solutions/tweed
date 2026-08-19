@@ -437,6 +437,33 @@ class InstallationTests(unittest.TestCase):
                 LAUNCHER.fetch_release(self.home, "v1.1.0", expected_oid)
         self.assertFalse((legacy / LAUNCHER.RELEASE_OID_FILE).exists())
 
+    def test_legacy_bytecode_disappearance_race_is_tolerated(self):
+        release = self.root / "release"
+        bytecode = release / "__pycache__"
+        bytecode.mkdir(parents=True)
+        real_rmtree = shutil.rmtree
+
+        def concurrently_remove(path):
+            real_rmtree(path)
+            real_rmtree(path)
+
+        with mock.patch.object(
+            LAUNCHER.shutil, "rmtree", side_effect=concurrently_remove
+        ):
+            LAUNCHER.remove_legacy_bytecode(release)
+
+        self.assertFalse(bytecode.exists())
+
+    def test_legacy_bytecode_cleanup_error_propagates(self):
+        release = self.root / "release"
+        (release / "__pycache__").mkdir(parents=True)
+
+        with mock.patch.object(
+            LAUNCHER.shutil, "rmtree", side_effect=PermissionError("denied")
+        ):
+            with self.assertRaisesRegex(PermissionError, "denied"):
+                LAUNCHER.remove_legacy_bytecode(release)
+
     def test_oidless_tampered_module_is_rejected_before_smoke_execution(self):
         original, legacy, expected_oid = self.prepare_oidless_cache()
         sentinel = self.root / "tampered-module-executed"

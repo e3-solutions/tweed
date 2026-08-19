@@ -248,7 +248,10 @@ def matches_checkout(release: Path, checkout: Path) -> bool:
 def remove_legacy_bytecode(release: Path) -> None:
     bytecode = release / "__pycache__"
     if bytecode.is_dir() and not bytecode.is_symlink():
-        shutil.rmtree(bytecode)
+        try:
+            shutil.rmtree(bytecode)
+        except FileNotFoundError:
+            pass
 
 
 def fetch_release(home: Path, tag: str, expected_oid: str) -> Path:
