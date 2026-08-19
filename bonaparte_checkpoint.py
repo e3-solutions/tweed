@@ -217,6 +217,8 @@ def _validate_common(value: dict, token=None) -> None:
 
 
 def _validate_soft_phase_budget(value: object) -> None:
+    if value is None:
+        return
     if type(value) not in (int, float):
         raise RuntimeError(
             "checkpoint soft phase budget must be a positive finite number"

@@ -125,7 +125,7 @@ class ValidationTests(unittest.TestCase):
             checkpoint.validate(record(question=None))
 
     def test_soft_phase_budget_accepts_only_positive_finite_numbers(self):
-        for budget in (1, 0.25, 300.0):
+        for budget in (None, 1, 0.25, 300.0):
             with self.subTest(budget=budget):
                 value = record(soft_phase_budget_seconds=budget)
                 self.assertIs(checkpoint.validate(value), value)
@@ -139,7 +139,6 @@ class ValidationTests(unittest.TestCase):
             float("-inf"),
             float("nan"),
             "300",
-            None,
         )
         for budget in invalid:
             with self.subTest(budget=budget), self.assertRaisesRegex(
