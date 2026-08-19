@@ -1384,6 +1384,14 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertIn(f"bonaparte inspect {token}", failed["next_action"])
         self.assertNotIn("resume", failed["next_action"].split(";")[0])
 
+        unknown = receipt("needs-input")
+        unknown["remote_state_changed"] = None
+        RUNNER.receipt_v2(unknown, token)
+        self.assertFalse(unknown["safe_to_resume"])
+        self.assertFalse(unknown["reconciliation_required"])
+        self.assertEqual(unknown["remote_state"], "unknown")
+        self.assertIn(f"bonaparte inspect {token}", unknown["next_action"])
+
     def test_ambiguous_resume_failure_preserves_and_replays_the_answer(self):
         with tempfile.TemporaryDirectory() as temporary:
             with mock.patch.dict(

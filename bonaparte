@@ -294,17 +294,17 @@ def receipt_v2(
         reason, input_kind, safe_to_resume = "blocked", "none", False
     if failed_resumable:
         next_action = (
-            f"Run bonaparte inspect {token}; resume only after exact reconciliation."
-            if reconciliation_required
-            else f"Run bonaparte resume {token} <answer>."
+            f"Run bonaparte resume {token} <answer>."
+            if safe_to_resume
+            else f"Run bonaparte inspect {token}; resume only after exact reconciliation."
         )
     elif state == "completed":
         next_action = None
     elif state == "needs-input":
         next_action = (
-            f"Run bonaparte inspect {token}; resume only after exact reconciliation."
-            if reconciliation_required
-            else f"Run bonaparte resume {token} <answer>."
+            f"Run bonaparte resume {token} <answer>."
+            if safe_to_resume
+            else f"Run bonaparte inspect {token}; resume only after exact reconciliation."
         )
     else:
         next_action = None
