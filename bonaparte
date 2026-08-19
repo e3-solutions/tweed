@@ -1437,6 +1437,15 @@ def resume_checkpoint(
         write_checkpoint(checkpoint)
         return checkpoint_receipt(checkpoint), 0
 
+    receipt["remote_state_changed"] = checkpoint["remote_state_changed"]
+    receipt_v2(
+        receipt,
+        checkpoint["phase_token"],
+        observation={
+            "runtime_version": receipt.get("runtime_version")
+            or (checkpoint.get("runtime") or {}).get("version")
+        },
+    )
     checkpoint.update(
         status="completed" if receipt["state"] == "completed" else "blocked",
         question=None,
@@ -1444,7 +1453,6 @@ def resume_checkpoint(
         blocker=receipt["summary"] if receipt["state"] == "blocked" else None,
         final_receipt=dict(receipt),
     )
-    receipt["remote_state_changed"] = checkpoint["remote_state_changed"]
     _refresh_checkpoint_git(checkpoint, update_identity=True)
     write_checkpoint(checkpoint)
     return receipt, 0

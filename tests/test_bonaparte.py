@@ -1204,7 +1204,11 @@ class BonaparteRunnerTests(unittest.TestCase):
         run_phase.assert_not_called()
 
     def test_terminal_resume_receipt_reports_cumulative_remote_state(self):
-        for previous, expected in ((True, True), (None, None)):
+        for previous, expected, remote_state in (
+            (True, True, "changed"),
+            (False, False, "unchanged"),
+            (None, None, "unknown"),
+        ):
             with self.subTest(previous=previous), tempfile.TemporaryDirectory() as temporary:
                 with mock.patch.dict(
                     os.environ, {"BONAPARTE_HOME": temporary}, clear=False
@@ -1229,7 +1233,12 @@ class BonaparteRunnerTests(unittest.TestCase):
 
                 self.assertEqual(exit_code, 0)
                 self.assertIs(result["remote_state_changed"], expected)
+                self.assertEqual(result["remote_state"], remote_state)
                 self.assertIs(stored["remote_state_changed"], expected)
+                self.assertEqual(stored["final_receipt"], result)
+                self.assertEqual(
+                    RUNNER.authoritative_receipt(stored)["remote_state"], remote_state
+                )
 
     def test_resume_rejects_a_different_branch_after_saving_the_answer(self):
         with tempfile.TemporaryDirectory() as temporary:
