@@ -7,6 +7,7 @@ import argparse
 import json
 import math
 import os
+import re
 import subprocess
 import sys
 import time
@@ -39,6 +40,7 @@ from bonaparte_progress import (
 )
 
 _SUBPROCESS_POPEN = subprocess.Popen
+_SUBPROCESS_RUN = subprocess.run
 
 _ACTIVE_PROGRESS: ProgressReporter | None = None
 
@@ -292,6 +294,41 @@ def _handoff_value(body: str, labels: tuple[str, ...]) -> str | None:
     return None
 
 
+def validate_terminal_pull_request(
+    branch: str | None, commit: str | None, pull_request: str | None
+) -> bool:
+    if not all((branch, commit, pull_request)):
+        return False
+    if not re.fullmatch(
+        r"https://github\.com/[^/\s]+/[^/\s]+/pull/[1-9][0-9]*", pull_request
+    ):
+        return False
+    try:
+        process = _SUBPROCESS_RUN(
+            [
+                "gh", "pr", "view", pull_request,
+                "--json", "headRefName,headRefOid,state,url",
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+            timeout=15,
+            check=False,
+        )
+        if process.returncode != 0:
+            return False
+        current = json.loads(process.stdout)
+    except (OSError, subprocess.SubprocessError, json.JSONDecodeError):
+        return False
+    return (
+        isinstance(current, dict)
+        and current.get("state") == "OPEN"
+        and current.get("url") == pull_request
+        and current.get("headRefName") == branch
+        and current.get("headRefOid") == commit
+    )
+
+
 def recover_terminal_receipt(
     issue: dict, comments: list[dict], requested_phase: str
 ) -> dict | None:
@@ -328,6 +365,8 @@ def recover_terminal_receipt(
     pull_request = _handoff_value(body, ("Draft PR", "Pull request"))
     needs_git = requested_phase in {"implement", "review", "publish"}
     complete = not needs_git or all((branch, commit, pull_request))
+    if complete and needs_git:
+        complete = validate_terminal_pull_request(branch, commit, pull_request)
     return {
         "phase": requested_phase,
         "state": "completed" if complete else "blocked",
@@ -337,7 +376,7 @@ def recover_terminal_receipt(
         "summary": (
             f"Recovered terminal {source_phase} evidence from Linear without starting a coordinator."
             if complete else
-            f"Terminal {source_phase} evidence is missing required Git or pull-request provenance."
+            f"Terminal {source_phase} evidence is missing or stale against the current open pull request."
         ),
         "question": None,
         "next_action": None if complete else "Correct the durable terminal handoff and retry.",

@@ -1,6 +1,8 @@
 import runpy
+import json
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest import mock
 
 
@@ -9,6 +11,20 @@ RUNNER_GLOBALS = RUNNER["run_phase"].__globals__
 HEADERS = RUNNER["PHASE_HEADERS"]
 select_handoff = RUNNER["select_handoff"]
 recover_terminal_receipt = RUNNER["recover_terminal_receipt"]
+
+
+def live_pr(branch="arya/lin-1-example", commit="b" * 40):
+    return SimpleNamespace(
+        returncode=0,
+        stdout=json.dumps(
+            {
+                "headRefName": branch,
+                "headRefOid": commit,
+                "state": "OPEN",
+                "url": "https://github.com/o/r/pull/1",
+            }
+        ),
+    )
 
 
 def issue(kind="Bug"):
@@ -38,7 +54,7 @@ class HandoffTests(unittest.TestCase):
             "- Branch: `arya/lin-1-example`\n"
             "- Implementation commit: `" + "a" * 40 + "`\n"
             "- Reviewed commit: `" + "b" * 40 + "`\n"
-            "- Draft PR: `https://github.test/o/r/pull/1`"
+            "- Draft PR: `https://github.com/o/r/pull/1`"
         )
         review = comment("review", "unused", "5")
         review["body"] = HEADERS["review"] + git_handoff
@@ -51,7 +67,11 @@ class HandoffTests(unittest.TestCase):
                 {"call_linear": mock.Mock(return_value=(issue(), [stale, review]))},
             ),
             mock.patch.dict(
-                RUNNER_GLOBALS, {"AppServerPhaseDriver": driver}
+                RUNNER_GLOBALS,
+                {
+                    "AppServerPhaseDriver": driver,
+                    "_SUBPROCESS_RUN": mock.Mock(return_value=live_pr()),
+                },
             ),
         ):
             receipt = RUNNER["run_phase"](Path(__file__).resolve().parents[1], "implement", "LIN-1")
@@ -70,7 +90,7 @@ class HandoffTests(unittest.TestCase):
         )
         recovered = recover_terminal_receipt(issue(), [review], "implement")
         self.assertEqual(recovered["state"], "blocked")
-        self.assertIn("missing required Git", recovered["summary"])
+        self.assertIn("missing or stale", recovered["summary"])
 
     def test_terminal_guard_ignores_replies_inline_near_matches_and_legacy(self):
         candidates = [
@@ -88,15 +108,37 @@ class HandoffTests(unittest.TestCase):
         published["body"] = (
             HEADERS["publish"]
             + "\n\n**Status:** Ready for review\n\n### Delivery\n"
-            + "- Pull request: https://github.test/o/r/pull/1\n"
+            + "- Pull request: https://github.com/o/r/pull/1\n"
             + "- Branch: `arya/lin-1-example`\n"
             + "- Reviewed commit: `" + "c" * 40 + "`"
         )
-        recovered = recover_terminal_receipt(
-            issue(), [implementation, published], "implement"
-        )
+        with mock.patch.dict(
+            RUNNER_GLOBALS,
+            {"_SUBPROCESS_RUN": mock.Mock(return_value=live_pr(commit="c" * 40))},
+        ):
+            recovered = recover_terminal_receipt(
+                issue(), [implementation, published], "implement"
+            )
         self.assertEqual(recovered["state"], "completed")
         self.assertEqual(recovered["commit"], "c" * 40)
+
+    def test_terminal_recovery_blocks_when_live_pull_request_head_advanced(self):
+        review = comment("review", "unused", "5")
+        review["body"] = (
+            HEADERS["review"]
+            + "\n\n**Verdict:** Ready to publish\n\n### Git handoff\n"
+            + "- Branch: `arya/lin-1-example`\n"
+            + "- Reviewed commit: `" + "b" * 40 + "`\n"
+            + "- Draft PR: `https://github.com/o/r/pull/1`"
+        )
+        with mock.patch.dict(
+            RUNNER_GLOBALS,
+            {"_SUBPROCESS_RUN": mock.Mock(return_value=live_pr(commit="c" * 40))},
+        ):
+            recovered = recover_terminal_receipt(issue(), [review], "implement")
+
+        self.assertEqual(recovered["state"], "blocked")
+        self.assertIn("stale", recovered["summary"])
 
     def test_phase_matrix_passes_only_required_context(self):
         rca = comment("rca", "RCA", "1")

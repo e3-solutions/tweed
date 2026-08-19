@@ -119,6 +119,45 @@ class PhaseRuntimeTests(unittest.TestCase):
         )
         cleanup.assert_called_once_with(driver.process)
 
+    def test_twenty_direct_children_fit_within_bounded_page_budget(self):
+        driver = object.__new__(RUNNER.AppServerPhaseDriver)
+        driver.process = mock.Mock()
+        driver._receipt_thread_id = "root"
+        driver._receipt_turn_id = "turn"
+        driver._issue_branch = "arya/cor-1-example"
+        driver._disposition = "terminal"
+        direct_children = [f"child-{index}" for index in range(20)]
+        calls = []
+
+        def request(method, params):
+            calls.append((method, params))
+            if method != "thread/list":
+                return {}
+            parent = params["parentThreadId"]
+            if parent == "root":
+                return {
+                    "data": [
+                        {"id": child, "parentThreadId": "root"}
+                        for child in direct_children
+                    ],
+                    "nextCursor": None,
+                }
+            return {"data": [], "nextCursor": None}
+
+        driver.request = request
+        with mock.patch.object(NATIVE, "terminate_and_reap"):
+            driver.close(failed=False)
+
+        self.assertEqual(
+            [
+                params["threadId"]
+                for method, params in calls
+                if method == "thread/metadata/update"
+            ],
+            direct_children,
+        )
+        self.assertEqual(calls[-1][0], "thread/archive")
+
     def test_resumable_and_failed_close_use_explicit_unload_paths(self):
         for disposition, expected in (
             ("resumable", ["thread/unsubscribe"]),
