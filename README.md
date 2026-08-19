@@ -361,7 +361,8 @@ window (`--finalization-window-seconds`, default 30). Settled work may return a
 receipt; otherwise Bonaparte attempts native interruption and records a
 failed-resumable result requiring reconciliation. A steering acknowledgement is
 not a quiescence guarantee. Unsupported, rejected, delayed, or unobservable
-capabilities are reported explicitly.
+capabilities are reported explicitly. The finalization window must be positive,
+finite, and no greater than 300 seconds.
 
 ## Model selection
 
@@ -430,6 +431,10 @@ soft phase budget unless `--soft-phase-budget-seconds` explicitly overrides it
 for that resumed turn.
 
 Every phase allocates a durable phase token before native coordinator work.
+Native thread and turn identifiers are atomically committed as soon as the
+provider returns them. A schema- and privacy-validated receipt is committed as
+the authoritative terminal record before control returns from the native turn,
+so a later host-process crash does not discard already-observed authority.
 Receipt protocol v2 adds `phase_token`, `reason_code`, `user_action_required`,
 `input_kind`, `safe_to_resume`, `reconciliation_required`, `remote_state`,
 `runtime_version`, `receipt_protocol`, and `progress_abi`; the older
@@ -437,7 +442,19 @@ Receipt protocol v2 adds `phase_token`, `reason_code`, `user_action_required`,
 `bonaparte inspect <phase-token>` performs read-only Git, exact PR, and Linear
 phase-artifact observations and never persists or writes. Resume repeats this
 reconciliation immediately before answer delivery and fails closed on a changed
-or unknown observation.
+or unknown observation. Create recovery is stricter: without a validated durable
+receipt containing the exact Linear issue identity, receipt loss has no safe
+provider correlation and requires reconciliation; a title or fuzzy search is
+never treated as proof that creation occurred. The legacy three-argument resume
+form requires an existing checkpoint whose token and phase match exactly and
+never creates a fresh run.
+
+Receipt and checkpoint serialization is privacy fail-closed. Control text,
+authorization headers, secret-like tokens, private keys, direct email contacts,
+and local/private HTTP endpoints are rejected instead of persisted or emitted.
+The fixed semantic progress vocabulary, opaque identifiers, canonical provider
+URLs, and local recovery metadata remain supported. Rejected text produces a
+bounded failure receipt without echoing the rejected value.
 
 Stable update availability is advisory and never changes an active phase's
 runtime. An explicit update affects only the next process. After updating, stop
@@ -456,15 +473,18 @@ do not inherit the descriptor or its environment variable. No other transport
 or progress setting exists.
 
 The channel is UTF-8 JSON Lines using progress ABI version 3. Each record has
-`version`, `sequence`, `phase`, `state`, `elapsed_seconds`, `runtime_version`,
-`update_state`, and `semantic`. `version` is `3`; `sequence` is a strictly increasing integer for
+`version`, `progress_abi`, `sequence`, `phase`, `state`, `elapsed_seconds`,
+`runtime_version`, `update_state`, and `semantic`. Both `version` and
+`progress_abi` are exactly `3`; `sequence` is a strictly increasing integer for
 one process; `phase` is one of `create`, `rca`, `scope`, `implement`, `review`,
 or `publish`; and `elapsed_seconds` is a nonnegative monotonic duration rounded
 to milliseconds. A resume starts a new process sequence and elapsed clock while
 restoring only its safe durable semantic snapshot.
 
-`state` is one of `started`, `active`, `finalizing`, `completed`, `needs-input`,
-`blocked`, `failed`, or `interrupted`. `semantic` is the latest snapshot plus
+`state` is one of `started`, `update-available`, `active`, `finalizing`,
+`completed`, `needs-input`, `blocked`, `failed`, or `interrupted`.
+`update-available` is advisory and may follow `started`; it does not change the
+active runtime. `semantic` is the latest snapshot plus
 its bounded `milestones` list:
 
 ```json
@@ -477,7 +497,7 @@ The snapshot and every milestone have exactly five typed fields: `stage`,
 | Field | Allowed values |
 |---|---|
 | `stage` | `coordinating`, `searching`, `tool-use`, `checking`, `file-changes`, `subagent-assignment`, `subagent-completion`, `waiting-input`, `finalizing`, `terminal` |
-| `actor` | `null`, `coordinator`, or an opaque per-run ordinal `subagent-N` where `N` is at least 1 |
+| `actor` | `null`, `coordinator`, or an opaque per-run ordinal `subagent-N` where `N` is from 1 through 32; overflow is coalesced into ordinal 32 |
 | `activity` | `null`, `lifecycle`, `search`, `tool`, `check`, `file-change`, `subagent` |
 | `status` | `null`, `started`, `in-progress`, `completed`, `failed`, `waiting`, `interrupted` |
 | `count` | `null` or an integer from 0 through 2147483647; when present, the generic cumulative count for the current activity |
@@ -486,7 +506,9 @@ When milestones exist, `semantic` also contains `milestones`,
 `milestones_total_count`, and `milestones_truncated`. The total is a
 nonnegative integer no smaller than the retained list length, and the boolean
 truncation flag reports whether earlier milestones were omitted. These three
-fields are absent before the first milestone.
+fields are absent before the first milestone. Milestone totals and all activity
+counts saturate at 2147483647. One native event fans out to at most 32
+deduplicated actors.
 
 Bonaparte continuously drains native Codex JSONL but translates only recognized
 structural event types and typed fields into this fixed taxonomy. Events within

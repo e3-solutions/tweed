@@ -40,6 +40,22 @@ PENDING_ANSWER_STATES = {"none", "pending", "delivering", "delivered"}
 PHASES = {"create", "rca", "scope", "implement", "review", "publish"}
 SEMANTIC_FIELDS = {"stage", "actor", "activity", "status", "count"}
 _SUBAGENT_ACTOR = re.compile(r"subagent-([1-9][0-9]{0,9})\Z")
+_DIRECT_CONTACT = re.compile(
+    r"(?<![A-Za-z0-9._%+-])[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}(?![A-Za-z0-9.-])"
+)
+_SECRET_TEXT = re.compile(
+    r"(?i)(?:authorization\s*:\s*(?:bearer|basic)\s+\S+|"
+    r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|"
+    r"(?:sk|ghp|github_pat|xox[baprs])-[_A-Za-z0-9-]{8,}|"
+    r"aws_secret_access_key\s*[=:]\s*\S+|"
+    r"(?:api[_-]?key|access[_-]?token|refresh[_-]?token|password|secret)"
+    r"\s*[=:]\s*[^\s,;]+)"
+)
+_PRIVATE_URL = re.compile(
+    r"(?i)https?://(?:[^\s/@]+@)?(?:localhost|127(?:\.\d{1,3}){3}|"
+    r"10(?:\.\d{1,3}){3}|192\.168(?:\.\d{1,3}){2}|"
+    r"172\.(?:1[6-9]|2\d|3[01])(?:\.\d{1,3}){2}|[^\s/]+\.(?:internal|local))"
+)
 
 V1_FIELDS = {
     "version",
@@ -156,6 +172,26 @@ def _json_bytes(value: object) -> bytes:
         ).encode("utf-8")
     except (RecursionError, TypeError, ValueError, UnicodeError) as error:
         raise RuntimeError("checkpoint is not valid JSON") from error
+
+
+def validate_serialization_privacy(value: object, label: str = "serialized value") -> None:
+    """Reject secret-like, direct-contact, and private-endpoint free text."""
+    pending = [value]
+    while pending:
+        candidate = pending.pop()
+        if isinstance(candidate, dict):
+            pending.extend(candidate.values())
+        elif isinstance(candidate, (list, tuple)):
+            pending.extend(candidate)
+        elif isinstance(candidate, str):
+            if any(ord(character) < 32 and character not in "\n\t" for character in candidate):
+                raise RuntimeError(f"{label} failed privacy validation")
+            if (
+                _DIRECT_CONTACT.search(candidate)
+                or _SECRET_TEXT.search(candidate)
+                or _PRIVATE_URL.search(candidate)
+            ):
+                raise RuntimeError(f"{label} failed privacy validation")
 
 
 def _validate_semantic(value: object, label: str) -> None:
@@ -336,6 +372,7 @@ def validate(value: object, token=None) -> dict:
         raise RuntimeError("checkpoint semantic milestone inventory is invalid")
     for milestone in milestones:
         _validate_semantic(milestone, "semantic milestone")
+    validate_serialization_privacy(value, "checkpoint")
     if len(_json_bytes(value)) > MAX_BYTES:
         raise RuntimeError("checkpoint exceeds 1 MiB")
     return value
@@ -377,7 +414,10 @@ def _upgrade_legacy(value: dict) -> dict:
         phase_token=normalized["token"],
         native_thread_id=normalized["token"],
         native_turn_id=None,
-        protocol={"legacy_checkpoint_version": value["version"]},
+        protocol={
+            "legacy_checkpoint_version": value["version"],
+            "initial_remote": {"status": "legacy-unavailable"},
+        },
         runtime={},
         capabilities={},
         pending_answer_state=("pending" if normalized["pending_answer"] else "none"),

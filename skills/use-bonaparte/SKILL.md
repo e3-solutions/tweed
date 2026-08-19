@@ -128,6 +128,11 @@ is present. Stop on `blocked` or `failed`; if a failed receipt includes a token,
 report it with the blocker because the durable checkpoint remains available, but
 never retry or reorder a phase automatically.
 
+If `safe_to_resume` is false, do not run the receipt's resume command. Run the
+exact `bonaparte inspect <phase_token>` action first and relay the reconciliation
+result. A create receipt recovered through the durable phase-token marker is an
+exact provider readback; title or fuzzy-search matches are never sufficient.
+
 An `update-available` progress notice is nonblocking. The active phase keeps its
 fixed runtime. After an explicit `bonaparte update`, stop the chain and reload
 the installed skill before starting the next phase; in-memory Codex cache

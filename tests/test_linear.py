@@ -1,5 +1,6 @@
 import json
 import unittest
+import uuid
 from pathlib import Path
 from unittest import mock
 
@@ -32,6 +33,45 @@ class FakeDriver:
 
 
 class LinearIntakeTests(unittest.TestCase):
+    def test_create_correlation_readback_requires_one_exact_marker(self):
+        token = str(uuid.uuid4())
+        marker = linear.create_correlation_marker(token)
+        driver = FakeDriver([])
+        responses = iter(
+            [
+                {},
+                {"thread": {"id": "thread-1"}},
+                {
+                    "isError": False,
+                    "structuredContent": {
+                        "issues": [
+                            {
+                                "identifier": "COR-9",
+                                "description": f"## How\n{marker}",
+                            }
+                        ],
+                        "hasNextPage": False,
+                    },
+                    "content": [],
+                },
+                {
+                    "isError": False,
+                    "structuredContent": {
+                        "identifier": "COR-9",
+                        "url": "https://linear.example/COR-9",
+                        "description": f"## How\n{marker}",
+                    },
+                    "content": [],
+                },
+            ]
+        )
+        driver.request = mock.Mock(side_effect=lambda *_args, **_kwargs: next(responses))
+        with mock.patch.object(linear, "AppServerPhaseDriver", return_value=driver):
+            issue = linear.find_linear_issue_by_correlation(Path("/repo"), token)
+
+        self.assertEqual(issue["identifier"], "COR-9")
+        self.assertTrue(driver.closed)
+
     def test_reads_every_comment_page_through_the_shared_driver(self):
         driver = FakeDriver(
             [

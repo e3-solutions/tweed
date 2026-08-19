@@ -3,12 +3,21 @@
 from __future__ import annotations
 
 import json
+import uuid
 from pathlib import Path
 
 from bonaparte_native import AppServerPhaseDriver
 from bonaparte_progress import EventObserver
 
 LINEAR_ARTIFACT_MAX_BYTES = 64 * 1024
+CREATE_CORRELATION_PREFIX = "Bonaparte phase token: "
+
+
+def create_correlation_marker(token: str) -> str:
+    canonical = str(uuid.UUID(token))
+    if canonical != token:
+        raise ValueError("create correlation token must be canonical")
+    return f"{CREATE_CORRELATION_PREFIX}{canonical}"
 
 
 def _tool(
@@ -91,6 +100,56 @@ def call_linear(repository: Path, issue_identifier: str) -> tuple[dict, list[dic
                 raise RuntimeError("Linear comments response has an invalid cursor")
             seen_cursors.add(cursor)
         return issue, comments
+    finally:
+        driver.close(failed=False)
+
+
+def find_linear_issue_by_correlation(repository: Path, token: str) -> dict | None:
+    """Read back exactly one create result carrying the durable phase marker."""
+    marker = create_correlation_marker(token)
+    driver = AppServerPhaseDriver(repository, EventObserver())
+    try:
+        driver.request(
+            "initialize", {"clientInfo": {"name": "bonaparte", "version": "1"}}
+        )
+        driver.process.stdin.write('{"method":"initialized","params":{}}\n')
+        driver.process.stdin.flush()
+        started = driver.request(
+            "thread/start", {"cwd": str(repository), "ephemeral": True}
+        )
+        thread_id = started["thread"]["id"]
+        page = _tool(
+            driver,
+            thread_id,
+            "list_issues",
+            {"query": token, "limit": 250, "orderBy": "createdAt"},
+        )
+        issues = page.get("issues")
+        if not isinstance(issues, list) or page.get("hasNextPage") is not False:
+            raise RuntimeError("Linear create correlation response is incomplete")
+        matches = []
+        for candidate in issues:
+            if not isinstance(candidate, dict):
+                continue
+            description = candidate.get("description")
+            identifier = candidate.get("identifier") or candidate.get("id")
+            if (
+                isinstance(description, str)
+                and marker in description.splitlines()
+                and isinstance(identifier, str)
+                and identifier
+            ):
+                matches.append(identifier)
+        if len(matches) > 1:
+            raise RuntimeError("Linear create correlation is ambiguous")
+        if not matches:
+            return None
+        issue = _tool(driver, thread_id, "get_issue", {"id": matches[0]})
+        description = issue.get("description")
+        if not isinstance(description, str) or marker not in description.splitlines():
+            raise RuntimeError("Linear create correlation readback mismatched")
+        issue["identifier"] = issue.get("identifier") or matches[0]
+        return issue
     finally:
         driver.close(failed=False)
 

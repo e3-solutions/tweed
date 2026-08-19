@@ -543,11 +543,13 @@ class PhaseRuntimeTests(unittest.TestCase):
             mock.patch.object(RUNNER, "AppServerPhaseDriver", Driver),
             mock.patch.object(RUNNER.time, "monotonic", side_effect=[100.0, 101.0]),
         ):
+            observation = {}
             result = RUNNER.run_phase(
                 ROOT,
                 "rca",
                 "Continue.",
                 SESSION_ID,
+                observation=observation,
                 soft_phase_budget_seconds=1,
             )
 
@@ -563,6 +565,7 @@ class PhaseRuntimeTests(unittest.TestCase):
             },
         )
         self.assertFalse(instances[0].closed_failed)
+        self.assertEqual(observation["steer_outcome"], "accepted")
 
     def test_post_ack_root_work_is_rejected_but_in_flight_and_wrap_up_are_allowed(self):
         final = receipt("needs-input")
@@ -726,17 +729,20 @@ class PhaseRuntimeTests(unittest.TestCase):
             mock.patch.object(RUNNER.time, "monotonic", side_effect=[10.0, 11.0]),
             self.assertRaisesRegex(RuntimeError, "rejected turn/steer"),
         ):
+            observation = {}
             RUNNER.run_phase(
                 ROOT,
                 "rca",
                 "Continue.",
                 SESSION_ID,
+                observation=observation,
                 soft_phase_budget_seconds=1,
             )
 
         self.assertEqual(len(instances[0].sent), 1)
         self.assertEqual(instances[0].sent[0][0], "turn/steer")
         self.assertTrue(instances[0].closed_failed)
+        self.assertEqual(observation["steer_outcome"], "rejected")
 
     def test_terminal_before_steer_rejection_still_fails(self):
         instances = []

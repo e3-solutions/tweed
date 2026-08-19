@@ -18,6 +18,8 @@ PROGRESS_MAX_BYTES = 4096
 PROGRESS_MAX_LINE_BYTES = 1024 * 1024
 PROGRESS_MAX_MILESTONES = 32
 PROGRESS_MAX_ACTORS = 32
+PROGRESS_MAX_EVENT_ACTORS = 32
+PROGRESS_MAX_COUNT = 2**31 - 1
 MAX_COMPLETED_CHECKS = 100
 
 PHASES = {"create", "rca", "scope", "implement", "review", "publish"}
@@ -175,7 +177,9 @@ class ProgressReporter:
         with self._lock:
             self._semantic = safe
             if milestone and safe not in self._milestones:
-                self._milestones_total_count += 1
+                self._milestones_total_count = min(
+                    self._milestones_total_count + 1, PROGRESS_MAX_COUNT
+                )
                 self._milestones.append(dict(safe))
                 if len(self._milestones) > PROGRESS_MAX_MILESTONES:
                     del self._milestones[0]
@@ -197,7 +201,7 @@ class ProgressReporter:
                 "semantic_milestones_total_count", len(self._milestones)
             )
             self._milestones_total_count = (
-                total
+                min(total, PROGRESS_MAX_COUNT)
                 if isinstance(total, int)
                 and not isinstance(total, bool)
                 and total >= len(self._milestones)
@@ -444,7 +448,7 @@ class EventObserver:
             return "coordinator"
         if identifier not in self._actors:
             if len(self._actors) >= PROGRESS_MAX_ACTORS:
-                return f"subagent-{PROGRESS_MAX_ACTORS + 1}"
+                return f"subagent-{PROGRESS_MAX_ACTORS}"
             self._actors[identifier] = f"subagent-{len(self._actors) + 1}"
         return self._actors[identifier]
 
@@ -470,22 +474,35 @@ class EventObserver:
     def _collab_agents(item: dict) -> list[tuple[str, str | None]]:
         states = item.get("agents_states")
         if isinstance(states, dict) and states:
-            return [
-                (identifier, state.get("status"))
-                for identifier, state in states.items()
-                if isinstance(identifier, str)
-                and identifier
-                and isinstance(state, dict)
-                and isinstance(state.get("status"), str)
-            ]
+            values = []
+            seen = set()
+            for identifier, state in states.items():
+                if (
+                    not isinstance(identifier, str)
+                    or not identifier
+                    or identifier in seen
+                    or not isinstance(state, dict)
+                    or not isinstance(state.get("status"), str)
+                ):
+                    continue
+                seen.add(identifier)
+                values.append((identifier, state["status"]))
+                if len(values) == PROGRESS_MAX_EVENT_ACTORS:
+                    break
+            return values
         receivers = item.get("receiver_thread_ids")
         if not isinstance(receivers, list):
             return []
-        return [
-            (identifier, None)
-            for identifier in receivers
-            if isinstance(identifier, str) and identifier
-        ]
+        values = []
+        seen = set()
+        for identifier in receivers:
+            if not isinstance(identifier, str) or not identifier or identifier in seen:
+                continue
+            seen.add(identifier)
+            values.append((identifier, None))
+            if len(values) == PROGRESS_MAX_EVENT_ACTORS:
+                break
+        return values
 
     @staticmethod
     def _agent_status(native_status: str | None) -> str | None:
@@ -503,10 +520,12 @@ class EventObserver:
         self, stage: str, activity: str, status: str, actor: str = "coordinator"
     ) -> None:
         if status in {"completed", "failed", "interrupted"}:
-            self._counts[activity] += 1
+            self._counts[activity] = min(
+                self._counts[activity] + 1, PROGRESS_MAX_COUNT
+            )
             count = self._counts[activity]
         else:
-            count = self._counts[activity] + 1
+            count = min(self._counts[activity] + 1, PROGRESS_MAX_COUNT)
         if self._progress is not None:
             self._progress.update_semantic(
                 {
@@ -638,7 +657,10 @@ class EventObserver:
         )
         if not (known_runner or known_subcommand):
             return
-        self.observation["checks_completed_total_count"] += 1
+        self.observation["checks_completed_total_count"] = min(
+            self.observation["checks_completed_total_count"] + 1,
+            PROGRESS_MAX_COUNT,
+        )
         checks = self.observation["checks_completed"]
         if len(checks) < MAX_COMPLETED_CHECKS:
             if executable in {"pytest", "unittest"} or set(words[1:]).intersection(
@@ -660,7 +682,7 @@ class EventObserver:
             )
         else:
             self.observation["checks_completed_truncated"] = True
-        self._counts["check"] += 1
+        self._counts["check"] = min(self._counts["check"] + 1, PROGRESS_MAX_COUNT)
         if self._progress is not None:
             self._progress.update_semantic(
                 {

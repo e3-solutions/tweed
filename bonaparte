@@ -20,9 +20,15 @@ from bonaparte_checkpoint import (
     checkpoint_lease,
     checkpoint_path,
     read_checkpoint,
+    validate_serialization_privacy,
     write_checkpoint,
 )
-from bonaparte_linear import call_linear, read_linear_phase_artifact
+from bonaparte_linear import (
+    call_linear,
+    create_correlation_marker,
+    find_linear_issue_by_correlation,
+    read_linear_phase_artifact,
+)
 from bonaparte_native import (
     PHASE_CHILD_ENV,
     AppServerPhaseDriver,
@@ -48,6 +54,7 @@ MAX_CHANGED_FILES = 500
 GLOBAL_MODEL_ENV = "BONAPARTE_MODEL"
 DEFAULT_SOFT_PHASE_BUDGET_SECONDS = 300.0
 DEFAULT_FINALIZATION_WINDOW_SECONDS = 30.0
+MAX_FINALIZATION_WINDOW_SECONDS = 300.0
 RECEIPT_PROTOCOL = 2
 PROGRESS_ABI = 3
 REMOTE_STATES = {"unchanged", "changed", "unknown"}
@@ -225,6 +232,7 @@ COMPLETED_RESULTS = {
 
 
 def _serialize_receipt(receipt: dict) -> str:
+    validate_serialization_privacy(receipt, "receipt")
     output = json.dumps(receipt, ensure_ascii=False, separators=(",", ":"))
     if len((output + "\n").encode("utf-8")) > RECEIPT_MAX_BYTES:
         raise RuntimeError("receipt exceeded 4 KiB")
@@ -284,6 +292,22 @@ def receipt_v2(
         safe_to_resume = not reconciliation_required and remote_state != "unknown"
     else:
         reason, input_kind, safe_to_resume = "blocked", "none", False
+    if failed_resumable:
+        next_action = (
+            f"Run bonaparte inspect {token}; resume only after exact reconciliation."
+            if reconciliation_required
+            else f"Run bonaparte resume {token} <answer>."
+        )
+    elif state == "completed":
+        next_action = None
+    elif state == "needs-input":
+        next_action = (
+            f"Run bonaparte inspect {token}; resume only after exact reconciliation."
+            if reconciliation_required
+            else f"Run bonaparte resume {token} <answer>."
+        )
+    else:
+        next_action = None
     receipt.update(
         phase_token=token,
         reason_code=reason,
@@ -295,7 +319,10 @@ def receipt_v2(
         runtime_version=_runtime_version(observation),
         receipt_protocol=RECEIPT_PROTOCOL,
         progress_abi=PROGRESS_ABI,
+        next_action=next_action,
     )
+    if state in {"completed", "blocked"} and not failed_resumable:
+        receipt["question"] = None
     return receipt
 
 
@@ -503,6 +530,16 @@ def resolve_soft_phase_budget(value: object) -> float:
     return budget
 
 
+def resolve_finalization_window(value: object) -> float:
+    window = resolve_soft_phase_budget(value)
+    if window > MAX_FINALIZATION_WINDOW_SECONDS:
+        raise RuntimeError(
+            "finalization window must not exceed "
+            f"{MAX_FINALIZATION_WINDOW_SECONDS:g} seconds"
+        )
+    return window
+
+
 def require_pull_request(receipt: dict, phase: str) -> None:
     if (
         phase in {"implement", "review", "publish"}
@@ -526,7 +563,7 @@ def run_phase(
     phase_token: str | None = None,
 ) -> dict:
     soft_phase_budget_seconds = resolve_soft_phase_budget(soft_phase_budget_seconds)
-    finalization_window_seconds = resolve_soft_phase_budget(
+    finalization_window_seconds = resolve_finalization_window(
         _SELECTED_FINALIZATION_WINDOW_SECONDS
         if finalization_window_seconds is None
         else finalization_window_seconds
@@ -653,7 +690,23 @@ def run_phase(
             "questions.\n\n"
             f"Repository: {repository}\n\n{input_label}:\n{phase_input}{context_end}"
         )
+        if phase == "create":
+            prompt += (
+                "\n\n# Durable create correlation\n\n"
+                "Place this exact line once inside the issue description's How section, "
+                "then require the exact same line when re-reading a newly created "
+                "issue. Do not mutate a reused pre-existing issue solely to add it:\n\n"
+                f"{create_correlation_marker(phase_token)}"
+            )
     observer = EventObserver(_ACTIVE_PROGRESS)
+    durable_event = (
+        observation.get("_durable_event") if isinstance(observation, dict) else None
+    )
+
+    def persist(event: str, payload: dict) -> None:
+        if callable(durable_event):
+            durable_event(event, dict(payload))
+
     driver = None
     failed = True
     try:
@@ -694,6 +747,9 @@ def run_phase(
         observer.observation["session_id"] = session_id
         if resume_session_id and session_id != resume_session_id:
             raise RuntimeError("Codex resumed a different session")
+        if observation is not None:
+            observation["native_thread_id"] = session_id
+        persist("native-thread", {"native_thread_id": session_id})
         turn_params = {
             "threadId": session_id,
             "input": [{"type": "text", "text": prompt}],
@@ -713,6 +769,10 @@ def run_phase(
             observation.update(native_thread_id=session_id, native_turn_id=turn_id)
         driver._receipt_thread_id = session_id
         driver._receipt_turn_id = turn_id
+        persist(
+            "native-turn",
+            {"native_thread_id": session_id, "native_turn_id": turn_id},
+        )
         deadline = time.monotonic() + soft_phase_budget_seconds
         steered = False
         steer_acknowledged = False
@@ -812,10 +872,22 @@ def run_phase(
             if not steered or message.get("id") != steer_id:
                 raise RuntimeError("Codex app-server response correlation failed")
             if "error" in message:
+                if hasattr(driver, "_observe_rejection"):
+                    driver._observe_rejection("turn/steer", message.get("error"))
+                if observation is not None:
+                    observation["steer_outcome"] = "rejected"
                 raise RuntimeError("Codex app-server rejected turn/steer")
             result = message.get("result")
             if not isinstance(result, dict) or result.get("turnId") != turn_id:
+                if hasattr(driver, "_observe_rejection"):
+                    driver._observe_rejection("turn/steer", None)
+                if observation is not None:
+                    observation["steer_outcome"] = "rejected"
                 raise RuntimeError("Codex app-server returned an invalid steer result")
+            if hasattr(driver, "_observe_response"):
+                driver._observe_response("turn/steer", result)
+            if observation is not None:
+                observation["steer_outcome"] = "accepted"
             steer_acknowledged = True
         if terminal.get("status") != "completed":
             detail = terminal.get("error")
@@ -846,6 +918,51 @@ def run_phase(
         if not driver.last_agent_message:
             raise RuntimeError("Codex app-server returned no final receipt")
         receipt = json.loads(driver.last_agent_message)
+        receipt_v2(receipt, phase_token, observation=observation, soft_budget=steered)
+        validate_schema(receipt, RECEIPT_SCHEMA)
+        if receipt["phase"] != phase:
+            raise RuntimeError("Codex returned the wrong phase")
+        if receipt["state"] == "completed" and (
+            not receipt["issue"] or not receipt["linear_url"]
+        ):
+            raise RuntimeError("completed phase is missing its Linear issue")
+        if receipt["state"] == "completed" and (
+            receipt["result"] != COMPLETED_RESULTS[phase]
+        ):
+            raise RuntimeError(f"completed {phase} returned the wrong result")
+        if receipt["state"] == "needs-input" and not receipt["question"]:
+            raise RuntimeError("phase requested input without a question")
+        if steered:
+            if receipt["state"] != "needs-input":
+                raise RuntimeError("soft-budget wrap-up did not request continuation")
+            question = receipt["question"]
+            if question != SOFT_BUDGET_CONTINUE_QUESTION and not question.startswith(
+                "Clarification required:"
+            ):
+                raise RuntimeError("soft-budget wrap-up returned an invalid question")
+            if "unverified" not in receipt["summary"].casefold():
+                raise RuntimeError(
+                    "soft-budget wrap-up omitted unverified proof obligations"
+                )
+        if receipt["state"] == "needs-input":
+            receipt["resume_session_id"] = session_id
+        else:
+            receipt["resume_session_id"] = None
+        if phase in {"implement", "review", "publish"} and receipt["state"] == "completed":
+            if not receipt["branch"] or not receipt["commit"]:
+                raise RuntimeError(f"completed {phase} is missing Git provenance")
+        if (
+            phase == "implement"
+            and receipt["state"] == "completed"
+            and resume_session_id is None
+            and receipt["branch"] != expected_branch
+        ):
+            raise RuntimeError("completed implementation did not use Linear's branch name")
+        require_pull_request(receipt, phase)
+        validate_serialization_privacy(receipt, "receipt")
+        # Commit authority before native cleanup: a host crash during cleanup must
+        # not erase a receipt already validated against the correlated root turn.
+        persist("validated-receipt", receipt)
         failed = False
     finally:
         observed = observer.finish()
@@ -858,47 +975,6 @@ def run_phase(
                 if not failed:
                     raise
 
-    receipt_v2(receipt, phase_token, observation=observation, soft_budget=steered)
-    validate_schema(receipt, RECEIPT_SCHEMA)
-    if receipt["phase"] != phase:
-        raise RuntimeError("Codex returned the wrong phase")
-    if receipt["state"] == "completed" and (
-        not receipt["issue"] or not receipt["linear_url"]
-    ):
-        raise RuntimeError("completed phase is missing its Linear issue")
-    if receipt["state"] == "completed" and (
-        receipt["result"] != COMPLETED_RESULTS[phase]
-    ):
-        raise RuntimeError(f"completed {phase} returned the wrong result")
-    if receipt["state"] == "needs-input" and not receipt["question"]:
-        raise RuntimeError("phase requested input without a question")
-    if steered:
-        if receipt["state"] != "needs-input":
-            raise RuntimeError("soft-budget wrap-up did not request continuation")
-        question = receipt["question"]
-        if question != SOFT_BUDGET_CONTINUE_QUESTION and not question.startswith(
-            "Clarification required:"
-        ):
-            raise RuntimeError("soft-budget wrap-up returned an invalid question")
-        if "unverified" not in receipt["summary"].casefold():
-            raise RuntimeError(
-                "soft-budget wrap-up omitted unverified proof obligations"
-            )
-    if receipt["state"] == "needs-input":
-        receipt["resume_session_id"] = session_id
-    else:
-        receipt["resume_session_id"] = None
-    if phase in {"implement", "review", "publish"} and receipt["state"] == "completed":
-        if not receipt["branch"] or not receipt["commit"]:
-            raise RuntimeError(f"completed {phase} is missing Git provenance")
-    if (
-        phase == "implement"
-        and receipt["state"] == "completed"
-        and resume_session_id is None
-        and receipt["branch"] != expected_branch
-    ):
-        raise RuntimeError("completed implementation did not use Linear's branch name")
-    require_pull_request(receipt, phase)
     return receipt
 
 
@@ -960,6 +1036,9 @@ def _update_checkpoint_observation(checkpoint: dict, observation: dict) -> None:
     checkpoint["checks_completed_total_count"] = max(
         len(combined), prior_total + added_total
     )
+    checkpoint["checks_completed_total_count"] = min(
+        checkpoint["checks_completed_total_count"], 2**31 - 1
+    )
     checkpoint["checks_completed_truncated"] = bool(
         checkpoint.get("checks_completed_truncated")
         or observation.get("checks_completed_truncated")
@@ -986,6 +1065,68 @@ def _refresh_checkpoint_git(
             git_dir=git["git_dir"],
             identity_head=git["head"],
         )
+
+
+def _persist_run_event(
+    checkpoint: dict, event: str, payload: dict, *, resumed: bool
+) -> None:
+    """Commit native authority at the instant the transport exposes it."""
+    if event in {"native-thread", "native-turn"}:
+        checkpoint.update(
+            native_thread_id=payload.get("native_thread_id")
+            or checkpoint.get("native_thread_id"),
+            native_turn_id=payload.get("native_turn_id")
+            or checkpoint.get("native_turn_id"),
+            status="running",
+            activity="coordinating",
+            updated_at=utc_now(),
+        )
+        write_checkpoint(checkpoint)
+        return
+    if event != "validated-receipt":
+        raise RuntimeError("unsupported durable run event")
+
+    receipt = dict(payload)
+    if resumed:
+        receipt["remote_state_changed"] = _combine_remote(
+            checkpoint.get("remote_state_changed"),
+            receipt.get("remote_state_changed"),
+        )
+        receipt_v2(
+            receipt,
+            checkpoint["phase_token"],
+            observation={"runtime_version": receipt.get("runtime_version")},
+        )
+        checkpoint.update(pending_answer=None, pending_answer_state="delivered")
+    checkpoint.update(
+        receipt=_coordinator_receipt(receipt),
+        remote_state_changed=receipt.get("remote_state_changed"),
+        updated_at=utc_now(),
+    )
+    if receipt["state"] == "needs-input":
+        if not checkpoint.get("native_thread_id"):
+            raise RuntimeError("Codex requested input without a resumable native thread")
+        checkpoint.update(
+            status="waiting-input",
+            question=receipt["question"],
+            pending_answer_state="none",
+            activity="waiting-user",
+            blocker=receipt["question"],
+            final_receipt=None,
+        )
+    else:
+        checkpoint.update(
+            status="completed" if receipt["state"] == "completed" else "blocked",
+            question=None,
+            activity=receipt["state"],
+            blocker=receipt["summary"] if receipt["state"] == "blocked" else None,
+            final_receipt=receipt,
+        )
+    # Make the provider-correlated authority durable before slower Git inventory
+    # refresh. A crash here may leave stale diagnostics, never a lost receipt.
+    write_checkpoint(checkpoint)
+    _refresh_checkpoint_git(checkpoint, update_identity=True, require_identity=True)
+    write_checkpoint(checkpoint)
 
 
 def new_question_checkpoint(
@@ -1127,9 +1268,27 @@ def remote_snapshot(
     phase: str,
     branch: str | None,
     issue_identifier: str | None,
+    phase_token: str | None = None,
 ) -> dict:
     """Capture bounded read-only observations used to detect remote effects."""
     snapshot: dict = {}
+    if phase == "create":
+        try:
+            if issue_identifier:
+                issue, _comments = call_linear(repository, issue_identifier)
+            elif phase_token:
+                issue = find_linear_issue_by_correlation(repository, phase_token)
+            else:
+                issue = None
+            snapshot["create_issue"] = {
+                "status": "observed",
+                "identifier": (
+                    (issue.get("identifier") or issue.get("id")) if issue else None
+                ),
+                "url": issue.get("url") if issue else None,
+            }
+        except Exception:  # noqa: BLE001 - exact readback is fail-closed
+            snapshot["create_issue"] = {"status": "unknown"}
     if branch:
         remote_head = git_output(
             repository, "ls-remote", "--heads", "origin", f"refs/heads/{branch}"
@@ -1301,11 +1460,7 @@ def _checkpoint_failure(checkpoint: dict, summary: str, *, remote_uncertain=Fals
     checkpoint["final_receipt"] = None
     _refresh_checkpoint_git(checkpoint)
     write_checkpoint(checkpoint)
-    receipt = checkpoint_receipt(checkpoint, state="failed", summary=summary)
-    receipt["next_action"] = "Resume this token to continue the same Codex session."
-    if _serialized_size(receipt) > RECEIPT_MAX_BYTES:
-        receipt["next_action"] = None
-    return receipt
+    return checkpoint_receipt(checkpoint, state="failed", summary=summary)
 
 
 def _validate_checkpoint_worktree(checkpoint: dict) -> Path:
@@ -1381,6 +1536,9 @@ def resume_checkpoint(
 
     observation: dict = {}
     observation["phase_token"] = checkpoint["phase_token"]
+    observation["_durable_event"] = lambda event, payload: _persist_run_event(
+        checkpoint, event, payload, resumed=True
+    )
     try:
         receipt = run_phase(
             repository,
@@ -1394,6 +1552,9 @@ def resume_checkpoint(
             checkpoint["soft_phase_budget_seconds"],
         )
     except KeyboardInterrupt:
+        committed = authoritative_receipt(checkpoint)
+        if committed is not None:
+            return committed, 0
         _update_checkpoint_observation(checkpoint, observation)
         return (
             _checkpoint_failure(
@@ -1402,6 +1563,9 @@ def resume_checkpoint(
             130,
         )
     except Exception as error:  # noqa: BLE001 - preserve a resumable answer
+        committed = authoritative_receipt(checkpoint)
+        if committed is not None:
+            return committed, 0
         _update_checkpoint_observation(checkpoint, observation)
         return _checkpoint_failure(
             checkpoint,
@@ -1481,10 +1645,15 @@ def run_and_checkpoint(
         issue_identifier,
     )
     ledger["protocol"]["initial_remote"] = remote_snapshot(
-        repository, phase, ledger.get("branch"), issue_identifier
+        repository, phase, ledger.get("branch"), issue_identifier, token
     )
     write_checkpoint(ledger)
-    observation: dict = {"phase_token": token}
+    observation: dict = {
+        "phase_token": token,
+        "_durable_event": lambda event, payload: _persist_run_event(
+            ledger, event, payload, resumed=False
+        ),
+    }
     ledger.update(status="running", activity="coordinating", updated_at=utc_now())
     write_checkpoint(ledger)
     try:
@@ -1499,6 +1668,9 @@ def run_and_checkpoint(
             soft_phase_budget_seconds=soft_phase_budget_seconds,
         )
     except (Exception, KeyboardInterrupt) as error:
+        committed = authoritative_receipt(ledger)
+        if committed is not None:
+            return committed, 0
         _update_checkpoint_observation(ledger, observation)
         coordinator_session = observation.get("session_id") or observation.get(
             "native_thread_id"
@@ -1614,6 +1786,7 @@ def inspect_checkpoint(checkpoint: dict) -> dict:
         checkpoint["phase"],
         checkpoint.get("branch"),
         stored.get("issue"),
+        checkpoint.get("phase_token"),
     )
     if (
         not isinstance(initial_remote, dict)
@@ -1685,6 +1858,41 @@ def inspect_checkpoint(checkpoint: dict) -> dict:
     final = authoritative_receipt(checkpoint)
     if final is not None:
         return final
+    if checkpoint["phase"] == "create":
+        correlated = current_remote.get("create_issue")
+        if (
+            isinstance(correlated, dict)
+            and correlated.get("status") == "observed"
+            and isinstance(correlated.get("identifier"), str)
+            and correlated.get("identifier")
+            and isinstance(correlated.get("url"), str)
+            and correlated.get("url")
+        ):
+            recovered = {
+                "phase": "create",
+                "state": "completed",
+                "issue": correlated["identifier"],
+                "linear_url": correlated["url"],
+                "result": "created",
+                "summary": (
+                    "Recovered the exact Linear issue from the durable phase-token "
+                    "correlation marker after receipt loss."
+                ),
+                "question": None,
+                "next_action": None,
+                "branch": None,
+                "commit": None,
+                "pull_request_url": None,
+                "remote_state_changed": True,
+            }
+            receipt_v2(
+                recovered,
+                checkpoint["phase_token"],
+                observation={
+                    "runtime_version": (checkpoint.get("runtime") or {}).get("version")
+                },
+            )
+            return recovered
     receipt = {
         "phase": checkpoint["phase"],
         "state": "needs-input" if safe else "blocked",
@@ -1757,7 +1965,7 @@ def parse() -> tuple[
     args = parser.parse_args()
     global _SELECTED_FINALIZATION_WINDOW_SECONDS
     _SELECTED_FINALIZATION_WINDOW_SECONDS = (
-        resolve_soft_phase_budget(args.finalization_window_seconds)
+        resolve_finalization_window(args.finalization_window_seconds)
         if args.finalization_window_seconds is not None
         else DEFAULT_FINALIZATION_WINDOW_SECONDS
     )
@@ -1896,7 +2104,13 @@ def main() -> int:
                 _ACTIVE_PROGRESS = progress
                 progress.start()
                 result_receipt = inspect_checkpoint(checkpoint)
-                exit_code = 0 if result_receipt.get("safe_to_resume") or authoritative_receipt(checkpoint) else 1
+                exit_code = (
+                    0
+                    if result_receipt.get("state") == "completed"
+                    or result_receipt.get("safe_to_resume")
+                    or authoritative_receipt(checkpoint)
+                    else 1
+                )
             elif session_id is not None:
                 with checkpoint_lease(session_id):
                     if os.path.lexists(checkpoint_path(session_id, ensure_directory=False)):
@@ -1912,10 +2126,20 @@ def main() -> int:
                         if committed is not None:
                             result_receipt, exit_code = committed, 0
                         else:
-                            reconciliation = inspect_checkpoint(checkpoint)
-                            if not reconciliation.get("safe_to_resume"):
-                                result_receipt, exit_code = reconciliation, 1
-                            else:
+                            legacy = isinstance(
+                                (checkpoint.get("protocol") or {}).get(
+                                    "legacy_checkpoint_version"
+                                ),
+                                int,
+                            )
+                            reconciliation = (
+                                {"safe_to_resume": True}
+                                if legacy
+                                else inspect_checkpoint(checkpoint)
+                            )
+                            if reconciliation.get("state") == "completed":
+                                result_receipt, exit_code = reconciliation, 0
+                            elif reconciliation.get("safe_to_resume"):
                                 result_receipt, exit_code = resume_checkpoint(
                                     checkpoint,
                                     supplied_input,
@@ -1923,19 +2147,10 @@ def main() -> int:
                                     selected_reasoning,
                                     selected_soft_phase_budget,
                                 )
+                            else:
+                                result_receipt, exit_code = reconciliation, 1
                     else:
-                        if selected_phase is None:
-                            raise RuntimeError("resume token is unavailable")
-                        selected_model = resolve_model(selected_model)
-                        selected_reasoning = resolve_reasoning(selected_reasoning)
-                        progress = acquire_progress_reporter(True, selected_phase)
-                        _ACTIVE_PROGRESS = progress
-                        progress.start()
-                        result_receipt, exit_code = run_and_checkpoint(
-                            repo, selected_phase, supplied_input, session_id,
-                            selected_model, selected_reasoning,
-                            selected_soft_phase_budget or DEFAULT_SOFT_PHASE_BUDGET_SECONDS,
-                        )
+                        raise RuntimeError("resume checkpoint is unavailable")
             else:
                 progress = acquire_progress_reporter(True, selected_phase)
                 _ACTIVE_PROGRESS = progress

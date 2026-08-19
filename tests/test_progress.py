@@ -19,6 +19,7 @@ from tests.test_bonaparte import (
     SUBAGENT_ID,
     app_server_script,
     delivery_receipt,
+    write_legacy_review_checkpoint,
 )
 
 NATIVE_FIXTURE = ROOT / "tests/fixtures/codex_app_server_v2.jsonl"
@@ -547,7 +548,50 @@ class ProgressAndEventTests(unittest.TestCase):
         self.assertEqual(len(observer._actors), PROGRESS.PROGRESS_MAX_ACTORS)
         self.assertEqual(
             progress.snapshot()["semantic"]["actor"],
-            f"subagent-{PROGRESS.PROGRESS_MAX_ACTORS + 1}",
+            f"subagent-{PROGRESS.PROGRESS_MAX_ACTORS}",
+        )
+
+    def test_progress_fanout_and_counts_saturate_at_documented_limits(self):
+        progress = RUNNER.ProgressReporter(None, "rca")
+        observer = RUNNER.EventObserver(progress)
+        agents = {
+            f"agent-{index}": {"status": "completed"}
+            for index in range(PROGRESS.PROGRESS_MAX_EVENT_ACTORS + 100)
+        }
+        observer._counts["subagent"] = PROGRESS.PROGRESS_MAX_COUNT - 1
+        observer.feed(
+            json.dumps(
+                {
+                    "type": "item.completed",
+                    "item": {
+                        "type": "collab_tool_call",
+                        "tool": "wait",
+                        "agents_states": agents,
+                        "status": "completed",
+                    },
+                }
+            )
+        )
+        self.assertLessEqual(len(observer._actors), PROGRESS.PROGRESS_MAX_ACTORS)
+        self.assertEqual(observer._counts["subagent"], PROGRESS.PROGRESS_MAX_COUNT)
+        self.assertEqual(
+            progress.snapshot()["semantic"]["count"], PROGRESS.PROGRESS_MAX_COUNT
+        )
+
+        progress._milestones_total_count = PROGRESS.PROGRESS_MAX_COUNT
+        progress.update_semantic(
+            {
+                "stage": "checking",
+                "actor": "coordinator",
+                "activity": "check",
+                "status": "failed",
+                "count": PROGRESS.PROGRESS_MAX_COUNT,
+            },
+            milestone=True,
+        )
+        self.assertEqual(
+            progress.snapshot()["semantic_milestones_total_count"],
+            PROGRESS.PROGRESS_MAX_COUNT,
         )
 
     def test_progress_reporter_uses_every_phase(self):
@@ -700,6 +744,7 @@ class ProgressAndEventTests(unittest.TestCase):
                 RUNNER.PROGRESS_FD_ENV: str(write_descriptor),
             }
             environment.pop(RUNNER.PHASE_CHILD_ENV, None)
+            write_legacy_review_checkpoint(temporary_path / "home")
             completed = subprocess.run(
                 [
                     str(ROOT / "bonaparte"),
@@ -729,7 +774,7 @@ class ProgressAndEventTests(unittest.TestCase):
             self.assertEqual(emitted["progress_abi"], 3)
             self.assertIsNone(emitted["resume_session_id"])
             self.assertEqual(
-                coordinator_calls.read_text().splitlines(), ["called", "called"]
+                coordinator_calls.read_text().splitlines(), ["called"]
             )
             self.assertEqual(heartbeat_joins.read_text().splitlines(), ["joined"])
             self.assertEqual(

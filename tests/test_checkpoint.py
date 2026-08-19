@@ -339,7 +339,13 @@ class PersistenceTests(unittest.TestCase):
             self.assertEqual(normalized["phase_token"], TOKEN)
             self.assertEqual(normalized["native_thread_id"], TOKEN)
             self.assertIsNone(normalized["native_turn_id"])
-            self.assertEqual(normalized["protocol"], {"legacy_checkpoint_version": 3})
+            self.assertEqual(
+                normalized["protocol"],
+                {
+                    "legacy_checkpoint_version": 3,
+                    "initial_remote": {"status": "legacy-unavailable"},
+                },
+            )
             self.assertEqual(normalized["pending_answer_state"], "none")
             self.assertEqual(normalized["final_receipt"], legacy["receipt"])
 
