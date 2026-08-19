@@ -230,6 +230,7 @@ this schema and contains the evidence required by the completion gate.
 - Branch: `[branch]`
 - Commit: `[full commit]`
 - Draft PR: `[URL]`
+- Base: `[base branch]`
 - Worktree: clean
 ```
 

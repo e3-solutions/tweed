@@ -21,6 +21,114 @@ from tests.test_bonaparte import (
 
 
 class PhaseRuntimeTests(unittest.TestCase):
+    def test_terminal_close_patches_only_started_descendants_then_archives(self):
+        driver = object.__new__(RUNNER.AppServerPhaseDriver)
+        driver.process = mock.Mock()
+        driver._receipt_thread_id = "root"
+        driver._receipt_turn_id = "turn"
+        driver._issue_branch = "arya/cor-1-example"
+        driver._disposition = "terminal"
+        driver._started_thread_ids = {"root", "child-2", "child-1"}
+        calls = []
+
+        def request(method, params):
+            calls.append((method, params))
+            return {}
+
+        driver.request = request
+        with mock.patch.object(NATIVE, "terminate_and_reap") as cleanup:
+            driver.close(failed=False)
+
+        self.assertEqual(
+            [method for method, _params in calls],
+            [
+                "thread/metadata/update",
+                "thread/metadata/update",
+                "thread/archive",
+            ],
+        )
+        self.assertEqual(
+            [
+                params["threadId"]
+                for method, params in calls
+                if method == "thread/metadata/update"
+            ],
+            ["child-1", "child-2"],
+        )
+        cleanup.assert_called_once_with(driver.process)
+
+    def test_thread_started_notification_records_owned_thread_id(self):
+        driver = object.__new__(RUNNER.AppServerPhaseDriver)
+        driver._started_thread_ids = set()
+        driver.observer = mock.Mock()
+        driver._receipt_thread_id = "root"
+        driver._receipt_turn_id = "turn"
+        driver.observe_notification(
+            {
+                "method": "thread/started",
+                "params": {"thread": {"id": "child"}},
+            }
+        )
+        self.assertEqual(driver._started_thread_ids, {"child"})
+
+    def test_resumable_and_failed_close_use_explicit_unload_paths(self):
+        for disposition, expected in (
+            ("resumable", ["thread/unsubscribe"]),
+            ("failed", ["turn/interrupt", "thread/unsubscribe"]),
+        ):
+            with self.subTest(disposition=disposition):
+                driver = object.__new__(RUNNER.AppServerPhaseDriver)
+                driver.process = mock.Mock()
+                driver._receipt_thread_id = "root"
+                driver._receipt_turn_id = "turn"
+                driver._issue_branch = None
+                driver._disposition = disposition
+                calls = []
+                driver.request = lambda method, params: calls.append((method, params)) or {}
+                with mock.patch.object(NATIVE, "terminate_and_reap"):
+                    driver.close(failed=disposition == "failed")
+                self.assertEqual([method for method, _params in calls], expected)
+
+    def test_finalization_rejection_is_surfaced_after_reap(self):
+        driver = object.__new__(RUNNER.AppServerPhaseDriver)
+        driver.process = mock.Mock()
+        driver._receipt_thread_id = "root"
+        driver._receipt_turn_id = "turn"
+        driver._issue_branch = None
+        driver._disposition = "terminal"
+        driver.request = mock.Mock(side_effect=RuntimeError("archive rejected"))
+        with (
+            mock.patch.object(NATIVE, "terminate_and_reap") as cleanup,
+            self.assertRaisesRegex(RuntimeError, "archive rejected"),
+        ):
+            driver.close(failed=False)
+        cleanup.assert_called_once_with(driver.process)
+
+    def test_descendant_patch_failure_still_archives_terminal_root(self):
+        driver = object.__new__(RUNNER.AppServerPhaseDriver)
+        driver.process = mock.Mock()
+        driver._receipt_thread_id = "root"
+        driver._receipt_turn_id = "turn"
+        driver._issue_branch = "arya/cor-1-example"
+        driver._disposition = "terminal"
+        driver._started_thread_ids = {"root", "child"}
+        calls = []
+
+        def request(method, params):
+            calls.append(method)
+            if method == "thread/metadata/update":
+                raise RuntimeError("metadata rejected")
+            return {}
+
+        driver.request = request
+        with (
+            mock.patch.object(NATIVE, "terminate_and_reap"),
+            self.assertRaisesRegex(RuntimeError, "metadata rejected"),
+        ):
+            driver.close(failed=False)
+
+        self.assertEqual(calls, ["thread/metadata/update", "thread/archive"])
+
     def test_child_turn_completion_does_not_terminate_coordinator_turn(self):
         expected = receipt()
 
@@ -78,7 +186,16 @@ class PhaseRuntimeTests(unittest.TestCase):
         self.assertIn('"git_branch_name": "arya/cor-1-example"', prompt)
         self.assertEqual(
             [item["method"] for item in server.requests if "id" in item][:3],
-            ["initialize", "thread/start", "turn/start"],
+            [
+                "initialize",
+                "thread/start",
+                "thread/metadata/update",
+            ],
+        )
+        request_methods = [item["method"] for item in server.requests if "id" in item]
+        self.assertLess(
+            request_methods.index("thread/metadata/update"),
+            request_methods.index("turn/start"),
         )
 
     def test_run_phase_failure_exports_the_latest_semantic_snapshot(self):

@@ -121,6 +121,9 @@ class AppServerPhaseDriver:
         self._last_agent_message: str | None = None
         self._receipt_thread_id: str | None = None
         self._receipt_turn_id: str | None = None
+        self._issue_branch: str | None = None
+        self._disposition: str | None = None
+        self._started_thread_ids: set[str] = set()
         self._reader = threading.Thread(target=self._read, daemon=True)
         self._reader.start()
 
@@ -274,6 +277,10 @@ class AppServerPhaseDriver:
         if method == "thread/started":
             thread = params.get("thread")
             if isinstance(thread, dict) and isinstance(thread.get("id"), str):
+                started_thread_ids = getattr(self, "_started_thread_ids", None)
+                if started_thread_ids is None:
+                    started_thread_ids = self._started_thread_ids = set()
+                started_thread_ids.add(thread["id"])
                 self.observer.feed(
                     json.dumps({"type": "thread.started", "thread_id": thread["id"]})
                 )
@@ -345,5 +352,59 @@ class AppServerPhaseDriver:
     def last_agent_message(self) -> str | None:
         return self._last_agent_message
 
-    def close(self, *, failed: bool) -> None:
-        terminate_and_reap(self.process)
+    def _patch_branch(self, thread_id: str) -> None:
+        self.request(
+            "thread/metadata/update",
+            {"threadId": thread_id, "gitInfo": {"branch": self._issue_branch}},
+        )
+
+    def _patch_descendants(self, thread_id: str) -> None:
+        for descendant_id in sorted(
+            getattr(self, "_started_thread_ids", set()) - {thread_id}
+        ):
+            self._patch_branch(descendant_id)
+
+    def close(
+        self,
+        *,
+        disposition: str | None = None,
+        failed: bool | None = None,
+    ) -> None:
+        """Finalize native persistence, then boundedly reap the private server."""
+        disposition = disposition or getattr(self, "_disposition", None)
+        if disposition is None and failed is not None:  # legacy test/caller bridge
+            disposition = "failed" if failed else "ephemeral"
+        if disposition not in {"terminal", "resumable", "ephemeral", "failed"}:
+            raise RuntimeError("app-server close requires an explicit disposition")
+        thread_id = getattr(self, "_receipt_thread_id", None)
+        turn_id = getattr(self, "_receipt_turn_id", None)
+        errors: list[BaseException] = []
+        try:
+            if thread_id:
+                if getattr(self, "_issue_branch", None):
+                    try:
+                        self._patch_descendants(thread_id)
+                    except BaseException as caught:
+                        errors.append(caught)
+                if disposition == "terminal":
+                    try:
+                        self.request("thread/archive", {"threadId": thread_id})
+                    except BaseException as caught:
+                        errors.append(caught)
+                else:
+                    if disposition == "failed" and turn_id:
+                        try:
+                            self.request(
+                                "turn/interrupt",
+                                {"threadId": thread_id, "turnId": turn_id},
+                            )
+                        except BaseException as caught:
+                            errors.append(caught)
+                    try:
+                        self.request("thread/unsubscribe", {"threadId": thread_id})
+                    except BaseException as caught:
+                        errors.append(caught)
+        finally:
+            terminate_and_reap(self.process)
+        if errors:
+            raise errors[0]
