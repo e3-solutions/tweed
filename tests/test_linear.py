@@ -54,6 +54,8 @@ class LinearIntakeTests(unittest.TestCase):
         driver.process.stdin.write.assert_called_once_with(
             '{"method":"initialized","params":{}}\n'
         )
+        self.assertEqual(driver._receipt_thread_id, "thread-1")
+        self.assertEqual(driver._disposition, "ephemeral")
         self.assertTrue(driver.closed)
 
     def test_text_tool_results_are_decoded_and_driver_closes_on_failure(self):

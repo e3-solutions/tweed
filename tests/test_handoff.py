@@ -1,11 +1,14 @@
 import runpy
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 RUNNER = runpy.run_path(str(Path(__file__).resolve().parents[1] / "bonaparte"))
+RUNNER_GLOBALS = RUNNER["run_phase"].__globals__
 HEADERS = RUNNER["PHASE_HEADERS"]
 select_handoff = RUNNER["select_handoff"]
+recover_terminal_receipt = RUNNER["recover_terminal_receipt"]
 
 
 def issue(kind="Bug"):
@@ -29,6 +32,72 @@ def comment(phase, marker, date, **extra):
 
 
 class HandoffTests(unittest.TestCase):
+    def test_current_or_downstream_terminal_evidence_recovers_without_driver(self):
+        git_handoff = (
+            "\n\n**Verdict:** Ready to publish\n\n### Git handoff\n"
+            "- Branch: `arya/lin-1-example`\n"
+            "- Implementation commit: `" + "a" * 40 + "`\n"
+            "- Reviewed commit: `" + "b" * 40 + "`\n"
+            "- Draft PR: `https://github.test/o/r/pull/1`"
+        )
+        review = comment("review", "unused", "5")
+        review["body"] = HEADERS["review"] + git_handoff
+        stale = comment("implement", "### Evidence ledger\nlegacy", "4")
+        driver = mock.Mock()
+
+        with (
+            mock.patch.dict(
+                RUNNER_GLOBALS,
+                {"call_linear": mock.Mock(return_value=(issue(), [stale, review]))},
+            ),
+            mock.patch.dict(
+                RUNNER_GLOBALS, {"AppServerPhaseDriver": driver}
+            ),
+        ):
+            receipt = RUNNER["run_phase"](Path(__file__).resolve().parents[1], "implement", "LIN-1")
+
+        self.assertEqual(receipt["state"], "completed")
+        self.assertEqual(receipt["result"], "implemented")
+        self.assertEqual(receipt["commit"], "b" * 40)
+        driver.assert_not_called()
+
+    def test_terminal_recovery_fails_closed_on_missing_git_provenance(self):
+        review = comment("review", "unused", "5")
+        review["body"] = (
+            HEADERS["review"]
+            + "\n\n**Verdict:** Ready to publish\n\n### Git handoff\n"
+            + "- Branch: `arya/lin-1-example`"
+        )
+        recovered = recover_terminal_receipt(issue(), [review], "implement")
+        self.assertEqual(recovered["state"], "blocked")
+        self.assertIn("missing required Git", recovered["summary"])
+
+    def test_terminal_guard_ignores_replies_inline_near_matches_and_legacy(self):
+        candidates = [
+            comment("scope", "**Status:** Scoped", "1", parentId="parent"),
+            comment("scope", "**Status:** Scoped", "2", quotedText="anchor"),
+            comment(HEADERS["scope"] + " ", "**Status:** Scoped", "3"),
+            comment("scope", "### Proof obligations\nlegacy", "4"),
+        ]
+        self.assertIsNone(recover_terminal_receipt(issue(), candidates, "scope"))
+
+    def test_downstream_phase_order_wins_over_stale_requested_terminal(self):
+        implementation = comment("implement", "unused", "9")
+        implementation["body"] = HEADERS["implement"] + "\n\n**Status:** Implemented"
+        published = comment("publish", "unused", "2")
+        published["body"] = (
+            HEADERS["publish"]
+            + "\n\n**Status:** Ready for review\n\n### Delivery\n"
+            + "- Pull request: https://github.test/o/r/pull/1\n"
+            + "- Branch: `arya/lin-1-example`\n"
+            + "- Reviewed commit: `" + "c" * 40 + "`"
+        )
+        recovered = recover_terminal_receipt(
+            issue(), [implementation, published], "implement"
+        )
+        self.assertEqual(recovered["state"], "completed")
+        self.assertEqual(recovered["commit"], "c" * 40)
+
     def test_phase_matrix_passes_only_required_context(self):
         rca = comment("rca", "RCA", "1")
         scope = comment("scope", "SCOPE", "2")

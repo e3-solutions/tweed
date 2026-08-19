@@ -162,7 +162,15 @@ class AppServerFixture:
         elif method in {"thread/start", "thread/resume"}:
             self._emit(
                 output,
-                {"id": request_id, "result": {"thread": {"id": self.session_id}}},
+                {
+                    "id": request_id,
+                    "result": {
+                        "thread": {
+                            "id": self.session_id,
+                            "gitInfo": {"branch": "arya/cor-1-example"},
+                        }
+                    },
+                },
             )
         elif method == "turn/start":
             self._emit(output, {"id": request_id, "result": {"turn": {"id": "turn-1"}}})
@@ -192,6 +200,18 @@ class AppServerFixture:
                     },
                 },
             )
+        elif method == "thread/list":
+            self._emit(
+                output,
+                {"id": request_id, "result": {"data": [], "nextCursor": None}},
+            )
+        elif method in {
+            "thread/metadata/update",
+            "thread/archive",
+            "thread/unsubscribe",
+            "turn/interrupt",
+        }:
+            self._emit(output, {"id": request_id, "result": {}})
         elif method == "turn/steer":
             self._emit(output, {"id": request_id, "result": {"turnId": "turn-1"}})
 

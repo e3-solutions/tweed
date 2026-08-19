@@ -90,4 +90,6 @@ def call_linear(repository: Path, issue_identifier: str) -> tuple[dict, list[dic
             seen_cursors.add(cursor)
         return issue, comments
     finally:
+        driver._receipt_thread_id = locals().get("thread_id")
+        driver._disposition = "ephemeral"
         driver.close(failed=False)

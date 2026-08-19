@@ -38,6 +38,8 @@ from bonaparte_progress import (
     safe_semantic as _safe_semantic,
 )
 
+_SUBPROCESS_POPEN = subprocess.Popen
+
 _ACTIVE_PROGRESS: ProgressReporter | None = None
 
 COORDINATOR_EFFORT = "medium"
@@ -187,6 +189,15 @@ COMPLETED_RESULTS = {
     "publish": "published",
 }
 
+PHASE_ORDER = ("rca", "scope", "implement", "review", "publish")
+TERMINAL_MARKERS = {
+    "rca": "**Status:** Established",
+    "scope": "**Status:** Scoped",
+    "implement": "**Status:** Implemented",
+    "review": "**Verdict:** Ready to publish",
+    "publish": "**Status:** Ready for review",
+}
+
 
 def _serialize_receipt(receipt: dict) -> str:
     output = json.dumps(receipt, ensure_ascii=False, separators=(",", ":"))
@@ -240,6 +251,101 @@ def latest_comment_record(comments: list[dict], header: str) -> dict | None:
 def latest_comment(comments: list[dict], header: str) -> str | None:
     match = latest_comment_record(comments, header)
     return match["body"] if match else None
+
+
+def validate_issue_branch(branch: object) -> str:
+    if not isinstance(branch, str) or not branch:
+        raise RuntimeError("Linear issue is missing its Git branch name")
+    try:
+        process = _SUBPROCESS_POPEN(
+            ["git", "check-ref-format", "--branch", branch],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        returncode = process.wait(timeout=5)
+    except (OSError, subprocess.SubprocessError) as error:
+        raise RuntimeError("Linear issue has an invalid Git branch name") from error
+    if returncode != 0:
+        raise RuntimeError("Linear issue has an invalid Git branch name")
+    return branch
+
+
+def _terminal_comment(comments: list[dict], phase: str) -> dict | None:
+    record = latest_comment_record(comments, PHASE_HEADERS[phase])
+    if record is None:
+        return None
+    lines = (record.get("body") or "").splitlines()
+    return record if TERMINAL_MARKERS[phase] in lines else None
+
+
+def _handoff_value(body: str, labels: tuple[str, ...]) -> str | None:
+    lines = body.splitlines()
+    for label in labels:
+        for line in lines:
+            prefix = f"- {label}: "
+            if line.startswith(prefix):
+                value = line.removeprefix(prefix).strip()
+                if value.startswith("`") and value.endswith("`"):
+                    value = value[1:-1]
+                if value and not value.startswith("["):
+                    return value
+    return None
+
+
+def recover_terminal_receipt(
+    issue: dict, comments: list[dict], requested_phase: str
+) -> dict | None:
+    if requested_phase not in PHASE_ORDER:
+        return None
+    requested_index = PHASE_ORDER.index(requested_phase)
+    source_phase = source = None
+    for candidate_phase in reversed(PHASE_ORDER[requested_index:]):
+        candidate = _terminal_comment(comments, candidate_phase)
+        if candidate is not None:
+            source_phase, source = candidate_phase, candidate
+            break
+    if source is None:
+        rca = latest_comment_record(comments, PHASE_HEADERS["rca"])
+        if (
+            requested_phase == "rca"
+            and rca is not None
+            and "**Status:** Not established" in (rca.get("body") or "").splitlines()
+        ):
+            return {
+                "phase": "rca", "state": "blocked",
+                "issue": issue.get("identifier") or issue.get("id"),
+                "linear_url": issue.get("url"), "result": "blocked",
+                "summary": "Recovered the current terminal RCA result from Linear.",
+                "question": None,
+                "next_action": "Resolve the missing RCA evidence before retrying.",
+                "branch": None, "commit": None, "pull_request_url": None,
+                "remote_state_changed": False,
+            }
+        return None
+    body = source.get("body") or ""
+    branch = _handoff_value(body, ("Branch",))
+    commit = _handoff_value(body, ("Reviewed commit", "Commit", "Implementation commit"))
+    pull_request = _handoff_value(body, ("Draft PR", "Pull request"))
+    needs_git = requested_phase in {"implement", "review", "publish"}
+    complete = not needs_git or all((branch, commit, pull_request))
+    return {
+        "phase": requested_phase,
+        "state": "completed" if complete else "blocked",
+        "issue": issue.get("identifier") or issue.get("id"),
+        "linear_url": issue.get("url"),
+        "result": COMPLETED_RESULTS[requested_phase] if complete else "blocked",
+        "summary": (
+            f"Recovered terminal {source_phase} evidence from Linear without starting a coordinator."
+            if complete else
+            f"Terminal {source_phase} evidence is missing required Git or pull-request provenance."
+        ),
+        "question": None,
+        "next_action": None if complete else "Correct the durable terminal handoff and retry.",
+        "branch": branch if needs_git else None,
+        "commit": commit if needs_git else None,
+        "pull_request_url": pull_request if needs_git else None,
+        "remote_state_changed": False,
+    }
 
 
 def select_handoff(
@@ -481,8 +587,26 @@ def run_phase(
                 phase,
                 values[1] if len(values) == 2 else None,
             )
-            if phase == "implement":
-                expected_branch = handoff["issue"]["git_branch_name"]
+            expected_branch = validate_issue_branch(
+                handoff["issue"]["git_branch_name"]
+            )
+            recovered = recover_terminal_receipt(issue, comments, phase)
+            if recovered is not None:
+                if recovered["state"] == "completed" and recovered.get("branch"):
+                    if recovered["branch"] != expected_branch:
+                        recovered.update(
+                            state="blocked",
+                            result="blocked",
+                            summary=(
+                                "Terminal evidence names a branch different from "
+                                "Linear's official issue branch."
+                            ),
+                            next_action="Correct the durable Git handoff and retry.",
+                        )
+                validate_schema(recovered, RECEIPT_SCHEMA)
+                require_pull_request(recovered, phase)
+                recovered["resume_session_id"] = None
+                return recovered
             phase_input = json.dumps(handoff, ensure_ascii=False)
             context_policy = (
                 "\n\n# Context policy\n\n"
@@ -559,8 +683,16 @@ def run_phase(
     failed = True
     try:
         driver = AppServerPhaseDriver(repository, observer)
+        driver._disposition = None
+        driver._issue_branch = None
+        driver._receipt_thread_id = None
+        driver._receipt_turn_id = None
         driver.request(
-            "initialize", {"clientInfo": {"name": "bonaparte", "version": "1"}}
+            "initialize",
+            {
+                "clientInfo": {"name": "bonaparte", "version": "1"},
+                "capabilities": {"experimentalApi": True},
+            },
         )
         driver.process.stdin.write('{"method":"initialized","params":{}}\n')
         driver.process.stdin.flush()
@@ -587,6 +719,17 @@ def run_phase(
         observer.observation["session_id"] = session_id
         if resume_session_id and session_id != resume_session_id:
             raise RuntimeError("Codex resumed a different session")
+        if resume_session_id and expected_branch is None:
+            git_info = thread.get("gitInfo")
+            if isinstance(git_info, dict):
+                expected_branch = validate_issue_branch(git_info.get("branch"))
+        driver._receipt_thread_id = session_id
+        driver._issue_branch = expected_branch
+        if expected_branch:
+            driver.request(
+                "thread/metadata/update",
+                {"threadId": session_id, "gitInfo": {"branch": expected_branch}},
+            )
         turn_params = {
             "threadId": session_id,
             "input": [{"type": "text", "text": prompt}],
@@ -602,7 +745,6 @@ def run_phase(
         if not isinstance(turn, dict) or not isinstance(turn.get("id"), str):
             raise RuntimeError("Codex app-server returned no turn identity")
         turn_id = turn["id"]
-        driver._receipt_thread_id = session_id
         driver._receipt_turn_id = turn_id
         deadline = time.monotonic() + soft_phase_budget_seconds
         steered = False
@@ -702,6 +844,47 @@ def run_phase(
         if not driver.last_agent_message:
             raise RuntimeError("Codex app-server returned no final receipt")
         receipt = json.loads(driver.last_agent_message)
+        validate_schema(receipt, RECEIPT_SCHEMA)
+        if receipt["phase"] != phase:
+            raise RuntimeError("Codex returned the wrong phase")
+        if receipt["state"] == "completed" and (
+            not receipt["issue"] or not receipt["linear_url"]
+        ):
+            raise RuntimeError("completed phase is missing its Linear issue")
+        if receipt["state"] == "completed" and (
+            receipt["result"] != COMPLETED_RESULTS[phase]
+        ):
+            raise RuntimeError(f"completed {phase} returned the wrong result")
+        if receipt["state"] == "needs-input" and not receipt["question"]:
+            raise RuntimeError("phase requested input without a question")
+        if steered:
+            if receipt["state"] != "needs-input":
+                raise RuntimeError("soft-budget wrap-up did not request continuation")
+            question = receipt["question"]
+            if question != SOFT_BUDGET_CONTINUE_QUESTION and not question.startswith(
+                "Clarification required:"
+            ):
+                raise RuntimeError("soft-budget wrap-up returned an invalid question")
+            if "unverified" not in receipt["summary"].casefold():
+                raise RuntimeError(
+                    "soft-budget wrap-up omitted unverified proof obligations"
+                )
+        if phase in {"implement", "review", "publish"} and receipt["state"] == "completed":
+            if not receipt["branch"] or not receipt["commit"]:
+                raise RuntimeError(f"completed {phase} is missing Git provenance")
+        if (
+            phase == "implement"
+            and receipt["state"] == "completed"
+            and receipt["branch"] != expected_branch
+        ):
+            raise RuntimeError("completed implementation did not use Linear's branch name")
+        require_pull_request(receipt, phase)
+        receipt["resume_session_id"] = (
+            session_id if receipt["state"] == "needs-input" else None
+        )
+        driver._disposition = (
+            "resumable" if receipt["state"] == "needs-input" else "terminal"
+        )
         failed = False
     finally:
         observed = observer.finish()
@@ -714,46 +897,6 @@ def run_phase(
                 if not failed:
                     raise
 
-    validate_schema(receipt, RECEIPT_SCHEMA)
-    if receipt["phase"] != phase:
-        raise RuntimeError("Codex returned the wrong phase")
-    if receipt["state"] == "completed" and (
-        not receipt["issue"] or not receipt["linear_url"]
-    ):
-        raise RuntimeError("completed phase is missing its Linear issue")
-    if receipt["state"] == "completed" and (
-        receipt["result"] != COMPLETED_RESULTS[phase]
-    ):
-        raise RuntimeError(f"completed {phase} returned the wrong result")
-    if receipt["state"] == "needs-input" and not receipt["question"]:
-        raise RuntimeError("phase requested input without a question")
-    if steered:
-        if receipt["state"] != "needs-input":
-            raise RuntimeError("soft-budget wrap-up did not request continuation")
-        question = receipt["question"]
-        if question != SOFT_BUDGET_CONTINUE_QUESTION and not question.startswith(
-            "Clarification required:"
-        ):
-            raise RuntimeError("soft-budget wrap-up returned an invalid question")
-        if "unverified" not in receipt["summary"].casefold():
-            raise RuntimeError(
-                "soft-budget wrap-up omitted unverified proof obligations"
-            )
-    if receipt["state"] == "needs-input":
-        receipt["resume_session_id"] = session_id
-    else:
-        receipt["resume_session_id"] = None
-    if phase in {"implement", "review", "publish"} and receipt["state"] == "completed":
-        if not receipt["branch"] or not receipt["commit"]:
-            raise RuntimeError(f"completed {phase} is missing Git provenance")
-    if (
-        phase == "implement"
-        and receipt["state"] == "completed"
-        and resume_session_id is None
-        and receipt["branch"] != expected_branch
-    ):
-        raise RuntimeError("completed implementation did not use Linear's branch name")
-    require_pull_request(receipt, phase)
     return receipt
 
 

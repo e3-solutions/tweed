@@ -21,6 +21,81 @@ from tests.test_bonaparte import (
 
 
 class PhaseRuntimeTests(unittest.TestCase):
+    def test_terminal_close_pages_descendants_patches_branches_then_archives(self):
+        driver = object.__new__(RUNNER.AppServerPhaseDriver)
+        driver.process = mock.Mock()
+        driver._receipt_thread_id = "root"
+        driver._receipt_turn_id = "turn"
+        driver._issue_branch = "arya/cor-1-example"
+        driver._disposition = "terminal"
+        responses = iter(
+            [
+                {"data": [{"id": "child-1"}], "nextCursor": "next"},
+                {"data": [{"id": "child-2"}], "nextCursor": None},
+                {},
+            ]
+        )
+        calls = []
+
+        def request(method, params):
+            calls.append((method, params))
+            if method == "thread/list":
+                return next(responses)
+            return {}
+
+        driver.request = request
+        with mock.patch.object(NATIVE, "terminate_and_reap") as cleanup:
+            driver.close(failed=False)
+
+        self.assertEqual(
+            [method for method, _params in calls],
+            [
+                "thread/list",
+                "thread/metadata/update",
+                "thread/list",
+                "thread/metadata/update",
+                "thread/archive",
+            ],
+        )
+        self.assertEqual(calls[2][1]["cursor"], "next")
+        self.assertEqual(
+            calls[1][1]["gitInfo"]["branch"], "arya/cor-1-example"
+        )
+        cleanup.assert_called_once_with(driver.process)
+
+    def test_resumable_and_failed_close_use_explicit_unload_paths(self):
+        for disposition, expected in (
+            ("resumable", ["thread/unsubscribe"]),
+            ("failed", ["turn/interrupt", "thread/unsubscribe"]),
+        ):
+            with self.subTest(disposition=disposition):
+                driver = object.__new__(RUNNER.AppServerPhaseDriver)
+                driver.process = mock.Mock()
+                driver._receipt_thread_id = "root"
+                driver._receipt_turn_id = "turn"
+                driver._issue_branch = None
+                driver._disposition = disposition
+                calls = []
+                driver.request = lambda method, params: calls.append((method, params)) or {}
+                with mock.patch.object(NATIVE, "terminate_and_reap"):
+                    driver.close(failed=disposition == "failed")
+                self.assertEqual([method for method, _params in calls], expected)
+
+    def test_finalization_rejection_is_surfaced_after_reap(self):
+        driver = object.__new__(RUNNER.AppServerPhaseDriver)
+        driver.process = mock.Mock()
+        driver._receipt_thread_id = "root"
+        driver._receipt_turn_id = "turn"
+        driver._issue_branch = None
+        driver._disposition = "terminal"
+        driver.request = mock.Mock(side_effect=RuntimeError("archive rejected"))
+        with (
+            mock.patch.object(NATIVE, "terminate_and_reap") as cleanup,
+            self.assertRaisesRegex(RuntimeError, "archive rejected"),
+        ):
+            driver.close(failed=False)
+        cleanup.assert_called_once_with(driver.process)
+
     def test_child_turn_completion_does_not_terminate_coordinator_turn(self):
         expected = receipt()
 
@@ -78,7 +153,16 @@ class PhaseRuntimeTests(unittest.TestCase):
         self.assertIn('"git_branch_name": "arya/cor-1-example"', prompt)
         self.assertEqual(
             [item["method"] for item in server.requests if "id" in item][:3],
-            ["initialize", "thread/start", "turn/start"],
+            [
+                "initialize",
+                "thread/start",
+                "thread/metadata/update",
+            ],
+        )
+        request_methods = [item["method"] for item in server.requests if "id" in item]
+        self.assertLess(
+            request_methods.index("thread/metadata/update"),
+            request_methods.index("turn/start"),
         )
 
     def test_run_phase_failure_exports_the_latest_semantic_snapshot(self):
