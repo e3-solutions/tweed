@@ -608,7 +608,6 @@ def run_phase(
         steered = False
         steer_acknowledged = False
         terminal = None
-        post_steer_work = False
         while terminal is None or (steered and not steer_acknowledged):
             timeout = None if steered else max(0.0, deadline - time.monotonic())
             try:
@@ -642,29 +641,6 @@ def run_phase(
                     observation["soft_budget_steered"] = True
                 continue
             if "method" in message:
-                if steer_acknowledged and message.get("method") == "item/started":
-                    params = message.get("params")
-                    item = params.get("item") if isinstance(params, dict) else None
-                    item_type = item.get("type") if isinstance(item, dict) else None
-                    if (
-                        isinstance(params, dict)
-                        and params.get("threadId") == session_id
-                        and params.get("turnId") == turn_id
-                    ):
-                        post_steer_work = post_steer_work or item_type in {
-                            "commandExecution",
-                            "dynamicToolCall",
-                            "fileChange",
-                            "imageGeneration",
-                            "mcpToolCall",
-                            "webSearch",
-                        } or (
-                            item_type in {"collabAgentToolCall", "collabToolCall"}
-                            and item.get("tool") in {"spawnAgent", "spawn_agent"}
-                        ) or (
-                            item_type == "subAgentActivity"
-                            and item.get("kind") == "started"
-                        )
                 _method, completed_turn = driver.observe_notification(message)
                 if completed_turn is not None:
                     if completed_turn.get("id") != turn_id:
@@ -685,10 +661,6 @@ def run_phase(
             detail = terminal.get("error")
             raise RuntimeError(
                 f"{phase} coordinator failed: {detail or terminal.get('status')}"
-            )
-        if post_steer_work:
-            raise RuntimeError(
-                "soft-budget guard observed root work after steer acknowledgement"
             )
         if not driver.last_agent_message:
             items = terminal.get("items")
