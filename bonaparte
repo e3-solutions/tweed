@@ -1069,6 +1069,7 @@ def new_phase_ledger(
     model: str | None,
     reasoning: str,
     soft_phase_budget_seconds: float,
+    issue_identifier: str | None = None,
 ) -> dict:
     """Commit run identity before any native coordinator work starts."""
     git = capture_git_state(repository)
@@ -1082,7 +1083,11 @@ def new_phase_ledger(
         "phase": phase,
         "native_thread_id": None,
         "native_turn_id": None,
-        "protocol": {"receipt_protocol": RECEIPT_PROTOCOL, "progress_abi": PROGRESS_ABI},
+        "protocol": {
+            "receipt_protocol": RECEIPT_PROTOCOL,
+            "progress_abi": PROGRESS_ABI,
+            "initial_remote": {"status": "pending"},
+        },
         "runtime": {"version": _runtime_version()},
         "capabilities": {},
         "soft_phase_budget_seconds": resolve_soft_phase_budget(soft_phase_budget_seconds),
@@ -1095,7 +1100,7 @@ def new_phase_ledger(
         "question": None,
         "pending_answer": None,
         "pending_answer_state": "none",
-        "receipt": {},
+        "receipt": {"issue": issue_identifier} if issue_identifier else {},
         "final_receipt": None,
         "branch": git["branch"],
         "files_changed": git["files_changed"],
@@ -1115,6 +1120,80 @@ def new_phase_ledger(
     }
     write_checkpoint(ledger)
     return ledger
+
+
+def remote_snapshot(
+    repository: Path,
+    phase: str,
+    branch: str | None,
+    issue_identifier: str | None,
+) -> dict:
+    """Capture bounded read-only observations used to detect remote effects."""
+    snapshot: dict = {}
+    if branch:
+        remote_head = git_output(
+            repository, "ls-remote", "--heads", "origin", f"refs/heads/{branch}"
+        )
+        snapshot["git_head"] = (
+            {"status": "unknown"}
+            if remote_head is None
+            else {
+                "status": "observed",
+                "oid": remote_head.split(maxsplit=1)[0] if remote_head else None,
+            }
+        )
+        try:
+            selector = canonical_github_repository(repository)
+            completed = subprocess.run(
+                [
+                    "gh", "pr", "list", "--repo", selector, "--state", "all",
+                    "--head", branch, "--json",
+                    "number,state,isDraft,headRefName,headRefOid,baseRefName",
+                ],
+                check=True, capture_output=True, text=True, timeout=10,
+            )
+            values = json.loads(completed.stdout)
+            if not isinstance(values, list):
+                raise ValueError
+            snapshot["pull_requests"] = {
+                "status": "observed",
+                "values": sorted(
+                    [
+                        {
+                            key: item.get(key)
+                            for key in (
+                                "number", "state", "isDraft", "headRefName",
+                                "headRefOid", "baseRefName",
+                            )
+                        }
+                        for item in values
+                        if isinstance(item, dict)
+                    ],
+                    key=lambda item: item.get("number") or 0,
+                ),
+            }
+        except (OSError, subprocess.SubprocessError, ValueError, json.JSONDecodeError):
+            snapshot["pull_requests"] = {"status": "unknown"}
+    if issue_identifier and (header := PHASE_HEADERS.get(phase)):
+        try:
+            artifact = read_linear_phase_artifact(
+                repository, issue_identifier, header
+            )
+            snapshot["linear_artifact"] = {
+                "status": "observed",
+                "id": artifact.get("id") if artifact else None,
+            }
+        except Exception:  # noqa: BLE001 - uncertainty is represented structurally
+            snapshot["linear_artifact"] = {"status": "unknown"}
+    snapshot["status"] = (
+        "unknown"
+        if any(
+            isinstance(value, dict) and value.get("status") == "unknown"
+            for value in snapshot.values()
+        )
+        else "observed"
+    )
+    return snapshot
 
 
 def _serialized_size(receipt: dict) -> int:
@@ -1382,6 +1461,8 @@ def run_and_checkpoint(
 ) -> tuple[dict, int]:
     token = session_id or str(uuid.uuid4())
     base_git = capture_git_state(repository)
+    phase_values = phase_input.split(maxsplit=1)
+    issue_identifier = phase_values[0] if phase != "create" and phase_values else None
     ledger = new_phase_ledger(
         repository,
         phase,
@@ -1389,7 +1470,12 @@ def run_and_checkpoint(
         model,
         reasoning,
         soft_phase_budget_seconds,
+        issue_identifier,
     )
+    ledger["protocol"]["initial_remote"] = remote_snapshot(
+        repository, phase, ledger.get("branch"), issue_identifier
+    )
+    write_checkpoint(ledger)
     observation: dict = {"phase_token": token}
     ledger.update(status="running", activity="coordinating", updated_at=utc_now())
     write_checkpoint(ledger)
@@ -1514,6 +1600,25 @@ def inspect_checkpoint(checkpoint: dict) -> dict:
         details.append("Git unchanged")
 
     stored = checkpoint.get("final_receipt") or checkpoint.get("receipt") or {}
+    initial_remote = (checkpoint.get("protocol") or {}).get("initial_remote")
+    current_remote = remote_snapshot(
+        repository,
+        checkpoint["phase"],
+        checkpoint.get("branch"),
+        stored.get("issue"),
+    )
+    if (
+        not isinstance(initial_remote, dict)
+        or initial_remote.get("status") != "observed"
+        or current_remote.get("status") != "observed"
+    ):
+        unknown = True
+        details.append("remote baseline unknown")
+    elif current_remote != initial_remote:
+        changed = True
+        details.append("remote effects changed")
+    else:
+        details.append("remote effects unchanged")
     pr_url = stored.get("pull_request_url")
     if pr_url:
         try:
@@ -1723,9 +1828,13 @@ def parse() -> tuple[
     )
 
 
-def fail(summary: str) -> dict:
+def fail(
+    summary: str,
+    phase: str | None = None,
+    phase_token: str | None = None,
+) -> dict:
     return {
-        "phase": None,
+        "phase": phase if phase in WORKFLOWS else None,
         "state": "failed",
         "issue": None,
         "linear_url": None,
@@ -1738,6 +1847,16 @@ def fail(summary: str) -> dict:
         "pull_request_url": None,
         "remote_state_changed": None,
         "resume_session_id": None,
+        "phase_token": phase_token or str(uuid.uuid4()),
+        "reason_code": "failed-terminal",
+        "user_action_required": False,
+        "input_kind": "none",
+        "safe_to_resume": False,
+        "reconciliation_required": False,
+        "remote_state": "unknown",
+        "runtime_version": _runtime_version(),
+        "receipt_protocol": RECEIPT_PROTOCOL,
+        "progress_abi": PROGRESS_ABI,
     }
 
 
@@ -1746,6 +1865,7 @@ def main() -> int:
     progress = ProgressReporter(None)
     exit_code = 0
     selected_phase = None
+    phase_token = str(uuid.uuid4())
     try:
         try:
             if os.environ.get(PHASE_CHILD_ENV) == "1":
@@ -1759,6 +1879,8 @@ def main() -> int:
                 selected_reasoning,
                 selected_soft_phase_budget,
             ) = parse()
+            if session_id is not None:
+                phase_token = session_id
             if selected_phase == "inspect":
                 checkpoint = read_checkpoint(session_id)
                 selected_phase = checkpoint["phase"]
@@ -1830,7 +1952,7 @@ def main() -> int:
             progress.stop_heartbeat()
             progress.report("finalizing")
             serialized_receipt = serialize_receipt(
-                fail("Bonaparte was interrupted.")
+                fail("Bonaparte was interrupted.", selected_phase, phase_token)
             )
             terminal_state = "failed"
             exit_code = 130
@@ -1838,7 +1960,11 @@ def main() -> int:
             progress.stop_heartbeat()
             progress.report("finalizing")
             serialized_receipt = serialize_receipt(
-                fail(str(error).replace("\n", " ")[:800])
+                fail(
+                    str(error).replace("\n", " ")[:800],
+                    selected_phase,
+                    phase_token,
+                )
             )
             terminal_state = "failed"
             exit_code = 1

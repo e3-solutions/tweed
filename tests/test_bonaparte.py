@@ -301,6 +301,13 @@ def run_review_cli(fake_receipt):
 
 
 class BonaparteRunnerTests(unittest.TestCase):
+    def setUp(self):
+        self.remote_snapshot_patch = mock.patch.object(
+            RUNNER, "remote_snapshot", return_value={"status": "observed"}
+        )
+        self.remote_snapshot_patch.start()
+        self.addCleanup(self.remote_snapshot_patch.stop)
+
     def question_checkpoint(self, question="Which environment?"):
         value = receipt("needs-input")
         value["question"] = question
@@ -325,6 +332,53 @@ class BonaparteRunnerTests(unittest.TestCase):
     def test_reasoning_defaults_to_medium_and_accepts_a_phase_override(self):
         self.assertEqual(RUNNER.resolve_reasoning(), "medium")
         self.assertEqual(RUNNER.resolve_reasoning("xhigh"), "xhigh")
+
+    def test_inspect_reconciles_remote_baseline_without_persisting(self):
+        with tempfile.TemporaryDirectory() as temporary, mock.patch.dict(
+            os.environ, {"BONAPARTE_HOME": temporary}, clear=False
+        ):
+            checkpoint = self.question_checkpoint()
+        checkpoint["receipt"]["issue"] = None
+        checkpoint["protocol"]["initial_remote"] = {"status": "observed", "marker": 1}
+        before = dict(checkpoint)
+        with mock.patch.object(
+            RUNNER,
+            "remote_snapshot",
+            return_value={"status": "observed", "marker": 1},
+        ) as observe:
+            result = RUNNER.inspect_checkpoint(checkpoint)
+        self.assertTrue(result["safe_to_resume"])
+        self.assertEqual(result["remote_state"], "unchanged")
+        self.assertEqual(checkpoint, before)
+        observe.assert_called_once()
+
+        with mock.patch.object(
+            RUNNER,
+            "remote_snapshot",
+            return_value={"status": "observed", "marker": 2},
+        ):
+            result = RUNNER.inspect_checkpoint(checkpoint)
+        self.assertFalse(result["safe_to_resume"])
+        self.assertEqual(result["remote_state"], "changed")
+
+    def test_remote_snapshot_uses_only_bounded_read_commands(self):
+        self.remote_snapshot_patch.stop()
+        process = mock.Mock(stdout="[]")
+        with (
+            mock.patch.object(RUNNER, "git_output", return_value=""),
+            mock.patch.object(
+                RUNNER, "canonical_github_repository", return_value="owner/repo"
+            ),
+            mock.patch.object(RUNNER.subprocess, "run", return_value=process) as run,
+            mock.patch.object(RUNNER, "read_linear_phase_artifact", return_value=None),
+        ):
+            snapshot = RUNNER.remote_snapshot(ROOT, "implement", "issue-branch", "COR-1")
+        self.assertEqual(snapshot["status"], "observed")
+        command = run.call_args.args[0]
+        self.assertEqual(command[:3], ["gh", "pr", "list"])
+        self.assertNotIn("create", command)
+        self.assertNotIn("edit", command)
+        self.assertNotIn("comment", command)
 
     def test_soft_phase_budget_default_custom_and_invalid_never_start_codex(self):
         cases = (
@@ -1893,9 +1947,9 @@ class BonaparteRunnerTests(unittest.TestCase):
             json.loads(line)["state"] for line in progress_output.splitlines()
         ]
         self.assertEqual(completed.returncode, 130, completed.stderr)
-        self.assertEqual(final_receipt["state"], "blocked")
+        self.assertEqual(final_receipt["state"], "failed")
         self.assertEqual(final_receipt["summary"], "Bonaparte was interrupted.")
-        self.assertEqual(progress_states, ["started", "finalizing", "blocked"])
+        self.assertEqual(progress_states, ["started", "finalizing", "failed"])
         self.assertEqual(progress_states[-1], final_receipt["state"])
 
     def test_partial_stdout_failure_is_not_retried_or_reported_terminal(self):

@@ -728,7 +728,9 @@ class ProgressAndEventTests(unittest.TestCase):
             self.assertEqual(emitted["receipt_protocol"], 2)
             self.assertEqual(emitted["progress_abi"], 3)
             self.assertIsNone(emitted["resume_session_id"])
-            self.assertEqual(coordinator_calls.read_text().splitlines(), ["called"])
+            self.assertEqual(
+                coordinator_calls.read_text().splitlines(), ["called", "called"]
+            )
             self.assertEqual(heartbeat_joins.read_text().splitlines(), ["joined"])
             self.assertEqual(
                 [json.loads(line)["state"] for line in progress_output.splitlines()],
