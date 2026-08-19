@@ -17,6 +17,7 @@ from pathlib import Path
 from bonaparte_checkpoint import (
     VERSION as CHECKPOINT_VERSION,
     authoritative_receipt,
+    checkpoint_is_active,
     checkpoint_lease,
     checkpoint_path,
     read_checkpoint,
@@ -280,10 +281,14 @@ def receipt_v2(
     state = receipt.get("state")
     changed = receipt.get("remote_state_changed")
     remote_state = "changed" if changed is True else "unchanged" if changed is False else "unknown"
-    if failed_resumable:
+    if reconciliation_required:
+        reason = "reconciliation-required"
+        input_kind = "reconciliation"
+        safe_to_resume = False
+    elif failed_resumable:
         reason = "failed-resumable"
-        input_kind = "reconciliation" if reconciliation_required else "continuation"
-        safe_to_resume = not reconciliation_required
+        input_kind = "continuation"
+        safe_to_resume = True
     elif state == "completed":
         reason, input_kind, safe_to_resume = "completed", "none", False
     elif state == "needs-input":
@@ -292,7 +297,11 @@ def receipt_v2(
         safe_to_resume = not reconciliation_required and remote_state != "unknown"
     else:
         reason, input_kind, safe_to_resume = "blocked", "none", False
-    if failed_resumable:
+    if reconciliation_required:
+        next_action = (
+            f"Run bonaparte inspect {token}; resume only after exact reconciliation."
+        )
+    elif failed_resumable:
         next_action = (
             f"Run bonaparte resume {token} <answer>."
             if safe_to_resume
@@ -779,7 +788,7 @@ def run_phase(
         finalization_deadline_ns = None
         terminal = None
         post_steer_work = False
-        while terminal is None or (steered and not steer_acknowledged):
+        while terminal is None:
             timeout = (
                 max(0.0, finalization_deadline_ns / 1_000_000_000 - time.monotonic_ns() / 1_000_000_000)
                 if steered
@@ -813,6 +822,7 @@ def run_phase(
                         },
                     )
                     steered = True
+                    persist("finalizing", {})
                     finalization_deadline_ns = time.monotonic_ns() + int(
                         finalization_window_seconds * 1_000_000_000
                     )
@@ -904,7 +914,7 @@ def run_phase(
             if isinstance(native, dict)
             else None
         )
-        if steered and active_items not in {0, None}:
+        if steer_acknowledged and active_items not in {0, None}:
             raise RuntimeError("soft-budget finalization observed unsettled work")
         if not driver.last_agent_message:
             items = terminal.get("items")
@@ -918,7 +928,14 @@ def run_phase(
         if not driver.last_agent_message:
             raise RuntimeError("Codex app-server returned no final receipt")
         receipt = json.loads(driver.last_agent_message)
-        receipt_v2(receipt, phase_token, observation=observation, soft_budget=steered)
+        receipt_v2(
+            receipt,
+            phase_token,
+            observation=observation,
+            soft_budget=(
+                receipt.get("question") == SOFT_BUDGET_CONTINUE_QUESTION
+            ),
+        )
         validate_schema(receipt, RECEIPT_SCHEMA)
         if receipt["phase"] != phase:
             raise RuntimeError("Codex returned the wrong phase")
@@ -932,7 +949,7 @@ def run_phase(
             raise RuntimeError(f"completed {phase} returned the wrong result")
         if receipt["state"] == "needs-input" and not receipt["question"]:
             raise RuntimeError("phase requested input without a question")
-        if steered:
+        if steer_acknowledged:
             if receipt["state"] != "needs-input":
                 raise RuntimeError("soft-budget wrap-up did not request continuation")
             question = receipt["question"]
@@ -1083,6 +1100,14 @@ def _persist_run_event(
         )
         write_checkpoint(checkpoint)
         return
+    if event == "finalizing":
+        checkpoint.update(
+            status="finalizing",
+            activity="finalizing",
+            updated_at=utc_now(),
+        )
+        write_checkpoint(checkpoint)
+        return
     if event != "validated-receipt":
         raise RuntimeError("unsupported durable run event")
 
@@ -1126,7 +1151,16 @@ def _persist_run_event(
     # refresh. A crash here may leave stale diagnostics, never a lost receipt.
     write_checkpoint(checkpoint)
     if receipt["state"] == "needs-input":
-        _establish_resume_remote(checkpoint, receipt, force=True)
+        try:
+            _establish_resume_remote(checkpoint, receipt, force=True)
+            # The acknowledged provider baseline is resume authority, not Git
+            # inventory. Commit it before the fallible diagnostics refresh.
+            write_checkpoint(checkpoint)
+        except Exception:
+            checkpoint["protocol"]["resume_remote"] = {"status": "unknown"}
+            checkpoint["remote_state_changed"] = None
+            write_checkpoint(checkpoint)
+            raise
     _refresh_checkpoint_git(checkpoint, update_identity=True, require_identity=True)
     write_checkpoint(checkpoint)
 
@@ -1485,6 +1519,20 @@ def _checkpoint_failure(checkpoint: dict, summary: str, *, remote_uncertain=Fals
     return checkpoint_receipt(checkpoint, state="failed", summary=summary)
 
 
+def _committed_phase_receipt(checkpoint: dict) -> dict | None:
+    """Return a validated receipt that already owns durable phase authority."""
+
+    terminal = authoritative_receipt(checkpoint)
+    if terminal is not None:
+        return terminal
+    if (
+        checkpoint.get("status") == "waiting-input"
+        and (checkpoint.get("receipt") or {}).get("state") == "needs-input"
+    ):
+        return checkpoint_receipt(checkpoint)
+    return None
+
+
 def _validate_checkpoint_worktree(checkpoint: dict) -> Path:
     repository = Path(checkpoint["worktree"])
     if not repository.is_dir():
@@ -1578,7 +1626,7 @@ def resume_checkpoint(
             checkpoint["soft_phase_budget_seconds"],
         )
     except KeyboardInterrupt:
-        committed = authoritative_receipt(checkpoint)
+        committed = _committed_phase_receipt(checkpoint)
         if committed is not None:
             return committed, 0
         _update_checkpoint_observation(checkpoint, observation)
@@ -1589,7 +1637,7 @@ def resume_checkpoint(
             130,
         )
     except Exception as error:  # noqa: BLE001 - preserve a resumable answer
-        committed = authoritative_receipt(checkpoint)
+        committed = _committed_phase_receipt(checkpoint)
         if committed is not None:
             return committed, 0
         _update_checkpoint_observation(checkpoint, observation)
@@ -1625,6 +1673,9 @@ def resume_checkpoint(
                 checkpoint, update_identity=True, require_identity=True
             )
         except RuntimeError as error:
+            committed = _committed_phase_receipt(checkpoint)
+            if committed is not None:
+                return committed, 0
             return _checkpoint_failure(checkpoint, str(error)), 1
         write_checkpoint(checkpoint)
         return checkpoint_receipt(checkpoint), 0
@@ -1660,6 +1711,29 @@ def run_and_checkpoint(
     soft_phase_budget_seconds: float = DEFAULT_SOFT_PHASE_BUDGET_SECONDS,
 ) -> tuple[dict, int]:
     token = session_id or str(uuid.uuid4())
+    with checkpoint_lease(token):
+        return _run_and_checkpoint_locked(
+            repository,
+            phase,
+            phase_input,
+            session_id,
+            model,
+            reasoning,
+            soft_phase_budget_seconds,
+            token,
+        )
+
+
+def _run_and_checkpoint_locked(
+    repository: Path,
+    phase: str,
+    phase_input: str,
+    session_id: str | None,
+    model: str | None,
+    reasoning: str,
+    soft_phase_budget_seconds: float,
+    token: str,
+) -> tuple[dict, int]:
     base_git = capture_git_state(repository)
     phase_values = phase_input.split(maxsplit=1)
     issue_identifier = phase_values[0] if phase != "create" and phase_values else None
@@ -1698,7 +1772,7 @@ def run_and_checkpoint(
             soft_phase_budget_seconds=soft_phase_budget_seconds,
         )
     except (Exception, KeyboardInterrupt) as error:
-        committed = authoritative_receipt(ledger)
+        committed = _committed_phase_receipt(ledger)
         if committed is not None:
             return committed, 0
         _update_checkpoint_observation(ledger, observation)
@@ -1744,7 +1818,13 @@ def run_and_checkpoint(
         remote_state_changed=receipt.get("remote_state_changed"),
         updated_at=utc_now(),
     )
-    _refresh_checkpoint_git(ledger, update_identity=True)
+    try:
+        _refresh_checkpoint_git(ledger, update_identity=True)
+    except Exception:
+        committed = _committed_phase_receipt(ledger)
+        if committed is not None:
+            return committed, 0
+        raise
     if receipt["state"] == "needs-input":
         if not coordinator_session:
             return _checkpoint_failure(
@@ -1788,7 +1868,7 @@ def canonical_github_repository(repository: Path) -> str:
     return selector
 
 
-def inspect_checkpoint(checkpoint: dict) -> dict:
+def inspect_checkpoint(checkpoint: dict, *, lease_held: bool = False) -> dict:
     """Reconcile local and provider observations without persisting or writing."""
     repository = Path(checkpoint["worktree"])
     unknown = False
@@ -1884,10 +1964,16 @@ def inspect_checkpoint(checkpoint: dict) -> dict:
             details.append("Linear unknown")
 
     remote_state = "unknown" if unknown else "changed" if changed else "unchanged"
-    safe = not unknown and not changed and checkpoint["status"] in {
-        "waiting-input",
-        "failed-resumable",
-    }
+    orphaned_native_turn = (
+        checkpoint["status"] in {"running", "finalizing"}
+        and bool(checkpoint.get("native_thread_id"))
+        and bool(checkpoint.get("native_turn_id"))
+        and (lease_held or not checkpoint_is_active(checkpoint["phase_token"]))
+    )
+    safe = not unknown and not changed and (
+        checkpoint["status"] in {"waiting-input", "failed-resumable"}
+        or orphaned_native_turn
+    )
     final = authoritative_receipt(checkpoint)
     if final is not None:
         return final
@@ -1933,7 +2019,14 @@ def inspect_checkpoint(checkpoint: dict) -> dict:
         "linear_url": stored.get("linear_url"),
         "result": None,
         "summary": "; ".join(details)[:800],
-        "question": checkpoint.get("question") if safe else None,
+        "question": (
+            checkpoint.get("question")
+            or (
+                "Resume the interrupted native turn with Continue."
+                if orphaned_native_turn and safe
+                else None
+            )
+        ),
         "next_action": (
             "Resume this token to continue the bound native thread."
             if safe
@@ -1952,14 +2045,12 @@ def inspect_checkpoint(checkpoint: dict) -> dict:
         observation={"runtime_version": (checkpoint.get("runtime") or {}).get("version")},
         failed_resumable=checkpoint["status"] == "failed-resumable",
         reconciliation_required=not safe,
+        soft_budget=(
+            checkpoint.get("question") == SOFT_BUDGET_CONTINUE_QUESTION
+            or orphaned_native_turn
+        ),
     )
     receipt["remote_state"] = remote_state
-    receipt["safe_to_resume"] = safe
-    receipt["user_action_required"] = True
-    receipt["input_kind"] = "continuation" if safe else "reconciliation"
-    receipt["reason_code"] = (
-        "failed-resumable" if safe else "reconciliation-required"
-    )
     return receipt
 
 
@@ -2172,7 +2263,7 @@ def main() -> int:
                             reconciliation = (
                                 {"safe_to_resume": True}
                                 if legacy
-                                else inspect_checkpoint(checkpoint)
+                                else inspect_checkpoint(checkpoint, lease_held=True)
                             )
                             if reconciliation.get("state") == "completed":
                                 result_receipt, exit_code = reconciliation, 0

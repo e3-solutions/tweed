@@ -422,8 +422,10 @@ Bonaparte does not copy their transcript.
 Before resuming, Bonaparte exclusively locks the token and durably records the
 answer. A later question reuses the same token. Completed and blocked records
 remain on disk as authoritative receipts; repeated resume returns the committed
-receipt without rerunning. Only `waiting-input` and `failed-resumable` records
-may resume. If native delivery becomes
+receipt without rerunning. `waiting-input` and `failed-resumable` records may
+resume; an orphaned `running` or `finalizing` record may also resume only when
+its native thread and turn IDs are durable, its provider and Git observations
+still match, and no process holds its exclusive token lease. If native delivery becomes
 ambiguous, Bonaparte preserves the pending answer and reports the token instead
 of silently restarting the phase. Token resumes reuse the saved model and
 reasoning unless an explicit override is supplied. They also reuse the saved

@@ -34,7 +34,12 @@ STATUSES = {
     "blocked",
     "failed-terminal",
 }
-RESUMABLE_STATUSES = {"waiting-input", "failed-resumable"}
+RESUMABLE_STATUSES = {
+    "running",
+    "finalizing",
+    "waiting-input",
+    "failed-resumable",
+}
 TERMINAL_STATUSES = {"completed", "blocked", "failed-terminal"}
 PENDING_ANSWER_STATES = {"none", "pending", "delivering", "delivered"}
 PHASES = {"create", "rca", "scope", "implement", "review", "publish"}
@@ -501,4 +506,30 @@ def checkpoint_lease(token, home=None):
         yield
     finally:
         fcntl.flock(descriptor, fcntl.LOCK_UN)
+        os.close(descriptor)
+
+
+def checkpoint_is_active(token, home=None) -> bool:
+    """Return whether another process currently owns an existing token lease."""
+
+    canonical = canonical_token(token)
+    path = checkpoint_path(canonical, home, ensure_directory=False).with_suffix(
+        ".lock"
+    )
+    if not path.exists():
+        return False
+    try:
+        descriptor = _open_regular(path, os.O_RDWR)
+    except RuntimeError:
+        if not path.exists():
+            return False
+        raise
+    try:
+        try:
+            fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            return True
+        fcntl.flock(descriptor, fcntl.LOCK_UN)
+        return False
+    finally:
         os.close(descriptor)

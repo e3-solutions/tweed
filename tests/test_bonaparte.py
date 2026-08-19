@@ -989,6 +989,108 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertEqual(stored["status"], "completed")
         self.assertEqual(RUNNER.authoritative_receipt(stored), result)
 
+    def test_validated_waiting_receipt_wins_over_later_refresh_failure(self):
+        def needs_input_then_return(*_arguments, **keywords):
+            observation = keywords.get("observation") or _arguments[-3]
+            durable = observation["_durable_event"]
+            durable("native-thread", {"native_thread_id": SESSION_ID})
+            durable(
+                "native-turn",
+                {"native_thread_id": SESSION_ID, "native_turn_id": "turn-1"},
+            )
+            value = receipt("needs-input")
+            RUNNER.receipt_v2(value, SESSION_ID)
+            durable("validated-receipt", value)
+            return value
+
+        for resumed in (False, True):
+            with self.subTest(resumed=resumed), tempfile.TemporaryDirectory() as temporary:
+                with (
+                    mock.patch.dict(
+                        os.environ, {"BONAPARTE_HOME": temporary}, clear=False
+                    ),
+                    mock.patch.object(
+                        RUNNER,
+                        "_refresh_checkpoint_git",
+                        side_effect=[None, RuntimeError("inventory unavailable")],
+                    ),
+                    mock.patch.object(
+                        RUNNER, "run_phase", side_effect=needs_input_then_return
+                    ),
+                ):
+                    if resumed:
+                        checkpoint = self.question_checkpoint()
+                        result, exit_code = RUNNER.resume_checkpoint(
+                            checkpoint, "Production", None, None
+                        )
+                    else:
+                        result, exit_code = RUNNER.run_and_checkpoint(
+                            ROOT, "rca", "COR-1", SESSION_ID, None, "medium"
+                        )
+                    stored = RUNNER.read_checkpoint(SESSION_ID, active_only=True)
+
+            self.assertEqual(exit_code, 0)
+            self.assertEqual(result["state"], "needs-input")
+            self.assertEqual(result["question"], "Which environment?")
+            self.assertEqual(stored["status"], "waiting-input")
+            self.assertEqual(stored["receipt"]["state"], "needs-input")
+
+    def test_waiting_receipt_persists_acknowledged_baseline_before_refresh(self):
+        def needs_input(*_arguments, **keywords):
+            durable = keywords["observation"]["_durable_event"]
+            durable("native-thread", {"native_thread_id": SESSION_ID})
+            durable(
+                "native-turn",
+                {"native_thread_id": SESSION_ID, "native_turn_id": "turn-1"},
+            )
+            value = receipt("needs-input")
+            RUNNER.receipt_v2(value, SESSION_ID)
+            durable("validated-receipt", value)
+            return value
+
+        baseline_a = {"status": "observed", "marker": "A"}
+        baseline_b = {"status": "observed", "marker": "B"}
+        baseline_c = {"status": "observed", "marker": "C"}
+        with tempfile.TemporaryDirectory() as temporary, mock.patch.dict(
+            os.environ, {"BONAPARTE_HOME": temporary}, clear=False
+        ):
+            with (
+                mock.patch.object(
+                    RUNNER, "remote_snapshot", side_effect=[baseline_a, baseline_b]
+                ),
+                mock.patch.object(
+                    RUNNER,
+                    "_refresh_checkpoint_git",
+                    side_effect=RuntimeError("inventory unavailable"),
+                ),
+                mock.patch.object(RUNNER, "run_phase", side_effect=needs_input),
+            ):
+                result, exit_code = RUNNER.run_and_checkpoint(
+                    ROOT, "rca", "COR-1", SESSION_ID, None, "medium"
+                )
+            stored = RUNNER.read_checkpoint(SESSION_ID, active_only=True)
+            with (
+                mock.patch.object(
+                    RUNNER, "read_linear_phase_artifact", return_value=None
+                ),
+                mock.patch.object(RUNNER, "remote_snapshot", return_value=baseline_b),
+            ):
+                acknowledged = RUNNER.inspect_checkpoint(stored)
+            with (
+                mock.patch.object(
+                    RUNNER, "read_linear_phase_artifact", return_value=None
+                ),
+                mock.patch.object(RUNNER, "remote_snapshot", return_value=baseline_c),
+            ):
+                drifted = RUNNER.inspect_checkpoint(stored)
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(result["state"], "needs-input")
+        self.assertEqual(stored["protocol"]["initial_remote"], baseline_a)
+        self.assertEqual(stored["protocol"]["resume_remote"], baseline_b)
+        self.assertTrue(acknowledged["safe_to_resume"])
+        self.assertFalse(drifted["safe_to_resume"])
+
     def test_receipt_and_checkpoint_free_text_reject_privacy_canaries(self):
         exposed = receipt()
         exposed["summary"] = "Authorization: Bearer private-secret-value"
@@ -1490,6 +1592,102 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertFalse(unknown["reconciliation_required"])
         self.assertEqual(unknown["remote_state"], "unknown")
         self.assertIn(f"bonaparte inspect {token}", unknown["next_action"])
+
+    def test_inspect_preserves_waiting_input_and_reconciliation_semantics(self):
+        cases = (
+            (
+                "material",
+                "Which environment?",
+                "waiting-input",
+                True,
+                "material-input",
+                "clarification",
+            ),
+            (
+                "soft budget",
+                RUNNER.SOFT_BUDGET_CONTINUE_QUESTION,
+                "waiting-input",
+                True,
+                "soft-budget",
+                "continuation",
+            ),
+            (
+                "failed resumable",
+                "Reconcile this token with inspect before resuming.",
+                "failed-resumable",
+                True,
+                "failed-resumable",
+                "continuation",
+            ),
+            (
+                "unsafe",
+                "Which environment?",
+                "waiting-input",
+                False,
+                "reconciliation-required",
+                "reconciliation",
+            ),
+        )
+        for label, question, status, unchanged, reason, input_kind in cases:
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as temporary:
+                with mock.patch.dict(
+                    os.environ, {"BONAPARTE_HOME": temporary}, clear=False
+                ):
+                    checkpoint = self.question_checkpoint(question)
+                    checkpoint.update(status=status)
+                    checkpoint["receipt"]["issue"] = None
+                    checkpoint["protocol"]["resume_remote"] = {
+                        "status": "observed",
+                        "marker": 1,
+                    }
+                    RUNNER.write_checkpoint(checkpoint)
+                    marker = 1 if unchanged else 2
+                    with mock.patch.object(
+                        RUNNER,
+                        "remote_snapshot",
+                        return_value={"status": "observed", "marker": marker},
+                    ):
+                        result = RUNNER.inspect_checkpoint(checkpoint)
+
+            self.assertEqual(result["safe_to_resume"], unchanged)
+            self.assertEqual(result["reason_code"], reason)
+            self.assertEqual(result["input_kind"], input_kind)
+            self.assertEqual(result["user_action_required"], True)
+
+    def test_orphaned_native_turn_is_resumable_but_live_owner_is_not(self):
+        with tempfile.TemporaryDirectory() as temporary, mock.patch.dict(
+            os.environ, {"BONAPARTE_HOME": temporary}, clear=False
+        ):
+            checkpoint = RUNNER.new_phase_ledger(
+                ROOT,
+                "rca",
+                SESSION_ID,
+                None,
+                "medium",
+                RUNNER.DEFAULT_SOFT_PHASE_BUDGET_SECONDS,
+                "COR-1",
+            )
+            checkpoint.update(
+                status="running",
+                native_thread_id=SESSION_ID,
+                native_turn_id="turn-1",
+            )
+            checkpoint["receipt"]["issue"] = None
+            checkpoint["protocol"]["initial_remote"] = {"status": "observed"}
+            RUNNER.write_checkpoint(checkpoint)
+            with mock.patch.object(
+                RUNNER, "remote_snapshot", return_value={"status": "observed"}
+            ):
+                orphaned = RUNNER.inspect_checkpoint(checkpoint)
+                with RUNNER.checkpoint_lease(SESSION_ID):
+                    active = RUNNER.inspect_checkpoint(checkpoint)
+                    acquired = RUNNER.inspect_checkpoint(checkpoint, lease_held=True)
+
+        self.assertTrue(orphaned["safe_to_resume"])
+        self.assertEqual(orphaned["input_kind"], "continuation")
+        self.assertFalse(active["safe_to_resume"])
+        self.assertEqual(active["reason_code"], "reconciliation-required")
+        self.assertTrue(acquired["safe_to_resume"])
 
     def test_ambiguous_resume_failure_preserves_and_replays_the_answer(self):
         with tempfile.TemporaryDirectory() as temporary:

@@ -744,7 +744,7 @@ class PhaseRuntimeTests(unittest.TestCase):
         self.assertTrue(instances[0].closed_failed)
         self.assertEqual(observation["steer_outcome"], "rejected")
 
-    def test_terminal_before_steer_rejection_still_fails(self):
+    def test_terminal_before_steer_rejection_preserves_completed_turn(self):
         instances = []
         observe_notification = RUNNER.AppServerPhaseDriver.observe_notification
 
@@ -784,15 +784,18 @@ class PhaseRuntimeTests(unittest.TestCase):
             def observe_notification(self, message):
                 return observe_notification(self, message)
 
+            @property
+            def last_agent_message(self):
+                return json.dumps(receipt("completed"))
+
             def close(self, *, failed):
                 self.closed_failed = failed
 
         with (
             mock.patch.object(RUNNER, "AppServerPhaseDriver", Driver),
             mock.patch.object(RUNNER.time, "monotonic", side_effect=[20.0, 21.0]),
-            self.assertRaisesRegex(RuntimeError, "rejected turn/steer"),
         ):
-            RUNNER.run_phase(
+            result = RUNNER.run_phase(
                 ROOT,
                 "rca",
                 "Continue.",
@@ -800,7 +803,74 @@ class PhaseRuntimeTests(unittest.TestCase):
                 soft_phase_budget_seconds=1,
             )
 
-        self.assertTrue(instances[0].closed_failed)
+        self.assertEqual(result["state"], "completed")
+        self.assertFalse(instances[0].closed_failed)
+
+    def test_soft_budget_receipt_keeps_continuation_semantics_before_steer_ack(self):
+        observe_notification = RUNNER.AppServerPhaseDriver.observe_notification
+
+        class Driver:
+            def __init__(self, _repository, observer):
+                self.observer = observer
+                self.process = mock.Mock(stdin=io.StringIO())
+                self.messages = iter(
+                    [
+                        TimeoutError(),
+                        TimeoutError(),
+                        {
+                            "method": "turn/completed",
+                            "params": {
+                                "turn": {"id": "turn-1", "status": "completed"}
+                            },
+                        },
+                        {"id": 4, "error": "too late"},
+                    ]
+                )
+
+            def request(self, method, _params):
+                return {
+                    "initialize": {},
+                    "thread/resume": {"thread": {"id": SESSION_ID}},
+                    "turn/start": {"turn": {"id": "turn-1"}},
+                }[method]
+
+            def next_message(self, _timeout=None):
+                value = next(self.messages)
+                if isinstance(value, BaseException):
+                    raise value
+                return value
+
+            def send(self, _method, _params):
+                return 4
+
+            def observe_notification(self, message):
+                return observe_notification(self, message)
+
+            @property
+            def last_agent_message(self):
+                value = receipt("needs-input")
+                value["question"] = RUNNER.SOFT_BUDGET_CONTINUE_QUESTION
+                return json.dumps(value)
+
+            def close(self, *, failed):
+                self.closed_failed = failed
+
+        with (
+            mock.patch.object(RUNNER, "AppServerPhaseDriver", Driver),
+            mock.patch.object(RUNNER.time, "monotonic", side_effect=[20.0, 21.0]),
+        ):
+            result = RUNNER.run_phase(
+                ROOT,
+                "rca",
+                "Continue.",
+                SESSION_ID,
+                soft_phase_budget_seconds=1,
+            )
+
+        self.assertEqual(result["state"], "needs-input")
+        self.assertEqual(result["reason_code"], "soft-budget")
+        self.assertEqual(result["input_kind"], "continuation")
+        self.assertIn("bonaparte resume", result["next_action"])
 
     def test_resume_uses_the_same_session_and_can_switch_models(self):
         argv = [
