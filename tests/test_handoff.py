@@ -13,13 +13,17 @@ select_handoff = RUNNER["select_handoff"]
 recover_terminal_receipt = RUNNER["recover_terminal_receipt"]
 
 
-def live_pr(branch="arya/lin-1-example", commit="b" * 40):
+def live_pr(
+    branch="arya/lin-1-example", commit="b" * 40, base="main", draft=True
+):
     return SimpleNamespace(
         returncode=0,
         stdout=json.dumps(
             {
                 "headRefName": branch,
                 "headRefOid": commit,
+                "baseRefName": base,
+                "isDraft": draft,
                 "state": "OPEN",
                 "url": "https://github.com/o/r/pull/1",
             }
@@ -54,7 +58,8 @@ class HandoffTests(unittest.TestCase):
             "- Branch: `arya/lin-1-example`\n"
             "- Implementation commit: `" + "a" * 40 + "`\n"
             "- Reviewed commit: `" + "b" * 40 + "`\n"
-            "- Draft PR: `https://github.com/o/r/pull/1`"
+            "- Draft PR: `https://github.com/o/r/pull/1`\n"
+            "- Base: `main`"
         )
         review = comment("review", "unused", "5")
         review["body"] = HEADERS["review"] + git_handoff
@@ -110,11 +115,16 @@ class HandoffTests(unittest.TestCase):
             + "\n\n**Status:** Ready for review\n\n### Delivery\n"
             + "- Pull request: https://github.com/o/r/pull/1\n"
             + "- Branch: `arya/lin-1-example`\n"
-            + "- Reviewed commit: `" + "c" * 40 + "`"
+            + "- Reviewed commit: `" + "c" * 40 + "`\n"
+            + "- Base: `main`"
         )
         with mock.patch.dict(
             RUNNER_GLOBALS,
-            {"_SUBPROCESS_RUN": mock.Mock(return_value=live_pr(commit="c" * 40))},
+            {
+                "_SUBPROCESS_RUN": mock.Mock(
+                    return_value=live_pr(commit="c" * 40, draft=False)
+                )
+            },
         ):
             recovered = recover_terminal_receipt(
                 issue(), [implementation, published], "implement"
@@ -129,7 +139,8 @@ class HandoffTests(unittest.TestCase):
             + "\n\n**Verdict:** Ready to publish\n\n### Git handoff\n"
             + "- Branch: `arya/lin-1-example`\n"
             + "- Reviewed commit: `" + "b" * 40 + "`\n"
-            + "- Draft PR: `https://github.com/o/r/pull/1`"
+            + "- Draft PR: `https://github.com/o/r/pull/1`\n"
+            + "- Base: `main`"
         )
         with mock.patch.dict(
             RUNNER_GLOBALS,
@@ -139,6 +150,53 @@ class HandoffTests(unittest.TestCase):
 
         self.assertEqual(recovered["state"], "blocked")
         self.assertIn("stale", recovered["summary"])
+
+    def test_terminal_recovery_blocks_retargeted_or_redrafted_publish(self):
+        published = comment("publish", "unused", "5")
+        published["body"] = (
+            HEADERS["publish"]
+            + "\n\n**Status:** Ready for review\n\n### Delivery\n"
+            + "- Branch: `arya/lin-1-example`\n"
+            + "- Reviewed commit: `" + "b" * 40 + "`\n"
+            + "- Pull request: https://github.com/o/r/pull/1\n"
+            + "- Base: `main`"
+        )
+        for current in (
+            live_pr(base="staging", draft=False),
+            live_pr(base="main", draft=True),
+        ):
+            with self.subTest(current=current.stdout), mock.patch.dict(
+                RUNNER_GLOBALS,
+                {"_SUBPROCESS_RUN": mock.Mock(return_value=current)},
+            ):
+                recovered = recover_terminal_receipt(
+                    issue(), [published], "publish"
+                )
+                self.assertEqual(recovered["state"], "blocked")
+
+    def test_supplemental_guidance_disables_terminal_fast_path(self):
+        review = comment("review", "unused", "5")
+        review["body"] = HEADERS["review"] + "\n\n**Verdict:** Ready to publish"
+        recovery = mock.Mock()
+        with (
+            mock.patch.dict(
+                RUNNER_GLOBALS,
+                {
+                    "call_linear": mock.Mock(return_value=(issue(), [review])),
+                    "recover_terminal_receipt": recovery,
+                    "AppServerPhaseDriver": mock.Mock(
+                        side_effect=RuntimeError("coordinator started")
+                    ),
+                },
+            ),
+            self.assertRaisesRegex(RuntimeError, "coordinator started"),
+        ):
+            RUNNER["run_phase"](
+                Path(__file__).resolve().parents[1],
+                "implement",
+                "LIN-1 Expected pull-request base: staging",
+            )
+        recovery.assert_not_called()
 
     def test_phase_matrix_passes_only_required_context(self):
         rca = comment("rca", "RCA", "1")

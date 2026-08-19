@@ -295,9 +295,14 @@ def _handoff_value(body: str, labels: tuple[str, ...]) -> str | None:
 
 
 def validate_terminal_pull_request(
-    branch: str | None, commit: str | None, pull_request: str | None
+    branch: str | None,
+    commit: str | None,
+    pull_request: str | None,
+    base: str | None,
+    *,
+    expect_draft: bool,
 ) -> bool:
-    if not all((branch, commit, pull_request)):
+    if not all((branch, commit, pull_request, base)):
         return False
     if not re.fullmatch(
         r"https://github\.com/[^/\s]+/[^/\s]+/pull/[1-9][0-9]*", pull_request
@@ -307,7 +312,7 @@ def validate_terminal_pull_request(
         process = _SUBPROCESS_RUN(
             [
                 "gh", "pr", "view", pull_request,
-                "--json", "headRefName,headRefOid,state,url",
+                "--json", "baseRefName,headRefName,headRefOid,isDraft,state,url",
             ],
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
@@ -324,8 +329,10 @@ def validate_terminal_pull_request(
         isinstance(current, dict)
         and current.get("state") == "OPEN"
         and current.get("url") == pull_request
+        and current.get("baseRefName") == base
         and current.get("headRefName") == branch
         and current.get("headRefOid") == commit
+        and current.get("isDraft") is expect_draft
     )
 
 
@@ -363,10 +370,17 @@ def recover_terminal_receipt(
     branch = _handoff_value(body, ("Branch",))
     commit = _handoff_value(body, ("Reviewed commit", "Commit", "Implementation commit"))
     pull_request = _handoff_value(body, ("Draft PR", "Pull request"))
+    base = _handoff_value(body, ("Base",))
     needs_git = requested_phase in {"implement", "review", "publish"}
-    complete = not needs_git or all((branch, commit, pull_request))
+    complete = not needs_git or all((branch, commit, pull_request, base))
     if complete and needs_git:
-        complete = validate_terminal_pull_request(branch, commit, pull_request)
+        complete = validate_terminal_pull_request(
+            branch,
+            commit,
+            pull_request,
+            base,
+            expect_draft=source_phase != "publish",
+        )
     return {
         "phase": requested_phase,
         "state": "completed" if complete else "blocked",
@@ -629,7 +643,11 @@ def run_phase(
             expected_branch = validate_issue_branch(
                 handoff["issue"]["git_branch_name"]
             )
-            recovered = recover_terminal_receipt(issue, comments, phase)
+            recovered = (
+                None
+                if handoff.get("supplemental")
+                else recover_terminal_receipt(issue, comments, phase)
+            )
             if recovered is not None:
                 if recovered["state"] == "completed" and recovered.get("branch"):
                     if recovered["branch"] != expected_branch:

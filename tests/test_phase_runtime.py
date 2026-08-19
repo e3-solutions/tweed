@@ -115,7 +115,7 @@ class PhaseRuntimeTests(unittest.TestCase):
 
         self.assertEqual(
             [call.args[0] for call in driver.request.call_args_list],
-            ["thread/list"],
+            ["thread/list", "thread/archive"],
         )
         cleanup.assert_called_once_with(driver.process)
 
@@ -190,6 +190,30 @@ class PhaseRuntimeTests(unittest.TestCase):
         ):
             driver.close(failed=False)
         cleanup.assert_called_once_with(driver.process)
+
+    def test_descendant_patch_failure_still_archives_terminal_root(self):
+        driver = object.__new__(RUNNER.AppServerPhaseDriver)
+        driver.process = mock.Mock()
+        driver._receipt_thread_id = "root"
+        driver._receipt_turn_id = "turn"
+        driver._issue_branch = "arya/cor-1-example"
+        driver._disposition = "terminal"
+        calls = []
+
+        def request(method, params):
+            calls.append(method)
+            if method == "thread/list":
+                raise RuntimeError("list rejected")
+            return {}
+
+        driver.request = request
+        with (
+            mock.patch.object(NATIVE, "terminate_and_reap"),
+            self.assertRaisesRegex(RuntimeError, "list rejected"),
+        ):
+            driver.close(failed=False)
+
+        self.assertEqual(calls, ["thread/list", "thread/archive"])
 
     def test_child_turn_completion_does_not_terminate_coordinator_turn(self):
         expected = receipt()

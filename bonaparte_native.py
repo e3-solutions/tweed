@@ -443,23 +443,33 @@ class AppServerPhaseDriver:
             raise RuntimeError("app-server close requires an explicit disposition")
         thread_id = getattr(self, "_receipt_thread_id", None)
         turn_id = getattr(self, "_receipt_turn_id", None)
-        error = None
+        errors: list[BaseException] = []
         try:
             if thread_id:
                 if getattr(self, "_issue_branch", None):
-                    self._patch_descendants(thread_id)
+                    try:
+                        self._patch_descendants(thread_id)
+                    except BaseException as caught:
+                        errors.append(caught)
                 if disposition == "terminal":
-                    self.request("thread/archive", {"threadId": thread_id})
+                    try:
+                        self.request("thread/archive", {"threadId": thread_id})
+                    except BaseException as caught:
+                        errors.append(caught)
                 else:
                     if disposition == "failed" and turn_id:
-                        self.request(
-                            "turn/interrupt",
-                            {"threadId": thread_id, "turnId": turn_id},
-                        )
-                    self.request("thread/unsubscribe", {"threadId": thread_id})
-        except BaseException as caught:
-            error = caught
+                        try:
+                            self.request(
+                                "turn/interrupt",
+                                {"threadId": thread_id, "turnId": turn_id},
+                            )
+                        except BaseException as caught:
+                            errors.append(caught)
+                    try:
+                        self.request("thread/unsubscribe", {"threadId": thread_id})
+                    except BaseException as caught:
+                        errors.append(caught)
         finally:
             terminate_and_reap(self.process)
-        if error is not None:
-            raise error
+        if errors:
+            raise errors[0]

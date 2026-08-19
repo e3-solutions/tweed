@@ -231,6 +231,7 @@ this schema and contains the evidence required by the completion gate.
 - Implementation commit: `[commit]`
 - Reviewed commit: `[full final commit]`
 - Draft PR: `[URL]`
+- Base: `[base branch]`
 - Worktree: clean
 ```
 
