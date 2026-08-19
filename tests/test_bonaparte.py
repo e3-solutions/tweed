@@ -391,6 +391,85 @@ class BonaparteRunnerTests(unittest.TestCase):
         self.assertFalse(result["safe_to_resume"])
         self.assertEqual(result["remote_state"], "changed")
 
+    def test_needs_input_advances_only_the_acknowledged_resume_baseline(self):
+        with tempfile.TemporaryDirectory() as temporary, mock.patch.dict(
+            os.environ, {"BONAPARTE_HOME": temporary}, clear=False
+        ):
+            checkpoint = RUNNER.new_phase_ledger(
+                ROOT,
+                "review",
+                SESSION_ID,
+                None,
+                "medium",
+                RUNNER.DEFAULT_SOFT_PHASE_BUDGET_SECONDS,
+                "COR-1",
+            )
+            checkpoint["protocol"]["initial_remote"] = {
+                "status": "observed",
+                "marker": "A",
+            }
+            value = receipt("needs-input")
+            value.update(
+                phase="review",
+                issue="COR-1",
+                question="Which environment?",
+                remote_state_changed=True,
+            )
+            RUNNER._persist_run_event(
+                checkpoint,
+                "native-thread",
+                {"native_thread_id": SESSION_ID},
+                resumed=False,
+            )
+            with mock.patch.object(
+                RUNNER,
+                "remote_snapshot",
+                return_value={"status": "observed", "marker": "B"},
+            ):
+                RUNNER._persist_run_event(
+                    checkpoint, "validated-receipt", value, resumed=False
+                )
+
+            stored = RUNNER.read_checkpoint(SESSION_ID, active_only=True)
+            self.assertEqual(
+                stored["protocol"]["initial_remote"],
+                {"status": "observed", "marker": "A"},
+            )
+            self.assertEqual(
+                stored["protocol"]["resume_remote"],
+                {"status": "observed", "marker": "B"},
+            )
+            with (
+                mock.patch.object(
+                    RUNNER,
+                    "remote_snapshot",
+                    return_value={"status": "observed", "marker": "B"},
+                ),
+                mock.patch.object(
+                    RUNNER, "read_linear_phase_artifact", return_value=None
+                ),
+            ):
+                acknowledged = RUNNER.inspect_checkpoint(stored)
+            self.assertTrue(acknowledged["safe_to_resume"])
+            with (
+                mock.patch.object(
+                    RUNNER,
+                    "remote_snapshot",
+                    return_value={"status": "observed", "marker": "C"},
+                ),
+                mock.patch.object(
+                    RUNNER, "read_linear_phase_artifact", return_value=None
+                ),
+            ):
+                drifted = RUNNER.inspect_checkpoint(stored)
+            self.assertFalse(drifted["safe_to_resume"])
+            self.assertEqual(drifted["remote_state"], "changed")
+
+            stored["protocol"]["resume_remote"] = {"status": "unknown"}
+            uncertain = RUNNER.checkpoint_receipt(stored)
+            self.assertFalse(uncertain["safe_to_resume"])
+            self.assertTrue(uncertain["reconciliation_required"])
+
     def test_remote_snapshot_uses_only_bounded_read_commands(self):
         self.remote_snapshot_patch.stop()
         process = mock.Mock(stdout="[]")
@@ -923,6 +1002,26 @@ class BonaparteRunnerTests(unittest.TestCase):
             checkpoint["blocker"] = "contact operator@example.com"
             with self.assertRaisesRegex(RuntimeError, "privacy validation"):
                 RUNNER.write_checkpoint(checkpoint)
+
+    def test_cli_failure_replaces_privacy_sensitive_diagnostic(self):
+        stdout = io.StringIO()
+        with (
+            mock.patch.object(
+                RUNNER,
+                "parse",
+                side_effect=RuntimeError("Authorization: Bearer private-secret-value"),
+            ),
+            mock.patch.object(sys, "stdout", stdout),
+        ):
+            exit_code = RUNNER.main()
+
+        self.assertEqual(exit_code, 1)
+        emitted = json.loads(stdout.getvalue())
+        self.assertEqual(
+            emitted["summary"],
+            "Bonaparte rejected privacy-sensitive diagnostic text.",
+        )
+        self.assertNotIn("private-secret-value", stdout.getvalue())
 
     def test_create_reconciliation_requires_exact_provider_identity(self):
         self.remote_snapshot_patch.stop()

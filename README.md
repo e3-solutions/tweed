@@ -442,10 +442,10 @@ Receipt protocol v2 adds `phase_token`, `reason_code`, `user_action_required`,
 `bonaparte inspect <phase-token>` performs read-only Git, exact PR, and Linear
 phase-artifact observations and never persists or writes. Resume repeats this
 reconciliation immediately before answer delivery and fails closed on a changed
-or unknown observation. Create recovery is stricter: without a validated durable
-receipt containing the exact Linear issue identity, receipt loss has no safe
-provider correlation and requires reconciliation; a title or fuzzy search is
-never treated as proof that creation occurred. The legacy three-argument resume
+or unknown observation. Create recovery is stricter: after receipt loss, only one
+issue carrying the exact durable phase-token marker and passing provider readback
+is authoritative; missing or ambiguous correlation requires reconciliation, and
+a title or fuzzy search is never proof that creation occurred. The legacy three-argument resume
 form requires an existing checkpoint whose token and phase match exactly and
 never creates a fresh run.
 

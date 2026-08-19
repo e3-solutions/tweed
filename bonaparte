@@ -1125,8 +1125,26 @@ def _persist_run_event(
     # Make the provider-correlated authority durable before slower Git inventory
     # refresh. A crash here may leave stale diagnostics, never a lost receipt.
     write_checkpoint(checkpoint)
+    if receipt["state"] == "needs-input":
+        _establish_resume_remote(checkpoint, receipt, force=True)
     _refresh_checkpoint_git(checkpoint, update_identity=True, require_identity=True)
     write_checkpoint(checkpoint)
+
+
+def _establish_resume_remote(
+    checkpoint: dict, receipt: dict, *, force: bool = False
+) -> None:
+    """Record the provider state acknowledged by one completed coordinator turn."""
+    protocol = checkpoint["protocol"]
+    if not force and "resume_remote" in protocol:
+        return
+    protocol["resume_remote"] = remote_snapshot(
+        Path(checkpoint["worktree"]),
+        checkpoint["phase"],
+        receipt.get("branch") or checkpoint.get("branch"),
+        receipt.get("issue") or checkpoint.get("receipt", {}).get("issue"),
+        checkpoint["phase_token"],
+    )
 
 
 def new_question_checkpoint(
@@ -1414,6 +1432,10 @@ def checkpoint_receipt(
         reconciliation_required=bool(
             checkpoint.get("remote_state_changed") is None
             or checkpoint.get("status") == "failed-resumable"
+            or (checkpoint.get("protocol", {}).get("resume_remote") or {}).get(
+                "status"
+            )
+            == "unknown"
         ),
     )
     if _serialized_size(receipt) <= RECEIPT_MAX_BYTES:
@@ -1536,9 +1558,13 @@ def resume_checkpoint(
 
     observation: dict = {}
     observation["phase_token"] = checkpoint["phase_token"]
-    observation["_durable_event"] = lambda event, payload: _persist_run_event(
-        checkpoint, event, payload, resumed=True
-    )
+
+    def persist_resumed(event: str, payload: dict) -> None:
+        _persist_run_event(checkpoint, event, payload, resumed=True)
+        if event == "validated-receipt" and payload.get("state") == "needs-input":
+            observation["_resume_remote_committed"] = True
+
+    observation["_durable_event"] = persist_resumed
     try:
         receipt = run_phase(
             repository,
@@ -1592,6 +1618,8 @@ def resume_checkpoint(
             blocker=receipt["question"],
             pending_answer_state="none",
         )
+        if not observation.get("_resume_remote_committed"):
+            _establish_resume_remote(checkpoint, receipt, force=True)
         try:
             _refresh_checkpoint_git(
                 checkpoint, update_identity=True, require_identity=True
@@ -1648,12 +1676,14 @@ def run_and_checkpoint(
         repository, phase, ledger.get("branch"), issue_identifier, token
     )
     write_checkpoint(ledger)
-    observation: dict = {
-        "phase_token": token,
-        "_durable_event": lambda event, payload: _persist_run_event(
-            ledger, event, payload, resumed=False
-        ),
-    }
+    observation: dict = {"phase_token": token}
+
+    def persist_fresh(event: str, payload: dict) -> None:
+        _persist_run_event(ledger, event, payload, resumed=False)
+        if event == "validated-receipt" and payload.get("state") == "needs-input":
+            observation["_resume_remote_committed"] = True
+
+    observation["_durable_event"] = persist_fresh
     ledger.update(status="running", activity="coordinating", updated_at=utc_now())
     write_checkpoint(ledger)
     try:
@@ -1727,6 +1757,8 @@ def run_and_checkpoint(
             activity="waiting-user",
             blocker=receipt["question"],
         )
+        if not observation.get("_resume_remote_committed"):
+            _establish_resume_remote(ledger, receipt, force=True)
         write_checkpoint(ledger)
         return checkpoint_receipt(ledger), 0
     ledger.update(
@@ -1780,7 +1812,8 @@ def inspect_checkpoint(checkpoint: dict) -> dict:
         details.append("Git unchanged")
 
     stored = checkpoint.get("final_receipt") or checkpoint.get("receipt") or {}
-    initial_remote = (checkpoint.get("protocol") or {}).get("initial_remote")
+    protocol = checkpoint.get("protocol") or {}
+    initial_remote = protocol.get("resume_remote", protocol.get("initial_remote"))
     current_remote = remote_snapshot(
         repository,
         checkpoint["phase"],
@@ -2049,6 +2082,10 @@ def fail(
     phase: str | None = None,
     phase_token: str | None = None,
 ) -> dict:
+    try:
+        validate_serialization_privacy(summary, "failure summary")
+    except RuntimeError:
+        summary = "Bonaparte rejected privacy-sensitive diagnostic text."
     return {
         "phase": phase if phase in WORKFLOWS else None,
         "state": "failed",
