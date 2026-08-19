@@ -11,6 +11,7 @@ RUNNER_GLOBALS = RUNNER["run_phase"].__globals__
 HEADERS = RUNNER["PHASE_HEADERS"]
 select_handoff = RUNNER["select_handoff"]
 recover_terminal_receipt = RUNNER["recover_terminal_receipt"]
+trusted_git_target = RUNNER["trusted_git_target"]
 
 
 def live_pr(
@@ -52,6 +53,22 @@ def comment(phase, marker, date, **extra):
 
 
 class HandoffTests(unittest.TestCase):
+    def test_trusted_git_target_uses_origin_and_default_base(self):
+        def output(_repository, *arguments):
+            if arguments == ("remote", "get-url", "origin"):
+                return "git@github.com:e3-solutions/tweed.git"
+            if arguments == (
+                "symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD"
+            ):
+                return "origin/main"
+            return None
+
+        with mock.patch.dict(RUNNER_GLOBALS, {"git_output": output}):
+            self.assertEqual(
+                trusted_git_target(Path(".")),
+                ("e3-solutions/tweed", "main"),
+            )
+
     def test_current_or_downstream_terminal_evidence_recovers_without_driver(self):
         git_handoff = (
             "\n\n**Verdict:** Ready to publish\n\n### Git handoff\n"
@@ -76,6 +93,7 @@ class HandoffTests(unittest.TestCase):
                 {
                     "AppServerPhaseDriver": driver,
                     "_SUBPROCESS_RUN": mock.Mock(return_value=live_pr()),
+                    "trusted_git_target": mock.Mock(return_value=("o/r", "main")),
                 },
             ),
         ):
@@ -127,7 +145,7 @@ class HandoffTests(unittest.TestCase):
             },
         ):
             recovered = recover_terminal_receipt(
-                issue(), [implementation, published], "implement"
+                issue(), [implementation, published], "implement", ("o/r", "main")
             )
         self.assertEqual(recovered["state"], "completed")
         self.assertEqual(recovered["commit"], "c" * 40)
@@ -146,7 +164,9 @@ class HandoffTests(unittest.TestCase):
             RUNNER_GLOBALS,
             {"_SUBPROCESS_RUN": mock.Mock(return_value=live_pr(commit="c" * 40))},
         ):
-            recovered = recover_terminal_receipt(issue(), [review], "implement")
+            recovered = recover_terminal_receipt(
+                issue(), [review], "implement", ("o/r", "main")
+            )
 
         self.assertEqual(recovered["state"], "blocked")
         self.assertIn("stale", recovered["summary"])
@@ -170,9 +190,24 @@ class HandoffTests(unittest.TestCase):
                 {"_SUBPROCESS_RUN": mock.Mock(return_value=current)},
             ):
                 recovered = recover_terminal_receipt(
-                    issue(), [published], "publish"
+                    issue(), [published], "publish", ("o/r", "main")
                 )
                 self.assertEqual(recovered["state"], "blocked")
+
+    def test_terminal_recovery_blocks_other_repository(self):
+        review = comment("review", "unused", "5")
+        review["body"] = (
+            HEADERS["review"]
+            + "\n\n**Verdict:** Ready to publish\n\n### Git handoff\n"
+            + "- Branch: `arya/lin-1-example`\n"
+            + "- Reviewed commit: `" + "b" * 40 + "`\n"
+            + "- Draft PR: `https://github.com/o/r/pull/1`\n"
+            + "- Base: `main`"
+        )
+        recovered = recover_terminal_receipt(
+            issue(), [review], "implement", ("other/repository", "main")
+        )
+        self.assertEqual(recovered["state"], "blocked")
 
     def test_supplemental_guidance_disables_terminal_fast_path(self):
         review = comment("review", "unused", "5")

@@ -18,11 +18,6 @@ PHASE_CHILD_ENV = "BONAPARTE_PHASE_CHILD"
 COORDINATOR_TERMINATE_GRACE_SECONDS = 1.0
 COORDINATOR_KILL_GRACE_SECONDS = 5.0
 APP_SERVER_REQUEST_TIMEOUT_SECONDS = 45.0
-THREAD_LIST_PAGE_LIMIT = 100
-THREAD_LIST_MAX_PAGES = 200
-THREAD_LIST_MAX_RECORDS = 2000
-THREAD_TREE_MAX_DEPTH = 32
-THREAD_LIST_TIMEOUT_SECONDS = 5.0
 
 
 def find_codex() -> str:
@@ -128,6 +123,7 @@ class AppServerPhaseDriver:
         self._receipt_turn_id: str | None = None
         self._issue_branch: str | None = None
         self._disposition: str | None = None
+        self._started_thread_ids: set[str] = set()
         self._reader = threading.Thread(target=self._read, daemon=True)
         self._reader.start()
 
@@ -281,6 +277,10 @@ class AppServerPhaseDriver:
         if method == "thread/started":
             thread = params.get("thread")
             if isinstance(thread, dict) and isinstance(thread.get("id"), str):
+                started_thread_ids = getattr(self, "_started_thread_ids", None)
+                if started_thread_ids is None:
+                    started_thread_ids = self._started_thread_ids = set()
+                started_thread_ids.add(thread["id"])
                 self.observer.feed(
                     json.dumps({"type": "thread.started", "thread_id": thread["id"]})
                 )
@@ -359,74 +359,9 @@ class AppServerPhaseDriver:
         )
 
     def _patch_descendants(self, thread_id: str) -> None:
-        started = time.monotonic()
-        pages = 0
-        descendants: list[str] = []
-        frontier = [(thread_id, 0)]
-        visited = {thread_id}
-        while frontier:
-            parent_id, depth = frontier.pop(0)
-            cursor = None
-            seen_cursors: set[str] = set()
-            while True:
-                if pages >= THREAD_LIST_MAX_PAGES:
-                    raise RuntimeError(
-                        "Codex descendant discovery exceeded its page limit"
-                    )
-                if time.monotonic() - started > THREAD_LIST_TIMEOUT_SECONDS:
-                    raise RuntimeError("Codex descendant discovery timed out")
-                params = {
-                    "parentThreadId": parent_id,
-                    "limit": THREAD_LIST_PAGE_LIMIT,
-                }
-                if cursor is not None:
-                    params["cursor"] = cursor
-                page = self.request("thread/list", params)
-                pages += 1
-                threads = page.get("data")
-                if not isinstance(threads, list):
-                    raise RuntimeError("Codex thread/list omitted descendant data")
-                for thread in threads:
-                    if not isinstance(thread, dict):
-                        raise RuntimeError(
-                            "Codex thread/list returned an invalid thread"
-                        )
-                    child_id = thread.get("id")
-                    listed_parent = thread.get("parentThreadId")
-                    if not isinstance(child_id, str) or not child_id:
-                        raise RuntimeError(
-                            "Codex thread/list returned an invalid thread"
-                        )
-                    if listed_parent is not None and listed_parent != parent_id:
-                        raise RuntimeError(
-                            "Codex thread/list returned an unrelated thread"
-                        )
-                    if child_id in visited:
-                        continue
-                    child_depth = depth + 1
-                    if child_depth > THREAD_TREE_MAX_DEPTH:
-                        raise RuntimeError(
-                            "Codex descendant discovery exceeded its depth limit"
-                        )
-                    visited.add(child_id)
-                    descendants.append(child_id)
-                    frontier.append((child_id, child_depth))
-                    if len(descendants) > THREAD_LIST_MAX_RECORDS:
-                        raise RuntimeError(
-                            "Codex descendant discovery exceeded its record limit"
-                        )
-                cursor = page.get("nextCursor")
-                if cursor is None:
-                    break
-                if (
-                    not isinstance(cursor, str)
-                    or not cursor
-                    or cursor in seen_cursors
-                ):
-                    raise RuntimeError("Codex thread/list returned an invalid cursor")
-                seen_cursors.add(cursor)
-
-        for descendant_id in descendants:
+        for descendant_id in sorted(
+            getattr(self, "_started_thread_ids", set()) - {thread_id}
+        ):
             self._patch_branch(descendant_id)
 
     def close(

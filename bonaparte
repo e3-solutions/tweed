@@ -299,14 +299,26 @@ def validate_terminal_pull_request(
     commit: str | None,
     pull_request: str | None,
     base: str | None,
+    expected_repository: str | None,
+    expected_base: str | None,
     *,
     expect_draft: bool,
 ) -> bool:
-    if not all((branch, commit, pull_request, base)):
+    if not all(
+        (branch, commit, pull_request, base, expected_repository, expected_base)
+    ):
         return False
     if not re.fullmatch(
         r"https://github\.com/[^/\s]+/[^/\s]+/pull/[1-9][0-9]*", pull_request
     ):
+        return False
+    url_match = re.fullmatch(
+        r"https://github\.com/([^/\s]+/[^/\s]+)/pull/[1-9][0-9]*",
+        pull_request,
+    )
+    if url_match is None or url_match.group(1).casefold() != expected_repository.casefold():
+        return False
+    if base != expected_base:
         return False
     try:
         process = _SUBPROCESS_RUN(
@@ -329,15 +341,34 @@ def validate_terminal_pull_request(
         isinstance(current, dict)
         and current.get("state") == "OPEN"
         and current.get("url") == pull_request
-        and current.get("baseRefName") == base
+        and current.get("baseRefName") == expected_base
         and current.get("headRefName") == branch
         and current.get("headRefOid") == commit
         and current.get("isDraft") is expect_draft
     )
 
 
+def trusted_git_target(repository: Path) -> tuple[str, str] | None:
+    remote = git_output(repository, "remote", "get-url", "origin")
+    remote_head = git_output(
+        repository, "symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD"
+    )
+    if not remote or not remote_head or not remote_head.startswith("origin/"):
+        return None
+    match = re.fullmatch(
+        r"(?:https://github\.com/|git@github\.com:)([^/\s]+/[^/\s]+?)(?:\.git)?$",
+        remote,
+    )
+    if match is None:
+        return None
+    return match.group(1), remote_head.removeprefix("origin/")
+
+
 def recover_terminal_receipt(
-    issue: dict, comments: list[dict], requested_phase: str
+    issue: dict,
+    comments: list[dict],
+    requested_phase: str,
+    trusted_target: tuple[str, str] | None = None,
 ) -> dict | None:
     if requested_phase not in PHASE_ORDER:
         return None
@@ -374,11 +405,14 @@ def recover_terminal_receipt(
     needs_git = requested_phase in {"implement", "review", "publish"}
     complete = not needs_git or all((branch, commit, pull_request, base))
     if complete and needs_git:
+        expected_repository, expected_base = trusted_target or (None, None)
         complete = validate_terminal_pull_request(
             branch,
             commit,
             pull_request,
             base,
+            expected_repository,
+            expected_base,
             expect_draft=source_phase != "publish",
         )
     return {
@@ -646,7 +680,16 @@ def run_phase(
             recovered = (
                 None
                 if handoff.get("supplemental")
-                else recover_terminal_receipt(issue, comments, phase)
+                else recover_terminal_receipt(
+                    issue,
+                    comments,
+                    phase,
+                    (
+                        trusted_git_target(repository)
+                        if phase in {"implement", "review", "publish"}
+                        else None
+                    ),
+                )
             )
             if recovered is not None:
                 if recovered["state"] == "completed" and recovered.get("branch"):

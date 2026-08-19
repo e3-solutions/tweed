@@ -21,42 +21,18 @@ from tests.test_bonaparte import (
 
 
 class PhaseRuntimeTests(unittest.TestCase):
-    def test_terminal_close_pages_descendants_patches_branches_then_archives(self):
+    def test_terminal_close_patches_only_started_descendants_then_archives(self):
         driver = object.__new__(RUNNER.AppServerPhaseDriver)
         driver.process = mock.Mock()
         driver._receipt_thread_id = "root"
         driver._receipt_turn_id = "turn"
         driver._issue_branch = "arya/cor-1-example"
         driver._disposition = "terminal"
-        responses = iter(
-            [
-                {
-                    "data": [
-                        {"id": "child-1", "parentThreadId": "root"},
-                    ],
-                    "nextCursor": "next",
-                },
-                {
-                    "data": [
-                        {"id": "child-direct", "parentThreadId": "root"}
-                    ],
-                    "nextCursor": None,
-                },
-                {
-                    "data": [{"id": "child-2", "parentThreadId": "child-1"}],
-                    "nextCursor": None,
-                },
-                {"data": [], "nextCursor": None},
-                {"data": [], "nextCursor": None},
-                {},
-            ]
-        )
+        driver._started_thread_ids = {"root", "child-2", "child-1"}
         calls = []
 
         def request(method, params):
             calls.append((method, params))
-            if method == "thread/list":
-                return next(responses)
             return {}
 
         driver.request = request
@@ -66,97 +42,34 @@ class PhaseRuntimeTests(unittest.TestCase):
         self.assertEqual(
             [method for method, _params in calls],
             [
-                "thread/list",
-                "thread/list",
-                "thread/list",
-                "thread/list",
-                "thread/list",
-                "thread/metadata/update",
                 "thread/metadata/update",
                 "thread/metadata/update",
                 "thread/archive",
             ],
         )
-        self.assertEqual(calls[1][1]["cursor"], "next")
-        self.assertNotIn("ancestorThreadId", calls[0][1])
-        self.assertEqual(calls[0][1]["parentThreadId"], "root")
         self.assertEqual(
             [
                 params["threadId"]
                 for method, params in calls
                 if method == "thread/metadata/update"
             ],
-            ["child-1", "child-direct", "child-2"],
+            ["child-1", "child-2"],
         )
         cleanup.assert_called_once_with(driver.process)
 
-    def test_descendant_discovery_fails_closed_before_mutation_on_record_cap(self):
+    def test_thread_started_notification_records_owned_thread_id(self):
         driver = object.__new__(RUNNER.AppServerPhaseDriver)
-        driver.process = mock.Mock()
+        driver._started_thread_ids = set()
+        driver.observer = mock.Mock()
         driver._receipt_thread_id = "root"
         driver._receipt_turn_id = "turn"
-        driver._issue_branch = "arya/cor-1-example"
-        driver._disposition = "terminal"
-        driver.request = mock.Mock(
-            return_value={
-                "data": [
-                    {"id": f"thread-{index}", "parentThreadId": "root"}
-                    for index in range(NATIVE.THREAD_LIST_MAX_RECORDS + 1)
-                ],
-                "nextCursor": None,
+        driver.observe_notification(
+            {
+                "method": "thread/started",
+                "params": {"thread": {"id": "child"}},
             }
         )
-
-        with (
-            mock.patch.object(NATIVE, "terminate_and_reap") as cleanup,
-            self.assertRaisesRegex(RuntimeError, "record limit"),
-        ):
-            driver.close(failed=False)
-
-        self.assertEqual(
-            [call.args[0] for call in driver.request.call_args_list],
-            ["thread/list", "thread/archive"],
-        )
-        cleanup.assert_called_once_with(driver.process)
-
-    def test_twenty_direct_children_fit_within_bounded_page_budget(self):
-        driver = object.__new__(RUNNER.AppServerPhaseDriver)
-        driver.process = mock.Mock()
-        driver._receipt_thread_id = "root"
-        driver._receipt_turn_id = "turn"
-        driver._issue_branch = "arya/cor-1-example"
-        driver._disposition = "terminal"
-        direct_children = [f"child-{index}" for index in range(20)]
-        calls = []
-
-        def request(method, params):
-            calls.append((method, params))
-            if method != "thread/list":
-                return {}
-            parent = params["parentThreadId"]
-            if parent == "root":
-                return {
-                    "data": [
-                        {"id": child, "parentThreadId": "root"}
-                        for child in direct_children
-                    ],
-                    "nextCursor": None,
-                }
-            return {"data": [], "nextCursor": None}
-
-        driver.request = request
-        with mock.patch.object(NATIVE, "terminate_and_reap"):
-            driver.close(failed=False)
-
-        self.assertEqual(
-            [
-                params["threadId"]
-                for method, params in calls
-                if method == "thread/metadata/update"
-            ],
-            direct_children,
-        )
-        self.assertEqual(calls[-1][0], "thread/archive")
+        self.assertEqual(driver._started_thread_ids, {"child"})
 
     def test_resumable_and_failed_close_use_explicit_unload_paths(self):
         for disposition, expected in (
@@ -198,22 +111,23 @@ class PhaseRuntimeTests(unittest.TestCase):
         driver._receipt_turn_id = "turn"
         driver._issue_branch = "arya/cor-1-example"
         driver._disposition = "terminal"
+        driver._started_thread_ids = {"root", "child"}
         calls = []
 
         def request(method, params):
             calls.append(method)
-            if method == "thread/list":
-                raise RuntimeError("list rejected")
+            if method == "thread/metadata/update":
+                raise RuntimeError("metadata rejected")
             return {}
 
         driver.request = request
         with (
             mock.patch.object(NATIVE, "terminate_and_reap"),
-            self.assertRaisesRegex(RuntimeError, "list rejected"),
+            self.assertRaisesRegex(RuntimeError, "metadata rejected"),
         ):
             driver.close(failed=False)
 
-        self.assertEqual(calls, ["thread/list", "thread/archive"])
+        self.assertEqual(calls, ["thread/metadata/update", "thread/archive"])
 
     def test_child_turn_completion_does_not_terminate_coordinator_turn(self):
         expected = receipt()
