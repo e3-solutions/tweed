@@ -93,7 +93,6 @@ def error_code_for(command: str, exit_code: int) -> str | None:
         return {
             122: "RUN_LOG_LIMIT",
             124: "RUN_TIMEOUT",
-            125: "RUNNER_ERROR",
             130: "RUN_INTERRUPTED",
         }.get(exit_code, "CHILD_EXIT_NONZERO")
     if command == "validate" and exit_code == 1:

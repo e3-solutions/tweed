@@ -44,7 +44,9 @@ class DiagnosticsTest(unittest.TestCase):
     def test_error_codes_distinguish_common_failures(self) -> None:
         self.assertEqual(diagnostics.error_code_for("run", 124), "RUN_TIMEOUT")
         self.assertEqual(diagnostics.error_code_for("run", 122), "RUN_LOG_LIMIT")
-        self.assertEqual(diagnostics.error_code_for("run", 125), "RUNNER_ERROR")
+        self.assertEqual(
+            diagnostics.error_code_for("run", 125), "CHILD_EXIT_NONZERO"
+        )
         self.assertEqual(
             diagnostics.error_code_for("run", 7), "CHILD_EXIT_NONZERO"
         )
@@ -239,6 +241,34 @@ class DiagnosticsTest(unittest.TestCase):
             ]
             self.assertEqual(events[-1]["error_code"], "RUN_LAUNCH_FAILED")
             self.assertEqual(events[-1]["status"], "error")
+
+    def test_child_exit_125_is_not_misreported_as_a_runner_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as name:
+            directory = Path(name) / ".confidence"
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPT),
+                    "run",
+                    "--directory",
+                    str(directory),
+                    "--",
+                    sys.executable,
+                    "-c",
+                    "raise SystemExit(125)",
+                ],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(result.returncode, 125)
+            events = [
+                json.loads(line)
+                for line in (directory / "telemetry" / "events.jsonl")
+                .read_text()
+                .splitlines()
+            ]
+            self.assertEqual(events[-1]["error_code"], "CHILD_EXIT_NONZERO")
+            self.assertTrue(any((directory / "runs").glob("*.json")))
 
     def test_real_run_events_and_support_bundle_never_capture_child_argv(self) -> None:
         with tempfile.TemporaryDirectory() as name:
