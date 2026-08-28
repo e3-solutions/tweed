@@ -13,23 +13,27 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  validate:
+  test:
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 5
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.12", "3.14"]
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Smoke-test runner
-        run: |
-          python -m py_compile \
-            bonaparte bonaparte-launcher bonaparte_checkpoint.py \
-            bonaparte_linear.py bonaparte_native.py bonaparte_progress.py
-          sh -n install
-          ./bonaparte --help
-          ./autoresearch --help
-      - name: Test versioned installation and updates
-        run: python -m unittest discover -s tests -v
-      - name: Reject whitespace errors in the PR diff
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Validate manifest
+        run: python -m json.tool .codex-plugin/plugin.json >/dev/null
+      - name: Compile
+        run: python -m py_compile skills/confidence-protocol/scripts/*.py
+      - name: Test
+        run: python -m unittest discover -s skills/confidence-protocol/tests -v
+      - name: Check release archive
+        run: python skills/confidence-protocol/tests/check_release.py
+      - name: Reject whitespace errors
         if: github.event_name == 'pull_request'
         run: git diff --check origin/${{ github.base_ref }}...HEAD

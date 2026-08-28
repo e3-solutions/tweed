@@ -1,3 +1,0 @@
-{"method":"item/started","params":{"threadId":"019fd385-da76-77f3-bd3a-2f1e4e49b936","turnId":"turn-root","item":{"id":"item-subagent","type":"subAgentActivity","kind":"started","agentThreadId":"019ff6ce-cb6d-7fb3-a844-2b022bf2b0af","agentPath":"default"}}}
-{"method":"item/completed","params":{"threadId":"019fd385-da76-77f3-bd3a-2f1e4e49b936","turnId":"turn-root","item":{"id":"item-command","type":"commandExecution","command":"python -m unittest","status":"failed","exitCode":1}}}
-{"method":"item/completed","params":{"threadId":"019ff6ce-cb6d-7fb3-a844-2b022bf2b0af","turnId":"turn-child","item":{"id":"item-child-message","type":"agentMessage","text":"CHILD_DONE","status":"completed"}}}

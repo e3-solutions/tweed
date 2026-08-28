@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "task": {
+    "title": "Add team invitations",
+    "mode": "standard",
+    "type": "feature"
+  },
+  "intent": {
+    "goal": "A team owner can invite a new member by email.",
+    "must_happen": [
+      "A valid invitation creates one pending membership and sends one email."
+    ],
+    "must_not_happen": [
+      "A non-owner cannot invite a member."
+    ],
+    "constraints": [
+      "Use the existing email provider and authorization path."
+    ],
+    "non_goals": [
+      "Bulk invitations."
+    ],
+    "open_questions": [],
+    "assumptions": [
+      "Invitation links expire after the existing token lifetime."
+    ]
+  },
+  "proof_obligations": [
+    {
+      "id": "P1",
+      "claim": "Only team owners can create invitations.",
+      "verification": "Run authorization integration tests for owner and non-owner roles."
+    },
+    {
+      "id": "P2",
+      "claim": "The main invitation flow works from UI to stored membership.",
+      "verification": "Run the invitation end-to-end test against a real test database."
+    }
+  ]
+}
