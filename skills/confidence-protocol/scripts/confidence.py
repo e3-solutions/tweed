@@ -1116,7 +1116,7 @@ def command_support_bundle(args: argparse.Namespace) -> int:
 
 def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(description=__doc__)
-    subparsers = root.add_subparsers(dest="command", required=True)
+    subparsers = root.add_subparsers(dest="action", required=True)
 
     init = subparsers.add_parser("init", help="create evidence file templates")
     init.add_argument("--title", required=True)
@@ -1192,7 +1192,7 @@ def main() -> int:
         directory,
         operation_id=operation_id,
         event_name="command.started",
-        command=args.command,
+        command=args.action,
         status="started",
     )
     try:
@@ -1206,7 +1206,7 @@ def main() -> int:
             directory,
             operation_id=operation_id,
             event_name="command.crashed",
-            command=args.command,
+            command=args.action,
             status="error",
             error_code="INTERNAL_ERROR",
             duration_seconds=time.monotonic() - started,
@@ -1226,13 +1226,13 @@ def main() -> int:
             traceback.print_exc()
         return 125
     error_code = getattr(args, "diagnostic_error_code", None) or error_code_for(
-        args.command, exit_code
+        args.action, exit_code
     )
     record_event(
         directory,
         operation_id=operation_id,
         event_name="command.completed",
-        command=args.command,
+        command=args.action,
         status="ok" if exit_code == 0 else "error",
         error_code=error_code,
         duration_seconds=time.monotonic() - started,

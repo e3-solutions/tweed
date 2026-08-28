@@ -206,17 +206,21 @@ def safe_event(event: dict[str, Any], include_local: bool = False) -> dict[str, 
             pass
         else:
             value["timestamp"] = timestamp
-    if event.get("event") in EVENT_NAMES:
-        value["event"] = event["event"]
-    if event.get("command") in COMMANDS:
-        value["command"] = event["command"]
-    if event.get("status") in STATUSES:
-        value["status"] = event["status"]
+    event_name = event.get("event")
+    if isinstance(event_name, str) and event_name in EVENT_NAMES:
+        value["event"] = event_name
+    command = event.get("command")
+    if isinstance(command, str) and command in COMMANDS:
+        value["command"] = command
+    status = event.get("status")
+    if isinstance(status, str) and status in STATUSES:
+        value["status"] = status
     error_code = event.get("error_code")
     if isinstance(error_code, str) and ERROR_CODE.fullmatch(error_code):
         value["error_code"] = error_code
-    if event.get("duration_bucket") in DURATION_BUCKETS:
-        value["duration_bucket"] = event["duration_bucket"]
+    bucket = event.get("duration_bucket")
+    if isinstance(bucket, str) and bucket in DURATION_BUCKETS:
+        value["duration_bucket"] = bucket
     if event.get("platform") == sys.platform:
         value["platform"] = sys.platform
     python_version = event.get("python_version")

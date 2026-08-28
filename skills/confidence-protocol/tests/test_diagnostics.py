@@ -240,6 +240,60 @@ class DiagnosticsTest(unittest.TestCase):
             self.assertEqual(events[-1]["error_code"], "RUN_LAUNCH_FAILED")
             self.assertEqual(events[-1]["status"], "error")
 
+    def test_real_run_events_and_support_bundle_never_capture_child_argv(self) -> None:
+        with tempfile.TemporaryDirectory() as name:
+            root = Path(name)
+            directory = root / ".confidence"
+            child = (
+                f"print({CANARIES['source']!r}); "
+                f"print({CANARIES['path']!r}); "
+                f"print({CANARIES['prompt']!r}); "
+                f"print({CANARIES['secret']!r})"
+            )
+            run = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPT),
+                    "run",
+                    "--directory",
+                    str(directory),
+                    "--",
+                    sys.executable,
+                    "-c",
+                    child,
+                ],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(run.returncode, 0, run.stderr)
+            raw_events = (directory / "telemetry" / "events.jsonl").read_text()
+            events = [json.loads(line) for line in raw_events.splitlines()]
+            self.assertEqual([item["command"] for item in events], ["run", "run"])
+            for canary in CANARIES.values():
+                self.assertNotIn(canary, raw_events)
+
+            output = root / "support.zip"
+            bundle = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPT),
+                    "support-bundle",
+                    "--directory",
+                    str(directory),
+                    "--output",
+                    str(output),
+                ],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(bundle.returncode, 0, bundle.stderr)
+            with zipfile.ZipFile(output) as archive:
+                contents = "\n".join(
+                    archive.read(item).decode("utf-8") for item in archive.namelist()
+                )
+            for canary in CANARIES.values():
+                self.assertNotIn(canary, contents)
+
     def test_support_bundle_excludes_sensitive_run_fields_and_logs(self) -> None:
         with tempfile.TemporaryDirectory() as name:
             root = Path(name)
@@ -332,7 +386,7 @@ class DiagnosticsTest(unittest.TestCase):
 
         fake_parser = mock.Mock()
         fake_parser.return_value.parse_args.return_value = SimpleNamespace(
-            command="doctor",
+            action="doctor",
             directory=".confidence",
             handler=explode,
         )
