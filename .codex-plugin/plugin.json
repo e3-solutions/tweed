@@ -1,0 +1,24 @@
+{
+  "name": "confidence-protocol",
+  "version": "0.4.0+codex.20260827050000",
+  "description": "Turn coding work into clear claims backed by tests, reviews, and runtime evidence.",
+  "author": {
+    "name": "Confidence Protocol"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Confidence Protocol",
+    "shortDescription": "Build simple code and prove that it works.",
+    "longDescription": "Adds a risk-aware coding workflow with explicit intent, proof obligations, adversarial review, clean tests, simplicity checks, safe diagnostics, and a concise confidence report.",
+    "developerName": "Confidence Protocol",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Skills"
+    ],
+    "defaultPrompt": [
+      "Use the Confidence Protocol to build this and prove the main flow.",
+      "Use the Confidence Protocol to fix this bug with a fail-then-pass test.",
+      "Use the Confidence Protocol to review this risk and show what remains unknown."
+    ]
+  }
+}

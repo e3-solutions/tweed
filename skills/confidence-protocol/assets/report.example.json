@@ -1,0 +1,64 @@
+{
+  "version": 3,
+  "task_title": "Add team invitations",
+  "mode": "standard",
+  "outcome": "Owners can invite one member by email. Non-owners receive a forbidden response.",
+  "changes": [
+    "Added the invitation endpoint and form.",
+    "Reused the existing team authorization rule."
+  ],
+  "evidence": [
+    {
+      "obligation_id": "P1",
+      "status": "pass",
+      "details": "Owner and non-owner integration cases passed.",
+      "artifacts": [
+        "tests/invitations.authorization.test.ts"
+      ],
+      "run_ids": [
+        "invitation-authorization"
+      ],
+      "diagnostic_run_ids": []
+    },
+    {
+      "obligation_id": "P2",
+      "status": "pass",
+      "details": "The browser flow created one pending membership in the test database.",
+      "artifacts": [
+        "tests/e2e/invitations.spec.ts"
+      ],
+      "run_ids": [
+        "invitation-e2e"
+      ],
+      "diagnostic_run_ids": []
+    }
+  ],
+  "tests": {
+    "passed": [
+      "npm test -- invitations",
+      "npm run e2e -- invitations"
+    ],
+    "failed": [],
+    "not_run": []
+  },
+  "simplicity": {
+    "code_gate": "pass",
+    "test_gate": "pass",
+    "notes": "The change uses existing authorization, email, and token paths. No new framework or shared abstraction was added."
+  },
+  "review": {
+    "required": true,
+    "reason": "The feature crosses an authorization boundary.",
+    "roles": [
+      "integration_reviewer"
+    ],
+    "findings": [
+      "The reviewer challenged the non-owner path and confirmed the server-side authorization test covers it."
+    ]
+  },
+  "risks": [],
+  "rollback": "Disable the invitation route and revert the database migration.",
+  "user_decisions": [
+    "The first version supports one email at a time."
+  ]
+}
