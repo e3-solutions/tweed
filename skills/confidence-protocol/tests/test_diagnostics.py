@@ -428,6 +428,26 @@ class DiagnosticsTest(unittest.TestCase):
         self.assertEqual(events[-1]["error_code"], "INTERNAL_ERROR")
         self.assertNotIn(CANARIES["secret"], error.getvalue())
 
+    def test_telemetry_keyboard_interrupt_cannot_replace_command_success(self) -> None:
+        with tempfile.TemporaryDirectory() as name:
+            fake_parser = mock.Mock()
+            fake_parser.return_value.parse_args.return_value = SimpleNamespace(
+                action="doctor",
+                directory=str(Path(name) / ".confidence"),
+                handler=lambda _args: 0,
+            )
+            with mock.patch.object(
+                confidence, "parser", return_value=fake_parser.return_value
+            ), mock.patch.dict(
+                os.environ,
+                {"CONFIDENCE_TELEMETRY_ENDPOINT": "https://telemetry.example.test/events"},
+                clear=False,
+            ), mock.patch(
+                "urllib.request.urlopen", side_effect=KeyboardInterrupt
+            ):
+                result = confidence.main()
+            self.assertEqual(result, 0)
+
 
 if __name__ == "__main__":
     unittest.main()

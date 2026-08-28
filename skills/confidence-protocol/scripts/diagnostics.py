@@ -334,7 +334,7 @@ def record_event(
                 }
             )
             _append_event(telemetry_directory / "events.jsonl", delivery_event)
-    except Exception:
+    except (Exception, KeyboardInterrupt):
         return
 
 
