@@ -33,6 +33,7 @@ if unexpected:
 
 required = {
     ".codex-plugin/plugin.json",
+    "CHANGELOG.md",
     "README.md",
     "skills/confidence-protocol/SKILL.md",
     "skills/confidence-protocol/scripts/confidence.py",
