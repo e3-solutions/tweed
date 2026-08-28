@@ -968,7 +968,8 @@ def render_markdown(
     review = report["review"]
     return f"""# Confidence Report: {markdown_text(task['title'])}
 
-Mode: {task['mode']}  
+Mode: {task['mode']}
+
 Task type: {task['type']}
 
 ## Outcome
@@ -1005,7 +1006,8 @@ Not run:
 
 ## Simplicity
 
-Code gate: {simplicity['code_gate']}  
+Code gate: {simplicity['code_gate']}
+
 Test gate: {simplicity['test_gate']}
 
 {markdown_text(simplicity['notes'])}
