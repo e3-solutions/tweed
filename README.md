@@ -2,47 +2,86 @@
 
 Confidence should come from evidence, not from an agent saying it is confident.
 
-This Codex plugin adds a small workflow on top of the tools Codex already has. It does not replace Codex. It helps Codex state the goal, plan the proof, use independent review where it matters, keep the code simple, and report what the evidence supports.
+Confidence Protocol is a small Codex plugin. It helps Codex understand the goal,
+keep the code simple, test the right behavior, use independent review when risk is
+high, and explain what remains uncertain.
 
-## What it adds
+It does not replace Codex. It makes the work easier to trust.
 
-- A clear contract before code changes.
-- A source-of-truth check that keeps labels, permissions, and actions on the same rule.
-- Proof obligations chosen before implementation.
-- Quick, Standard, and Critical modes.
-- A small review gate that keeps ordinary work single-agent.
-- Narrow independent review when risk or failed proof justifies it.
-- Separate checks for code quality and test quality.
-- Captured test runs with exit codes and drift-checked logs.
-- A clear final report with open risks and rollback steps.
-- A local structured event log for failures inside the tool.
-- A `doctor` command for installation and telemetry checks.
-- A redacted support bundle that is safe to share with the team.
-- Optional remote telemetry with a fixed, private data shape.
+## Quick start
 
-## What it does not add
+### 1. Install
 
-- A new coding harness.
-- A required external service.
-- Automatic calls to another model.
-- A claim that passing tests prove everything.
-- A dashboard or telemetry collector.
+In the Codex desktop app, open the **Plugins** tab. In Codex CLI, enter `/plugins`.
+Install **Confidence Protocol** from your team's plugin marketplace. Start a new task
+after installation so Codex loads the skill.
 
-Codex can use its built-in subagents. An external model can be added later for high-risk review. That should require user approval because code may leave the local environment.
+Requirements:
 
-## Use it
+- Codex
+- Python 3.10 or newer
+- Git, recommended for evidence tied to a specific code state
 
-Ask Codex:
+### 2. Ask for the work normally
 
-> Use the Confidence Protocol to add team invitations. Keep the design simple and prove the full user flow.
+You do not need a long prompt. Ask for the outcome you want:
 
-For most work, the workflow stays with one agent. It adds independent review only when scope is unclear, a real system boundary changes, proof fails, or the impact is high.
+> Fix the duplicate invoice bug.
 
-## Evidence files
+> Add team invitations.
 
-For Standard and Critical work, the skill can create `.confidence/contract.json` and `.confidence/report.json` in the project.
+> Research the best queue for this service.
 
-Create them:
+> Build the new quoting flow.
+
+Confidence Protocol already covers simple code, useful tests, review when needed,
+clear updates, and honest uncertainty. To invoke it explicitly, say:
+
+> Use Confidence Protocol to fix the duplicate invoice bug.
+
+### 3. Read the final report
+
+Codex ends with four things:
+
+- What changed
+- What evidence passed
+- What was not tested
+- What remains uncertain
+
+For code changes, it also explains how to undo the work when rollback matters.
+
+That is the normal user flow. Installed users can also ask Codex to run health and
+support commands. Direct Python commands are for maintainers working from this source
+repository.
+
+## How it works
+
+The protocol uses the lightest safe mode:
+
+| Mode | Use it for | Proof |
+| --- | --- | --- |
+| Quick | Small, local, reversible work | Inspect the change and run one focused check |
+| Standard | Normal bugs, features, refactors, and research | Define proof first, run focused and broader checks, review when risk calls for it |
+| Critical | Security, privacy, money, destructive changes, and large product work | Add independent test design, adversarial review, real boundary tests, and rollback proof |
+
+Most work stays with one agent. Extra reviewers are added only when the risk,
+uncertainty, or failed evidence justifies them.
+
+The main loop is simple:
+
+1. State the goal and limits.
+2. Turn important claims into proof obligations.
+3. Build the smallest useful slice.
+4. Run checks that could prove the work wrong.
+5. Review simplicity and test quality.
+6. Report what the evidence supports.
+
+## Evidence commands
+
+The evidence tool uses only the Python standard library. The examples below are for
+maintainers and assume this repository is the current directory.
+
+Create a task contract and report:
 
 ```sh
 python3 skills/confidence-protocol/scripts/confidence.py init \
@@ -51,19 +90,9 @@ python3 skills/confidence-protocol/scripts/confidence.py init \
   --task-type feature
 ```
 
-Validate work in progress:
-
-```sh
-python3 skills/confidence-protocol/scripts/confidence.py validate
-```
-
-Before release, require every proof obligation and release gate to pass:
-
-```sh
-python3 skills/confidence-protocol/scripts/confidence.py validate --require-complete
-```
-
-Report schema 3 records the review-gate decision, reason, roles, and findings. Critical completion requires separate test-design and adversarial-review roles. Standard work records why review ran or why the gate stayed closed.
+Fill in `.confidence/contract.json` before implementation. Fill in
+`.confidence/report.json` as evidence is collected. Empty template fields are not a
+valid report.
 
 Capture a test run:
 
@@ -75,105 +104,139 @@ python3 skills/confidence-protocol/scripts/confidence.py run \
   -- python3 -m pytest tests/test_invitations.py
 ```
 
-The command runs without a shell. Its output still appears in the terminal. The plugin stores the command arguments, resolved executable, start and end times, exit code, log, and log hash under `.confidence/runs/`. In a Git project, it also records the current commit and working-tree fingerprint. A supporting run becomes stale when the source changes. Expected pre-fix runs may be stale because they belong in `diagnostic_run_ids`, not `run_ids`.
+Validate work in progress:
 
-Runs stop after 30 minutes or 10 MB of output by default. Use `--timeout-seconds` or `--max-log-bytes` before `--` when a focused check needs a different bound. A timeout is recorded with exit code 124. A log limit is recorded with exit code 122.
+```sh
+python3 skills/confidence-protocol/scripts/confidence.py validate
+```
 
-Add the printed run ID to the matching evidence item in `report.json`. A claim cannot have `pass` status unless it references a captured run that exited successfully. Validation also recomputes each log hash.
+Require complete release evidence:
 
-Render a readable report:
+```sh
+python3 skills/confidence-protocol/scripts/confidence.py validate --require-complete
+```
+
+Render the readable report:
 
 ```sh
 python3 skills/confidence-protocol/scripts/confidence.py render
 ```
 
-The script uses only the Python standard library.
+Captured runs store command output, exit status, time, log hash, and Git workspace
+fingerprint under `.confidence/runs/`. Supporting evidence becomes stale when the
+code changes. A run stops after 30 minutes or 10 MB of output by default.
 
-Captured logs may contain secrets printed by tests and absolute local paths. Review them before sharing. In shared repositories, consider ignoring `.confidence/runs/` while keeping the contract and final report.
+Use `diagnostic_run_ids` for expected failures, such as the failing test before a bug
+fix. Use `run_ids` only for successful evidence that supports a final claim.
+After each captured run, add its printed ID to the matching evidence item in
+`report.json`. Run plain `validate` while collecting evidence. Run
+`validate --require-complete` only after every obligation and release gate is done.
 
-The hash detects a log changed after capture. It is not a security signature because the record and hash are stored together. A tool error exits with code 125 and writes no JSON record. A child stopped by a signal keeps the negative signal code in its record and returns the usual `128 + signal` process status.
+## When something goes wrong
 
-The atomic record write needs a local filesystem that supports hard links. This matches the plugin's intended local use.
+Installed users should ask Codex:
 
-## Diagnose a problem
+> Run the Confidence Protocol doctor and explain any failures.
 
-Every command writes small structured events to `.confidence/telemetry/events.jsonl`.
-The file records the tool version, operation ID, command, result, stable error code,
-coarse duration, Python version, and platform. It never records source code, prompts,
-command arguments, command output, paths, environment values, usernames, or hostnames.
-
-Check an installation:
+Maintainers working from this repository can run the health check directly:
 
 ```sh
 python3 skills/confidence-protocol/scripts/confidence.py doctor
 ```
 
-The doctor checks the plugin version, Python, evidence directory, atomic writes,
-subprocess execution, Git, process cleanup, old Bonaparte commands, and telemetry
-configuration. It does not use the network unless you add `--probe-telemetry`.
+It checks:
 
-Create a support file:
+- Plugin and CLI versions
+- Python and Git
+- Evidence directory permissions
+- Atomic file support
+- Subprocess execution and cleanup support
+- Telemetry configuration
+- Old Bonaparte commands still on the machine
+
+If the cause is still unclear, ask Codex:
+
+> Create a redacted Confidence Protocol support bundle for this repository.
+
+Maintainers can create it directly:
 
 ```sh
 python3 skills/confidence-protocol/scripts/confidence.py support-bundle
 ```
 
-The ZIP contains the doctor report, safe events, and redacted run metadata. It does
-not contain logs, arguments, output, source, prompts, paths, or environment values.
-Review the bundle before sharing it, as you would any support file.
+Send the generated `confidence-support-*.zip` to the team. It contains the doctor
+result, structured events, and redacted run metadata. It excludes source code,
+prompts, command arguments, command output, paths, environment values, usernames,
+hostnames, and raw logs.
 
-Local diagnostics are limited to 1 MB. When the limit is reached, new events are
-dropped. Set `CONFIDENCE_DISABLE_DIAGNOSTICS=1` to turn local diagnostics off.
-Delete `.confidence/telemetry/` to remove the local history and installation ID.
+Command failures after argument parsing print a diagnostic operation ID. Use that ID
+to match the failure to `.confidence/telemetry/events.jsonl` or the support bundle.
 
-## Optional team telemetry
+## Team telemetry
 
-Remote telemetry is off by default. To send the same safe event shape to your own
-collector, set:
+Remote telemetry is off by default. To send safe events to your own collector, set:
 
 ```sh
 export CONFIDENCE_TELEMETRY_ENDPOINT="https://telemetry.example.com/confidence"
 export CONFIDENCE_TELEMETRY_TOKEN="your-token"
 ```
 
-Keep the token in the environment. Do not put it in command arguments or commit it.
-The endpoint must use HTTPS. Plain HTTP is allowed only for a loopback test server.
-Credentials, query text, and fragments are rejected in endpoint URLs.
+Keep the token in the environment. Do not place it in command arguments or commit it.
 
-Each completed command sends one JSON POST with a one-second timeout. Delivery is
-best effort. A telemetry failure is recorded locally and never changes the command's
-exit code. Events are not retried, so the tool cannot build an unbounded queue.
-Use `doctor --probe-telemetry` to send one safe health event.
+Test the connection:
 
-Remote fields are limited to:
+```sh
+python3 skills/confidence-protocol/scripts/confidence.py doctor --probe-telemetry
+```
 
-- Schema, tool, Python, and platform versions
+After recording a command completion or crash event locally, the plugin attempts one
+JSON POST with a one-second timeout. Delivery is best effort. It cannot change the
+coding command's result. Failed events are not retried, so the plugin cannot build an
+unbounded queue.
+
+Remote events contain only:
+
+- Schema, plugin, Python, and platform versions
 - Random installation, event, and operation IDs
+- Event type and timestamp
 - Command name, status, stable error code, and coarse duration
 
-The stable installation ID means remote events are not anonymous. It identifies one
-local evidence directory. It does not identify a person or machine.
+The installation ID is stable for one local evidence directory, so remote events are
+not anonymous. The payload contains no username, hostname, or explicit personal
+identifier. Your collector can still observe normal network metadata such as source
+IP.
 
-This repository replaces the old Tweed and Bonaparte product. Installing the plugin
-does not remove an older `bonaparte` command from a developer's machine. `doctor`
-warns when it finds one. Remove the old installation after confirming nobody still
-needs it.
+## Local data and privacy
 
-## Install
+- Test logs can contain secrets printed by the tests. Do not share raw logs.
+- The redacted support bundle is the safe support path. Review it before sharing.
+- Local structured events are capped at 1 MB. New events are dropped at the limit.
+- Set `CONFIDENCE_DISABLE_DIAGNOSTICS=1` to disable local diagnostics.
+- Delete `.confidence/telemetry/` to remove local events and the installation ID.
+- Remove the telemetry environment variables to stop remote export immediately.
 
-Add this plugin folder to a Codex plugin marketplace. Then install it through the Codex plugin browser and start a new task. Codex CLI users can open the browser with `/plugins`.
+## Moving from old Tweed
 
-## Build a clean archive
+Version 0.4 replaces the old Tweed and Bonaparte product. Installing this plugin does
+not delete an older `bonaparte` command. Run `doctor` to detect one, then remove it
+after confirming your team no longer needs it.
 
-The source is a Git repository. Build releases from a committed tree so editor files, bytecode, local evidence, and other untracked state cannot enter the package:
+## Develop and release
+
+Run the test suite:
+
+```sh
+python3 -m unittest discover -s skills/confidence-protocol/tests -v
+```
+
+Build a clean plugin archive from a committed tree:
 
 ```sh
 git archive --format=zip --prefix=confidence-protocol/ \
   --output ../confidence-protocol-plugin.zip HEAD
 ```
 
-The export rules exclude repository-only files and `.confidence/`. Validate the extracted archive with the Codex plugin and skill validators before sharing it.
+Repository tests, local evidence, editor files, and bytecode are excluded from the
+release archive.
 
-## Design choice
-
-Version 0.4 is one skill plus one local evidence tool. It uses the mature parts of Codex instead of copying them. Its review gate protects the fast path instead of adding reviewers to every normal task. Its release check separates valid evidence files from complete evidence. Optional telemetry is a small HTTPS event export, not a new harness, daemon, or MCP server.
+See [CHANGELOG.md](CHANGELOG.md) for release history.
