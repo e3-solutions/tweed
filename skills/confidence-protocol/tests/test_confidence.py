@@ -356,6 +356,24 @@ class ConfidenceTest(unittest.TestCase):
             self.assertEqual(record["exit_code"], 124)
             self.assertEqual(record["termination_reason"], "timeout")
 
+    def test_run_timeout_requires_a_positive_finite_value(self) -> None:
+        for value in ("nan", "inf", "-inf"):
+            with self.subTest(value=value):
+                try:
+                    confidence.parser().parse_args(
+                        [
+                            "run",
+                            f"--timeout-seconds={value}",
+                            "--",
+                            sys.executable,
+                        ]
+                    )
+                except SystemExit as error:
+                    self.assertEqual(error.code, 2)
+                else:
+                    self.fail("non-finite timeout value was accepted")
+        self.assertEqual(confidence.positive_float("0.05"), 0.05)
+
     def test_run_stops_when_the_log_limit_is_exceeded(self) -> None:
         with tempfile.TemporaryDirectory() as name:
             directory = Path(name) / ".confidence"
