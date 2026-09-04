@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import html
 import json
+import math
 import os
 import re
 import signal
@@ -291,8 +292,8 @@ def stop_process(process: subprocess.Popen[bytes]) -> None:
 
 def positive_float(value: str) -> float:
     parsed = float(value)
-    if parsed <= 0:
-        raise argparse.ArgumentTypeError("must be greater than zero")
+    if not math.isfinite(parsed) or parsed <= 0:
+        raise argparse.ArgumentTypeError("must be a positive finite number")
     return parsed
 
 
