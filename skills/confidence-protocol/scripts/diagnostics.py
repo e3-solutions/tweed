@@ -113,6 +113,7 @@ def endpoint_error(endpoint: str | None) -> str | None:
         return None
     try:
         parsed = urllib.parse.urlsplit(endpoint)
+        parsed.port
     except ValueError:
         return "TELEMETRY_ENDPOINT_INVALID"
     if parsed.username or parsed.password or parsed.query or parsed.fragment:

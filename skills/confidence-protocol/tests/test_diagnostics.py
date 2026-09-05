@@ -169,6 +169,19 @@ class DiagnosticsTest(unittest.TestCase):
         )
         self.assertIsNone(diagnostics.endpoint_error("http://127.0.0.1:9999/events"))
 
+    def test_telemetry_endpoint_rejects_invalid_ports(self) -> None:
+        self.assertEqual(
+            diagnostics.endpoint_error("https://collector.example.test:invalid/events"),
+            "TELEMETRY_ENDPOINT_INVALID",
+        )
+        self.assertEqual(
+            diagnostics.endpoint_error("https://collector.example.test:99999/events"),
+            "TELEMETRY_ENDPOINT_INVALID",
+        )
+        self.assertIsNone(
+            diagnostics.endpoint_error("https://collector.example.test:443/events")
+        )
+
     def test_diagnostics_failure_does_not_change_child_exit(self) -> None:
         with tempfile.TemporaryDirectory() as name:
             root = Path(name)
