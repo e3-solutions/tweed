@@ -1275,7 +1275,7 @@ def command_validate(args: argparse.Namespace) -> int:
         location = item["recorded_root"]
         if item["recorded_cwd"] != location:
             location += "; cwd: " + item["recorded_cwd"]
-        print(f"{item['role']} ({', '.join(item['claim_statuses'])}): {len(item['run_ids'])} run(s) [{', '.join(item['run_ids'])}] | "
+        print(f"{item['role']} (claim status: {', '.join(item['claim_statuses'])}): {len(item['run_ids'])} run(s) [{', '.join(item['run_ids'])}] | "
               f"{json.dumps(location, ensure_ascii=True)} | {item['observation_status']} / {item['binding_kind']}")
     if scopes:
         print("Exact versions and start/end fingerprints: runs/<id>.json")
