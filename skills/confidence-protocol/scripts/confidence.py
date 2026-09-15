@@ -987,31 +987,44 @@ def command_run(args: argparse.Namespace) -> int:
         print("evidence directory must not be the Git root; use --directory .confidence", file=sys.stderr)
         return 125
     started_at = utc_now()
-    try:
-        log = log_path.open("xb")
-    except FileExistsError:
-        args.diagnostic_error_code = "RUN_ID_EXISTS"
-        print(f"refusing to overwrite run: {run_id}; reuse the existing record if it is the intended observation, or omit --id to capture a new run", file=sys.stderr)
-        return 125
-    try:
-        process = subprocess.Popen(
-            argv,
-            cwd=cwd,
-            stdout=log,
-            stderr=subprocess.STDOUT,
-            shell=False,
-            start_new_session=os.name == "posix",
-        )
-    except OSError as error:
-        args.diagnostic_error_code = "RUN_LAUNCH_FAILED"
-        log.close()
-        log_path.unlink(missing_ok=True)
-        print(f"could not start command: {error}", file=sys.stderr)
-        return 125
-
-    deadline = time.monotonic() + args.timeout_seconds
+    log = None
+    process = None
     termination_reason: str | None = None
+    # A signal must not discard an acquired descriptor or child handle before
+    # this block can clean it up. Children inherit no blocked signal mask.
+    args.defer_run_interrupt = True
     try:
+        try:
+            log = log_path.open("xb")
+        except FileExistsError:
+            if getattr(args, "interrupted_signal", None) is not None:
+                raise KeyboardInterrupt
+            args.diagnostic_error_code = "RUN_ID_EXISTS"
+            print(f"refusing to overwrite run: {run_id}; reuse the existing record if it is the intended observation, or omit --id to capture a new run", file=sys.stderr)
+            return 125
+        if getattr(args, "interrupted_signal", None) is not None:
+            raise KeyboardInterrupt
+        try:
+            process = subprocess.Popen(
+                argv,
+                cwd=cwd,
+                stdout=log,
+                stderr=subprocess.STDOUT,
+                shell=False,
+                start_new_session=os.name == "posix",
+            )
+        except OSError as error:
+            if getattr(args, "interrupted_signal", None) is not None:
+                raise KeyboardInterrupt
+            args.diagnostic_error_code = "RUN_LAUNCH_FAILED"
+            log.close()
+            log_path.unlink(missing_ok=True)
+            print(f"could not start command: {error}", file=sys.stderr)
+            return 125
+        args.defer_run_interrupt = False
+        if getattr(args, "interrupted_signal", None) is not None:
+            raise KeyboardInterrupt
+        deadline = time.monotonic() + args.timeout_seconds
         while process.poll() is None:
             if time.monotonic() >= deadline:
                 termination_reason = "timeout"
@@ -1043,23 +1056,32 @@ def command_run(args: argparse.Namespace) -> int:
             termination_reason = "log_limit"
             exit_code = 122
     except KeyboardInterrupt:
-        stop_process(process)
-        log.close()
-        log_path.unlink(missing_ok=True)
+        if process is not None:
+            stop_process(process)
+        if log is not None:
+            log.close()
+            log_path.unlink(missing_ok=True)
         print(f"run {run_id}: interrupted; no evidence record written", file=sys.stderr)
         return 128 + getattr(args, "interrupted_signal", signal.SIGINT)
     except OSError as error:
         args.diagnostic_error_code = "RUN_CAPTURE_FAILED"
-        stop_process(process)
-        log.close()
-        log_path.unlink(missing_ok=True)
+        if process is not None:
+            stop_process(process)
+        if log is not None:
+            log.close()
+            log_path.unlink(missing_ok=True)
+        if getattr(args, "interrupted_signal", None) is not None:
+            args.diagnostic_error_code = "RUN_INTERRUPTED"
+            print(f"run {run_id}: interrupted; no evidence record written", file=sys.stderr)
+            return 128 + args.interrupted_signal
         print(
             f"run {run_id}: capture failed ({error}); no evidence record written",
             file=sys.stderr,
         )
         return 125
     finally:
-        if not log.closed:
+        args.defer_run_interrupt = False
+        if log is not None and not log.closed:
             log.flush()
             os.fsync(log.fileno())
             log.close()
@@ -1495,7 +1517,8 @@ def main() -> int:
         def interrupt_run(signum: int, _frame: Any) -> None:
             if getattr(args, "interrupted_signal", None) is None:
                 args.interrupted_signal = signum
-                raise KeyboardInterrupt
+                if not getattr(args, "defer_run_interrupt", False):
+                    raise KeyboardInterrupt
         for signum in (signal.SIGINT, signal.SIGTERM):
             previous_signals[signum] = signal.signal(signum, interrupt_run)
     try:
