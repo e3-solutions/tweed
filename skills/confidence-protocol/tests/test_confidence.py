@@ -17,19 +17,44 @@ SPEC.loader.exec_module(confidence)
 
 
 class ConfidenceTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.fixture_workspaces: dict[Path, Path] = {}
+
+    def fixture_workspace(self, directory: Path) -> Path:
+        """Give evidence fixtures real, stable code provenance without global Git edits."""
+        if directory not in self.fixture_workspaces:
+            workspace = tempfile.TemporaryDirectory(prefix="confidence-fixture-")
+            self.addCleanup(workspace.cleanup)
+            root = Path(workspace.name)
+            subprocess.run(["git", "init", "-q", str(root)], check=True)
+            (root / "source.txt").write_text("stable fixture source\n")
+            subprocess.run(["git", "-C", str(root), "add", "source.txt"], check=True)
+            subprocess.run(
+                ["git", "-C", str(root), "-c", "user.name=Confidence Test",
+                 "-c", "user.email=confidence@example.test", "commit", "-q", "-m", "fixture"],
+                check=True,
+            )
+            self.fixture_workspaces[directory] = root
+        return self.fixture_workspaces[directory]
+
     def write_run(
         self, directory: Path, run_id: str = "tests", exit_code: int = 0
     ) -> None:
+        workspace = self.fixture_workspace(directory)
+        fingerprint = confidence.git_workspace_fingerprint(workspace, directory)
+        self.assertIsNotNone(fingerprint)
         log_path = directory / "runs" / f"{run_id}.log"
         log_path.parent.mkdir(parents=True, exist_ok=True)
         log_path.write_bytes(b"test output\n")
         confidence.write_json(
             directory / "runs" / f"{run_id}.json",
             {
-                "version": 1,
+                "version": 2,
                 "id": run_id,
                 "argv": ["python3", "-m", "unittest"],
-                "cwd": str(directory.resolve()),
+                "cwd": str(workspace.resolve()),
+                "workspace_start": fingerprint,
+                "workspace": fingerprint,
                 "started_at": "2026-08-26T01:00:00.000000Z",
                 "ended_at": "2026-08-26T01:00:01.000000Z",
                 "exit_code": exit_code,
@@ -298,6 +323,9 @@ class ConfidenceTest(unittest.TestCase):
             record = json.loads(
                 (directory / "runs" / "captured.json").read_text()
             )
+            self.assertEqual(record["version"], 2)
+            self.assertIsNone(record["workspace_start"])
+            self.assertIsNone(record["workspace"])
             self.assertEqual(record["exit_code"], 0)
             self.assertEqual(
                 record["log_sha256"],

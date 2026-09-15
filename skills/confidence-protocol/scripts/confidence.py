@@ -386,8 +386,8 @@ def validate_run_record(
         return None, [str(error)]
 
     label = f"run {run_id}"
-    if record.get("version") != 1:
-        errors.append(f"{label}.version must be 1")
+    if type(record.get("version")) is not int or record.get("version") not in (1, 2):
+        errors.append(f"{label}.version must be 1 or 2")
     if record.get("id") != run_id:
         errors.append(f"{label}.id must match its filename")
     argv = record.get("argv")
@@ -427,30 +427,42 @@ def validate_run_record(
         else:
             if actual_sha256 != log_sha256:
                 errors.append(f"{label} log hash does not match")
-    workspace = record.get("workspace")
-    if workspace is not None:
-        if not isinstance(workspace, dict):
-            errors.append(f"{label}.workspace must be an object or null")
-        else:
-            if workspace.get("kind") != "git":
-                errors.append(f"{label}.workspace.kind must be git")
-            if not isinstance(workspace.get("root"), str) or not Path(
-                workspace.get("root", "")
-            ).is_absolute():
-                errors.append(f"{label}.workspace.root must be an absolute path")
-            fingerprint = workspace.get("sha256")
-            if not isinstance(fingerprint, str) or not SHA256_PATTERN.fullmatch(
-                fingerprint
-            ):
-                errors.append(f"{label}.workspace.sha256 must be a SHA-256 digest")
+    workspace_fields = ("workspace", "workspace_start") if record.get("version") == 2 else ("workspace",)
+    for field in workspace_fields:
+        if record.get("version") == 2 and field not in record:
+            errors.append(f"{label}.{field} is required for version 2")
+        workspace = record.get(field)
+        if workspace is not None:
+            if not isinstance(workspace, dict):
+                errors.append(f"{label}.{field} must be an object or null")
+            else:
+                if workspace.get("kind") != "git":
+                    errors.append(f"{label}.{field}.kind must be git")
+                if not isinstance(workspace.get("root"), str) or not Path(
+                    workspace.get("root", "")
+                ).is_absolute():
+                    errors.append(f"{label}.{field}.root must be an absolute path")
+                fingerprint = workspace.get("sha256")
+                if not isinstance(fingerprint, str) or not SHA256_PATTERN.fullmatch(
+                    fingerprint
+                ):
+                    errors.append(f"{label}.{field}.sha256 must be a SHA-256 digest")
     return record, errors
 
 
 def validate_supporting_workspace(
-    record: dict[str, Any], evidence_directory: Path
+    record: dict[str, Any], evidence_directory: Path, *, require_binding: bool = True
 ) -> list[str]:
     workspace = record.get("workspace")
-    if workspace is None:
+    start = record.get("workspace_start")
+    if record.get("version") != 2:
+        if require_binding:
+            return [f"run {record['id']} lacks start-state provenance; rerun to support current-code proof"]
+    elif start is not None and workspace is not None and start != workspace:
+        return [f"run {record['id']} workspace changed during execution; rerun verification on the final state"]
+    if workspace is None or (record.get("version") == 2 and start is None):
+        if require_binding:
+            return [f"run {record['id']} workspace binding is unknown; capture in a committed Git repository or use partial evidence"]
         return []
     current = git_workspace_fingerprint(Path(record["cwd"]), evidence_directory)
     if current is None:
@@ -458,7 +470,6 @@ def validate_supporting_workspace(
     if current["root"] != workspace["root"] or current["sha256"] != workspace["sha256"]:
         return [f"run {record['id']} is stale because the Git workspace changed"]
     return []
-
 
 def validate_report(
     report: dict[str, Any], contract: dict[str, Any], directory: Path
@@ -761,6 +772,7 @@ def command_run(args: argparse.Namespace) -> int:
         print(f"run cwd is not a directory: {cwd}", file=sys.stderr)
         return 125
 
+    workspace_start = git_workspace_fingerprint(cwd, directory)
     started_at = utc_now()
     try:
         log = log_path.open("xb")
@@ -868,7 +880,7 @@ def command_run(args: argparse.Namespace) -> int:
     ended_at = utc_now()
     workspace = git_workspace_fingerprint(cwd, directory)
     record = {
-        "version": 1,
+        "version": 2,
         "id": run_id,
         "argv": argv,
         "cwd": str(cwd),
@@ -879,6 +891,7 @@ def command_run(args: argparse.Namespace) -> int:
         "resolved_executable": shutil.which(argv[0])
         or str((cwd / argv[0]).resolve()),
         "workspace": workspace,
+        "workspace_start": workspace_start,
         "log": f"runs/{run_id}.log",
         "log_sha256": digest.hexdigest(),
     }
@@ -891,6 +904,10 @@ def command_run(args: argparse.Namespace) -> int:
             file=sys.stderr,
         )
         return 125
+    if workspace_start is None or workspace is None:
+        print(f"run {run_id}: workspace binding unknown; current-code proof requires a committed Git workspace", file=sys.stderr)
+    elif workspace_start != workspace:
+        print(f"run {run_id}: workspace changed during execution; rerun verification on the final state", file=sys.stderr)
     print(
         f"run {run_id}: exit {exit_code}, log {record['log']}",
         file=sys.stderr,
