@@ -16,7 +16,7 @@ class LaunchCancellationTest(unittest.TestCase):
     def check_boundary(self,boundary,signum,repeated=False):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);marker=root/'pid';adapter=root/'adapter.py';child=root/'child.py';evidence=root/'evidence'
-            child.write_text(f"import os,time\nfrom pathlib import Path\nPath({str(marker)!r}).write_text(str(os.getpid()))\ntime.sleep(20)\n")
+            child.write_text(f"import os,time\nfrom pathlib import Path\npending=Path({str(marker)!r}).with_suffix('.pending')\npending.write_text(str(os.getpid()))\npending.replace(Path({str(marker)!r}))\ntime.sleep(20)\n")
             adapter.write_text(f'''import importlib.util,os,signal,sys,time
 from pathlib import Path
 s=importlib.util.spec_from_file_location('c',{str(SCRIPT)!r});c=importlib.util.module_from_spec(s);s.loader.exec_module(c)
