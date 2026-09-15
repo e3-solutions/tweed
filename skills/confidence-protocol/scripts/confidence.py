@@ -882,7 +882,7 @@ def command_run(args: argparse.Namespace) -> int:
         log.close()
         log_path.unlink(missing_ok=True)
         print(f"run {run_id}: interrupted; no evidence record written", file=sys.stderr)
-        return 130
+        return 128 + getattr(args, "interrupted_signal", signal.SIGINT)
     except OSError as error:
         args.diagnostic_error_code = "RUN_CAPTURE_FAILED"
         stop_process(process)
@@ -1287,10 +1287,18 @@ def main() -> int:
         command=args.action,
         status="started",
     )
+    previous_signals = {}
+    if args.action == "run":
+        def interrupt_run(signum: int, _frame: Any) -> None:
+            if getattr(args, "interrupted_signal", None) is None:
+                args.interrupted_signal = signum
+                raise KeyboardInterrupt
+        for signum in (signal.SIGINT, signal.SIGTERM):
+            previous_signals[signum] = signal.signal(signum, interrupt_run)
     try:
         exit_code = args.handler(args)
     except KeyboardInterrupt:
-        exit_code = 130
+        exit_code = 128 + getattr(args, "interrupted_signal", signal.SIGINT)
     except Exception:
         frames = traceback.extract_tb(sys.exc_info()[2])
         last_frame = frames[-1] if frames else None
@@ -1317,6 +1325,9 @@ def main() -> int:
         if os.environ.get("CONFIDENCE_DEBUG") == "1":
             traceback.print_exc()
         return 125
+    finally:
+        for signum, previous in previous_signals.items():
+            signal.signal(signum, previous)
     error_code = getattr(args, "diagnostic_error_code", None) or error_code_for(
         args.action, exit_code
     )
