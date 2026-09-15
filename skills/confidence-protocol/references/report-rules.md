@@ -1,6 +1,6 @@
 # Confidence report rules
 
-The report is a map from claims to evidence. It is not a work diary.
+The report is a map from claims to evidence. It is not a work diary. For command, source-binding, and recovery semantics, read [evidence.md](evidence.md).
 
 ## Required content
 
@@ -32,8 +32,8 @@ The hash is not a security signature. Anyone who can replace both the log and it
 
 For bugs, prefer two runs bound to the same obligation:
 
-- Before the fix: the regression test exposes the bug with a nonzero exit.
-- After the fix: the same regression test passes.
+- Before the fix: the regression test exposes the bug with a nonzero exit; retain it in `diagnostic_run_ids`.
+- After the fix: the same regression test passes; use its current capture in `run_ids`.
 
 Do not put secrets in command arguments. Review captured logs before sharing them.
 

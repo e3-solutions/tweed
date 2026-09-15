@@ -60,7 +60,7 @@ Required proof:
 - Use separate proof design and adversarial review roles when subagents are available. Keep each role narrow.
 - Test failure paths and rollback.
 - Test the real integration boundary.
-- Require the user's decision for irreversible choices or accepted open risks.
+- Use existing authorization; request the user's decision only for an unresolved consequential choice or an action needing additional authorization.
 - Prefer staged release, feature flags, or a dry run when the system supports them.
 
 ## Raise the mode when
