@@ -1,5 +1,4 @@
 """Current content must not depend on Git's stat-cache promises."""
-import importlib.util
 import json
 import os
 from unittest.mock import patch
@@ -9,10 +8,9 @@ import sys
 import tempfile
 import unittest
 
-SCRIPT = Path(__file__).parents[1] / 'scripts/confidence.py'
-spec = importlib.util.spec_from_file_location('confidence_content', SCRIPT)
-confidence = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(confidence)
+from support import SCRIPT, load_confidence
+
+confidence = load_confidence('confidence_content')
 
 
 class ContentBindingTest(unittest.TestCase):

@@ -1,4 +1,3 @@
-import importlib.util
 import json
 import os
 import subprocess
@@ -6,111 +5,27 @@ import sys
 import tempfile
 import time
 import unittest
+
+import support
 from pathlib import Path
 
 
-SCRIPT = Path(__file__).parents[1] / "scripts" / "confidence.py"
-SPEC = importlib.util.spec_from_file_location("confidence", SCRIPT)
-confidence = importlib.util.module_from_spec(SPEC)
-assert SPEC.loader is not None
-SPEC.loader.exec_module(confidence)
-
+SCRIPT = support.SCRIPT
+confidence = support.load_confidence("confidence")
 
 class ConfidenceTest(unittest.TestCase):
     def setUp(self) -> None:
         self.fixture_workspaces: dict[Path, Path] = {}
 
     def fixture_workspace(self, directory: Path) -> Path:
-        """Give evidence fixtures real, stable code provenance without global Git edits."""
-        if directory not in self.fixture_workspaces:
-            workspace = tempfile.TemporaryDirectory(prefix="confidence-fixture-")
-            self.addCleanup(workspace.cleanup)
-            root = Path(workspace.name)
-            subprocess.run(["git", "init", "-q", str(root)], check=True)
-            (root / "source.txt").write_text("stable fixture source\n")
-            subprocess.run(["git", "-C", str(root), "add", "source.txt"], check=True)
-            subprocess.run(
-                ["git", "-C", str(root), "-c", "user.name=Confidence Test",
-                 "-c", "user.email=confidence@example.test", "commit", "-q", "-m", "fixture"],
-                check=True,
-            )
-            self.fixture_workspaces[directory] = root
-        return self.fixture_workspaces[directory]
+        return support.fixture_workspace(directory, self.fixture_workspaces, self.addCleanup)
 
-    def write_run(
-        self, directory: Path, run_id: str = "tests", exit_code: int = 0
-    ) -> None:
-        workspace = self.fixture_workspace(directory)
-        fingerprint = confidence.git_workspace_fingerprint(workspace, directory)
-        self.assertIsNotNone(fingerprint)
-        log_path = directory / "runs" / f"{run_id}.log"
-        log_path.parent.mkdir(parents=True, exist_ok=True)
-        log_path.write_bytes(b"test output\n")
-        confidence.write_json(
-            directory / "runs" / f"{run_id}.json",
-            {
-                "version": 2,
-                "id": run_id,
-                "argv": ["python3", "-m", "unittest"],
-                "cwd": str(workspace.resolve()),
-                "workspace_start": fingerprint,
-                "workspace": fingerprint,
-                "started_at": "2026-08-26T01:00:00.000000Z",
-                "ended_at": "2026-08-26T01:00:01.000000Z",
-                "exit_code": exit_code,
-                "log": f"runs/{run_id}.log",
-                "log_sha256": confidence.sha256_file(log_path),
-            },
-        )
+    def write_run(self, directory: Path, run_id: str = "tests", exit_code: int = 0) -> None:
+        support.write_run(confidence, directory, self.fixture_workspace(directory), run_id, exit_code)
 
     def valid_files(self, directory: Path) -> None:
-        contract = confidence.initial_contract("Invite users", "standard", "feature")
-        contract["intent"].update(
-            {
-                "goal": "A team owner can invite a user.",
-                "must_happen": ["A valid invitation is sent."],
-                "must_not_happen": ["A non-owner cannot invite users."],
-            }
-        )
-        contract["proof_obligations"][0].update(
-            {
-                "claim": "Only owners can invite users.",
-                "verification": "Run the authorization integration test.",
-            }
-        )
-        report = confidence.initial_report("Invite users", "standard")
-        report.update(
-            {
-                "outcome": "The invitation flow works for owners.",
-                "rollback": "Revert the invitation change.",
-            }
-        )
-        report["evidence"][0].update(
-            {
-                "status": "pass",
-                "details": "The integration test passed.",
-                "artifacts": ["tests/invitations.test.ts"],
-                "run_ids": ["tests"],
-                "diagnostic_run_ids": [],
-            }
-        )
-        report["tests"]["passed"] = ["npm test -- invitations"]
-        report["simplicity"].update(
-            {
-                "code_gate": "pass",
-                "test_gate": "pass",
-                "notes": "The change uses the existing authorization path.",
-            }
-        )
-        report["review"].update(
-            {
-                "required": False,
-                "reason": "The test fixture is local and does not cross a review boundary.",
-            }
-        )
         self.write_run(directory)
-        confidence.write_json(directory / "contract.json", contract)
-        confidence.write_json(directory / "report.json", report)
+        support.write_documents(confidence, directory)
 
     def test_valid_evidence_passes(self) -> None:
         with tempfile.TemporaryDirectory() as name:
@@ -120,57 +35,45 @@ class ConfidenceTest(unittest.TestCase):
             self.assertEqual(errors, [])
 
     def test_completion_rejects_unfinished_release_gates(self) -> None:
-        with tempfile.TemporaryDirectory() as name:
-            directory = Path(name)
-            self.valid_files(directory)
-            report = confidence.read_json(directory / "report.json")
-            report["simplicity"]["code_gate"] = "fail"
-            report["simplicity"]["test_gate"] = "fail"
-            errors = confidence.completion_errors(report)
-            self.assertTrue(any("code simplicity" in error for error in errors))
-            self.assertTrue(any("test quality" in error for error in errors))
+        _, report = support.valid_documents(confidence)
+        report["simplicity"]["code_gate"] = "fail"
+        report["simplicity"]["test_gate"] = "fail"
+        errors = confidence.completion_errors(report)
+        self.assertTrue(any("code simplicity" in error for error in errors))
+        self.assertTrue(any("test quality" in error for error in errors))
 
     def test_completion_rejects_partial_evidence_and_unrun_tests(self) -> None:
-        with tempfile.TemporaryDirectory() as name:
-            directory = Path(name)
-            self.valid_files(directory)
-            report = confidence.read_json(directory / "report.json")
-            report["evidence"][0]["status"] = "partial"
-            report["simplicity"]["code_gate"] = "pass"
-            report["simplicity"]["test_gate"] = "pass"
-            report["tests"]["not_run"] = ["browser flow"]
-            errors = confidence.completion_errors(report)
-            self.assertTrue(any("proof obligation" in error for error in errors))
-            self.assertTrue(any("not run" in error for error in errors))
+        _, report = support.valid_documents(confidence)
+        report["evidence"][0]["status"] = "partial"
+        report["simplicity"]["code_gate"] = "pass"
+        report["simplicity"]["test_gate"] = "pass"
+        report["tests"]["not_run"] = ["browser flow"]
+        errors = confidence.completion_errors(report)
+        self.assertTrue(any("proof obligation" in error for error in errors))
+        self.assertTrue(any("not run" in error for error in errors))
 
     def test_completion_accepts_a_fully_passing_report(self) -> None:
-        with tempfile.TemporaryDirectory() as name:
-            directory = Path(name)
-            self.valid_files(directory)
-            report = confidence.read_json(directory / "report.json")
-            report["simplicity"]["code_gate"] = "pass"
-            report["simplicity"]["test_gate"] = "pass"
-            self.assertEqual(confidence.completion_errors(report), [])
+        _, report = support.valid_documents(confidence)
+        report["simplicity"]["code_gate"] = "pass"
+        report["simplicity"]["test_gate"] = "pass"
+        self.assertEqual(confidence.completion_errors(report), [])
 
     def test_critical_completion_requires_two_distinct_review_roles(self) -> None:
-        with tempfile.TemporaryDirectory() as name:
-            directory = Path(name)
-            self.valid_files(directory)
-            report = confidence.read_json(directory / "report.json")
-            report["mode"] = "critical"
-            report["simplicity"]["code_gate"] = "pass"
-            report["simplicity"]["test_gate"] = "pass"
-            report["review"].update(
-                {
-                    "required": True,
-                    "roles": ["test_designer"],
-                    "findings": ["The proof plan covers the failure boundary."],
-                }
-            )
-            errors = confidence.completion_errors(report)
-            self.assertTrue(any("adversarial_reviewer" in error for error in errors))
-            report["review"]["roles"].append("adversarial_reviewer")
-            self.assertEqual(confidence.completion_errors(report), [])
+        _, report = support.valid_documents(confidence)
+        report["mode"] = "critical"
+        report["simplicity"]["code_gate"] = "pass"
+        report["simplicity"]["test_gate"] = "pass"
+        report["review"].update(
+            {
+                "required": True,
+                "roles": ["test_designer"],
+                "findings": ["The proof plan covers the failure boundary."],
+            }
+        )
+        errors = confidence.completion_errors(report)
+        self.assertTrue(any("adversarial_reviewer" in error for error in errors))
+        report["review"]["roles"].append("adversarial_reviewer")
+        self.assertEqual(confidence.completion_errors(report), [])
 
     def test_missing_obligation_evidence_fails(self) -> None:
         with tempfile.TemporaryDirectory() as name:
@@ -256,24 +159,9 @@ class ConfidenceTest(unittest.TestCase):
             )
             directory = root / ".confidence"
             self.valid_files(directory)
-            result = subprocess.run(
-                [
-                    sys.executable,
-                    str(SCRIPT),
-                    "run",
-                    "--id",
-                    "bound",
-                    "--directory",
-                    str(directory),
-                    "--cwd",
-                    str(root),
-                    "--",
-                    sys.executable,
-                    "-c",
-                    "print('bound')",
-                ],
-                capture_output=True,
-                text=True,
+            result = support.run_cli(
+                'run', '--id', 'bound', '--directory', str(directory), '--cwd', str(root),
+                '--', sys.executable, '-c', "print('bound')",
             )
             self.assertEqual(result.returncode, 0)
             report = confidence.read_json(directory / "report.json")
@@ -299,24 +187,9 @@ class ConfidenceTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as name:
             root = Path(name)
             directory = root / ".confidence"
-            result = subprocess.run(
-                [
-                    sys.executable,
-                    str(SCRIPT),
-                    "run",
-                    "--id",
-                    "captured",
-                    "--directory",
-                    str(directory),
-                    "--cwd",
-                    str(root),
-                    "--",
-                    sys.executable,
-                    "-c",
-                    "print('proof')",
-                ],
-                capture_output=True,
-                text=True,
+            result = support.run_cli(
+                'run', '--id', 'captured', '--directory', str(directory), '--cwd',
+                str(root), '--', sys.executable, '-c', "print('proof')",
             )
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual(result.stdout, "proof\n")
@@ -336,22 +209,9 @@ class ConfidenceTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as name:
             root = Path(name)
             directory = root / ".confidence"
-            result = subprocess.run(
-                [
-                    sys.executable,
-                    str(SCRIPT),
-                    "run",
-                    "--id",
-                    "failed",
-                    "--directory",
-                    str(directory),
-                    "--",
-                    sys.executable,
-                    "-c",
-                    "raise SystemExit(7)",
-                ],
-                capture_output=True,
-                text=True,
+            result = support.run_cli(
+                'run', '--id', 'failed', '--directory', str(directory), '--',
+                sys.executable, '-c', 'raise SystemExit(7)',
             )
             self.assertEqual(result.returncode, 7)
             record = json.loads((directory / "runs" / "failed.json").read_text())
@@ -360,24 +220,10 @@ class ConfidenceTest(unittest.TestCase):
     def test_run_times_out_and_records_the_stop_reason(self) -> None:
         with tempfile.TemporaryDirectory() as name:
             directory = Path(name) / ".confidence"
-            result = subprocess.run(
-                [
-                    sys.executable,
-                    str(SCRIPT),
-                    "run",
-                    "--id",
-                    "timeout",
-                    "--directory",
-                    str(directory),
-                    "--timeout-seconds",
-                    "0.05",
-                    "--",
-                    sys.executable,
-                    "-c",
-                    "import time; time.sleep(2)",
-                ],
-                capture_output=True,
-                text=True,
+            result = support.run_cli(
+                'run', '--id', 'timeout', '--directory', str(directory),
+                '--timeout-seconds', '0.05', '--', sys.executable, '-c',
+                'import time; time.sleep(2)',
             )
             self.assertEqual(result.returncode, 124)
             record = json.loads((directory / "runs" / "timeout.json").read_text())
@@ -387,24 +233,10 @@ class ConfidenceTest(unittest.TestCase):
     def test_run_stops_when_the_log_limit_is_exceeded(self) -> None:
         with tempfile.TemporaryDirectory() as name:
             directory = Path(name) / ".confidence"
-            result = subprocess.run(
-                [
-                    sys.executable,
-                    str(SCRIPT),
-                    "run",
-                    "--id",
-                    "large-log",
-                    "--directory",
-                    str(directory),
-                    "--max-log-bytes",
-                    "100",
-                    "--",
-                    sys.executable,
-                    "-c",
-                    "print('x' * 10000)",
-                ],
-                capture_output=True,
-                text=True,
+            result = support.run_cli(
+                'run', '--id', 'large-log', '--directory', str(directory),
+                '--max-log-bytes', '100', '--', sys.executable, '-c',
+                "print('x' * 10000)",
             )
             self.assertEqual(result.returncode, 122)
             record = json.loads((directory / "runs" / "large-log.json").read_text())
@@ -420,22 +252,9 @@ class ConfidenceTest(unittest.TestCase):
                 f"subprocess.Popen([sys.executable, '-c', {child!r}]); "
                 "print('leader', flush=True)"
             )
-            result = subprocess.run(
-                [
-                    sys.executable,
-                    str(SCRIPT),
-                    "run",
-                    "--id",
-                    "background-child",
-                    "--directory",
-                    str(directory),
-                    "--",
-                    sys.executable,
-                    "-c",
-                    parent,
-                ],
-                capture_output=True,
-                text=True,
+            result = support.run_cli(
+                'run', '--id', 'background-child', '--directory', str(directory), '--',
+                sys.executable, '-c', parent,
             )
             self.assertEqual(result.returncode, 0, result.stderr)
             log_path = directory / "runs" / "background-child.log"
@@ -451,22 +270,9 @@ class ConfidenceTest(unittest.TestCase):
     def test_run_rejects_path_traversal_id(self) -> None:
         with tempfile.TemporaryDirectory() as name:
             root = Path(name)
-            result = subprocess.run(
-                [
-                    sys.executable,
-                    str(SCRIPT),
-                    "run",
-                    "--id",
-                    "../escape",
-                    "--directory",
-                    str(root / ".confidence"),
-                    "--",
-                    sys.executable,
-                    "-c",
-                    "print('no')",
-                ],
-                capture_output=True,
-                text=True,
+            result = support.run_cli(
+                'run', '--id', '../escape', '--directory', str(root / '.confidence'),
+                '--', sys.executable, '-c', "print('no')",
             )
             self.assertEqual(result.returncode, 125)
             self.assertFalse((root / "escape.json").exists())
@@ -503,20 +309,9 @@ class ConfidenceTest(unittest.TestCase):
             outside.mkdir()
             directory.mkdir()
             (directory / "runs").symlink_to(outside, target_is_directory=True)
-            result = subprocess.run(
-                [
-                    sys.executable,
-                    str(SCRIPT),
-                    "run",
-                    "--directory",
-                    str(directory),
-                    "--",
-                    sys.executable,
-                    "-c",
-                    "print('no')",
-                ],
-                capture_output=True,
-                text=True,
+            result = support.run_cli(
+                'run', '--directory', str(directory), '--', sys.executable, '-c',
+                "print('no')",
             )
             self.assertEqual(result.returncode, 125)
             self.assertFalse(any(outside.iterdir()))
@@ -577,20 +372,9 @@ class ConfidenceTest(unittest.TestCase):
     def test_run_could_not_start_creates_no_record(self) -> None:
         with tempfile.TemporaryDirectory() as name:
             directory = Path(name) / ".confidence"
-            result = subprocess.run(
-                [
-                    sys.executable,
-                    str(SCRIPT),
-                    "run",
-                    "--id",
-                    "missing-command",
-                    "--directory",
-                    str(directory),
-                    "--",
-                    "definitely-not-a-real-confidence-command",
-                ],
-                capture_output=True,
-                text=True,
+            result = support.run_cli(
+                'run', '--id', 'missing-command', '--directory', str(directory), '--',
+                'definitely-not-a-real-confidence-command',
             )
             self.assertEqual(result.returncode, 125)
             self.assertIn("could not start command", result.stderr)
@@ -600,21 +384,9 @@ class ConfidenceTest(unittest.TestCase):
     def test_run_accepts_command_when_argparse_consumes_separator(self) -> None:
         with tempfile.TemporaryDirectory() as name:
             directory = Path(name) / ".confidence"
-            result = subprocess.run(
-                [
-                    sys.executable,
-                    str(SCRIPT),
-                    "run",
-                    "--id",
-                    "portable",
-                    "--directory",
-                    str(directory),
-                    sys.executable,
-                    "-c",
-                    "print('portable')",
-                ],
-                capture_output=True,
-                text=True,
+            result = support.run_cli(
+                'run', '--id', 'portable', '--directory', str(directory), sys.executable,
+                '-c', "print('portable')",
             )
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertTrue((directory / "runs" / "portable.json").exists())
@@ -663,18 +435,8 @@ class ConfidenceTest(unittest.TestCase):
             root = Path(name)
             directory = root / ".confidence"
             self.valid_files(directory)
-            result = subprocess.run(
-                [
-                    sys.executable,
-                    str(SCRIPT),
-                    "render",
-                    "--directory",
-                    str(directory),
-                    "--output",
-                    "../outside.md",
-                ],
-                capture_output=True,
-                text=True,
+            result = support.run_cli(
+                'render', '--directory', str(directory), '--output', '../outside.md',
             )
             self.assertEqual(result.returncode, 2)
             self.assertFalse((root / "outside.md").exists())

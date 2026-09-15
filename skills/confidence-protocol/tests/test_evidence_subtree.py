@@ -1,15 +1,13 @@
 """Evidence exclusions cannot hide source, and nested Git requires explicit scope."""
-import importlib.util
 from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import unittest
 
-SCRIPT = Path(__file__).parents[1] / 'scripts/confidence.py'
-SPEC = importlib.util.spec_from_file_location('confidence_evidence_subtree', SCRIPT)
-confidence = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(confidence)
+from support import SCRIPT, load_confidence
+
+confidence = load_confidence('confidence_evidence_subtree')
 
 
 class EvidenceSubtreeTest(unittest.TestCase):

@@ -2,10 +2,10 @@
 
 import json, os, shutil, subprocess, sys, tempfile, unittest
 from pathlib import Path
-import test_confidence as fixtures
+import support
 
-c = fixtures.confidence
-SCRIPT = fixtures.SCRIPT
+c = support.load_confidence("confidence_source_scope")
+SCRIPT = support.SCRIPT
 
 
 class SourceScopeOutputTest(unittest.TestCase):
@@ -15,53 +15,25 @@ class SourceScopeOutputTest(unittest.TestCase):
         self.root = Path(self.temp.name)
         self.directory = self.root / "evidence"
         self.directory.mkdir()
-        self.fixture = fixtures.ConfidenceTest()
-        self.fixture.setUp()
-        self.addCleanup(self.fixture.doCleanups)
-        self.fixture.valid_files(self.directory)
-        self.source = self.fixture.fixture_workspace(self.directory)
+        self.workspaces = {}
+        support.write_documents(c, self.directory)
+        self.source = support.fixture_workspace(self.directory, self.workspaces, self.addCleanup)
         self.caller = self.root / "other"
         self.caller.mkdir()
         (self.caller / "different.txt").write_text("different source")
-        # Replace fixture run with an actual public CLI capture.
-        shutil.rmtree(self.directory / "runs")
-        p = subprocess.run(
-            [
-                sys.executable,
-                str(SCRIPT),
-                "run",
-                "--id",
-                "tests",
-                "--directory",
-                str(self.directory),
-                "--cwd",
-                str(self.source),
-                "--",
-                sys.executable,
-                "-c",
-                "from pathlib import Path;assert Path('source.txt').read_text()=='stable fixture source\\n'",
-            ],
-            capture_output=True,
-            text=True,
+        # Use an actual public CLI capture for source-scope output.
+        p = support.run_cli(
+            'run', '--id', 'tests', '--directory', str(self.directory), '--cwd',
+            str(self.source), '--', sys.executable, '-c',
+            "from pathlib import Path;assert Path('source.txt').read_text()=='stable fixture source\\n'",
             timeout=10,
         )
         self.assertEqual(p.returncode, 0, p.stderr)
 
     def call(self, action, *args):
-        return subprocess.run(
-            [
-                sys.executable,
-                str(SCRIPT),
-                action,
-                "--directory",
-                str(self.directory),
-                *args,
-            ],
-            cwd=self.caller,
-            capture_output=True,
-            text=True,
-            timeout=10,
-            env={**os.environ, "CONFIDENCE_DISABLE_DIAGNOSTICS": "1"},
+        return support.run_cli(
+            action, '--directory', str(self.directory), *args, cwd=self.caller, timeout=10,
+            env={**os.environ, 'CONFIDENCE_DISABLE_DIAGNOSTICS': '1'},
         )
 
     def test_public_handoff_names_recorded_tree_and_rejects_changed_source(self):
@@ -83,7 +55,8 @@ class SourceScopeOutputTest(unittest.TestCase):
     def test_multi_root_and_deduplicated_references(self):
         second = self.root / "second-evidence"
         second.mkdir()
-        self.fixture.write_run(second, "other")
+        workspace = support.fixture_workspace(second, self.workspaces, self.addCleanup)
+        support.write_run(c, second, workspace, "other")
         shutil.copyfile(second / "runs/other.json", self.directory / "runs/other.json")
         shutil.copyfile(second / "runs/other.log", self.directory / "runs/other.log")
         report = c.read_json(self.directory / "report.json")

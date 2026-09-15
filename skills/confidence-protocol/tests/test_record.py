@@ -3,7 +3,6 @@ try:
     import fcntl
 except ImportError:
     fcntl = None
-import importlib.util
 import json
 import os
 from pathlib import Path
@@ -13,10 +12,9 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-SCRIPT = Path(__file__).parents[1] / 'scripts' / 'confidence.py'
-SPEC = importlib.util.spec_from_file_location('record_result_prototype_test', SCRIPT)
-confidence = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(confidence)
+from support import SCRIPT, load_confidence
+
+confidence = load_confidence('record_result_prototype_test')
 
 
 @unittest.skipUnless(fcntl is not None and os.name == 'posix', 'record requires Unix locking')

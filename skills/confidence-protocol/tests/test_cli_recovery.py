@@ -1,5 +1,4 @@
 """Recovery hints preserve failure states and never fabricate verification commands."""
-import importlib.util
 import io
 import json
 from pathlib import Path
@@ -11,9 +10,9 @@ from contextlib import redirect_stderr
 from types import SimpleNamespace
 from unittest.mock import patch
 
-SCRIPT=Path(__file__).parents[1]/'scripts/confidence.py'
-spec=importlib.util.spec_from_file_location('recovery_core',SCRIPT)
-core=importlib.util.module_from_spec(spec);spec.loader.exec_module(core)
+from support import SCRIPT, load_confidence
+
+core = load_confidence('recovery_core')
 
 class RecoveryTest(unittest.TestCase):
     def test_run_help_explains_distinct_path_defaults(self):

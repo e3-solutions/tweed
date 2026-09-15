@@ -1,5 +1,4 @@
 """Validation cache boundaries with real Git state and deterministic mutation."""
-import importlib.util
 import json
 from pathlib import Path
 import subprocess
@@ -7,11 +6,9 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-SCRIPT = Path(__file__).parents[1] / 'scripts' / 'confidence.py'
-SPEC = importlib.util.spec_from_file_location('confidence_cache', SCRIPT)
-confidence = importlib.util.module_from_spec(SPEC)
-assert SPEC.loader is not None
-SPEC.loader.exec_module(confidence)
+from support import SCRIPT, load_confidence
+
+confidence = load_confidence('confidence_cache')
 
 
 class ValidationCacheTest(unittest.TestCase):

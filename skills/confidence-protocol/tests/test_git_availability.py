@@ -1,5 +1,4 @@
 """Optional Git must not prevent an otherwise runnable command from being captured."""
-import importlib.util
 import json
 import os
 from pathlib import Path
@@ -9,10 +8,9 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-SCRIPT = Path(__file__).parents[1] / 'scripts/confidence.py'
-SPEC = importlib.util.spec_from_file_location('confidence_git_availability', SCRIPT)
-confidence = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(confidence)
+from support import SCRIPT, load_confidence
+
+confidence = load_confidence('confidence_git_availability')
 
 
 class GitAvailabilityTest(unittest.TestCase):

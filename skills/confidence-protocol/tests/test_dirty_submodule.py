@@ -1,5 +1,4 @@
 """Dirty gitlinks must not masquerade as fully enumerated source state."""
-import importlib.util
 from pathlib import Path
 import subprocess
 import shutil
@@ -7,10 +6,9 @@ import sys
 import tempfile
 import unittest
 
-SCRIPT = Path(__file__).parents[1] / 'scripts/confidence.py'
-SPEC = importlib.util.spec_from_file_location('confidence_dirty_submodule', SCRIPT)
-confidence = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(confidence)
+from support import SCRIPT, load_confidence
+
+confidence = load_confidence('confidence_dirty_submodule')
 
 
 class DirtySubmoduleTest(unittest.TestCase):

@@ -1,6 +1,5 @@
 """Protocol atomic staging must not invalidate concurrent source observations."""
 import concurrent.futures
-import importlib.util
 import json
 import os
 from pathlib import Path
@@ -11,9 +10,9 @@ import time
 import unittest
 from unittest.mock import patch
 
-SCRIPT = Path(__file__).parents[1] / 'scripts/confidence.py'
-spec = importlib.util.spec_from_file_location('parallel_core', SCRIPT)
-core = importlib.util.module_from_spec(spec); spec.loader.exec_module(core)
+from support import SCRIPT, load_confidence
+
+core = load_confidence('parallel_core')
 
 
 class ParallelCaptureTest(unittest.TestCase):

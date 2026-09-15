@@ -6,10 +6,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
-import test_confidence as fixtures
+import support
 
-SCRIPT = fixtures.SCRIPT
-confidence = fixtures.confidence
+SCRIPT = support.SCRIPT
+confidence = support.load_confidence("confidence_reporting_scope")
 
 
 class ReportingScopeTest(unittest.TestCase):
@@ -18,13 +18,11 @@ class ReportingScopeTest(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         self.directory = self.root / '.confidence'
-        fixture = fixtures.ConfidenceTest('test_valid_evidence_passes')
-        fixture.setUp()
-        self.addCleanup(fixture.doCleanups)
-        fixture.valid_files(self.directory)
-        result = subprocess.run([sys.executable, str(SCRIPT), 'run', '--id', 'calculation',
-            '--cwd', str(self.root), '--directory', str(self.directory), '--',
-            sys.executable, '-c', 'assert 2 + 2 == 4'], capture_output=True, text=True)
+        support.write_documents(confidence, self.directory)
+        result = support.run_cli(
+            'run', '--id', 'calculation', '--cwd', str(self.root), '--directory',
+            str(self.directory), '--', sys.executable, '-c', 'assert 2 + 2 == 4',
+        )
         self.assertEqual(result.returncode, 0)
         self.contract = confidence.read_json(self.directory / 'contract.json')
         self.report = confidence.read_json(self.directory / 'report.json')
@@ -35,7 +33,9 @@ class ReportingScopeTest(unittest.TestCase):
         confidence.write_json(self.directory / 'report.json', self.report)
 
     def call(self, action, *args):
-        return subprocess.run([sys.executable, str(SCRIPT), action, '--directory', str(self.directory), *args], capture_output=True, text=True)
+        return support.run_cli(
+            action, '--directory', str(self.directory), *args,
+        )
 
     def test_partial_unbound_evidence_renders_but_cannot_complete(self):
         self.report['evidence'][0].update(status='partial', details='Calculation succeeded; source correctness was not checked.')
