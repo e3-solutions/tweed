@@ -2,7 +2,9 @@
 
 This file records user-visible changes to Tweed and Confidence Protocol.
 
-## Unreleased — agent evidence workflow
+## [0.5.0] - 2026-09-15
+
+### Agent evidence workflow
 
 - Capture source content before and after commands, including tracked files hidden
   by Git's assume-unchanged or skip-worktree flags. Reject ambiguous routing,
@@ -21,6 +23,9 @@ This file records user-visible changes to Tweed and Confidence Protocol.
 - Clean up captured process groups on SIGINT/SIGTERM, including repeated signals.
 - Reject non-finite timeouts before execution and preserve command results when
   optional Git provenance is unavailable.
+- Shorten the agent entrypoint and move conditional detail into references while
+  retaining proof design, review and completion requirements.
+- Simplify test fixtures and CLI setup while retaining all 179 core regressions.
 - Label illustrative shipped evidence as partial and describe validation success
   as completed evidence checks, rather than certifying release readiness.
 
