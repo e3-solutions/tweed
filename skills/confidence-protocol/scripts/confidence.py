@@ -167,7 +167,7 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def git_workspace_fingerprint(cwd: Path, evidence_directory: Path) -> dict[str, str] | None:
+def git_workspace_fingerprint(cwd: Path, evidence_directory: Path, *, _retry_missing: bool = True) -> dict[str, str] | None:
     """Bind enumerated working-tree bytes; ignored/external inputs are outside scope."""
     generated_names = {"contract.json", "report.json", "REPORT.md", "telemetry/events.jsonl", "telemetry/installation-id"}
     # Do not silently bind a different index/repository than the executed command.
@@ -214,6 +214,10 @@ def git_workspace_fingerprint(cwd: Path, evidence_directory: Path) -> dict[str, 
                 info = path.lstat()
             except FileNotFoundError:
                 if name not in tracked:
+                    # A publisher can remove staging after Git enumerates it.
+                    # Re-observe once; never assume an unseen entry was regular.
+                    if _retry_missing:
+                        return git_workspace_fingerprint(original_cwd, evidence_directory, _retry_missing=False)
                     return None
                 payload = b'missing'
             else:
@@ -226,6 +230,13 @@ def git_workspace_fingerprint(cwd: Path, evidence_directory: Path) -> dict[str, 
                         if ancestor.samefile(evidence):
                             relative = path.relative_to(ancestor)
                             generated = relative.as_posix() in generated_names or (len(relative.parts) == 2 and relative.parts[0] == 'runs' and relative.suffix in ('.json', '.log'))
+                            # Atomic publishers own only these temporary output names.
+                            # This branch applies only to untracked regular files.
+                            if len(relative.parts) == 1:
+                                generated = generated or bool(re.fullmatch(r"\.(?:report\.json|REPORT\.md)\.tmp-[a-z0-9_]{8}", relative.name))
+                            elif len(relative.parts) == 2 and relative.parts[0] == 'runs':
+                                temporary = re.fullmatch(r"\.([A-Za-z0-9][A-Za-z0-9._-]*)\.json\.tmp-[a-z0-9_]{8}", relative.name)
+                                generated = generated or temporary is not None
                             break
                 if generated:
                     continue
