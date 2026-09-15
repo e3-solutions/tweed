@@ -2,7 +2,7 @@
   "version": 3,
   "task_title": "Add team invitations",
   "mode": "standard",
-  "outcome": "Owners can invite one member by email. Non-owners receive a forbidden response.",
+  "outcome": "Illustrative report format. Replace these entries with evidence from the actual task.",
   "changes": [
     "Added the invitation endpoint and form.",
     "Reused the existing team authorization rule."
@@ -10,8 +10,8 @@
   "evidence": [
     {
       "obligation_id": "P1",
-      "status": "pass",
-      "details": "Owner and non-owner integration cases passed.",
+      "status": "partial",
+      "details": "Illustrative historical capture; rerun the required checks against the current task before claiming completion. Owner and non-owner integration cases passed.",
       "artifacts": [
         "tests/invitations.authorization.test.ts"
       ],
@@ -22,8 +22,8 @@
     },
     {
       "obligation_id": "P2",
-      "status": "pass",
-      "details": "The browser flow created one pending membership in the test database.",
+      "status": "partial",
+      "details": "Illustrative historical capture; rerun the required checks against the current task before claiming completion. The browser flow created one pending membership in the test database.",
       "artifacts": [
         "tests/e2e/invitations.spec.ts"
       ],
@@ -34,26 +34,23 @@
     }
   ],
   "tests": {
-    "passed": [
-      "npm test -- invitations",
-      "npm run e2e -- invitations"
-    ],
+    "passed": [],
     "failed": [],
-    "not_run": []
+    "not_run": [
+      "Capture the required authorization and end-to-end checks for the actual task."
+    ]
   },
   "simplicity": {
-    "code_gate": "pass",
-    "test_gate": "pass",
-    "notes": "The change uses existing authorization, email, and token paths. No new framework or shared abstraction was added."
+    "code_gate": "fail",
+    "test_gate": "fail",
+    "notes": "Illustrative example; code and tests have not been reviewed for your task."
   },
   "review": {
     "required": true,
     "reason": "The feature crosses an authorization boundary.",
-    "roles": [
-      "integration_reviewer"
-    ],
+    "roles": [],
     "findings": [
-      "The reviewer challenged the non-owner path and confirmed the server-side authorization test covers it."
+      "Illustrative example; independent review is pending for the actual task."
     ]
   },
   "risks": [],

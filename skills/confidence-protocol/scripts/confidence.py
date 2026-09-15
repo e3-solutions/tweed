@@ -4,12 +4,15 @@
 from __future__ import annotations
 
 import argparse
+from contextlib import contextmanager
 import hashlib
 import html
 import json
+import math
 import os
 import re
 import signal
+import stat
 import shutil
 import subprocess
 import sys
@@ -66,7 +69,12 @@ def object_without_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any
 
 def read_json(path: Path) -> dict[str, Any]:
     try:
-        raw = path.read_text(encoding="utf-8")
+        flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0)
+        descriptor = os.open(path, flags)
+        with os.fdopen(descriptor, "r", encoding="utf-8") as source:
+            if not stat.S_ISREG(os.fstat(source.fileno()).st_mode):
+                raise ValueError(f"expected a regular file: {path}")
+            raw = source.read()
     except FileNotFoundError:
         raise ValueError(f"missing file: {path}") from None
     except (OSError, UnicodeError) as error:
@@ -154,98 +162,117 @@ def new_run_id(runs_directory: Path) -> str:
 
 def sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
-    with path.open("rb") as source:
-        for chunk in iter(lambda: source.read(65536), b""):
-            digest.update(chunk)
+    try:
+        flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0)
+        descriptor = os.open(path, flags)
+        with os.fdopen(descriptor, "rb") as source:
+            if not stat.S_ISREG(os.fstat(source.fileno()).st_mode):
+                raise ValueError(f"expected a regular log file: {path}")
+            for chunk in iter(lambda: source.read(65536), b""):
+                digest.update(chunk)
+    except FileNotFoundError:
+        raise ValueError(f"missing file: {path}") from None
+    except OSError as error:
+        raise ValueError(f"could not read log {path}: {error}") from None
     return digest.hexdigest()
 
 
-def git_workspace_fingerprint(cwd: Path, evidence_directory: Path) -> dict[str, str] | None:
-    root_result = subprocess.run(
-        ["git", "-C", str(cwd), "rev-parse", "--show-toplevel"],
-        capture_output=True,
-        check=False,
-    )
-    if root_result.returncode != 0:
+def git_workspace_fingerprint(cwd: Path, evidence_directory: Path, *, _retry_missing: bool = True) -> dict[str, str] | None:
+    """Bind enumerated working-tree bytes; ignored/external inputs are outside scope."""
+    generated_names = {"contract.json", "report.json", "REPORT.md", "telemetry/events.jsonl", "telemetry/installation-id"}
+    # Do not silently bind a different index/repository than the executed command.
+    routing_variables = {"GIT_INDEX_FILE", "GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR",
+                         "GIT_OBJECT_DIRECTORY", "GIT_ALTERNATE_OBJECT_DIRECTORIES"}
+    if any(name in os.environ for name in routing_variables):
         return None
-    root = Path(root_result.stdout.decode("utf-8", "surrogateescape").strip()).resolve()
-    head_result = subprocess.run(
-        ["git", "-C", str(root), "rev-parse", "HEAD"],
-        capture_output=True,
-        check=False,
-    )
-    if head_result.returncode != 0:
-        return None
-
-    pathspec = ["."]
+    original_cwd = Path(cwd).resolve()
+    def git(*args, allow_missing=False):
+        result = subprocess.run(['git', '-C', str(cwd), *args], capture_output=True, timeout=5)
+        if result.returncode and not (allow_missing and result.returncode == 1):
+            raise OSError('Git enumeration failed')
+        return result.stdout
     try:
-        evidence_relative = evidence_directory.resolve().relative_to(root)
-    except ValueError:
-        evidence_relative = None
-    if evidence_relative is not None:
-        pathspec.append(f":(exclude){evidence_relative.as_posix()}/**")
-
-    diff_result = subprocess.run(
-        [
-            "git",
-            "-C",
-            str(root),
-            "diff",
-            "--binary",
-            "--no-ext-diff",
-            "HEAD",
-            "--",
-            *pathspec,
-        ],
-        capture_output=True,
-        check=False,
-    )
-    status_result = subprocess.run(
-        [
-            "git",
-            "-C",
-            str(root),
-            "status",
-            "--porcelain=v1",
-            "-z",
-            "--untracked-files=all",
-            "--",
-            *pathspec,
-        ],
-        capture_output=True,
-        check=False,
-    )
-    if diff_result.returncode != 0 or status_result.returncode != 0:
-        return None
-
-    digest = hashlib.sha256()
-    digest.update(b"head\0")
-    digest.update(head_result.stdout.strip())
-    digest.update(b"\0diff\0")
-    digest.update(diff_result.stdout)
-
-    untracked: list[str] = []
-    for entry in status_result.stdout.split(b"\0"):
-        if entry.startswith(b"?? "):
-            untracked.append(entry[3:].decode("utf-8", "surrogateescape"))
-    for relative_name in sorted(untracked):
-        path = root / relative_name
-        digest.update(b"\0untracked\0")
-        digest.update(relative_name.encode("utf-8", "surrogateescape"))
-        try:
-            if path.is_symlink():
-                digest.update(b"symlink\0")
-                digest.update(os.readlink(path).encode("utf-8", "surrogateescape"))
-            elif path.is_file():
-                digest.update(b"file\0")
-                with path.open("rb") as source:
-                    for chunk in iter(lambda: source.read(65536), b""):
-                        digest.update(chunk)
-            else:
-                digest.update(b"other\0")
-        except OSError:
+        root = Path(os.fsdecode(git('rev-parse', '--show-toplevel')[:-1]))
+        if not root.is_absolute() or not original_cwd.is_relative_to(root.resolve()):
             return None
-    return {"kind": "git", "root": str(root), "sha256": digest.hexdigest()}
+        # Explicit worktree routing may point at a different source tree even when
+        # the reported root contains cwd. Conventional .git worktrees remain supported.
+        if git('config', '--get', 'core.worktree', allow_missing=True):
+            return None
+        cwd = root  # ls-files paths and scope must be repository-root relative.
+        tracked = {}
+        for entry in git('ls-files', '--stage', '-z').split(b'\0'):
+            if not entry:
+                continue
+            meta, separator, name = entry.partition(b'\t')
+            fields = meta.split()
+            if not separator or not name or len(fields) != 3:
+                return None
+            mode, oid, stage = fields
+            if stage != b'0' or mode not in (b'100644', b'100755', b'120000'):
+                return None  # conflicts, gitlinks, unsupported index state
+            tracked[name] = mode
+        names = set(tracked)
+        names.update(filter(None, git('ls-files', '--others', '--exclude-standard', '-z').split(b'\0')))
+        digest = hashlib.sha256(b'content-inventory-v1\0')
+        evidence = Path(evidence_directory)
+        # An evidence symlink is not an owned-output exclusion namespace.
+        exclude_generated = not evidence.is_symlink()
+        for name in sorted(names):
+            path = root / os.fsdecode(name)
+            try:
+                info = path.lstat()
+            except FileNotFoundError:
+                if name not in tracked:
+                    # A publisher can remove staging after Git enumerates it.
+                    # Re-observe once; never assume an unseen entry was regular.
+                    if _retry_missing:
+                        return git_workspace_fingerprint(original_cwd, evidence_directory, _retry_missing=False)
+                    return None
+                payload = b'missing'
+            else:
+                # Compare parent identities to support casing aliases without lowercasing source names.
+                generated = False
+                if exclude_generated and name not in tracked and stat.S_ISREG(info.st_mode) and evidence.exists():
+                    for ancestor in path.parents:
+                        if ancestor == root.parent:
+                            break
+                        if ancestor.samefile(evidence):
+                            relative = path.relative_to(ancestor)
+                            generated = relative.as_posix() in generated_names or (len(relative.parts) == 2 and relative.parts[0] == 'runs' and relative.suffix in ('.json', '.log'))
+                            # Atomic publishers own only these temporary output names.
+                            # This branch applies only to untracked regular files.
+                            if len(relative.parts) == 1:
+                                generated = generated or bool(re.fullmatch(r"\.(?:contract\.json|report\.json|REPORT\.md)\.tmp-[a-z0-9_]{8}", relative.name))
+                            elif len(relative.parts) == 2 and relative.parts[0] == 'runs':
+                                temporary = re.fullmatch(r"\.([A-Za-z0-9][A-Za-z0-9._-]*)\.json\.tmp-[a-z0-9_]{8}", relative.name)
+                                generated = generated or temporary is not None
+                            break
+                if generated:
+                    continue
+                if stat.S_ISLNK(info.st_mode):
+                    payload = b'link\0' + os.fsencode(os.readlink(path))
+                elif stat.S_ISREG(info.st_mode):
+                    # Avoid following a replacement symlink between lstat/open.
+                    fd = os.open(path, os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0) | getattr(os, 'O_NONBLOCK', 0))
+                    with os.fdopen(fd, 'rb') as source:
+                        opened = os.fstat(source.fileno())
+                        if not stat.S_ISREG(opened.st_mode) or (opened.st_dev, opened.st_ino) != (info.st_dev, info.st_ino):
+                            return None
+                        content = hashlib.sha256()
+                        for block in iter(lambda: source.read(1024 * 1024), b''):
+                            content.update(block)
+                        after = os.fstat(source.fileno())
+                        if (opened.st_size, opened.st_mtime_ns, opened.st_ctime_ns) != (after.st_size, after.st_mtime_ns, after.st_ctime_ns):
+                            return None
+                    payload = b'file\0' + str(stat.S_IMODE(opened.st_mode)).encode() + b'\0' + content.digest()
+                else:
+                    return None
+            digest.update(len(name).to_bytes(8, 'big') + name)
+            digest.update(len(payload).to_bytes(8, 'big') + payload)
+        return {'kind': 'git-content-v1', 'root': str(root), 'sha256': digest.hexdigest()}
+    except (OSError, subprocess.TimeoutExpired):
+        return None
 
 
 def stop_process(process: subprocess.Popen[bytes]) -> None:
@@ -291,8 +318,8 @@ def stop_process(process: subprocess.Popen[bytes]) -> None:
 
 def positive_float(value: str) -> float:
     parsed = float(value)
-    if parsed <= 0:
-        raise argparse.ArgumentTypeError("must be greater than zero")
+    if not math.isfinite(parsed) or parsed <= 0:
+        raise argparse.ArgumentTypeError("must be finite and greater than zero")
     return parsed
 
 
@@ -386,8 +413,8 @@ def validate_run_record(
         return None, [str(error)]
 
     label = f"run {run_id}"
-    if record.get("version") != 1:
-        errors.append(f"{label}.version must be 1")
+    if type(record.get("version")) is not int or record.get("version") not in (1, 2):
+        errors.append(f"{label}.version must be 1 or 2")
     if record.get("id") != run_id:
         errors.append(f"{label}.id must match its filename")
     argv = record.get("argv")
@@ -422,49 +449,83 @@ def validate_run_record(
         log_path = directory / expected_log
         try:
             actual_sha256 = sha256_file(log_path)
-        except FileNotFoundError:
-            errors.append(f"missing file: {log_path}")
+        except ValueError as error:
+            errors.append(str(error))
         else:
             if actual_sha256 != log_sha256:
                 errors.append(f"{label} log hash does not match")
-    workspace = record.get("workspace")
-    if workspace is not None:
-        if not isinstance(workspace, dict):
-            errors.append(f"{label}.workspace must be an object or null")
-        else:
-            if workspace.get("kind") != "git":
-                errors.append(f"{label}.workspace.kind must be git")
-            if not isinstance(workspace.get("root"), str) or not Path(
-                workspace.get("root", "")
-            ).is_absolute():
-                errors.append(f"{label}.workspace.root must be an absolute path")
-            fingerprint = workspace.get("sha256")
-            if not isinstance(fingerprint, str) or not SHA256_PATTERN.fullmatch(
-                fingerprint
-            ):
-                errors.append(f"{label}.workspace.sha256 must be a SHA-256 digest")
+    workspace_fields = ("workspace", "workspace_start") if record.get("version") == 2 else ("workspace",)
+    for field in workspace_fields:
+        if record.get("version") == 2 and field not in record:
+            errors.append(f"{label}.{field} is required for version 2")
+        workspace = record.get(field)
+        if workspace is not None:
+            if not isinstance(workspace, dict):
+                errors.append(f"{label}.{field} must be an object or null")
+            else:
+                if workspace.get("kind") not in ("git", "git-content-v1"):
+                    errors.append(f"{label}.{field}.kind must be git or git-content-v1")
+                if not isinstance(workspace.get("root"), str) or not Path(
+                    workspace.get("root", "")
+                ).is_absolute():
+                    errors.append(f"{label}.{field}.root must be an absolute path")
+                fingerprint = workspace.get("sha256")
+                if not isinstance(fingerprint, str) or not SHA256_PATTERN.fullmatch(
+                    fingerprint
+                ):
+                    errors.append(f"{label}.{field}.sha256 must be a SHA-256 digest")
     return record, errors
 
 
 def validate_supporting_workspace(
-    record: dict[str, Any], evidence_directory: Path
+    record: dict[str, Any], evidence_directory: Path, *, require_binding: bool = True,
+    fingerprints: dict[Path, dict[str, str] | None] | None = None,
 ) -> list[str]:
     workspace = record.get("workspace")
-    if workspace is None:
+    start = record.get("workspace_start")
+    if workspace is not None and evidence_directory.resolve() == Path(workspace["root"]).resolve():
+        return [f"run {record['id']} evidence directory is the Git root and excludes all source; recapture with --directory .confidence"]
+    if record.get("version") != 2:
+        if require_binding:
+            return [f"run {record['id']} lacks start-state provenance; rerun to support current-code proof"]
+    elif start is not None and workspace is not None and start != workspace:
+        return [f"run {record['id']} workspace changed during execution; rerun verification on the final state"]
+    if workspace is None or (record.get("version") == 2 and start is None):
+        if require_binding:
+            return [f"run {record['id']} workspace binding is unknown; capture in a supported Git working tree or use partial evidence"]
         return []
-    current = git_workspace_fingerprint(Path(record["cwd"]), evidence_directory)
+    if workspace.get("kind") != "git-content-v1" or (start is not None and start.get("kind") != "git-content-v1"):
+        if require_binding:
+            return [f"run {record['id']} uses legacy Git binding; rerun to support current content proof"]
+        return []
+    cwd = Path(record["cwd"]).resolve()
+    if fingerprints is None:
+        current = git_workspace_fingerprint(cwd, evidence_directory)
+    else:
+        if cwd not in fingerprints:
+            fingerprints[cwd] = git_workspace_fingerprint(cwd, evidence_directory)
+        current = fingerprints[cwd]
     if current is None:
         return [f"run {record['id']} workspace can no longer be fingerprinted"]
     if current["root"] != workspace["root"] or current["sha256"] != workspace["sha256"]:
-        return [f"run {record['id']} is stale because the Git workspace changed"]
+        return [f"run {record['id']} is stale because the Git workspace changed; rerun the original verification on the current tree with a new run ID, then record that ID"]
     return []
-
 
 def validate_report(
     report: dict[str, Any], contract: dict[str, Any], directory: Path
 ) -> list[str]:
     errors: list[str] = []
     evidence = report.get("evidence")
+    # Share repeated workspace reads within this call, then recheck before return.
+    # One supporting reference uses the original single-read path.
+    reference_count = sum(
+        len(item["run_ids"])
+        for item in evidence
+        if isinstance(item, dict) and isinstance(item.get("run_ids"), list)
+    ) if isinstance(evidence, list) else 0
+    fingerprints: dict[Path, dict[str, str] | None] | None = (
+        {} if reference_count > 1 else None
+    )
     task = contract.get("task") if isinstance(contract.get("task"), dict) else {}
     obligations = contract.get("proof_obligations")
     if not isinstance(obligations, list):
@@ -539,10 +600,18 @@ def validate_report(
                 errors.extend(f"{label}: {error}" for error in run_errors)
                 if record is not None and not run_errors:
                     run_records.append(record)
-                    errors.extend(
-                        f"{label}: {error}"
-                        for error in validate_supporting_workspace(record, directory)
-                    )
+                    # Partial observations remain readable; only a pass promotes
+                    # them to proof. Research may establish a command result
+                    # without claiming that the current source was verified.
+                    if item.get("status") == "pass":
+                        errors.extend(
+                            f"{label}: {error}"
+                            for error in validate_supporting_workspace(
+                                record, directory,
+                                require_binding=task.get("type") != "research",
+                                fingerprints=fingerprints,
+                            )
+                        )
             for run_id in diagnostic_run_ids:
                 _, run_errors = validate_run_record(directory, run_id)
                 errors.extend(f"{label}: {error}" for error in run_errors)
@@ -600,6 +669,10 @@ def validate_report(
             errors.append(f"report.{key} must be a list of non-empty strings")
     if not nonempty_text(report.get("rollback")):
         errors.append("report.rollback is required; use 'Not applicable' when true")
+    if fingerprints is not None:
+        for cwd, before in fingerprints.items():
+            if git_workspace_fingerprint(cwd, directory) != before:
+                errors.append("workspace changed during validation; rerun on a stable tree")
     return errors
 
 
@@ -694,26 +767,173 @@ def initial_report(title: str, mode: str) -> dict[str, Any]:
 
 
 def command_init(args: argparse.Namespace) -> int:
-    directory = Path(args.directory)
-    if directory.is_symlink():
-        print(f"refusing symlink evidence directory: {directory}", file=sys.stderr)
+    if not args.resume and not args.title:
+        print("init requires --title unless --resume is used", file=sys.stderr)
         return 2
-    contract_path = directory / "contract.json"
-    report_path = directory / "report.json"
-    symlinks = [str(path) for path in (contract_path, report_path) if path.is_symlink()]
-    if symlinks:
-        print("refusing symlink evidence file: " + ", ".join(symlinks), file=sys.stderr)
+    try:
+        with evidence_writer_lock(Path(args.directory), create=True) as directory:
+            contract_path, report_path = directory / 'contract.json', directory / 'report.json'
+            for path in (contract_path, report_path):
+                if os.path.lexists(path) and not stat.S_ISREG(path.lstat().st_mode):
+                    raise RecordError('EVIDENCE_UNSAFE', f'Refusing non-regular evidence file: {path.name}')
+            existing = [path for path in (contract_path, report_path) if os.path.lexists(path)]
+            if args.resume:
+                if not contract_path.exists():
+                    raise RecordError('RESUME_AMBIGUOUS', 'Resume requires an existing contract; report-only or empty state cannot establish task identity')
+                contract = read_json(contract_path)
+                task = contract.get('task')
+                if contract.get('version') != 1 or not isinstance(task, dict) or not nonempty_text(task.get('title')) or task.get('mode') not in MODES or task.get('type') not in TASK_TYPES:
+                    raise RecordError('RESUME_AMBIGUOUS', 'Existing contract has no supported task identity')
+                for requested, key in ((args.title, 'title'), (args.mode, 'mode'), (args.task_type, 'type')):
+                    if requested is not None and requested != task[key]:
+                        raise RecordError('RESUME_CONFLICT', f'Requested {key} conflicts with the existing contract')
+                obligations = contract.get('proof_obligations')
+                if not isinstance(obligations, list) or not obligations or any(not isinstance(item, dict) or not nonempty_text(item.get('id')) for item in obligations):
+                    raise RecordError('RESUME_AMBIGUOUS', 'Existing contract needs named proof obligations')
+                ids = [item['id'] for item in obligations]
+                if len(ids) != len(set(ids)):
+                    raise RecordError('RESUME_AMBIGUOUS', 'Existing contract has duplicate obligation IDs')
+                if report_path.exists():
+                    report = read_json(report_path)
+                    evidence = report.get('evidence')
+                    reported = [item.get('obligation_id') for item in evidence if isinstance(item, dict)] if isinstance(evidence, list) else []
+                    if report.get('version') != 3 or report.get('task_title') != task['title'] or report.get('mode') != task['mode'] or not isinstance(evidence, list) or len(evidence) != len(reported) or len(reported) != len(ids) or any(not isinstance(item, str) for item in reported) or set(reported) != set(ids):
+                        raise RecordError('RESUME_CONFLICT', 'Existing contract/report identities or obligations conflict; no files changed')
+                    print('existing evidence pair preserved; fill fields, then validate')
+                    return 0
+                report = initial_report(task['title'], task['mode'])
+                template = report['evidence'][0]
+                report['evidence'] = [dict(template, obligation_id=ident) for ident in ids]
+                write_text_atomic(report_path, json.dumps(report, indent=2) + '\n')
+                print(f'created missing {report_path}; existing contract preserved')
+                return 0
+            if existing and not args.force:
+                raise RecordError('EVIDENCE_EXISTS', 'refusing to overwrite: ' + ', '.join(str(path) for path in existing) + '; for a contract-only interrupted init, use --resume')
+            # Force explicitly discards the old report first. An interruption can
+            # leave contract-only state, never a new contract with an old report.
+            if args.force:
+                report_path.unlink(missing_ok=True)
+            contract = initial_contract(args.title, args.mode or 'standard', args.task_type or 'feature')
+            report = initial_report(args.title, args.mode or 'standard')
+            write_text_atomic(contract_path, json.dumps(contract, indent=2) + '\n', replace=args.force)
+            write_text_atomic(report_path, json.dumps(report, indent=2) + '\n')
+            print(f'created {contract_path} and {report_path}')
+            print('fill the empty fields, then run validate')
+            return 0
+    except (RecordError, ValueError, OSError) as error:
+        print(str(error), file=sys.stderr)
         return 2
-    existing = [
-        str(path) for path in (contract_path, report_path) if os.path.lexists(path)
+
+
+class RecordError(Exception):
+    def __init__(self, code, details):
+        self.code = code
+        self.details = details if isinstance(details, list) else [str(details)]
+        super().__init__('; '.join(self.details))
+
+
+def selected_result_documents(contract, result):
+    """Use the existing validator unchanged, with one selected obligation.
+
+Other report fields are valid scratch values solely for validation. They are never
+written to disk, so incomplete unrelated report sections do not block recording.
+"""
+    selected = dict(contract)
+    selected['proof_obligations'] = [
+        item for item in contract['proof_obligations'] if item['id'] == result['obligation_id']
     ]
-    if existing and not args.force:
-        print("refusing to overwrite: " + ", ".join(existing), file=sys.stderr)
+    task = contract['task']
+    probe = initial_report(task['title'], task['mode'])
+    probe.update(outcome='Selected-result validation', rollback='Not applicable')
+    probe['simplicity']['notes'] = 'Not evaluated by record'
+    probe['review']['reason'] = 'Not evaluated by record'
+    probe['evidence'] = [result]
+    return selected, probe
+
+
+@contextmanager
+def evidence_writer_lock(directory: Path, *, create: bool = False):
+    if os.name != "posix" or not all(hasattr(os, flag) for flag in ("O_NOFOLLOW", "O_DIRECTORY", "O_NONBLOCK")):
+        raise RecordError('PLATFORM_UNSUPPORTED', 'Evidence writers require Unix directory locking; no evidence files changed')
+    try:
+        import fcntl
+    except ImportError:
+        raise RecordError('PLATFORM_UNSUPPORTED', 'Evidence writers require Unix file locking; no evidence files changed')
+    if directory.is_symlink():
+        raise RecordError('DIRECTORY_UNSAFE', 'Evidence directory must be a non-symlink directory')
+    if create:
+        directory.mkdir(parents=True, exist_ok=True)
+    if not directory.is_dir():
+        raise RecordError('DIRECTORY_UNSAFE', 'Evidence directory must be an existing non-symlink directory')
+    directory = directory.resolve()
+    descriptor = os.open(directory, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    try:
+        try:
+            fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            raise RecordError('LOCK_BUSY', 'Another evidence writer is active; retry after it finishes')
+        yield directory
+    finally:
+        os.close(descriptor)
+
+
+def record_result(args):
+    with evidence_writer_lock(Path(args.directory)) as directory:
+        for filename in ('contract.json', 'report.json'):
+            if (directory / filename).is_symlink():
+                raise RecordError('EVIDENCE_UNSAFE', f'Refusing symlink {filename}')
+        try:
+            contract = read_json(directory / 'contract.json')
+            report = read_json(directory / 'report.json')
+        except ValueError as error:
+            raise RecordError('DOCUMENT_INVALID', str(error))
+        contract_errors = validate_contract(contract)
+        if contract_errors:
+            raise RecordError('CONTRACT_INVALID', contract_errors)
+        if report.get('version') != 3 or report.get('task_title') != contract['task']['title'] or report.get('mode') != contract['task']['mode']:
+            raise RecordError('REPORT_INVALID', 'Report version, title and mode must match the contract')
+        obligations = {item['id'] for item in contract['proof_obligations']}
+        if args.obligation not in obligations:
+            raise RecordError('OBLIGATION_UNKNOWN', f'Unknown obligation: {args.obligation}')
+        evidence = report.get('evidence')
+        if not isinstance(evidence, list) or any(not isinstance(item, dict) or not isinstance(item.get('obligation_id'), str) for item in evidence):
+            raise RecordError('REPORT_INVALID', 'Report evidence must be a list of named obligation results')
+        ids = [item['obligation_id'] for item in evidence]
+        if len(ids) != len(set(ids)):
+            raise RecordError('REPORT_INVALID', 'Duplicate obligation results are ambiguous')
+        previous = next((item for item in evidence if item['obligation_id'] == args.obligation), {})
+        result = dict(previous)
+        result.update(obligation_id=args.obligation, status=args.status, details=args.details,
+                      run_ids=args.run, diagnostic_run_ids=args.diagnostic_run, artifacts=args.artifact)
+        selected, probe = selected_result_documents(contract, result)
+        errors = validate_report(probe, selected, directory)
+        if errors:
+            raise RecordError('RESULT_INVALID', errors)
+        updated = dict(report)
+        updated['evidence'] = list(evidence)
+        if args.obligation in ids:
+            updated['evidence'][ids.index(args.obligation)] = result
+        else:
+            updated['evidence'].append(result)
+        if updated != report:
+            write_text_atomic(directory / 'report.json', json.dumps(updated, indent=2) + '\n', replace=True)
+        return {'ok': True, 'obligation_id': args.obligation, 'status': args.status,
+                'run_ids': args.run, 'diagnostic_run_ids': args.diagnostic_run,
+                'report': 'report.json', 'changed': updated != report,
+                'completion_checked': False}
+
+
+
+def command_record(args: argparse.Namespace) -> int:
+    try:
+        result = record_result(args)
+    except RecordError as error:
+        print(json.dumps({'ok': False, 'code': error.code, 'errors': error.details}))
         return 2
-    write_json(contract_path, initial_contract(args.title, args.mode, args.task_type))
-    write_json(report_path, initial_report(args.title, args.mode))
-    print(f"created {contract_path} and {report_path}")
-    print("fill the empty fields, then run validate")
+    except OSError as error:
+        print(json.dumps({'ok': False, 'code': 'IO_ERROR', 'errors': [f'{type(error).__name__}: {error.strerror}']}))
+        return 2
+    print(json.dumps(result, separators=(',', ':')))
     return 0
 
 
@@ -752,7 +972,7 @@ def command_run(args: argparse.Namespace) -> int:
     log_path = runs_directory / f"{run_id}.log"
     if record_path.exists() or log_path.exists():
         args.diagnostic_error_code = "RUN_ID_EXISTS"
-        print(f"refusing to overwrite run: {run_id}", file=sys.stderr)
+        print(f"refusing to overwrite run: {run_id}; reuse the existing record if it is the intended observation, or omit --id to capture a new run", file=sys.stderr)
         return 125
 
     cwd = Path(args.cwd).resolve()
@@ -761,32 +981,51 @@ def command_run(args: argparse.Namespace) -> int:
         print(f"run cwd is not a directory: {cwd}", file=sys.stderr)
         return 125
 
+    workspace_start = git_workspace_fingerprint(cwd, directory)
+    if workspace_start is not None and directory.resolve() == Path(workspace_start["root"]).resolve():
+        args.diagnostic_error_code = "RUN_EVIDENCE_DIRECTORY_INVALID"
+        print("evidence directory must not be the Git root; use --directory .confidence", file=sys.stderr)
+        return 125
     started_at = utc_now()
-    try:
-        log = log_path.open("xb")
-    except FileExistsError:
-        args.diagnostic_error_code = "RUN_ID_EXISTS"
-        print(f"refusing to overwrite run: {run_id}", file=sys.stderr)
-        return 125
-    try:
-        process = subprocess.Popen(
-            argv,
-            cwd=cwd,
-            stdout=log,
-            stderr=subprocess.STDOUT,
-            shell=False,
-            start_new_session=os.name == "posix",
-        )
-    except OSError as error:
-        args.diagnostic_error_code = "RUN_LAUNCH_FAILED"
-        log.close()
-        log_path.unlink(missing_ok=True)
-        print(f"could not start command: {error}", file=sys.stderr)
-        return 125
-
-    deadline = time.monotonic() + args.timeout_seconds
+    log = None
+    process = None
     termination_reason: str | None = None
+    finalization_error: OSError | None = None
+    # A signal must not discard an acquired descriptor or child handle before
+    # this block can clean it up. Children inherit no blocked signal mask.
+    args.defer_run_interrupt = True
     try:
+        try:
+            log = log_path.open("xb")
+        except FileExistsError:
+            if getattr(args, "interrupted_signal", None) is not None:
+                raise KeyboardInterrupt
+            args.diagnostic_error_code = "RUN_ID_EXISTS"
+            print(f"refusing to overwrite run: {run_id}; reuse the existing record if it is the intended observation, or omit --id to capture a new run", file=sys.stderr)
+            return 125
+        if getattr(args, "interrupted_signal", None) is not None:
+            raise KeyboardInterrupt
+        try:
+            process = subprocess.Popen(
+                argv,
+                cwd=cwd,
+                stdout=log,
+                stderr=subprocess.STDOUT,
+                shell=False,
+                start_new_session=os.name == "posix",
+            )
+        except OSError as error:
+            if getattr(args, "interrupted_signal", None) is not None:
+                raise KeyboardInterrupt
+            args.diagnostic_error_code = "RUN_LAUNCH_FAILED"
+            log.close()
+            log_path.unlink(missing_ok=True)
+            print(f"could not start command: {error}", file=sys.stderr)
+            return 125
+        args.defer_run_interrupt = False
+        if getattr(args, "interrupted_signal", None) is not None:
+            raise KeyboardInterrupt
+        deadline = time.monotonic() + args.timeout_seconds
         while process.poll() is None:
             if time.monotonic() >= deadline:
                 termination_reason = "timeout"
@@ -818,33 +1057,64 @@ def command_run(args: argparse.Namespace) -> int:
             termination_reason = "log_limit"
             exit_code = 122
     except KeyboardInterrupt:
-        stop_process(process)
-        log.close()
-        log_path.unlink(missing_ok=True)
+        if process is not None:
+            stop_process(process)
+        if log is not None:
+            log.close()
+            log_path.unlink(missing_ok=True)
         print(f"run {run_id}: interrupted; no evidence record written", file=sys.stderr)
-        return 130
+        return 128 + getattr(args, "interrupted_signal", signal.SIGINT)
     except OSError as error:
         args.diagnostic_error_code = "RUN_CAPTURE_FAILED"
-        stop_process(process)
-        log.close()
-        log_path.unlink(missing_ok=True)
+        if process is not None:
+            stop_process(process)
+        if log is not None:
+            log.close()
+            log_path.unlink(missing_ok=True)
+        if getattr(args, "interrupted_signal", None) is not None:
+            args.diagnostic_error_code = "RUN_INTERRUPTED"
+            print(f"run {run_id}: interrupted; no evidence record written", file=sys.stderr)
+            return 128 + args.interrupted_signal
         print(
             f"run {run_id}: capture failed ({error}); no evidence record written",
             file=sys.stderr,
         )
         return 125
     finally:
-        if not log.closed:
-            log.flush()
-            os.fsync(log.fileno())
-            log.close()
+        args.defer_run_interrupt = False
+        if log is not None and not log.closed:
+            try:
+                log.flush()
+                os.fsync(log.fileno())
+            except OSError as error:
+                finalization_error = error
+            finally:
+                try:
+                    log.close()
+                except OSError as error:
+                    if finalization_error is None:
+                        finalization_error = error
 
+    def publication_failed(error: OSError) -> int:
+        args.diagnostic_error_code = "RUN_CAPTURE_FAILED"
+        print(
+            f"run {run_id}: capture persistence failed ({error}); no evidence record written. "
+            "After storage recovery, capture again with a fresh run ID (omit --id).",
+            file=sys.stderr,
+        )
+        return 125
+
+    if finalization_error is not None:
+        return publication_failed(finalization_error)
     if termination_reason:
-        with log_path.open("ab") as output:
-            output.write(f"\n[confidence runner stopped: {termination_reason}]\n".encode())
+        try:
+            with log_path.open("ab") as output:
+                output.write(f"\n[confidence runner stopped: {termination_reason}]\n".encode())
+        except OSError as error:
+            return publication_failed(error)
 
     digest = hashlib.sha256()
-    stream_to_terminal = True
+    stream_to_terminal = not args.json
     try:
         with log_path.open("rb") as captured:
             for chunk in iter(lambda: captured.read(65536), b""):
@@ -868,7 +1138,7 @@ def command_run(args: argparse.Namespace) -> int:
     ended_at = utc_now()
     workspace = git_workspace_fingerprint(cwd, directory)
     record = {
-        "version": 1,
+        "version": 2,
         "id": run_id,
         "argv": argv,
         "cwd": str(cwd),
@@ -879,6 +1149,7 @@ def command_run(args: argparse.Namespace) -> int:
         "resolved_executable": shutil.which(argv[0])
         or str((cwd / argv[0]).resolve()),
         "workspace": workspace,
+        "workspace_start": workspace_start,
         "log": f"runs/{run_id}.log",
         "log_sha256": digest.hexdigest(),
     }
@@ -891,6 +1162,31 @@ def command_run(args: argparse.Namespace) -> int:
             file=sys.stderr,
         )
         return 125
+    except OSError as error:
+        args.diagnostic_error_code = "RUN_CAPTURE_FAILED"
+        print(
+            f"run {run_id}: evidence publication failed ({error}); publication could not be confirmed. "
+            "After storage recovery, inspect the run files or capture again with a fresh run ID (omit --id).",
+            file=sys.stderr,
+        )
+        return 125
+    if args.json:
+        binding = "unknown" if workspace_start is None or workspace is None else (
+            "unchanged" if workspace_start == workspace else "changed"
+        )
+        print(json.dumps({
+            "version": 1,
+            "id": run_id,
+            "exit_code": exit_code,
+            "termination_reason": termination_reason,
+            "log": record["log"],
+            "record": f"runs/{run_id}.json",
+            "workspace_binding": binding,
+        }, separators=(",", ":")))
+    if workspace_start is None or workspace is None:
+        print(f"run {run_id}: workspace binding unknown; current-code proof requires a supported Git working tree", file=sys.stderr)
+    elif workspace_start != workspace:
+        print(f"run {run_id}: workspace changed during execution; rerun verification on the final state", file=sys.stderr)
     print(
         f"run {run_id}: exit {exit_code}, log {record['log']}",
         file=sys.stderr,
@@ -906,22 +1202,116 @@ def load_and_validate(directory: Path) -> tuple[dict[str, Any], dict[str, Any], 
     return contract, report, errors
 
 
+def recorded_source_scopes(report: dict[str, Any], directory: Path) -> list[dict[str, Any]]:
+    """Describe recorded locations, not the caller's tree or a new validation claim."""
+    references: dict[tuple[str, str], set[str]] = {}
+    for result in report['evidence']:
+        for role, field in (('support', 'run_ids'), ('diagnostic', 'diagnostic_run_ids')):
+            for run_id in result.get(field, []):
+                references.setdefault((role, run_id), set()).add(result['status'])
+    scopes = []
+    for (role, run_id), statuses in sorted(references.items()):
+        record = read_json(directory / 'runs' / f'{run_id}.json')
+        workspace = record.get('workspace')
+        start = record.get('workspace_start')
+        known = isinstance(workspace, dict)
+        start_known = isinstance(start, dict)
+        if record.get('version') != 2:
+            observation = 'legacy record'
+        elif not known or not start_known:
+            observation = 'unknown endpoint'
+        elif start != workspace:
+            observation = 'changed endpoints'
+        else:
+            observation = 'unchanged endpoints'
+        kind = workspace.get('kind', 'legacy') if known else 'unknown'
+        if kind == 'git':
+            kind = 'git (legacy)'
+        scopes.append({'role': role, 'run_id': run_id, 'claim_statuses': sorted(statuses),
+                       'recorded_cwd': record.get('cwd', 'unknown'),
+                       'recorded_root': workspace.get('root', 'unknown') if known else 'unknown',
+                       'binding_kind': kind, 'record_version': record.get('version', 'unknown'),
+                       'observation_status': observation,
+                       'start_fingerprint': start.get('sha256', 'unknown') if start_known else 'unknown',
+                       'fingerprint': workspace.get('sha256', 'unknown') if known else 'unknown'})
+    return scopes
+
+
+def grouped_source_scopes(scopes: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    groups: dict[tuple[Any, ...], dict[str, Any]] = {}
+    for item in scopes:
+        key = (item['recorded_root'], item['recorded_cwd'], item['role'],
+               item['observation_status'], item['binding_kind'], tuple(item['claim_statuses']))
+        if key not in groups:
+            groups[key] = {field: item[field] for field in
+                           ('recorded_root', 'recorded_cwd', 'role', 'observation_status',
+                            'binding_kind', 'claim_statuses')}
+            groups[key]['run_ids'] = []
+        groups[key]['run_ids'].append(item['run_id'])
+    return list(groups.values())
+
+
+def source_scope_markdown(scopes: list[dict[str, Any]]) -> str:
+    def cell(value: Any) -> str:
+        text = markdown_text(value)
+        return re.sub(r'([\\`*_{}\[\]()#+.!|>-])', r'\\\1', text)
+    lines = ['## Recorded source scope', '',
+             'Recorded locations are not the caller’s checkout. Diagnostics and partial observations do not certify current code. Exact record version and start/end fingerprints are in runs/<id>.json.', '',
+             '| Runs | Role / claim status | Recorded location | Observation / binding |',
+             '| --- | --- | --- | --- |']
+    for item in grouped_source_scopes(scopes):
+        location = item['recorded_root']
+        if item['recorded_cwd'] != location:
+            location += '; cwd: ' + item['recorded_cwd']
+        values = [', '.join(item['run_ids']), item['role'] + ' / ' + ', '.join(item['claim_statuses']),
+                  location, item['observation_status'] + ' / ' + item['binding_kind']]
+        lines.append('| ' + ' | '.join(cell(value) for value in values) + ' |')
+    if not scopes:
+        lines.append('| None | — | unknown | unknown |')
+    return '\n'.join(lines)
+
+
 def command_validate(args: argparse.Namespace) -> int:
     try:
-        _, report, errors = load_and_validate(Path(args.directory))
+        contract, report, errors = load_and_validate(Path(args.directory))
     except ValueError as error:
         print(error, file=sys.stderr)
+        if str(error).startswith("missing file:"):
+            print("Check --directory. If starting a new task, use init with the intended --directory; otherwise select the existing evidence directory.", file=sys.stderr)
         return 2
+    completion_failed = False
     if not errors and args.require_complete:
         errors.extend(completion_errors(report))
+        completion_failed = bool(errors)
     if errors:
         for error in errors:
             print(f"ERROR: {error}", file=sys.stderr)
+        if completion_failed:
+            print("To check a partial report, use validate without --require-complete with the same --directory. Keep required gaps explicit; structural validity does not establish completion.", file=sys.stderr)
         return 1
+    try:
+        scopes = recorded_source_scopes(report, Path(args.directory))
+    except ValueError as error:
+        print(error, file=sys.stderr)
+        return 2
     if args.require_complete:
-        print("confidence evidence is complete and release-ready")
+        if contract["task"]["type"] == "research":
+            print("confidence research evidence is complete; this does not certify current code")
+        else:
+            print("confidence evidence checks are complete")
     else:
         print("confidence evidence is structurally valid")
+    print("Recorded source scope (not caller checkout; diagnostics and partial observations do not certify current code):")
+    for item in grouped_source_scopes(scopes):
+        location = item["recorded_root"]
+        if item["recorded_cwd"] != location:
+            location += "; cwd: " + item["recorded_cwd"]
+        print(f"{item['role']} (claim status: {', '.join(item['claim_statuses'])}): {len(item['run_ids'])} run(s) [{', '.join(item['run_ids'])}] | "
+              f"{json.dumps(location, ensure_ascii=True)} | {item['observation_status']} / {item['binding_kind']}")
+    if scopes:
+        print("Exact versions and start/end fingerprints: runs/<id>.json")
+    if not scopes:
+        print("No captured source scopes recorded.")
     return 0
 
 
@@ -966,11 +1356,18 @@ def render_markdown(
     tests = report["tests"]
     simplicity = report["simplicity"]
     review = report["review"]
+    scope = (
+        "Research command evidence does not certify current code."
+        if task["type"] == "research"
+        else "Passing code claims require source binding; partial observations do not establish current-code correctness."
+    )
     return f"""# Confidence Report: {markdown_text(task['title'])}
 
 Mode: {task['mode']}
 
 Task type: {task['type']}
+
+{scope}
 
 ## Outcome
 
@@ -989,6 +1386,8 @@ Task type: {task['type']}
 | ID | Claim | Status | Evidence | Captured runs | Artifacts |
 | --- | --- | --- | --- | --- | --- |
 {chr(10).join(rows)}
+
+{source_scope_markdown(recorded_source_scopes(report, directory))}
 
 ## Tests
 
@@ -1114,22 +1513,58 @@ def command_support_bundle(args: argparse.Namespace) -> int:
     return 0
 
 
+class EvidenceArgumentParser(argparse.ArgumentParser):
+    def parse_args(self, args=None, namespace=None):
+        self.json_errors = False
+        parsed, remaining = self.parse_known_args(args, namespace)
+        if remaining:
+            self.json_errors = getattr(parsed, "action", None) == "record"
+            self.error("unrecognized arguments: " + " ".join(remaining))
+        return parsed
+
+    def error(self, message):
+        if getattr(self, "json_errors", False):
+            print(json.dumps({"ok": False, "code": "ARGUMENT_INVALID", "errors": [message]}))
+            self.exit(2)
+        super().error(message)
+
+
 def parser() -> argparse.ArgumentParser:
-    root = argparse.ArgumentParser(description=__doc__)
+    root = EvidenceArgumentParser(description=__doc__)
     subparsers = root.add_subparsers(dest="action", required=True)
 
-    init = subparsers.add_parser("init", help="create evidence file templates")
-    init.add_argument("--title", required=True)
-    init.add_argument("--mode", choices=MODES, default="standard")
-    init.add_argument("--task-type", choices=TASK_TYPES, default="feature")
+    init = subparsers.add_parser("init", help="create or resume evidence templates (Unix locking required)", description="Uses cooperative Unix directory locking and atomic individual files, not a two-file transaction. --resume preserves an existing contract and creates only its missing report; --force discards the old report before replacement.")
+    init.add_argument("--title")
+    init.add_argument("--mode", choices=MODES)
+    init.add_argument("--task-type", choices=TASK_TYPES)
     init.add_argument("--directory", default=".confidence")
-    init.add_argument("--force", action="store_true")
+    init_action = init.add_mutually_exclusive_group()
+    init_action.add_argument("--force", action="store_true")
+    init_action.add_argument("--resume", action="store_true", help="preserve existing contract bytes and create its missing report; no title needed")
     init.set_defaults(handler=command_init)
 
+    record = subparsers.add_parser(
+        "record", help="record an explicit obligation result (Unix only)",
+        description="Update one explicit result using Unix file locking. Reference arguments replace its current sets; run files are preserved. Does not infer pass or check completion.",
+    )
+    record.json_errors = True
+    record.add_argument("--directory", default=".confidence")
+    record.add_argument("--obligation", required=True)
+    record.add_argument("--status", choices=STATUSES, required=True)
+    record.add_argument("--details", required=True)
+    record.add_argument("--run", action="append", default=[])
+    record.add_argument("--diagnostic-run", action="append", default=[])
+    record.add_argument("--artifact", action="append", default=[])
+    record.set_defaults(handler=command_record)
+
     run = subparsers.add_parser("run", help="run a command and capture evidence")
-    run.add_argument("--id")
-    run.add_argument("--cwd", default=".")
-    run.add_argument("--directory", default=".confidence")
+    run.add_argument("--id", help="unique run ID; generated when omitted")
+    run.add_argument("--cwd", default=".", help="command execution directory (default: caller current directory)")
+    run.add_argument("--directory", default=".confidence", help="evidence directory, relative to caller cwd, not --cwd (default: .confidence)")
+    run.add_argument(
+        "--json", action="store_true",
+        help="emit a compact JSON receipt instead of replaying the captured log",
+    )
     run.add_argument(
         "--timeout-seconds",
         type=positive_float,
@@ -1195,10 +1630,19 @@ def main() -> int:
         command=args.action,
         status="started",
     )
+    previous_signals = {}
+    if args.action == "run":
+        def interrupt_run(signum: int, _frame: Any) -> None:
+            if getattr(args, "interrupted_signal", None) is None:
+                args.interrupted_signal = signum
+                if not getattr(args, "defer_run_interrupt", False):
+                    raise KeyboardInterrupt
+        for signum in (signal.SIGINT, signal.SIGTERM):
+            previous_signals[signum] = signal.signal(signum, interrupt_run)
     try:
         exit_code = args.handler(args)
     except KeyboardInterrupt:
-        exit_code = 130
+        exit_code = 128 + getattr(args, "interrupted_signal", signal.SIGINT)
     except Exception:
         frames = traceback.extract_tb(sys.exc_info()[2])
         last_frame = frames[-1] if frames else None
@@ -1225,6 +1669,9 @@ def main() -> int:
         if os.environ.get("CONFIDENCE_DEBUG") == "1":
             traceback.print_exc()
         return 125
+    finally:
+        for signum, previous in previous_signals.items():
+            signal.signal(signum, previous)
     error_code = getattr(args, "diagnostic_error_code", None) or error_code_for(
         args.action, exit_code
     )

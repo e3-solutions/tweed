@@ -23,7 +23,7 @@ from typing import Any
 
 
 SCHEMA_VERSION = 1
-TOOL_VERSION = "0.4.0+codex.20260827050000"
+TOOL_VERSION = "0.5.0+codex.20260915150954"
 MAX_EVENT_BYTES = 8_192
 MAX_EVENT_LOG_BYTES = 1_000_000
 REMOTE_TIMEOUT_SECONDS = 1.0
@@ -56,7 +56,7 @@ EVENT_NAMES = {
     "telemetry.delivery_failed",
     "telemetry.probe",
 }
-COMMANDS = {"init", "run", "validate", "render", "doctor", "support-bundle"}
+COMMANDS = {"init", "run", "record", "validate", "render", "doctor", "support-bundle"}
 STATUSES = {"started", "ok", "error"}
 DURATION_BUCKETS = {
     "lt_100ms",

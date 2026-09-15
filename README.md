@@ -20,7 +20,8 @@ Requirements:
 
 - Codex
 - Python 3.10 or newer
-- Git, recommended for evidence tied to a specific code state
+- Git with a supported working tree for evidence that supports current-code claims
+- Unix directory locking for `init` and `record` authoring commands
 
 ### 2. Ask for the work normally
 
@@ -94,15 +95,53 @@ Fill in `.confidence/contract.json` before implementation. Fill in
 `.confidence/report.json` as evidence is collected. Empty template fields are not a
 valid report.
 
-Capture a test run:
+If initialization was interrupted after creating the contract, resume without
+replacing the authored contract:
+
+```sh
+python3 skills/confidence-protocol/scripts/confidence.py init --resume
+```
+
+A supported existing contract is authoritative: resume creates only its missing
+report, or preserves an existing pair with matching task identity and obligation
+IDs. It refuses ambiguous, conflicting, or report-only states. Resume does not
+validate completion. Use `--force` only for an intentional reset: it removes the
+old report before replacing the contract and can leave a recoverable contract-only
+state if interrupted. Each file is replaced atomically; the pair is not a single
+transaction, and power-loss durability is not guaranteed.
+
+Capture a test run. This invitation example is illustrative; replace the command
+with a test that exists in your project:
 
 ```sh
 python3 skills/confidence-protocol/scripts/confidence.py run \
+  --json \
   --id invitation-tests \
   --directory .confidence \
   --cwd . \
   -- python3 -m pytest tests/test_invitations.py
 ```
+
+The JSON receipt contains the run ID, exit status, log and record paths, and source
+binding status. The full output remains in the captured log. Omit `--json` to replay
+that output in the terminal. A runner failure exits with status 125 and may leave
+no receipt or run record; inspect stderr before retrying with a new run ID.
+
+Attach your explicit assessment to a contract obligation:
+
+```sh
+python3 skills/confidence-protocol/scripts/confidence.py record \
+  --obligation P1 --status pass \
+  --details "The invitation authorization checks support this obligation." \
+  --run invitation-tests
+```
+
+`record` validates the selected result before an atomic report update. It does not
+infer that a successful command proves the claim, or mark the task complete. Each
+call replaces that obligation's current references; immutable captured runs remain.
+Use repeated `--run`, `--diagnostic-run`, and `--artifact` options for multiple
+references. Concurrent `init` and `record` writers coordinate through the same directory
+lock and receive a retryable lock error when another writer holds it. Manual editors do not participate in this advisory lock.
 
 Validate work in progress:
 
@@ -110,7 +149,7 @@ Validate work in progress:
 python3 skills/confidence-protocol/scripts/confidence.py validate
 ```
 
-Require complete release evidence:
+Check that required evidence and report gates are complete:
 
 ```sh
 python3 skills/confidence-protocol/scripts/confidence.py validate --require-complete
@@ -122,14 +161,41 @@ Render the readable report:
 python3 skills/confidence-protocol/scripts/confidence.py render
 ```
 
-Captured runs store command output, exit status, time, log hash, and Git workspace
-fingerprint under `.confidence/runs/`. Supporting evidence becomes stale when the
-code changes. A run stops after 30 minutes or 10 MB of output by default.
+### Handing evidence to another checkout
+
+Validation checks the source locations recorded in supporting runs, not the caller’s current checkout. Success output and rendered reports list recorded working directories, source roots, binding kinds, run IDs and start/end observation status, grouped by recorded scope. Exact record versions and fingerprints remain in `runs/<id>.json`. Copying evidence does not certify another checkout; rerun verification there before claiming its current code. Multiple recorded roots are supported. Diagnostic runs and partial observations are labeled and do not certify current code; unknown or legacy binding remains explicit.
+
+Captured runs store command output, exit status, time, log hash, and source fingerprints
+before and after execution under `.confidence/runs/`. A current-code pass requires
+known, matching source fingerprints and a fresh validation check. An observed source
+change invalidates the supporting run. These observations do not prove that a
+transient change-and-revert never occurred, or cover ignored dependencies and
+external services. Binding covers Git-enumerated regular files and symlinks;
+untracked special inputs such as named pipes are outside that scope. A run stops after 30 minutes or 10 MB of output by default.
+
+Keep evidence in its usual untracked `.confidence` directory. Tracked evidence is
+source input: editing a tracked report can invalidate earlier runs. Generated output
+and reserved atomic temporary names are excluded only when untracked and regular;
+do not place source inputs in those output namespaces. Concurrent publishers can
+trigger one fresh inventory retry when an enumerated file disappears. Historical
+version-1 captures remain readable as partial observations; rerun them to support
+current-code completion. Missing Git still permits capture, but produces unknown
+source binding. Partial reports remain renderable; they cannot pass completion.
+Research completion is labeled separately and does not certify current code.
+
+Content binding also works before the first Git commit. Nested repositories,
+submodules, and explicit Git routing/index overrides remain unsupported for a
+repository code claim; capture scoped checks from a supported component root or
+retain partial evidence. Captures using the older Git-diff binding require reruns
+under the content-binding algorithm.
+
+Successful validation confirms the report's mechanical evidence checks. Agents and
+reviewers remain responsible for whether the checks establish the task's claims.
 
 Use `diagnostic_run_ids` for expected failures, such as the failing test before a bug
 fix. Use `run_ids` only for successful evidence that supports a final claim.
-After each captured run, add its printed ID to the matching evidence item in
-`report.json`. Run plain `validate` while collecting evidence. Run
+After each captured run, use `record` to attach its ID and your assessment to the
+matching obligation. Run plain `validate` while collecting evidence. Run
 `validate --require-complete` only after every obligation and release gate is done.
 
 ## When something goes wrong
