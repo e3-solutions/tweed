@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from contextlib import contextmanager
 import hashlib
 import html
 import json
@@ -233,7 +234,7 @@ def git_workspace_fingerprint(cwd: Path, evidence_directory: Path, *, _retry_mis
                             # Atomic publishers own only these temporary output names.
                             # This branch applies only to untracked regular files.
                             if len(relative.parts) == 1:
-                                generated = generated or bool(re.fullmatch(r"\.(?:report\.json|REPORT\.md)\.tmp-[a-z0-9_]{8}", relative.name))
+                                generated = generated or bool(re.fullmatch(r"\.(?:contract\.json|report\.json|REPORT\.md)\.tmp-[a-z0-9_]{8}", relative.name))
                             elif len(relative.parts) == 2 and relative.parts[0] == 'runs':
                                 temporary = re.fullmatch(r"\.([A-Za-z0-9][A-Za-z0-9._-]*)\.json\.tmp-[a-z0-9_]{8}", relative.name)
                                 generated = generated or temporary is not None
@@ -757,27 +758,62 @@ def initial_report(title: str, mode: str) -> dict[str, Any]:
 
 
 def command_init(args: argparse.Namespace) -> int:
-    directory = Path(args.directory)
-    if directory.is_symlink():
-        print(f"refusing symlink evidence directory: {directory}", file=sys.stderr)
+    if not args.resume and not args.title:
+        print("init requires --title unless --resume is used", file=sys.stderr)
         return 2
-    contract_path = directory / "contract.json"
-    report_path = directory / "report.json"
-    symlinks = [str(path) for path in (contract_path, report_path) if path.is_symlink()]
-    if symlinks:
-        print("refusing symlink evidence file: " + ", ".join(symlinks), file=sys.stderr)
+    try:
+        with evidence_writer_lock(Path(args.directory), create=True) as directory:
+            contract_path, report_path = directory / 'contract.json', directory / 'report.json'
+            for path in (contract_path, report_path):
+                if os.path.lexists(path) and not stat.S_ISREG(path.lstat().st_mode):
+                    raise RecordError('EVIDENCE_UNSAFE', f'Refusing non-regular evidence file: {path.name}')
+            existing = [path for path in (contract_path, report_path) if os.path.lexists(path)]
+            if args.resume:
+                if not contract_path.exists():
+                    raise RecordError('RESUME_AMBIGUOUS', 'Resume requires an existing contract; report-only or empty state cannot establish task identity')
+                contract = read_json(contract_path)
+                task = contract.get('task')
+                if contract.get('version') != 1 or not isinstance(task, dict) or not nonempty_text(task.get('title')) or task.get('mode') not in MODES or task.get('type') not in TASK_TYPES:
+                    raise RecordError('RESUME_AMBIGUOUS', 'Existing contract has no supported task identity')
+                for requested, key in ((args.title, 'title'), (args.mode, 'mode'), (args.task_type, 'type')):
+                    if requested is not None and requested != task[key]:
+                        raise RecordError('RESUME_CONFLICT', f'Requested {key} conflicts with the existing contract')
+                obligations = contract.get('proof_obligations')
+                if not isinstance(obligations, list) or not obligations or any(not isinstance(item, dict) or not nonempty_text(item.get('id')) for item in obligations):
+                    raise RecordError('RESUME_AMBIGUOUS', 'Existing contract needs named proof obligations')
+                ids = [item['id'] for item in obligations]
+                if len(ids) != len(set(ids)):
+                    raise RecordError('RESUME_AMBIGUOUS', 'Existing contract has duplicate obligation IDs')
+                if report_path.exists():
+                    report = read_json(report_path)
+                    evidence = report.get('evidence')
+                    reported = [item.get('obligation_id') for item in evidence if isinstance(item, dict)] if isinstance(evidence, list) else []
+                    if report.get('version') != 3 or report.get('task_title') != task['title'] or report.get('mode') != task['mode'] or not isinstance(evidence, list) or len(evidence) != len(reported) or len(reported) != len(ids) or any(not isinstance(item, str) for item in reported) or set(reported) != set(ids):
+                        raise RecordError('RESUME_CONFLICT', 'Existing contract/report identities or obligations conflict; no files changed')
+                    print('existing evidence pair preserved; fill fields, then validate')
+                    return 0
+                report = initial_report(task['title'], task['mode'])
+                template = report['evidence'][0]
+                report['evidence'] = [dict(template, obligation_id=ident) for ident in ids]
+                write_text_atomic(report_path, json.dumps(report, indent=2) + '\n')
+                print(f'created missing {report_path}; existing contract preserved')
+                return 0
+            if existing and not args.force:
+                raise RecordError('EVIDENCE_EXISTS', 'refusing to overwrite: ' + ', '.join(str(path) for path in existing) + '; for a contract-only interrupted init, use --resume')
+            # Force explicitly discards the old report first. An interruption can
+            # leave contract-only state, never a new contract with an old report.
+            if args.force:
+                report_path.unlink(missing_ok=True)
+            contract = initial_contract(args.title, args.mode or 'standard', args.task_type or 'feature')
+            report = initial_report(args.title, args.mode or 'standard')
+            write_text_atomic(contract_path, json.dumps(contract, indent=2) + '\n', replace=args.force)
+            write_text_atomic(report_path, json.dumps(report, indent=2) + '\n')
+            print(f'created {contract_path} and {report_path}')
+            print('fill the empty fields, then run validate')
+            return 0
+    except (RecordError, ValueError, OSError) as error:
+        print(str(error), file=sys.stderr)
         return 2
-    existing = [
-        str(path) for path in (contract_path, report_path) if os.path.lexists(path)
-    ]
-    if existing and not args.force:
-        print("refusing to overwrite: " + ", ".join(existing), file=sys.stderr)
-        return 2
-    write_json(contract_path, initial_contract(args.title, args.mode, args.task_type))
-    write_json(report_path, initial_report(args.title, args.mode))
-    print(f"created {contract_path} and {report_path}")
-    print("fill the empty fields, then run validate")
-    return 0
 
 
 class RecordError(Exception):
@@ -806,24 +842,34 @@ written to disk, so incomplete unrelated report sections do not block recording.
     return selected, probe
 
 
-def record_result(args):
+@contextmanager
+def evidence_writer_lock(directory: Path, *, create: bool = False):
     if os.name != "posix" or not all(hasattr(os, flag) for flag in ("O_NOFOLLOW", "O_DIRECTORY", "O_NONBLOCK")):
-        raise RecordError('PLATFORM_UNSUPPORTED', 'record requires Unix directory locking; no report changed')
+        raise RecordError('PLATFORM_UNSUPPORTED', 'Evidence writers require Unix directory locking; no evidence files changed')
     try:
         import fcntl
     except ImportError:
-        raise RecordError('PLATFORM_UNSUPPORTED', 'record requires Unix file locking; no report changed')
-    directory = Path(args.directory)
-    if directory.is_symlink() or not directory.is_dir():
+        raise RecordError('PLATFORM_UNSUPPORTED', 'Evidence writers require Unix file locking; no evidence files changed')
+    if directory.is_symlink():
+        raise RecordError('DIRECTORY_UNSAFE', 'Evidence directory must be a non-symlink directory')
+    if create:
+        directory.mkdir(parents=True, exist_ok=True)
+    if not directory.is_dir():
         raise RecordError('DIRECTORY_UNSAFE', 'Evidence directory must be an existing non-symlink directory')
     directory = directory.resolve()
-    # Lock the directory inode so atomic report replacement keeps this lock.
     descriptor = os.open(directory, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
     try:
         try:
             fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
-            raise RecordError('LOCK_BUSY', 'Another record writer is active; retry this explicit result')
+            raise RecordError('LOCK_BUSY', 'Another evidence writer is active; retry after it finishes')
+        yield directory
+    finally:
+        os.close(descriptor)
+
+
+def record_result(args):
+    with evidence_writer_lock(Path(args.directory)) as directory:
         for filename in ('contract.json', 'report.json'):
             if (directory / filename).is_symlink():
                 raise RecordError('EVIDENCE_UNSAFE', f'Refusing symlink {filename}')
@@ -866,8 +912,6 @@ def record_result(args):
                 'run_ids': args.run, 'diagnostic_run_ids': args.diagnostic_run,
                 'report': 'report.json', 'changed': updated != report,
                 'completion_checked': False}
-    finally:
-        os.close(descriptor)
 
 
 
@@ -1340,12 +1384,14 @@ def parser() -> argparse.ArgumentParser:
     root = EvidenceArgumentParser(description=__doc__)
     subparsers = root.add_subparsers(dest="action", required=True)
 
-    init = subparsers.add_parser("init", help="create evidence file templates")
-    init.add_argument("--title", required=True)
-    init.add_argument("--mode", choices=MODES, default="standard")
-    init.add_argument("--task-type", choices=TASK_TYPES, default="feature")
+    init = subparsers.add_parser("init", help="create or resume evidence templates (Unix locking required)", description="Uses cooperative Unix directory locking and atomic individual files, not a two-file transaction. --resume preserves an existing contract and creates only its missing report; --force discards the old report before replacement.")
+    init.add_argument("--title")
+    init.add_argument("--mode", choices=MODES)
+    init.add_argument("--task-type", choices=TASK_TYPES)
     init.add_argument("--directory", default=".confidence")
-    init.add_argument("--force", action="store_true")
+    init_action = init.add_mutually_exclusive_group()
+    init_action.add_argument("--force", action="store_true")
+    init_action.add_argument("--resume", action="store_true", help="preserve existing contract bytes and create its missing report; no title needed")
     init.set_defaults(handler=command_init)
 
     record = subparsers.add_parser(
