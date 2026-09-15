@@ -571,12 +571,18 @@ def validate_report(
                 errors.extend(f"{label}: {error}" for error in run_errors)
                 if record is not None and not run_errors:
                     run_records.append(record)
-                    errors.extend(
-                        f"{label}: {error}"
-                        for error in validate_supporting_workspace(
-                            record, directory, fingerprints=fingerprints
+                    # Partial observations remain readable; only a pass promotes
+                    # them to proof. Research may establish a command result
+                    # without claiming that the current source was verified.
+                    if item.get("status") == "pass":
+                        errors.extend(
+                            f"{label}: {error}"
+                            for error in validate_supporting_workspace(
+                                record, directory,
+                                require_binding=task.get("type") != "research",
+                                fingerprints=fingerprints,
+                            )
                         )
-                    )
             for run_id in diagnostic_run_ids:
                 _, run_errors = validate_run_record(directory, run_id)
                 errors.extend(f"{label}: {error}" for error in run_errors)
@@ -956,7 +962,7 @@ def load_and_validate(directory: Path) -> tuple[dict[str, Any], dict[str, Any], 
 
 def command_validate(args: argparse.Namespace) -> int:
     try:
-        _, report, errors = load_and_validate(Path(args.directory))
+        contract, report, errors = load_and_validate(Path(args.directory))
     except ValueError as error:
         print(error, file=sys.stderr)
         return 2
@@ -967,7 +973,10 @@ def command_validate(args: argparse.Namespace) -> int:
             print(f"ERROR: {error}", file=sys.stderr)
         return 1
     if args.require_complete:
-        print("confidence evidence is complete and release-ready")
+        if contract["task"]["type"] == "research":
+            print("confidence research evidence is complete; this does not certify current code")
+        else:
+            print("confidence evidence is complete and release-ready")
     else:
         print("confidence evidence is structurally valid")
     return 0
@@ -1014,11 +1023,18 @@ def render_markdown(
     tests = report["tests"]
     simplicity = report["simplicity"]
     review = report["review"]
+    scope = (
+        "Research command evidence does not certify current code."
+        if task["type"] == "research"
+        else "Passing code claims require source binding; partial observations do not establish current-code correctness."
+    )
     return f"""# Confidence Report: {markdown_text(task['title'])}
 
 Mode: {task['mode']}
 
 Task type: {task['type']}
+
+{scope}
 
 ## Outcome
 
