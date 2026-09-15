@@ -498,7 +498,7 @@ def validate_supporting_workspace(
     if current is None:
         return [f"run {record['id']} workspace can no longer be fingerprinted"]
     if current["root"] != workspace["root"] or current["sha256"] != workspace["sha256"]:
-        return [f"run {record['id']} is stale because the Git workspace changed"]
+        return [f"run {record['id']} is stale because the Git workspace changed; rerun the original verification on the current tree with a new run ID, then record that ID"]
     return []
 
 def validate_report(
@@ -919,7 +919,7 @@ def command_run(args: argparse.Namespace) -> int:
     log_path = runs_directory / f"{run_id}.log"
     if record_path.exists() or log_path.exists():
         args.diagnostic_error_code = "RUN_ID_EXISTS"
-        print(f"refusing to overwrite run: {run_id}", file=sys.stderr)
+        print(f"refusing to overwrite run: {run_id}; reuse the existing record if it is the intended observation, or omit --id to capture a new run", file=sys.stderr)
         return 125
 
     cwd = Path(args.cwd).resolve()
@@ -938,7 +938,7 @@ def command_run(args: argparse.Namespace) -> int:
         log = log_path.open("xb")
     except FileExistsError:
         args.diagnostic_error_code = "RUN_ID_EXISTS"
-        print(f"refusing to overwrite run: {run_id}", file=sys.stderr)
+        print(f"refusing to overwrite run: {run_id}; reuse the existing record if it is the intended observation, or omit --id to capture a new run", file=sys.stderr)
         return 125
     try:
         process = subprocess.Popen(
@@ -1101,12 +1101,18 @@ def command_validate(args: argparse.Namespace) -> int:
         contract, report, errors = load_and_validate(Path(args.directory))
     except ValueError as error:
         print(error, file=sys.stderr)
+        if str(error).startswith("missing file:"):
+            print("Check --directory. If starting a new task, use init with the intended --directory; otherwise select the existing evidence directory.", file=sys.stderr)
         return 2
+    completion_failed = False
     if not errors and args.require_complete:
         errors.extend(completion_errors(report))
+        completion_failed = bool(errors)
     if errors:
         for error in errors:
             print(f"ERROR: {error}", file=sys.stderr)
+        if completion_failed:
+            print("To check a partial report, use validate without --require-complete with the same --directory. Keep required gaps explicit; structural validity does not establish completion.", file=sys.stderr)
         return 1
     if args.require_complete:
         if contract["task"]["type"] == "research":
@@ -1357,9 +1363,9 @@ def parser() -> argparse.ArgumentParser:
     record.set_defaults(handler=command_record)
 
     run = subparsers.add_parser("run", help="run a command and capture evidence")
-    run.add_argument("--id")
-    run.add_argument("--cwd", default=".")
-    run.add_argument("--directory", default=".confidence")
+    run.add_argument("--id", help="unique run ID; generated when omitted")
+    run.add_argument("--cwd", default=".", help="command execution directory (default: caller current directory)")
+    run.add_argument("--directory", default=".confidence", help="evidence directory, relative to caller cwd, not --cwd (default: .confidence)")
     run.add_argument(
         "--json", action="store_true",
         help="emit a compact JSON receipt instead of replaying the captured log",
