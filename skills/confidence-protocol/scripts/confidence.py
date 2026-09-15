@@ -181,22 +181,14 @@ def git_workspace_fingerprint(cwd: Path, evidence_directory: Path) -> dict[str, 
     if head_result is None or head_result.returncode != 0:
         return None
 
-    pathspec = ["."]
     try:
         evidence_relative = evidence_directory.resolve().relative_to(root)
     except ValueError:
         evidence_relative = None
-    if evidence_relative is not None:
-        # Only untracked protocol output is excluded. Tracked files are always
-        # included in the diff, even when they overlap the reserved evidence names.
-        relative = evidence_relative.as_posix()
-        for generated in ("contract.json", "report.json", "REPORT.md",
-                          "telemetry/events.jsonl", "telemetry/installation-id"):
-            pathspec.append(f":(exclude,literal){relative}/{generated}")
-        # Escape the user-selected directory before adding our two narrow globs.
-        escaped = "".join("\\" + char if char in "\\*?[]" else char for char in relative)
-        for extension in ("json", "log"):
-            pathspec.append(f":(exclude,glob){escaped}/runs/*.{extension}")
+    generated_names = {
+        "contract.json", "report.json", "REPORT.md",
+        "telemetry/events.jsonl", "telemetry/installation-id",
+    }
 
     diff_result = run_git(
         [
@@ -206,6 +198,7 @@ def git_workspace_fingerprint(cwd: Path, evidence_directory: Path) -> dict[str, 
             "diff",
             "--binary",
             "--no-ext-diff",
+            "--ignore-submodules=none",
             "HEAD",
             "--",
             ".",
@@ -222,8 +215,9 @@ def git_workspace_fingerprint(cwd: Path, evidence_directory: Path) -> dict[str, 
             "--porcelain=v1",
             "-z",
             "--untracked-files=all",
+            "--ignore-submodules=none",
             "--",
-            *pathspec,
+            ".",
         ],
     )
     if status_result is None or status_result.returncode != 0:
@@ -236,9 +230,37 @@ def git_workspace_fingerprint(cwd: Path, evidence_directory: Path) -> dict[str, 
     digest.update(diff_result.stdout)
 
     untracked: list[str] = []
-    for entry in status_result.stdout.split(b"\0"):
-        if entry.startswith(b"?? "):
-            untracked.append(entry[3:].decode("utf-8", "surrogateescape"))
+    entries = iter(status_result.stdout.split(b"\0"))
+    for entry in entries:
+        if not entry:
+            continue
+        state = entry[:2]
+        # Porcelain -z rename/copy records contain an additional source pathname.
+        # It has no status prefix, even if the filename itself starts with "?? ".
+        if b"R" in state or b"C" in state:
+            next(entries, None)
+        relative_name = entry[3:].decode("utf-8", "surrogateescape")
+        path = root / relative_name
+        if state != b"??":
+            if path.is_dir() and not path.is_symlink():
+                # A changed tracked directory is a gitlink. Its "-dirty" marker
+                # does not enumerate nested changes, so it cannot certify code.
+                return None
+            continue
+        if evidence_relative is not None:
+            try:
+                evidence_name = Path(relative_name).relative_to(evidence_relative)
+            except ValueError:
+                evidence_name = None
+            if evidence_name is not None:
+                parts = evidence_name.parts
+                generated = evidence_name.as_posix() in generated_names or (
+                    len(parts) == 2 and parts[0] == "runs"
+                    and evidence_name.suffix in (".json", ".log")
+                )
+                if generated and path.is_file() and not path.is_symlink():
+                    continue
+        untracked.append(relative_name)
     for relative_name in sorted(untracked):
         path = root / relative_name
         digest.update(b"\0untracked\0")
