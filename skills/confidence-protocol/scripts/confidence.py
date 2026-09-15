@@ -457,6 +457,8 @@ def validate_supporting_workspace(
 ) -> list[str]:
     workspace = record.get("workspace")
     start = record.get("workspace_start")
+    if workspace is not None and evidence_directory.resolve() == Path(workspace["root"]).resolve():
+        return [f"run {record['id']} evidence directory is the Git root and excludes all source; recapture with --directory .confidence"]
     if record.get("version") != 2:
         if require_binding:
             return [f"run {record['id']} lacks start-state provenance; rerun to support current-code proof"]
@@ -797,6 +799,10 @@ def command_run(args: argparse.Namespace) -> int:
         return 125
 
     workspace_start = git_workspace_fingerprint(cwd, directory)
+    if workspace_start is not None and directory.resolve() == Path(workspace_start["root"]).resolve():
+        args.diagnostic_error_code = "RUN_EVIDENCE_DIRECTORY_INVALID"
+        print("evidence directory must not be the Git root; use --directory .confidence", file=sys.stderr)
+        return 125
     started_at = utc_now()
     try:
         log = log_path.open("xb")
