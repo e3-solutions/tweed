@@ -187,7 +187,16 @@ def git_workspace_fingerprint(cwd: Path, evidence_directory: Path) -> dict[str, 
     except ValueError:
         evidence_relative = None
     if evidence_relative is not None:
-        pathspec.append(f":(exclude){evidence_relative.as_posix()}/**")
+        # Only untracked protocol output is excluded. Tracked files are always
+        # included in the diff, even when they overlap the reserved evidence names.
+        relative = evidence_relative.as_posix()
+        for generated in ("contract.json", "report.json", "REPORT.md",
+                          "telemetry/events.jsonl", "telemetry/installation-id"):
+            pathspec.append(f":(exclude,literal){relative}/{generated}")
+        # Escape the user-selected directory before adding our two narrow globs.
+        escaped = "".join("\\" + char if char in "\\*?[]" else char for char in relative)
+        for extension in ("json", "log"):
+            pathspec.append(f":(exclude,glob){escaped}/runs/*.{extension}")
 
     diff_result = run_git(
         [
@@ -199,7 +208,7 @@ def git_workspace_fingerprint(cwd: Path, evidence_directory: Path) -> dict[str, 
             "--no-ext-diff",
             "HEAD",
             "--",
-            *pathspec,
+            ".",
         ],
     )
     if diff_result is None or diff_result.returncode != 0:
@@ -244,7 +253,9 @@ def git_workspace_fingerprint(cwd: Path, evidence_directory: Path) -> dict[str, 
                     for chunk in iter(lambda: source.read(65536), b""):
                         digest.update(chunk)
             else:
-                digest.update(b"other\0")
+                # Git collapses an untracked nested repository to a directory.
+                # Its contents are not covered, so never certify a source state.
+                return None
         except OSError:
             return None
     return {"kind": "git", "root": str(root), "sha256": digest.hexdigest()}
