@@ -452,7 +452,8 @@ def validate_run_record(
 
 
 def validate_supporting_workspace(
-    record: dict[str, Any], evidence_directory: Path, *, require_binding: bool = True
+    record: dict[str, Any], evidence_directory: Path, *, require_binding: bool = True,
+    fingerprints: dict[Path, dict[str, str] | None] | None = None,
 ) -> list[str]:
     workspace = record.get("workspace")
     start = record.get("workspace_start")
@@ -465,7 +466,13 @@ def validate_supporting_workspace(
         if require_binding:
             return [f"run {record['id']} workspace binding is unknown; capture in a committed Git repository or use partial evidence"]
         return []
-    current = git_workspace_fingerprint(Path(record["cwd"]), evidence_directory)
+    cwd = Path(record["cwd"]).resolve()
+    if fingerprints is None:
+        current = git_workspace_fingerprint(cwd, evidence_directory)
+    else:
+        if cwd not in fingerprints:
+            fingerprints[cwd] = git_workspace_fingerprint(cwd, evidence_directory)
+        current = fingerprints[cwd]
     if current is None:
         return [f"run {record['id']} workspace can no longer be fingerprinted"]
     if current["root"] != workspace["root"] or current["sha256"] != workspace["sha256"]:
@@ -477,6 +484,16 @@ def validate_report(
 ) -> list[str]:
     errors: list[str] = []
     evidence = report.get("evidence")
+    # Share repeated workspace reads within this call, then recheck before return.
+    # One supporting reference uses the original single-read path.
+    reference_count = sum(
+        len(item["run_ids"])
+        for item in evidence
+        if isinstance(item, dict) and isinstance(item.get("run_ids"), list)
+    ) if isinstance(evidence, list) else 0
+    fingerprints: dict[Path, dict[str, str] | None] | None = (
+        {} if reference_count > 1 else None
+    )
     task = contract.get("task") if isinstance(contract.get("task"), dict) else {}
     obligations = contract.get("proof_obligations")
     if not isinstance(obligations, list):
@@ -553,7 +570,9 @@ def validate_report(
                     run_records.append(record)
                     errors.extend(
                         f"{label}: {error}"
-                        for error in validate_supporting_workspace(record, directory)
+                        for error in validate_supporting_workspace(
+                            record, directory, fingerprints=fingerprints
+                        )
                     )
             for run_id in diagnostic_run_ids:
                 _, run_errors = validate_run_record(directory, run_id)
@@ -612,6 +631,10 @@ def validate_report(
             errors.append(f"report.{key} must be a list of non-empty strings")
     if not nonempty_text(report.get("rollback")):
         errors.append("report.rollback is required; use 'Not applicable' when true")
+    if fingerprints is not None:
+        for cwd, before in fingerprints.items():
+            if git_workspace_fingerprint(cwd, directory) != before:
+                errors.append("workspace changed during validation; rerun on a stable tree")
     return errors
 
 
