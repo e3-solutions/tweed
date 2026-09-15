@@ -21,7 +21,7 @@ Requirements:
 - Codex
 - Python 3.10 or newer
 - Git with a supported working tree for evidence that supports current-code claims
-- Unix file locking for the optional `record` authoring command
+- Unix directory locking for `init` and `record` authoring commands
 
 ### 2. Ask for the work normally
 
@@ -95,6 +95,21 @@ Fill in `.confidence/contract.json` before implementation. Fill in
 `.confidence/report.json` as evidence is collected. Empty template fields are not a
 valid report.
 
+If initialization was interrupted after creating the contract, resume without
+replacing the authored contract:
+
+```sh
+python3 skills/confidence-protocol/scripts/confidence.py init --resume
+```
+
+A supported existing contract is authoritative: resume creates only its missing
+report, or preserves an existing pair with matching task identity and obligation
+IDs. It refuses ambiguous, conflicting, or report-only states. Resume does not
+validate completion. Use `--force` only for an intentional reset: it removes the
+old report before replacing the contract and can leave a recoverable contract-only
+state if interrupted. Each file is replaced atomically; the pair is not a single
+transaction, and power-loss durability is not guaranteed.
+
 Capture a test run. This invitation example is illustrative; replace the command
 with a test that exists in your project:
 
@@ -125,8 +140,8 @@ python3 skills/confidence-protocol/scripts/confidence.py record \
 infer that a successful command proves the claim, or mark the task complete. Each
 call replaces that obligation's current references; immutable captured runs remain.
 Use repeated `--run`, `--diagnostic-run`, and `--artifact` options for multiple
-references. Concurrent `record` writers receive a retryable lock error instead of
-overwriting each other. Manual editors do not participate in this advisory lock.
+references. Concurrent `init` and `record` writers coordinate through the same directory
+lock and receive a retryable lock error when another writer holds it. Manual editors do not participate in this advisory lock.
 
 Validate work in progress:
 

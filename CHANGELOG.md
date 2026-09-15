@@ -13,6 +13,9 @@ This file records user-visible changes to Tweed and Confidence Protocol.
 - Add compact `run --json` receipts while retaining complete logs and hashes.
 - Add explicit, atomic `record` updates with cooperating-writer locking and
   structured errors. Reject non-regular JSON document inputs without blocking.
+- Coordinate initialization with report writers; add preserving `init --resume`
+  recovery for interrupted contract-only setup and refuse ambiguous existing pairs.
+  Reset removes the old report first; file replacements are individually atomic.
 - Preserve partial and research observations without claiming current-code proof.
 - Clean up captured process groups on SIGINT/SIGTERM, including repeated signals.
 - Reject non-finite timeouts before execution and preserve command results when
@@ -21,7 +24,7 @@ This file records user-visible changes to Tweed and Confidence Protocol.
   as completed evidence checks, rather than certifying release readiness.
 
 Compatibility: old Git-diff bindings require recapture for current-code completion;
-tracked reports can stale prior evidence; `record` requires Unix directory locking.
+tracked reports can stale prior evidence; `init` and `record` require Unix directory locking.
 Git-enumerated regular files and symlinks define fingerprint scope. Ignored
 dependencies, untracked special files, external services, and transient
 change-and-revert are not certified. Reserved untracked output names must not hold
