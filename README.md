@@ -161,6 +161,10 @@ Render the readable report:
 python3 skills/confidence-protocol/scripts/confidence.py render
 ```
 
+### Handing evidence to another checkout
+
+Validation checks the source locations recorded in supporting runs, not the caller’s current checkout. Success output and rendered reports list recorded working directories, source roots, binding kinds, run IDs and start/end observation status, grouped by recorded scope. Exact record versions and fingerprints remain in `runs/<id>.json`. Copying evidence does not certify another checkout; rerun verification there before claiming its current code. Multiple recorded roots are supported. Diagnostic runs and partial observations are labeled and do not certify current code; unknown or legacy binding remains explicit.
+
 Captured runs store command output, exit status, time, log hash, and source fingerprints
 before and after execution under `.confidence/runs/`. A current-code pass requires
 known, matching source fingerprints and a fresh validation check. An observed source

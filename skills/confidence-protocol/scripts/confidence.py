@@ -1171,9 +1171,79 @@ def load_and_validate(directory: Path) -> tuple[dict[str, Any], dict[str, Any], 
     return contract, report, errors
 
 
+def recorded_source_scopes(report: dict[str, Any], directory: Path) -> list[dict[str, Any]]:
+    """Describe recorded locations, not the caller's tree or a new validation claim."""
+    references: dict[tuple[str, str], set[str]] = {}
+    for result in report['evidence']:
+        for role, field in (('support', 'run_ids'), ('diagnostic', 'diagnostic_run_ids')):
+            for run_id in result.get(field, []):
+                references.setdefault((role, run_id), set()).add(result['status'])
+    scopes = []
+    for (role, run_id), statuses in sorted(references.items()):
+        record = read_json(directory / 'runs' / f'{run_id}.json')
+        workspace = record.get('workspace')
+        start = record.get('workspace_start')
+        known = isinstance(workspace, dict)
+        start_known = isinstance(start, dict)
+        if record.get('version') != 2:
+            observation = 'legacy record'
+        elif not known or not start_known:
+            observation = 'unknown endpoint'
+        elif start != workspace:
+            observation = 'changed endpoints'
+        else:
+            observation = 'unchanged endpoints'
+        kind = workspace.get('kind', 'legacy') if known else 'unknown'
+        if kind == 'git':
+            kind = 'git (legacy)'
+        scopes.append({'role': role, 'run_id': run_id, 'claim_statuses': sorted(statuses),
+                       'recorded_cwd': record.get('cwd', 'unknown'),
+                       'recorded_root': workspace.get('root', 'unknown') if known else 'unknown',
+                       'binding_kind': kind, 'record_version': record.get('version', 'unknown'),
+                       'observation_status': observation,
+                       'start_fingerprint': start.get('sha256', 'unknown') if start_known else 'unknown',
+                       'fingerprint': workspace.get('sha256', 'unknown') if known else 'unknown'})
+    return scopes
+
+
+def grouped_source_scopes(scopes: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    groups: dict[tuple[Any, ...], dict[str, Any]] = {}
+    for item in scopes:
+        key = (item['recorded_root'], item['recorded_cwd'], item['role'],
+               item['observation_status'], item['binding_kind'], tuple(item['claim_statuses']))
+        if key not in groups:
+            groups[key] = {field: item[field] for field in
+                           ('recorded_root', 'recorded_cwd', 'role', 'observation_status',
+                            'binding_kind', 'claim_statuses')}
+            groups[key]['run_ids'] = []
+        groups[key]['run_ids'].append(item['run_id'])
+    return list(groups.values())
+
+
+def source_scope_markdown(scopes: list[dict[str, Any]]) -> str:
+    def cell(value: Any) -> str:
+        text = markdown_text(value)
+        return re.sub(r'([\\`*_{}\[\]()#+.!|>-])', r'\\\1', text)
+    lines = ['## Recorded source scope', '',
+             'Recorded locations are not the caller’s checkout. Diagnostics and partial observations do not certify current code. Exact record version and start/end fingerprints are in runs/<id>.json.', '',
+             '| Runs | Role / claim status | Recorded location | Observation / binding |',
+             '| --- | --- | --- | --- |']
+    for item in grouped_source_scopes(scopes):
+        location = item['recorded_root']
+        if item['recorded_cwd'] != location:
+            location += '; cwd: ' + item['recorded_cwd']
+        values = [', '.join(item['run_ids']), item['role'] + ' / ' + ', '.join(item['claim_statuses']),
+                  location, item['observation_status'] + ' / ' + item['binding_kind']]
+        lines.append('| ' + ' | '.join(cell(value) for value in values) + ' |')
+    if not scopes:
+        lines.append('| None | — | unknown | unknown |')
+    return '\n'.join(lines)
+
+
 def command_validate(args: argparse.Namespace) -> int:
     try:
         contract, report, errors = load_and_validate(Path(args.directory))
+        scopes = recorded_source_scopes(report, Path(args.directory)) if not errors else []
     except ValueError as error:
         print(error, file=sys.stderr)
         if str(error).startswith("missing file:"):
@@ -1196,6 +1266,17 @@ def command_validate(args: argparse.Namespace) -> int:
             print("confidence evidence checks are complete")
     else:
         print("confidence evidence is structurally valid")
+    print("Recorded source scope (not caller checkout; diagnostics and partial observations do not certify current code):")
+    for item in grouped_source_scopes(scopes):
+        location = item["recorded_root"]
+        if item["recorded_cwd"] != location:
+            location += "; cwd: " + item["recorded_cwd"]
+        print(f"{item['role']} ({', '.join(item['claim_statuses'])}): {len(item['run_ids'])} run(s) [{', '.join(item['run_ids'])}] | "
+              f"{json.dumps(location, ensure_ascii=True)} | {item['observation_status']} / {item['binding_kind']}")
+    if scopes:
+        print("Exact versions and start/end fingerprints: runs/<id>.json")
+    if not scopes:
+        print("No captured source scopes recorded.")
     return 0
 
 
@@ -1270,6 +1351,8 @@ Task type: {task['type']}
 | ID | Claim | Status | Evidence | Captured runs | Artifacts |
 | --- | --- | --- | --- | --- | --- |
 {chr(10).join(rows)}
+
+{source_scope_markdown(recorded_source_scopes(report, directory))}
 
 ## Tests
 
