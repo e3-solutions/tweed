@@ -11,6 +11,7 @@ import math
 import os
 import re
 import signal
+import stat
 import shutil
 import subprocess
 import sys
@@ -67,7 +68,12 @@ def object_without_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any
 
 def read_json(path: Path) -> dict[str, Any]:
     try:
-        raw = path.read_text(encoding="utf-8")
+        flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0)
+        descriptor = os.open(path, flags)
+        with os.fdopen(descriptor, "r", encoding="utf-8") as source:
+            if not stat.S_ISREG(os.fstat(source.fileno()).st_mode):
+                raise ValueError(f"expected a regular file: {path}")
+            raw = source.read()
     except FileNotFoundError:
         raise ValueError(f"missing file: {path}") from None
     except (OSError, UnicodeError) as error:
@@ -794,6 +800,110 @@ def command_init(args: argparse.Namespace) -> int:
     return 0
 
 
+class RecordError(Exception):
+    def __init__(self, code, details):
+        self.code = code
+        self.details = details if isinstance(details, list) else [str(details)]
+        super().__init__('; '.join(self.details))
+
+
+def selected_result_documents(contract, result):
+    """Use the existing validator unchanged, with one selected obligation.
+
+Other report fields are valid scratch values solely for validation. They are never
+written to disk, so incomplete unrelated report sections do not block recording.
+"""
+    selected = dict(contract)
+    selected['proof_obligations'] = [
+        item for item in contract['proof_obligations'] if item['id'] == result['obligation_id']
+    ]
+    task = contract['task']
+    probe = initial_report(task['title'], task['mode'])
+    probe.update(outcome='Selected-result validation', rollback='Not applicable')
+    probe['simplicity']['notes'] = 'Not evaluated by record'
+    probe['review']['reason'] = 'Not evaluated by record'
+    probe['evidence'] = [result]
+    return selected, probe
+
+
+def record_result(args):
+    if os.name != "posix" or not all(hasattr(os, flag) for flag in ("O_NOFOLLOW", "O_DIRECTORY", "O_NONBLOCK")):
+        raise RecordError('PLATFORM_UNSUPPORTED', 'record requires Unix directory locking; no report changed')
+    try:
+        import fcntl
+    except ImportError:
+        raise RecordError('PLATFORM_UNSUPPORTED', 'record requires Unix file locking; no report changed')
+    directory = Path(args.directory)
+    if directory.is_symlink() or not directory.is_dir():
+        raise RecordError('DIRECTORY_UNSAFE', 'Evidence directory must be an existing non-symlink directory')
+    directory = directory.resolve()
+    # Lock the directory inode so atomic report replacement keeps this lock.
+    descriptor = os.open(directory, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    try:
+        try:
+            fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            raise RecordError('LOCK_BUSY', 'Another record writer is active; retry this explicit result')
+        for filename in ('contract.json', 'report.json'):
+            if (directory / filename).is_symlink():
+                raise RecordError('EVIDENCE_UNSAFE', f'Refusing symlink {filename}')
+        try:
+            contract = read_json(directory / 'contract.json')
+            report = read_json(directory / 'report.json')
+        except ValueError as error:
+            raise RecordError('DOCUMENT_INVALID', str(error))
+        contract_errors = validate_contract(contract)
+        if contract_errors:
+            raise RecordError('CONTRACT_INVALID', contract_errors)
+        if report.get('version') != 3 or report.get('task_title') != contract['task']['title'] or report.get('mode') != contract['task']['mode']:
+            raise RecordError('REPORT_INVALID', 'Report version, title and mode must match the contract')
+        obligations = {item['id'] for item in contract['proof_obligations']}
+        if args.obligation not in obligations:
+            raise RecordError('OBLIGATION_UNKNOWN', f'Unknown obligation: {args.obligation}')
+        evidence = report.get('evidence')
+        if not isinstance(evidence, list) or any(not isinstance(item, dict) or not isinstance(item.get('obligation_id'), str) for item in evidence):
+            raise RecordError('REPORT_INVALID', 'Report evidence must be a list of named obligation results')
+        ids = [item['obligation_id'] for item in evidence]
+        if len(ids) != len(set(ids)):
+            raise RecordError('REPORT_INVALID', 'Duplicate obligation results are ambiguous')
+        previous = next((item for item in evidence if item['obligation_id'] == args.obligation), {})
+        result = dict(previous)
+        result.update(obligation_id=args.obligation, status=args.status, details=args.details,
+                      run_ids=args.run, diagnostic_run_ids=args.diagnostic_run, artifacts=args.artifact)
+        selected, probe = selected_result_documents(contract, result)
+        errors = validate_report(probe, selected, directory)
+        if errors:
+            raise RecordError('RESULT_INVALID', errors)
+        updated = dict(report)
+        updated['evidence'] = list(evidence)
+        if args.obligation in ids:
+            updated['evidence'][ids.index(args.obligation)] = result
+        else:
+            updated['evidence'].append(result)
+        if updated != report:
+            write_text_atomic(directory / 'report.json', json.dumps(updated, indent=2) + '\n', replace=True)
+        return {'ok': True, 'obligation_id': args.obligation, 'status': args.status,
+                'run_ids': args.run, 'diagnostic_run_ids': args.diagnostic_run,
+                'report': 'report.json', 'changed': updated != report,
+                'completion_checked': False}
+    finally:
+        os.close(descriptor)
+
+
+
+def command_record(args: argparse.Namespace) -> int:
+    try:
+        result = record_result(args)
+    except RecordError as error:
+        print(json.dumps({'ok': False, 'code': error.code, 'errors': error.details}))
+        return 2
+    except OSError as error:
+        print(json.dumps({'ok': False, 'code': 'IO_ERROR', 'errors': [f'{type(error).__name__}: {error.strerror}']}))
+        return 2
+    print(json.dumps(result, separators=(',', ':')))
+    return 0
+
+
 def command_run(args: argparse.Namespace) -> int:
     command = list(args.command)
     if command and command[0] == "--":
@@ -1224,8 +1334,24 @@ def command_support_bundle(args: argparse.Namespace) -> int:
     return 0
 
 
+class EvidenceArgumentParser(argparse.ArgumentParser):
+    def parse_args(self, args=None, namespace=None):
+        self.json_errors = False
+        parsed, remaining = self.parse_known_args(args, namespace)
+        if remaining:
+            self.json_errors = getattr(parsed, "action", None) == "record"
+            self.error("unrecognized arguments: " + " ".join(remaining))
+        return parsed
+
+    def error(self, message):
+        if getattr(self, "json_errors", False):
+            print(json.dumps({"ok": False, "code": "ARGUMENT_INVALID", "errors": [message]}))
+            self.exit(2)
+        super().error(message)
+
+
 def parser() -> argparse.ArgumentParser:
-    root = argparse.ArgumentParser(description=__doc__)
+    root = EvidenceArgumentParser(description=__doc__)
     subparsers = root.add_subparsers(dest="action", required=True)
 
     init = subparsers.add_parser("init", help="create evidence file templates")
@@ -1235,6 +1361,20 @@ def parser() -> argparse.ArgumentParser:
     init.add_argument("--directory", default=".confidence")
     init.add_argument("--force", action="store_true")
     init.set_defaults(handler=command_init)
+
+    record = subparsers.add_parser(
+        "record", help="record an explicit obligation result (Unix only)",
+        description="Update one explicit result using Unix file locking. Reference arguments replace its current sets; run files are preserved. Does not infer pass or check completion.",
+    )
+    record.json_errors = True
+    record.add_argument("--directory", default=".confidence")
+    record.add_argument("--obligation", required=True)
+    record.add_argument("--status", choices=STATUSES, required=True)
+    record.add_argument("--details", required=True)
+    record.add_argument("--run", action="append", default=[])
+    record.add_argument("--diagnostic-run", action="append", default=[])
+    record.add_argument("--artifact", action="append", default=[])
+    record.set_defaults(handler=command_record)
 
     run = subparsers.add_parser("run", help="run a command and capture evidence")
     run.add_argument("--id")

@@ -56,7 +56,7 @@ EVENT_NAMES = {
     "telemetry.delivery_failed",
     "telemetry.probe",
 }
-COMMANDS = {"init", "run", "validate", "render", "doctor", "support-bundle"}
+COMMANDS = {"init", "run", "record", "validate", "render", "doctor", "support-bundle"}
 STATUSES = {"started", "ok", "error"}
 DURATION_BUCKETS = {
     "lt_100ms",
