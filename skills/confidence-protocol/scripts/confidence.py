@@ -162,20 +162,23 @@ def sha256_file(path: Path) -> str:
 
 
 def git_workspace_fingerprint(cwd: Path, evidence_directory: Path) -> dict[str, str] | None:
-    root_result = subprocess.run(
+    def run_git(argv: list[str]) -> subprocess.CompletedProcess[bytes] | None:
+        try:
+            return subprocess.run(argv, capture_output=True, check=False, timeout=5)
+        except (OSError, subprocess.TimeoutExpired):
+            # Git is optional for capture. Missing provenance is never a code-proof pass.
+            return None
+
+    root_result = run_git(
         ["git", "-C", str(cwd), "rev-parse", "--show-toplevel"],
-        capture_output=True,
-        check=False,
     )
-    if root_result.returncode != 0:
+    if root_result is None or root_result.returncode != 0:
         return None
     root = Path(root_result.stdout.decode("utf-8", "surrogateescape").strip()).resolve()
-    head_result = subprocess.run(
+    head_result = run_git(
         ["git", "-C", str(root), "rev-parse", "HEAD"],
-        capture_output=True,
-        check=False,
     )
-    if head_result.returncode != 0:
+    if head_result is None or head_result.returncode != 0:
         return None
 
     pathspec = ["."]
@@ -186,7 +189,7 @@ def git_workspace_fingerprint(cwd: Path, evidence_directory: Path) -> dict[str, 
     if evidence_relative is not None:
         pathspec.append(f":(exclude){evidence_relative.as_posix()}/**")
 
-    diff_result = subprocess.run(
+    diff_result = run_git(
         [
             "git",
             "-C",
@@ -198,10 +201,10 @@ def git_workspace_fingerprint(cwd: Path, evidence_directory: Path) -> dict[str, 
             "--",
             *pathspec,
         ],
-        capture_output=True,
-        check=False,
     )
-    status_result = subprocess.run(
+    if diff_result is None or diff_result.returncode != 0:
+        return None
+    status_result = run_git(
         [
             "git",
             "-C",
@@ -213,10 +216,8 @@ def git_workspace_fingerprint(cwd: Path, evidence_directory: Path) -> dict[str, 
             "--",
             *pathspec,
         ],
-        capture_output=True,
-        check=False,
     )
-    if diff_result.returncode != 0 or status_result.returncode != 0:
+    if status_result is None or status_result.returncode != 0:
         return None
 
     digest = hashlib.sha256()
