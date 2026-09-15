@@ -162,9 +162,18 @@ def new_run_id(runs_directory: Path) -> str:
 
 def sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
-    with path.open("rb") as source:
-        for chunk in iter(lambda: source.read(65536), b""):
-            digest.update(chunk)
+    try:
+        flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0)
+        descriptor = os.open(path, flags)
+        with os.fdopen(descriptor, "rb") as source:
+            if not stat.S_ISREG(os.fstat(source.fileno()).st_mode):
+                raise ValueError(f"expected a regular log file: {path}")
+            for chunk in iter(lambda: source.read(65536), b""):
+                digest.update(chunk)
+    except FileNotFoundError:
+        raise ValueError(f"missing file: {path}") from None
+    except OSError as error:
+        raise ValueError(f"could not read log {path}: {error}") from None
     return digest.hexdigest()
 
 
@@ -440,8 +449,8 @@ def validate_run_record(
         log_path = directory / expected_log
         try:
             actual_sha256 = sha256_file(log_path)
-        except FileNotFoundError:
-            errors.append(f"missing file: {log_path}")
+        except ValueError as error:
+            errors.append(str(error))
         else:
             if actual_sha256 != log_sha256:
                 errors.append(f"{label} log hash does not match")

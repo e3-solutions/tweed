@@ -16,6 +16,7 @@ This file records user-visible changes to Tweed and Confidence Protocol.
 - Coordinate initialization with report writers; add preserving `init --resume`
   recovery for interrupted contract-only setup and refuse ambiguous existing pairs.
   Reset removes the old report first; file replacements are individually atomic.
+- Reject non-regular or symlink captured logs without blocking evidence readers.
 - Preserve partial and research observations without claiming current-code proof.
 - Clean up captured process groups on SIGINT/SIGTERM, including repeated signals.
 - Reject non-finite timeouts before execution and preserve command results when
