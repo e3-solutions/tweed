@@ -42,6 +42,8 @@ python3 "$CP" run --json --directory .confidence --cwd . --id focused-after -- p
 
 The Python example uses `-B` to avoid creating bytecode files during capture. Choose the project’s actual focused command and test root. In disposable snapshots, use local dependency copies if the test runner writes caches; a dependency symlink can write into the original project. Arguments after `--` are an executable and separate arguments; the runner does not invoke a shell. Await completion. `--json` returns a compact receipt with `id`, `exit_code`, `log`, `record`, and `workspace_binding`. Follow those paths rather than guessing filenames. Inspect the log for what actually ran. Full output remains local; JSON suppresses replay, not capture. The exit of a pipeline display command does not establish the tested command's result.
 
+Default `--max-log-bytes` is a stopping threshold: a fast output burst can exceed it before the runner stops the command. It is not a hard storage cap and does not limit files the child creates.
+
 An exit-zero receipt is necessary for supporting a pass, not sufficient. Assess coverage and source binding, then explicitly record the judgment:
 
 ```sh
@@ -94,7 +96,7 @@ Reserve the evidence directory's generated-output names for protocol use. Untrac
 
 Ignored untracked inputs, untracked special files Git omits (such as FIFOs), external dependencies/services, and external symlink referents are outside the inventory. If a claim depends on those inputs, verify that boundary separately or retain partial proof. Stable observations do not prove an immutable snapshot: transient change-and-restore and changes after the final observation remain limits. File-generating checks may need another capture after their final source changes.
 
-SIGINT/SIGTERM cancellation retains the first signal status (130/143), stops the captured process group, and writes no completed record or receipt. During log/child acquisition the runner defers interruption until it can clean up owned resources; this does not cover SIGKILL or power loss.
+During active capture, SIGINT/SIGTERM cancellation retains the first signal status (130/143) and stops the captured process group. Interruption before publication begins leaves no completed record or receipt. Once publication or receipt delivery starts, interruption can leave a completed record or receipt; inspect the run files before retrying and use a fresh ID when recapturing. During log/child acquisition the runner defers interruption until it can clean up owned resources. This does not cover SIGKILL or power loss.
 
 A runner or persistence failure exits 125 without a success receipt. Failure before record publication leaves no new record; final publication can succeed before a later persistence step fails, so inspect the record and log paths before deciding what exists. After fixing storage access or capacity, capture again with a fresh ID; never assume that retrying the same ID is safe. A child can also exit 125, in which case its completed capture exists. For a reused ID, inspect and reuse the old record only if it is the intended current observation, or omit `--id` to generate a new one. Never attribute an old record to a failed new attempt. The receipt/record preserves signed child status; a shell can encode a negative signal status differently. Use equivalent installed commands for bounded runtime recovery, recording what actually ran. Keep completed failed captures diagnostic; describe runner failures without inventing a missing record.
 
