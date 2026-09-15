@@ -1022,7 +1022,7 @@ def command_validate(args: argparse.Namespace) -> int:
         if contract["task"]["type"] == "research":
             print("confidence research evidence is complete; this does not certify current code")
         else:
-            print("confidence evidence is complete and release-ready")
+            print("confidence evidence checks are complete")
     else:
         print("confidence evidence is structurally valid")
     return 0
