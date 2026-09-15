@@ -990,6 +990,7 @@ def command_run(args: argparse.Namespace) -> int:
     log = None
     process = None
     termination_reason: str | None = None
+    finalization_error: OSError | None = None
     # A signal must not discard an acquired descriptor or child handle before
     # this block can clean it up. Children inherit no blocked signal mask.
     args.defer_run_interrupt = True
@@ -1082,13 +1083,35 @@ def command_run(args: argparse.Namespace) -> int:
     finally:
         args.defer_run_interrupt = False
         if log is not None and not log.closed:
-            log.flush()
-            os.fsync(log.fileno())
-            log.close()
+            try:
+                log.flush()
+                os.fsync(log.fileno())
+            except OSError as error:
+                finalization_error = error
+            finally:
+                try:
+                    log.close()
+                except OSError as error:
+                    if finalization_error is None:
+                        finalization_error = error
 
+    def publication_failed(error: OSError) -> int:
+        args.diagnostic_error_code = "RUN_CAPTURE_FAILED"
+        print(
+            f"run {run_id}: capture persistence failed ({error}); no evidence record written. "
+            "After storage recovery, capture again with a fresh run ID (omit --id).",
+            file=sys.stderr,
+        )
+        return 125
+
+    if finalization_error is not None:
+        return publication_failed(finalization_error)
     if termination_reason:
-        with log_path.open("ab") as output:
-            output.write(f"\n[confidence runner stopped: {termination_reason}]\n".encode())
+        try:
+            with log_path.open("ab") as output:
+                output.write(f"\n[confidence runner stopped: {termination_reason}]\n".encode())
+        except OSError as error:
+            return publication_failed(error)
 
     digest = hashlib.sha256()
     stream_to_terminal = not args.json
@@ -1136,6 +1159,14 @@ def command_run(args: argparse.Namespace) -> int:
         args.diagnostic_error_code = "RUN_RECORD_COLLISION"
         print(
             f"run {run_id}: record appeared during capture; refusing to overwrite",
+            file=sys.stderr,
+        )
+        return 125
+    except OSError as error:
+        args.diagnostic_error_code = "RUN_CAPTURE_FAILED"
+        print(
+            f"run {run_id}: evidence publication failed ({error}); publication could not be confirmed. "
+            "After storage recovery, inspect the run files or capture again with a fresh run ID (omit --id).",
             file=sys.stderr,
         )
         return 125
