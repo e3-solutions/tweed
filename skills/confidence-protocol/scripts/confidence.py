@@ -168,125 +168,90 @@ def sha256_file(path: Path) -> str:
 
 
 def git_workspace_fingerprint(cwd: Path, evidence_directory: Path) -> dict[str, str] | None:
-    def run_git(argv: list[str]) -> subprocess.CompletedProcess[bytes] | None:
-        try:
-            return subprocess.run(argv, capture_output=True, check=False, timeout=5)
-        except (OSError, subprocess.TimeoutExpired):
-            # Git is optional for capture. Missing provenance is never a code-proof pass.
-            return None
-
-    root_result = run_git(
-        ["git", "-C", str(cwd), "rev-parse", "--show-toplevel"],
-    )
-    if root_result is None or root_result.returncode != 0:
+    """Bind enumerated working-tree bytes; ignored/external inputs are outside scope."""
+    generated_names = {"contract.json", "report.json", "REPORT.md", "telemetry/events.jsonl", "telemetry/installation-id"}
+    # Do not silently bind a different index/repository than the executed command.
+    routing_variables = {"GIT_INDEX_FILE", "GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR",
+                         "GIT_OBJECT_DIRECTORY", "GIT_ALTERNATE_OBJECT_DIRECTORIES"}
+    if any(name in os.environ for name in routing_variables):
         return None
-    root = Path(root_result.stdout.decode("utf-8", "surrogateescape").strip()).resolve()
-    head_result = run_git(
-        ["git", "-C", str(root), "rev-parse", "HEAD"],
-    )
-    if head_result is None or head_result.returncode != 0:
-        return None
-
+    original_cwd = Path(cwd).resolve()
+    def git(*args, allow_missing=False):
+        result = subprocess.run(['git', '-C', str(cwd), *args], capture_output=True, timeout=5)
+        if result.returncode and not (allow_missing and result.returncode == 1):
+            raise OSError('Git enumeration failed')
+        return result.stdout
     try:
-        evidence_relative = evidence_directory.resolve().relative_to(root)
-    except ValueError:
-        evidence_relative = None
-    generated_names = {
-        "contract.json", "report.json", "REPORT.md",
-        "telemetry/events.jsonl", "telemetry/installation-id",
-    }
-
-    diff_result = run_git(
-        [
-            "git",
-            "-C",
-            str(root),
-            "diff",
-            "--binary",
-            "--no-ext-diff",
-            "--ignore-submodules=none",
-            "HEAD",
-            "--",
-            ".",
-        ],
-    )
-    if diff_result is None or diff_result.returncode != 0:
-        return None
-    status_result = run_git(
-        [
-            "git",
-            "-C",
-            str(root),
-            "status",
-            "--porcelain=v1",
-            "-z",
-            "--untracked-files=all",
-            "--ignore-submodules=none",
-            "--",
-            ".",
-        ],
-    )
-    if status_result is None or status_result.returncode != 0:
-        return None
-
-    digest = hashlib.sha256()
-    digest.update(b"head\0")
-    digest.update(head_result.stdout.strip())
-    digest.update(b"\0diff\0")
-    digest.update(diff_result.stdout)
-
-    untracked: list[str] = []
-    entries = iter(status_result.stdout.split(b"\0"))
-    for entry in entries:
-        if not entry:
-            continue
-        state = entry[:2]
-        # Porcelain -z rename/copy records contain an additional source pathname.
-        # It has no status prefix, even if the filename itself starts with "?? ".
-        if b"R" in state or b"C" in state:
-            next(entries, None)
-        relative_name = entry[3:].decode("utf-8", "surrogateescape")
-        path = root / relative_name
-        if state != b"??":
-            if path.is_dir() and not path.is_symlink():
-                # A changed tracked directory is a gitlink. Its "-dirty" marker
-                # does not enumerate nested changes, so it cannot certify code.
-                return None
-            continue
-        if evidence_relative is not None:
-            try:
-                evidence_name = Path(relative_name).relative_to(evidence_relative)
-            except ValueError:
-                evidence_name = None
-            if evidence_name is not None:
-                parts = evidence_name.parts
-                generated = evidence_name.as_posix() in generated_names or (
-                    len(parts) == 2 and parts[0] == "runs"
-                    and evidence_name.suffix in (".json", ".log")
-                )
-                if generated and path.is_file() and not path.is_symlink():
-                    continue
-        untracked.append(relative_name)
-    for relative_name in sorted(untracked):
-        path = root / relative_name
-        digest.update(b"\0untracked\0")
-        digest.update(relative_name.encode("utf-8", "surrogateescape"))
-        try:
-            if path.is_symlink():
-                digest.update(b"symlink\0")
-                digest.update(os.readlink(path).encode("utf-8", "surrogateescape"))
-            elif path.is_file():
-                digest.update(b"file\0")
-                with path.open("rb") as source:
-                    for chunk in iter(lambda: source.read(65536), b""):
-                        digest.update(chunk)
-            else:
-                # Git collapses an untracked nested repository to a directory.
-                # Its contents are not covered, so never certify a source state.
-                return None
-        except OSError:
+        root = Path(os.fsdecode(git('rev-parse', '--show-toplevel')[:-1]))
+        if not root.is_absolute() or not original_cwd.is_relative_to(root.resolve()):
             return None
-    return {"kind": "git", "root": str(root), "sha256": digest.hexdigest()}
+        # Explicit worktree routing may point at a different source tree even when
+        # the reported root contains cwd. Conventional .git worktrees remain supported.
+        if git('config', '--get', 'core.worktree', allow_missing=True):
+            return None
+        cwd = root  # ls-files paths and scope must be repository-root relative.
+        tracked = {}
+        for entry in git('ls-files', '--stage', '-z').split(b'\0'):
+            if not entry:
+                continue
+            meta, separator, name = entry.partition(b'\t')
+            fields = meta.split()
+            if not separator or not name or len(fields) != 3:
+                return None
+            mode, oid, stage = fields
+            if stage != b'0' or mode not in (b'100644', b'100755', b'120000'):
+                return None  # conflicts, gitlinks, unsupported index state
+            tracked[name] = mode
+        names = set(tracked)
+        names.update(filter(None, git('ls-files', '--others', '--exclude-standard', '-z').split(b'\0')))
+        digest = hashlib.sha256(b'content-inventory-v1\0')
+        evidence = Path(evidence_directory)
+        # An evidence symlink is not an owned-output exclusion namespace.
+        exclude_generated = not evidence.is_symlink()
+        for name in sorted(names):
+            path = root / os.fsdecode(name)
+            try:
+                info = path.lstat()
+            except FileNotFoundError:
+                if name not in tracked:
+                    return None
+                payload = b'missing'
+            else:
+                # Compare parent identities to support casing aliases without lowercasing source names.
+                generated = False
+                if exclude_generated and name not in tracked and stat.S_ISREG(info.st_mode) and evidence.exists():
+                    for ancestor in path.parents:
+                        if ancestor == root.parent:
+                            break
+                        if ancestor.samefile(evidence):
+                            relative = path.relative_to(ancestor)
+                            generated = relative.as_posix() in generated_names or (len(relative.parts) == 2 and relative.parts[0] == 'runs' and relative.suffix in ('.json', '.log'))
+                            break
+                if generated:
+                    continue
+                if stat.S_ISLNK(info.st_mode):
+                    payload = b'link\0' + os.fsencode(os.readlink(path))
+                elif stat.S_ISREG(info.st_mode):
+                    # Avoid following a replacement symlink between lstat/open.
+                    fd = os.open(path, os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0) | getattr(os, 'O_NONBLOCK', 0))
+                    with os.fdopen(fd, 'rb') as source:
+                        opened = os.fstat(source.fileno())
+                        if not stat.S_ISREG(opened.st_mode) or (opened.st_dev, opened.st_ino) != (info.st_dev, info.st_ino):
+                            return None
+                        content = hashlib.sha256()
+                        for block in iter(lambda: source.read(1024 * 1024), b''):
+                            content.update(block)
+                        after = os.fstat(source.fileno())
+                        if (opened.st_size, opened.st_mtime_ns, opened.st_ctime_ns) != (after.st_size, after.st_mtime_ns, after.st_ctime_ns):
+                            return None
+                    payload = b'file\0' + str(stat.S_IMODE(opened.st_mode)).encode() + b'\0' + content.digest()
+                else:
+                    return None
+            digest.update(len(name).to_bytes(8, 'big') + name)
+            digest.update(len(payload).to_bytes(8, 'big') + payload)
+        return {'kind': 'git-content-v1', 'root': str(root), 'sha256': digest.hexdigest()}
+    except (OSError, subprocess.TimeoutExpired):
+        return None
 
 
 def stop_process(process: subprocess.Popen[bytes]) -> None:
@@ -477,8 +442,8 @@ def validate_run_record(
             if not isinstance(workspace, dict):
                 errors.append(f"{label}.{field} must be an object or null")
             else:
-                if workspace.get("kind") != "git":
-                    errors.append(f"{label}.{field}.kind must be git")
+                if workspace.get("kind") not in ("git", "git-content-v1"):
+                    errors.append(f"{label}.{field}.kind must be git or git-content-v1")
                 if not isinstance(workspace.get("root"), str) or not Path(
                     workspace.get("root", "")
                 ).is_absolute():
@@ -506,7 +471,11 @@ def validate_supporting_workspace(
         return [f"run {record['id']} workspace changed during execution; rerun verification on the final state"]
     if workspace is None or (record.get("version") == 2 and start is None):
         if require_binding:
-            return [f"run {record['id']} workspace binding is unknown; capture in a committed Git repository or use partial evidence"]
+            return [f"run {record['id']} workspace binding is unknown; capture in a supported Git working tree or use partial evidence"]
+        return []
+    if workspace.get("kind") != "git-content-v1" or (start is not None and start.get("kind") != "git-content-v1"):
+        if require_binding:
+            return [f"run {record['id']} uses legacy Git binding; rerun to support current content proof"]
         return []
     cwd = Path(record["cwd"]).resolve()
     if fingerprints is None:
@@ -1098,7 +1067,7 @@ def command_run(args: argparse.Namespace) -> int:
             "workspace_binding": binding,
         }, separators=(",", ":")))
     if workspace_start is None or workspace is None:
-        print(f"run {run_id}: workspace binding unknown; current-code proof requires a committed Git workspace", file=sys.stderr)
+        print(f"run {run_id}: workspace binding unknown; current-code proof requires a supported Git working tree", file=sys.stderr)
     elif workspace_start != workspace:
         print(f"run {run_id}: workspace changed during execution; rerun verification on the final state", file=sys.stderr)
     print(

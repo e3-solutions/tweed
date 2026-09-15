@@ -2,6 +2,7 @@
 import importlib.util
 from pathlib import Path
 import subprocess
+import shutil
 import sys
 import tempfile
 import unittest
@@ -56,11 +57,11 @@ class DirtySubmoduleTest(unittest.TestCase):
         (self.component / 'source.txt').write_text('dirty')
         self.assertIsNone(confidence.git_workspace_fingerprint(self.root, self.directory))
 
-    def test_clean_gitlink_is_bound_and_later_dirt_is_rejected(self):
+    def test_clean_gitlink_is_unknown_and_later_dirt_is_rejected(self):
         before = confidence.git_workspace_fingerprint(self.root, self.directory)
-        self.assertIsNotNone(before)
+        self.assertIsNone(before)
         record = {'version': 2, 'id': 'clean', 'cwd': str(self.root), 'workspace_start': before, 'workspace': before}
-        self.assertEqual(confidence.validate_supporting_workspace(record, self.directory), [])
+        self.assertTrue(confidence.validate_supporting_workspace(record, self.directory))
         (self.component / 'source.txt').write_text('dirty')
         self.assertTrue(confidence.validate_supporting_workspace(record, self.directory))
 
@@ -77,6 +78,9 @@ class DirtySubmoduleTest(unittest.TestCase):
         self.assertIsNone(confidence.git_workspace_fingerprint(self.root, self.directory))
 
     def test_rename_source_looking_like_status_is_not_an_untracked_record(self):
+        # Rename parsing is independent of unsupported submodule enumeration.
+        self.git(self.root, 'update-index', '--force-remove', 'component')
+        shutil.rmtree(self.component)
         original = self.root / '?? misleading'
         original.write_text('tracked source')
         self.commit(self.root)

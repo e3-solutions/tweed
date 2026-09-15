@@ -45,7 +45,7 @@ class GitAvailabilityTest(unittest.TestCase):
             root = Path(name)
             successful = [
                 subprocess.CompletedProcess([], 0, str(root).encode() + b'\n'),
-                subprocess.CompletedProcess([], 0, b'a' * 40 + b'\n'),
+                subprocess.CompletedProcess([], 1, b''),
                 subprocess.CompletedProcess([], 0, b''),
                 subprocess.CompletedProcess([], 0, b''),
             ]
