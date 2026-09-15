@@ -893,7 +893,7 @@ def command_run(args: argparse.Namespace) -> int:
             output.write(f"\n[confidence runner stopped: {termination_reason}]\n".encode())
 
     digest = hashlib.sha256()
-    stream_to_terminal = True
+    stream_to_terminal = not args.json
     try:
         with log_path.open("rb") as captured:
             for chunk in iter(lambda: captured.read(65536), b""):
@@ -941,6 +941,19 @@ def command_run(args: argparse.Namespace) -> int:
             file=sys.stderr,
         )
         return 125
+    if args.json:
+        binding = "unknown" if workspace_start is None or workspace is None else (
+            "unchanged" if workspace_start == workspace else "changed"
+        )
+        print(json.dumps({
+            "version": 1,
+            "id": run_id,
+            "exit_code": exit_code,
+            "termination_reason": termination_reason,
+            "log": record["log"],
+            "record": f"runs/{run_id}.json",
+            "workspace_binding": binding,
+        }, separators=(",", ":")))
     if workspace_start is None or workspace is None:
         print(f"run {run_id}: workspace binding unknown; current-code proof requires a committed Git workspace", file=sys.stderr)
     elif workspace_start != workspace:
@@ -1194,6 +1207,10 @@ def parser() -> argparse.ArgumentParser:
     run.add_argument("--id")
     run.add_argument("--cwd", default=".")
     run.add_argument("--directory", default=".confidence")
+    run.add_argument(
+        "--json", action="store_true",
+        help="emit a compact JSON receipt instead of replaying the captured log",
+    )
     run.add_argument(
         "--timeout-seconds",
         type=positive_float,
