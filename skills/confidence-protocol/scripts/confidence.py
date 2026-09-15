@@ -1243,7 +1243,6 @@ def source_scope_markdown(scopes: list[dict[str, Any]]) -> str:
 def command_validate(args: argparse.Namespace) -> int:
     try:
         contract, report, errors = load_and_validate(Path(args.directory))
-        scopes = recorded_source_scopes(report, Path(args.directory)) if not errors else []
     except ValueError as error:
         print(error, file=sys.stderr)
         if str(error).startswith("missing file:"):
@@ -1259,6 +1258,11 @@ def command_validate(args: argparse.Namespace) -> int:
         if completion_failed:
             print("To check a partial report, use validate without --require-complete with the same --directory. Keep required gaps explicit; structural validity does not establish completion.", file=sys.stderr)
         return 1
+    try:
+        scopes = recorded_source_scopes(report, Path(args.directory))
+    except ValueError as error:
+        print(error, file=sys.stderr)
+        return 2
     if args.require_complete:
         if contract["task"]["type"] == "research":
             print("confidence research evidence is complete; this does not certify current code")
