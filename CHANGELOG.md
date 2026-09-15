@@ -2,6 +2,31 @@
 
 This file records user-visible changes to Tweed and Confidence Protocol.
 
+## Unreleased — agent evidence workflow
+
+- Capture source content before and after commands, including tracked files hidden
+  by Git's assume-unchanged or skip-worktree flags. Reject ambiguous routing,
+  unenumerated nested repositories, and unsupported submodules for code proof.
+- Reuse fingerprints within validation and perform a fresh final check for drift.
+- Avoid false staleness from concurrent atomic evidence publication, with narrow
+  output-name exclusions and one bounded inventory retry.
+- Add compact `run --json` receipts while retaining complete logs and hashes.
+- Add explicit, atomic `record` updates with cooperating-writer locking and
+  structured errors. Reject non-regular JSON document inputs without blocking.
+- Preserve partial and research observations without claiming current-code proof.
+- Clean up captured process groups on SIGINT/SIGTERM, including repeated signals.
+- Reject non-finite timeouts before execution and preserve command results when
+  optional Git provenance is unavailable.
+- Label illustrative shipped evidence as partial and describe validation success
+  as completed evidence checks, rather than certifying release readiness.
+
+Compatibility: old Git-diff bindings require recapture for current-code completion;
+tracked reports can stale prior evidence; `record` requires Unix directory locking.
+Git-enumerated regular files and symlinks define fingerprint scope. Ignored
+dependencies, untracked special files, external services, and transient
+change-and-revert are not certified. Reserved untracked output names must not hold
+source inputs.
+
 ## [0.4.0] - 2026-08-28
 
 Version 0.4.0 replaces the old Tweed and Bonaparte product with Confidence Protocol.
