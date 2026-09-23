@@ -2,6 +2,19 @@
 
 This file records user-visible changes to Tweed and Confidence Protocol.
 
+## [Unreleased]
+
+### Review
+
+- Add a reusable independent-review brief: reviewers work alone, check the change
+  backward from what must not break, and report only findings with location,
+  trigger, expected versus actual behavior, and proof. The task owner fixes and
+  ends every finding as fixed, refuted, or accepted risk.
+- Default to one capable reviewer instead of parallel narrow lanes of one model.
+- Reviewers list what they cleared and challenge their weakest clearance; a clearance
+  counts only when its evidence addresses a demonstrated failure. Add optional
+  cross-audit between reviewers on different models.
+
 ## [0.5.0] - 2026-09-15
 
 ### Agent evidence workflow

@@ -36,7 +36,7 @@ Required proof:
 
 - Write the contract and proof obligations first.
 - Apply the review gate in `SKILL.md`.
-- If the gate triggers, get one narrow independent review. Otherwise stay with one agent and record why review was skipped.
+- If the gate triggers, get one independent review using the brief in [review.md](review.md). Otherwise stay with one agent and record why review was skipped.
 - Run focused tests and the relevant broader suite.
 - Check simplicity and test quality.
 - Record unknowns and rollback steps.
