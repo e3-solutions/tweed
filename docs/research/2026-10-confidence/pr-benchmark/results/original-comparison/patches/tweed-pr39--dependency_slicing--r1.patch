@@ -1,0 +1,247 @@
+diff --git a/bonaparte b/bonaparte
+index 888b766..152e590 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -452,6 +452,7 @@ def run_phase(
+         for role, description in child_configs.items()
+     }
+     expected_branch = None
++    issue_branch = None
+     if resume_session_id:
+         replay_policy = (
+             "This clarification may be an at-least-once replay after an ambiguous "
+@@ -481,8 +482,9 @@ def run_phase(
+                 phase,
+                 values[1] if len(values) == 2 else None,
+             )
++            issue_branch = handoff["issue"]["git_branch_name"]
+             if phase == "implement":
+-                expected_branch = handoff["issue"]["git_branch_name"]
++                expected_branch = issue_branch
+             phase_input = json.dumps(handoff, ensure_ascii=False)
+             context_policy = (
+                 "\n\n# Context policy\n\n"
+@@ -702,6 +704,51 @@ def run_phase(
+         if not driver.last_agent_message:
+             raise RuntimeError("Codex app-server returned no final receipt")
+         receipt = json.loads(driver.last_agent_message)
++        validate_schema(receipt, RECEIPT_SCHEMA)
++        if receipt["phase"] != phase:
++            raise RuntimeError("Codex returned the wrong phase")
++        if receipt["state"] == "completed" and (
++            not receipt["issue"] or not receipt["linear_url"]
++        ):
++            raise RuntimeError("completed phase is missing its Linear issue")
++        if receipt["state"] == "completed" and (
++            receipt["result"] != COMPLETED_RESULTS[phase]
++        ):
++            raise RuntimeError(f"completed {phase} returned the wrong result")
++        if receipt["state"] == "needs-input" and not receipt["question"]:
++            raise RuntimeError("phase requested input without a question")
++        if steered:
++            if receipt["state"] != "needs-input":
++                raise RuntimeError("soft-budget wrap-up did not request continuation")
++            question = receipt["question"]
++            if question != SOFT_BUDGET_CONTINUE_QUESTION and not question.startswith(
++                "Clarification required:"
++            ):
++                raise RuntimeError("soft-budget wrap-up returned an invalid question")
++            if "unverified" not in receipt["summary"].casefold():
++                raise RuntimeError(
++                    "soft-budget wrap-up omitted unverified proof obligations"
++                )
++        if receipt["state"] == "needs-input":
++            receipt["resume_session_id"] = session_id
++        else:
++            receipt["resume_session_id"] = None
++        if phase in {"implement", "review", "publish"} and receipt["state"] == "completed":
++            if not receipt["branch"] or not receipt["commit"]:
++                raise RuntimeError(f"completed {phase} is missing Git provenance")
++        if (
++            phase == "implement"
++            and receipt["state"] == "completed"
++            and resume_session_id is None
++            and receipt["branch"] != expected_branch
++        ):
++            raise RuntimeError("completed implementation did not use Linear's branch name")
++        require_pull_request(receipt, phase)
++        if receipt["state"] != "needs-input":
++            driver.finish_terminal_session(
++                session_id,
++                issue_branch if isinstance(issue_branch, str) and issue_branch else None,
++            )
+         failed = False
+     finally:
+         observed = observer.finish()
+@@ -714,46 +761,6 @@ def run_phase(
+                 if not failed:
+                     raise
+ 
+-    validate_schema(receipt, RECEIPT_SCHEMA)
+-    if receipt["phase"] != phase:
+-        raise RuntimeError("Codex returned the wrong phase")
+-    if receipt["state"] == "completed" and (
+-        not receipt["issue"] or not receipt["linear_url"]
+-    ):
+-        raise RuntimeError("completed phase is missing its Linear issue")
+-    if receipt["state"] == "completed" and (
+-        receipt["result"] != COMPLETED_RESULTS[phase]
+-    ):
+-        raise RuntimeError(f"completed {phase} returned the wrong result")
+-    if receipt["state"] == "needs-input" and not receipt["question"]:
+-        raise RuntimeError("phase requested input without a question")
+-    if steered:
+-        if receipt["state"] != "needs-input":
+-            raise RuntimeError("soft-budget wrap-up did not request continuation")
+-        question = receipt["question"]
+-        if question != SOFT_BUDGET_CONTINUE_QUESTION and not question.startswith(
+-            "Clarification required:"
+-        ):
+-            raise RuntimeError("soft-budget wrap-up returned an invalid question")
+-        if "unverified" not in receipt["summary"].casefold():
+-            raise RuntimeError(
+-                "soft-budget wrap-up omitted unverified proof obligations"
+-            )
+-    if receipt["state"] == "needs-input":
+-        receipt["resume_session_id"] = session_id
+-    else:
+-        receipt["resume_session_id"] = None
+-    if phase in {"implement", "review", "publish"} and receipt["state"] == "completed":
+-        if not receipt["branch"] or not receipt["commit"]:
+-            raise RuntimeError(f"completed {phase} is missing Git provenance")
+-    if (
+-        phase == "implement"
+-        and receipt["state"] == "completed"
+-        and resume_session_id is None
+-        and receipt["branch"] != expected_branch
+-    ):
+-        raise RuntimeError("completed implementation did not use Linear's branch name")
+-    require_pull_request(receipt, phase)
+     return receipt
+ 
+ 
+diff --git a/bonaparte_native.py b/bonaparte_native.py
+index e9a607c..e6ba95c 100644
+--- a/bonaparte_native.py
++++ b/bonaparte_native.py
+@@ -97,6 +97,14 @@ def terminate_and_reap(process: subprocess.Popen) -> None:
+                     pass
+ 
+ 
++def _ownership(driver) -> tuple[dict[str, str | None], dict[str, str]]:
++    """Started threads with their recorded parent, and spawn announcements."""
++    if not hasattr(driver, "_started_threads"):
++        driver._started_threads = {}
++        driver._spawned_by = {}
++    return driver._started_threads, driver._spawned_by
++
++
+ class AppServerPhaseDriver:
+     """Drive one native app-server turn without retaining its raw event stream."""
+ 
+@@ -274,6 +282,7 @@ class AppServerPhaseDriver:
+         if method == "thread/started":
+             thread = params.get("thread")
+             if isinstance(thread, dict) and isinstance(thread.get("id"), str):
++                _ownership(self)[0].setdefault(thread["id"], self._thread_parent(thread))
+                 self.observer.feed(
+                     json.dumps({"type": "thread.started", "thread_id": thread["id"]})
+                 )
+@@ -290,6 +299,12 @@ class AppServerPhaseDriver:
+                 text = item.get("text")
+                 if isinstance(text, str):
+                     self._last_agent_message = text
++            legacy = self._legacy_item(item)
++            sender = params.get("threadId")
++            if isinstance(sender, str) and sender:
++                for child in legacy.get("receiver_thread_ids", ()):
++                    if child != sender:
++                        _ownership(self)[1].setdefault(child, sender)
+             self.observer.feed(
+                 json.dumps(
+                     {
+@@ -298,7 +313,7 @@ class AppServerPhaseDriver:
+                             if method == "item/started"
+                             else "item.completed"
+                         ),
+-                        "item": self._legacy_item(item),
++                        "item": legacy,
+                     }
+                 )
+             )
+@@ -341,6 +356,75 @@ class AppServerPhaseDriver:
+                 raise RuntimeError(f"Codex app-server returned no result for {method}")
+             return result
+ 
++    @staticmethod
++    def _thread_parent(thread: dict) -> str | None:
++        """Return the spawning thread recorded by a native thread-started event."""
++        for key in ("parentThreadId", "parent_thread_id"):
++            if isinstance(thread.get(key), str) and thread[key]:
++                return thread[key]
++        source = thread.get("source")
++        if not isinstance(source, dict):
++            return None
++        for sub_key in ("subAgent", "subagent", "sub_agent"):
++            sub = source.get(sub_key)
++            if not isinstance(sub, dict):
++                continue
++            for spawn_key in ("thread_spawn", "threadSpawn"):
++                spawn = sub.get(spawn_key)
++                if not isinstance(spawn, dict):
++                    continue
++                for key in ("parent_thread_id", "parentThreadId"):
++                    if isinstance(spawn.get(key), str) and spawn[key]:
++                        return spawn[key]
++        return None
++
++    def root_started(self, root_id: str) -> bool:
++        return root_id in _ownership(self)[0]
++
++    def owned_started_descendants(self, root_id: str) -> list[str]:
++        """Started threads whose spawning chain reaches the root, in start order."""
++        started, spawned_by = _ownership(self)
++        owned = {root_id}
++        changed = True
++        while changed:
++            changed = False
++            for thread_id, parent in started.items():
++                if thread_id in owned:
++                    continue
++                parent = parent or spawned_by.get(thread_id)
++                if parent in owned:
++                    owned.add(thread_id)
++                    changed = True
++        return [
++            thread_id
++            for thread_id in started
++            if thread_id in owned and thread_id != root_id
++        ]
++
++    def finish_terminal_session(self, root_id: str, branch: str | None) -> None:
++        """Update owned child metadata, then archive the root; raise afterwards."""
++        if not self.root_started(root_id):
++            return
++        errors: list[BaseException] = []
++        if branch:
++            for child in self.owned_started_descendants(root_id):
++                try:
++                    self.request(
++                        "thread/metadata/update",
++                        {"threadId": child, "gitInfo": {"branch": branch}},
++                    )
++                except Exception as error:
++                    errors.append(error)
++        try:
++            self.request("thread/archive", {"threadId": root_id})
++        except Exception as error:
++            errors.append(error)
++        if errors:
++            raise RuntimeError(
++                "Codex native session cleanup failed: "
++                + "; ".join(str(error) for error in errors)
++            ) from errors[0]
++
+     @property
+     def last_agent_message(self) -> str | None:
+         return self._last_agent_message

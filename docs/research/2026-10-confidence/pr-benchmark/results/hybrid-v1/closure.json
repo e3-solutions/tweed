@@ -1,0 +1,221 @@
+{
+  "schema_version": 1,
+  "closed_at_utc": "2026-10-12T17:22:17.554897+00:00",
+  "grading_receipt_filename": "graded-receipt.json",
+  "schedule_sha256": "e9f386420185a5f17f69fb2a80752c71b74dd8f67dd61787fd968cfe5e6eeb66",
+  "private_inventory_sha256": "a576e982bcf4fd33cdebf1634291159fd8c0fb6d088aad82bb75bd6282f0d064",
+  "closure_manifest_sha256": "52ea7fd945e24545ab568fe340406e1e16d98402345dedb2d9a6c4f1ae8e24a3",
+  "classification": {
+    "interrupted_no_receipt": 2,
+    "completed_receipt": 19,
+    "never_started": 27
+  },
+  "assignments": 48,
+  "missing_assignments": [
+    {
+      "trial_id": "tweed-pr31--astra_main_astra_peer--r1",
+      "task_id": "tweed-pr31",
+      "arm_id": "astra_main_astra_peer",
+      "repeat": 1,
+      "assignment_state": "interrupted_no_receipt"
+    },
+    {
+      "trial_id": "tweed-pr31--astra_main_astra_peer--r2",
+      "task_id": "tweed-pr31",
+      "arm_id": "astra_main_astra_peer",
+      "repeat": 2,
+      "assignment_state": "never_started"
+    },
+    {
+      "trial_id": "tweed-pr31--astra_main_opus_peer--r2",
+      "task_id": "tweed-pr31",
+      "arm_id": "astra_main_opus_peer",
+      "repeat": 2,
+      "assignment_state": "never_started"
+    },
+    {
+      "trial_id": "tweed-pr31--opus_main_astra_peer--r2",
+      "task_id": "tweed-pr31",
+      "arm_id": "opus_main_astra_peer",
+      "repeat": 2,
+      "assignment_state": "interrupted_no_receipt"
+    },
+    {
+      "trial_id": "tweed-pr31--opus_main_opus_peer--r2",
+      "task_id": "tweed-pr31",
+      "arm_id": "opus_main_opus_peer",
+      "repeat": 2,
+      "assignment_state": "never_started"
+    },
+    {
+      "trial_id": "tweed-pr32--astra_main_astra_peer--r1",
+      "task_id": "tweed-pr32",
+      "arm_id": "astra_main_astra_peer",
+      "repeat": 1,
+      "assignment_state": "never_started"
+    },
+    {
+      "trial_id": "tweed-pr32--astra_main_opus_peer--r1",
+      "task_id": "tweed-pr32",
+      "arm_id": "astra_main_opus_peer",
+      "repeat": 1,
+      "assignment_state": "never_started"
+    },
+    {
+      "trial_id": "tweed-pr32--opus_main_astra_peer--r1",
+      "task_id": "tweed-pr32",
+      "arm_id": "opus_main_astra_peer",
+      "repeat": 1,
+      "assignment_state": "never_started"
+    },
+    {
+      "trial_id": "tweed-pr32--opus_main_opus_peer--r1",
+      "task_id": "tweed-pr32",
+      "arm_id": "opus_main_opus_peer",
+      "repeat": 1,
+      "assignment_state": "never_started"
+    },
+    {
+      "trial_id": "tweed-pr32--astra_main_astra_peer--r2",
+      "task_id": "tweed-pr32",
+      "arm_id": "astra_main_astra_peer",
+      "repeat": 2,
+      "assignment_state": "never_started"
+    },
+    {
+      "trial_id": "tweed-pr32--astra_main_opus_peer--r2",
+      "task_id": "tweed-pr32",
+      "arm_id": "astra_main_opus_peer",
+      "repeat": 2,
+      "assignment_state": "never_started"
+    },
+    {
+      "trial_id": "tweed-pr32--opus_main_astra_peer--r2",
+      "task_id": "tweed-pr32",
+      "arm_id": "opus_main_astra_peer",
+      "repeat": 2,
+      "assignment_state": "never_started"
+    },
+    {
+      "trial_id": "tweed-pr32--opus_main_opus_peer--r2",
+      "task_id": "tweed-pr32",
+      "arm_id": "opus_main_opus_peer",
+      "repeat": 2,
+      "assignment_state": "never_started"
+    },
+    {
+      "trial_id": "tweed-pr34--astra_main_astra_peer--r1",
+      "task_id": "tweed-pr34",
+      "arm_id": "astra_main_astra_peer",
+      "repeat": 1,
+      "assignment_state": "never_started"
+    },
+    {
+      "trial_id": "tweed-pr34--astra_main_opus_peer--r1",
+      "task_id": "tweed-pr34",
+      "arm_id": "astra_main_opus_peer",
+      "repeat": 1,
+      "assignment_state": "never_started"
+    },
+    {
+      "trial_id": "tweed-pr34--opus_main_astra_peer--r1",
+      "task_id": "tweed-pr34",
+      "arm_id": "opus_main_astra_peer",
+      "repeat": 1,
+      "assignment_state": "never_started"
+    },
+    {
+      "trial_id": "tweed-pr34--opus_main_opus_peer--r1",
+      "task_id": "tweed-pr34",
+      "arm_id": "opus_main_opus_peer",
+      "repeat": 1,
+      "assignment_state": "never_started"
+    },
+    {
+      "trial_id": "tweed-pr34--astra_main_astra_peer--r2",
+      "task_id": "tweed-pr34",
+      "arm_id": "astra_main_astra_peer",
+      "repeat": 2,
+      "assignment_state": "never_started"
+    },
+    {
+      "trial_id": "tweed-pr34--astra_main_opus_peer--r2",
+      "task_id": "tweed-pr34",
+      "arm_id": "astra_main_opus_peer",
+      "repeat": 2,
+      "assignment_state": "never_started"
+    },
+    {
+      "trial_id": "tweed-pr34--opus_main_astra_peer--r2",
+      "task_id": "tweed-pr34",
+      "arm_id": "opus_main_astra_peer",
+      "repeat": 2,
+      "assignment_state": "never_started"
+    },
+    {
+      "trial_id": "tweed-pr34--opus_main_opus_peer--r2",
+      "task_id": "tweed-pr34",
+      "arm_id": "opus_main_opus_peer",
+      "repeat": 2,
+      "assignment_state": "never_started"
+    },
+    {
+      "trial_id": "tweed-pr40--astra_main_astra_peer--r1",
+      "task_id": "tweed-pr40",
+      "arm_id": "astra_main_astra_peer",
+      "repeat": 1,
+      "assignment_state": "never_started"
+    },
+    {
+      "trial_id": "tweed-pr40--astra_main_opus_peer--r1",
+      "task_id": "tweed-pr40",
+      "arm_id": "astra_main_opus_peer",
+      "repeat": 1,
+      "assignment_state": "never_started"
+    },
+    {
+      "trial_id": "tweed-pr40--opus_main_astra_peer--r1",
+      "task_id": "tweed-pr40",
+      "arm_id": "opus_main_astra_peer",
+      "repeat": 1,
+      "assignment_state": "never_started"
+    },
+    {
+      "trial_id": "tweed-pr40--opus_main_opus_peer--r1",
+      "task_id": "tweed-pr40",
+      "arm_id": "opus_main_opus_peer",
+      "repeat": 1,
+      "assignment_state": "never_started"
+    },
+    {
+      "trial_id": "tweed-pr40--astra_main_astra_peer--r2",
+      "task_id": "tweed-pr40",
+      "arm_id": "astra_main_astra_peer",
+      "repeat": 2,
+      "assignment_state": "never_started"
+    },
+    {
+      "trial_id": "tweed-pr40--astra_main_opus_peer--r2",
+      "task_id": "tweed-pr40",
+      "arm_id": "astra_main_opus_peer",
+      "repeat": 2,
+      "assignment_state": "never_started"
+    },
+    {
+      "trial_id": "tweed-pr40--opus_main_astra_peer--r2",
+      "task_id": "tweed-pr40",
+      "arm_id": "opus_main_astra_peer",
+      "repeat": 2,
+      "assignment_state": "never_started"
+    },
+    {
+      "trial_id": "tweed-pr40--opus_main_opus_peer--r2",
+      "task_id": "tweed-pr40",
+      "arm_id": "opus_main_opus_peer",
+      "repeat": 2,
+      "assignment_state": "never_started"
+    }
+  ],
+  "completion_evidence_sha256": null,
+  "note": "Missing scheduled outcomes remain null. This closure does not turn interrupted or unstarted assignments into attempted failures."
+}

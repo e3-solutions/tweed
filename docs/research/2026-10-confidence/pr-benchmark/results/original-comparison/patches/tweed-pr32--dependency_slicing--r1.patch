@@ -1,0 +1,20 @@
+diff --git a/bonaparte_native.py b/bonaparte_native.py
+index 8ec992a..e94a421 100644
+--- a/bonaparte_native.py
++++ b/bonaparte_native.py
+@@ -306,6 +306,15 @@ class AppServerPhaseDriver:
+             turn = params.get("turn")
+             if not isinstance(turn, dict):
+                 raise RuntimeError("Codex app-server turn completion is malformed")
++            # Native child threads share this stream and emit their own turn
++            # completions; only the active coordinator thread may settle the
++            # phase. Legacy completions without threadId stay eligible and are
++            # correlated by turn identity in the caller.
++            thread_id = params.get("threadId", turn.get("threadId"))
++            if thread_id is not None and (
++                thread_id != getattr(self, "_receipt_thread_id", None)
++            ):
++                return method, None
+             return method, turn
+         return method, None
+ 

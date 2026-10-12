@@ -1,0 +1,219 @@
+diff --git a/bonaparte b/bonaparte
+index 888b766..d7006dd 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -452,6 +452,7 @@ def run_phase(
+         for role, description in child_configs.items()
+     }
+     expected_branch = None
++    canonical_branch = None
+     if resume_session_id:
+         replay_policy = (
+             "This clarification may be an at-least-once replay after an ambiguous "
+@@ -481,8 +482,9 @@ def run_phase(
+                 phase,
+                 values[1] if len(values) == 2 else None,
+             )
++            canonical_branch = handoff["issue"]["git_branch_name"]
+             if phase == "implement":
+-                expected_branch = handoff["issue"]["git_branch_name"]
++                expected_branch = canonical_branch
+             phase_input = json.dumps(handoff, ensure_ascii=False)
+             context_policy = (
+                 "\n\n# Context policy\n\n"
+@@ -559,6 +561,9 @@ def run_phase(
+     failed = True
+     try:
+         driver = AppServerPhaseDriver(repository, observer)
++        driver.canonical_branch = (
++            canonical_branch if isinstance(canonical_branch, str) else None
++        )
+         driver.request(
+             "initialize", {"clientInfo": {"name": "bonaparte", "version": "1"}}
+         )
+@@ -681,6 +686,8 @@ def run_phase(
+             if not isinstance(result, dict) or result.get("turnId") != turn_id:
+                 raise RuntimeError("Codex app-server returned an invalid steer result")
+             steer_acknowledged = True
++        # The root turn finished; teardown may archive it unless it asks to resume.
++        driver.root_terminal = True
+         if terminal.get("status") != "completed":
+             detail = terminal.get("error")
+             raise RuntimeError(
+@@ -702,6 +709,8 @@ def run_phase(
+         if not driver.last_agent_message:
+             raise RuntimeError("Codex app-server returned no final receipt")
+         receipt = json.loads(driver.last_agent_message)
++        if isinstance(receipt, dict) and receipt.get("state") == "needs-input":
++            driver.root_terminal = False
+         failed = False
+     finally:
+         observed = observer.finish()
+diff --git a/bonaparte_native.py b/bonaparte_native.py
+index e9a607c..cac7093 100644
+--- a/bonaparte_native.py
++++ b/bonaparte_native.py
+@@ -97,6 +97,80 @@ def terminate_and_reap(process: subprocess.Popen) -> None:
+                     pass
+ 
+ 
++def _parent_thread_id(thread: dict, params: dict) -> str | None:
++    """Return the spawning parent named by a native thread-started event."""
++    pending: list[object] = [thread, params, thread.get("source")]
++    for _ in range(5):
++        nested: list[object] = []
++        for value in pending:
++            if not isinstance(value, dict):
++                continue
++            for key in ("parentThreadId", "parent_thread_id"):
++                parent = value.get(key)
++                if isinstance(parent, str) and parent:
++                    return parent
++            if value is not thread and value is not params:
++                nested.extend(value.values())
++        pending = nested
++    return None
++
++
++class ThreadOwnership:
++    """Native threads observed as started, with their observed spawning parents."""
++
++    def __init__(self) -> None:
++        self._started: list[str] = []
++        self._parents: dict[str, str] = {}
++
++    def started(self, thread_id: object) -> bool:
++        return isinstance(thread_id, str) and thread_id in self._started
++
++    def record_started(self, thread: dict, params: dict) -> None:
++        thread_id = thread.get("id")
++        if not isinstance(thread_id, str) or not thread_id:
++            return
++        if thread_id not in self._started:
++            self._started.append(thread_id)
++        parent = _parent_thread_id(thread, params)
++        if parent and parent != thread_id:
++            self._parents.setdefault(thread_id, parent)
++
++    def record_spawn(self, parent: object, item: dict) -> None:
++        if not isinstance(parent, str) or not parent:
++            return
++        children: list[object] = []
++        item_type = item.get("type")
++        if item_type in {"collabAgentToolCall", "collabToolCall"} and item.get(
++            "tool"
++        ) in {"spawnAgent", "spawn_agent"}:
++            receivers = item.get("receiverThreadIds")
++            if isinstance(receivers, list):
++                children.extend(receivers)
++            children.extend((item.get("receiverThreadId"), item.get("newThreadId")))
++        elif item_type == "subAgentActivity" and item.get("kind") == "started":
++            children.append(item.get("agentThreadId"))
++        for child in children:
++            if isinstance(child, str) and child and child != parent:
++                self._parents.setdefault(child, parent)
++
++    def started_descendants(self, root: str) -> list[str]:
++        """Started threads whose observed spawn chain reaches the started root."""
++        if not self.started(root):
++            return []
++        owned = []
++        for thread_id in self._started:
++            if thread_id == root:
++                continue
++            seen = {thread_id}
++            parent = self._parents.get(thread_id)
++            while parent is not None and parent != root and parent not in seen:
++                seen.add(parent)
++                parent = self._parents.get(parent)
++            if parent == root:
++                owned.append(thread_id)
++        return owned
++
++
+ class AppServerPhaseDriver:
+     """Drive one native app-server turn without retaining its raw event stream."""
+ 
+@@ -121,6 +195,11 @@ class AppServerPhaseDriver:
+         self._last_agent_message: str | None = None
+         self._receipt_thread_id: str | None = None
+         self._receipt_turn_id: str | None = None
++        self.ownership = ThreadOwnership()
++        # Set by the phase runner once the root turn reached a terminal,
++        # non-resumable state, and the canonical issue branch when known.
++        self.root_terminal = False
++        self.canonical_branch: str | None = None
+         self._reader = threading.Thread(target=self._read, daemon=True)
+         self._reader.start()
+ 
+@@ -264,6 +343,35 @@ class AppServerPhaseDriver:
+             }
+         return legacy
+ 
++    def _finish_native_session(self) -> list[BaseException]:
++        """Attempt every terminal-session update; return failures for the caller."""
++        root = getattr(self, "_receipt_thread_id", None)
++        ownership = getattr(self, "ownership", None)
++        if (
++            not getattr(self, "root_terminal", False)
++            or ownership is None
++            or not ownership.started(root)
++        ):
++            return []
++        failures: list[BaseException] = []
++        if getattr(self, "canonical_branch", None):
++            for thread_id in ownership.started_descendants(root):
++                try:
++                    self.request(
++                        "thread/metadata/update",
++                        {
++                            "threadId": thread_id,
++                            "gitInfo": {"branch": self.canonical_branch},
++                        },
++                    )
++                except Exception as error:
++                    failures.append(error)
++        try:
++            self.request("thread/archive", {"threadId": root})
++        except Exception as error:
++            failures.append(error)
++        return failures
++
+     def observe_notification(self, message: dict) -> tuple[str | None, dict | None]:
+         method = message.get("method")
+         params = message.get("params")
+@@ -274,6 +382,9 @@ class AppServerPhaseDriver:
+         if method == "thread/started":
+             thread = params.get("thread")
+             if isinstance(thread, dict) and isinstance(thread.get("id"), str):
++                ownership = getattr(self, "ownership", None)
++                if ownership is not None:
++                    ownership.record_started(thread, params)
+                 self.observer.feed(
+                     json.dumps({"type": "thread.started", "thread_id": thread["id"]})
+                 )
+@@ -290,6 +401,9 @@ class AppServerPhaseDriver:
+                 text = item.get("text")
+                 if isinstance(text, str):
+                     self._last_agent_message = text
++            ownership = getattr(self, "ownership", None)
++            if ownership is not None:
++                ownership.record_spawn(params.get("threadId"), item)
+             self.observer.feed(
+                 json.dumps(
+                     {
+@@ -346,4 +460,13 @@ class AppServerPhaseDriver:
+         return self._last_agent_message
+ 
+     def close(self, *, failed: bool) -> None:
+-        terminate_and_reap(self.process)
++        failures: list[BaseException] = []
++        try:
++            failures = self._finish_native_session()
++        finally:
++            terminate_and_reap(self.process)
++        if failures:
++            details = "; ".join(str(error) for error in failures)
++            raise RuntimeError(
++                f"Codex native session cleanup failed: {details}"
++            ) from failures[0]

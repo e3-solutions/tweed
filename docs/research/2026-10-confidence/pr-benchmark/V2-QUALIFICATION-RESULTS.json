@@ -1,0 +1,245 @@
+{
+  "schema_version": 1,
+  "purpose": "Non-task transport/staged-pipeline qualification only; no model or protocol efficacy inference",
+  "checked_at_utc": "2026-10-12T17:07:17.399601+00:00",
+  "passed": true,
+  "efficacy_trials": 0,
+  "source_files_unchanged": true,
+  "source_sha256": {
+    "hybrid-protocol.json": "6ff9f445794b07910161442926f3ec871902ab2be6a90a81d53d80ebe40abf83",
+    "v2_controls.py": "8622a224c003141aa57f86be0220b607ed65b793999114d045454d152e5b2abb",
+    "hybrid_v2.py": "35a78d9cbca503f6afdd52c786af4a821c5e511811891e002322aa2de8d6fade",
+    "hybrid_runner.py": "2e560c9300d16adba435048f45383293aea6ace3b7749ae17a0aea6652657a8d",
+    "runner.py": "1f5e9ab2e5f0823a34c8f637ae08b4b3e7e1d1ac7bbbf5aab64ab79c95288fb8",
+    "cross_backend.py": "a4c94f220d66be06c40c88fdbb65578d45ce61a46b07e11c607f3aab50281739",
+    "hybrid_process.py": "c1f1da477c8d13e1824e604fc83a0e64483d52208cede728ac80439b88c11b96"
+  },
+  "evidence_sha256": {
+    "toy-registration.json": "a129fb6e66d0cc4212200d4473874cea19f2f971f6383f4be6a06c7a2ccabae5",
+    "qualification-summary.json": "0fb9d43627001993c461f9c2840b2758922a458fe179210d5c98a68d80c57f4c",
+    "pipeline-checks.json": "13009766245dd771c68546004f70800e3145d4a6414cec281a218aecd07594e9"
+  },
+  "trials": [
+    {
+      "trial_id": "v2-non-task-pipeline-toy--astra_main_opus_peer--r1",
+      "wall_seconds": 90.186496584,
+      "total_reported_cost_usd": null,
+      "known_reported_cost_subtotal_usd": 0.222316,
+      "receipt_sha256": "3e89953dc0f833bc467df8332ab9c01025000fe80a4c8e249754d4079971fa13",
+      "stages": [
+        {
+          "role": "test_designer",
+          "assigned_model": "opus",
+          "requested_model": "claude-opus-5-5",
+          "requested_effort": "medium",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "model_attribution": "event_observed",
+          "declared_complete": true,
+          "effective_inventory_qualified": true,
+          "actual_toy_source_read": true,
+          "executed_toy_checks": [
+            {
+              "command_code": "from toy import answer; r=answer(); assert r==1, r; assert type(r) is int; assert answer() in (1,2); print('base answer', r)",
+              "exit_code": 0,
+              "request_sha256": "e8a44e84c4d3d5c33ab263b67837d45f88fa6330252fee72de2f4aa6f1f4834e",
+              "response_sha256": "8e070a07d3217881bb9419d38f7c117dcec3152b0410bc2a726634f1c1bb3269"
+            }
+          ],
+          "source_unchanged": true,
+          "stage_receipt_sha256": "d9d7fda8bf6a006f1d36b0bff57def5c342784428d945f4cea34dcda8ff25c62"
+        },
+        {
+          "role": "main_implementation",
+          "assigned_model": "astra",
+          "requested_model": "gpt-6-astra",
+          "requested_effort": "medium",
+          "observed_models": [],
+          "model_attribution": "requested_only",
+          "declared_complete": false,
+          "effective_inventory_qualified": true,
+          "actual_toy_source_read": true,
+          "executed_toy_checks": [
+            {
+              "command_code": "import inspect; import toy; from toy import answer; r=answer(); assert r==2 and type(r) is int, r; assert len(inspect.signature(answer).parameters)==0; assert answer()==2; assert answer() in (1,2); print('submitted answer', r)",
+              "exit_code": 0,
+              "request_sha256": "a8ad2f8829f5e1404c7270761fc4dbc80670bc62c027e057d9e73b5571d7555e",
+              "response_sha256": "5909f52f1a4f27e2668d54418209238e7112bbb8caf1e5bd3a7e2add20b943ee"
+            },
+            {
+              "command_code": "from toy import answer; assert answer()==2; print(2)",
+              "exit_code": 0,
+              "request_sha256": "7713f6a856075434587e6827168dba89783b2103b42e22d93a2fcf20dd792b56",
+              "response_sha256": "a7068c7166e009db2f116a89e70c6ba81043c596ccf517e0031c44398f979587"
+            }
+          ],
+          "source_unchanged": null,
+          "stage_receipt_sha256": "f29eaf207241f9385273bcc97885995cca984ce47c5742f62452f3c40c8675aa"
+        },
+        {
+          "role": "adversarial_reviewer",
+          "assigned_model": "opus",
+          "requested_model": "claude-opus-5-5",
+          "requested_effort": "medium",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "model_attribution": "event_observed",
+          "declared_complete": true,
+          "effective_inventory_qualified": true,
+          "actual_toy_source_read": true,
+          "executed_toy_checks": [
+            {
+              "command_code": "from toy import answer; assert answer() in (1,2)",
+              "exit_code": 0,
+              "request_sha256": "99986940df022616bd14292c0b16c3f7252c25a62fe1cfd5b8263c5e1f52edcc",
+              "response_sha256": "e408fe435abe9921a9ed6cda04555140cc1434fabac2c4f373fa8c50ab675b26"
+            },
+            {
+              "command_code": "import importlib, inspect, toy; from toy import answer; r=answer(); assert r==2 and type(r) is int, r; assert answer() in (1,2); importlib.reload(toy); assert toy.answer()==2; assert list(inspect.signature(answer).parameters)==[]; print('review ok', r)",
+              "exit_code": 0,
+              "request_sha256": "69de7a08ebcdbb66c82243ec0353147773c4677694a3e2b7238c303e45fd2a4e",
+              "response_sha256": "057fb02865c8fa020b90feac2007269e9612f646b01b4d393b76e7014725d55a"
+            }
+          ],
+          "source_unchanged": true,
+          "stage_receipt_sha256": "b2b8b0022cf13cb1681188acdf4671d1787a698cc0366bd5942fe5b58ea9decc"
+        },
+        {
+          "role": "main_repair",
+          "assigned_model": "astra",
+          "requested_model": "gpt-6-astra",
+          "requested_effort": "medium",
+          "observed_models": [],
+          "model_attribution": "requested_only",
+          "declared_complete": true,
+          "effective_inventory_qualified": true,
+          "actual_toy_source_read": true,
+          "executed_toy_checks": [
+            {
+              "command_code": "from toy import answer; assert answer()==2; print(2)",
+              "exit_code": 0,
+              "request_sha256": "dbe306c75b89793ff35b31ce2171ffbe831b8f1e89156fb81d2737220246a0dd",
+              "response_sha256": "7c9b6d4468df1d6be74ab495d135fc132809b9765806bd133cd960ac33bd0b5d"
+            }
+          ],
+          "source_unchanged": null,
+          "stage_receipt_sha256": "d648e2ed95f103d4dab519ab4b1ce48ca210af1121f9bdad8171978c42445a5a"
+        }
+      ]
+    },
+    {
+      "trial_id": "v2-non-task-pipeline-toy--opus_main_astra_peer--r1",
+      "wall_seconds": 75.17684570799997,
+      "total_reported_cost_usd": null,
+      "known_reported_cost_subtotal_usd": 0.2379654,
+      "receipt_sha256": "8d761c69efe87fb78599836bc0da0500ba58f7cb4eef1d2121686e8a88fe05a2",
+      "stages": [
+        {
+          "role": "test_designer",
+          "assigned_model": "astra",
+          "requested_model": "gpt-6-astra",
+          "requested_effort": "medium",
+          "observed_models": [],
+          "model_attribution": "requested_only",
+          "declared_complete": true,
+          "effective_inventory_qualified": true,
+          "actual_toy_source_read": true,
+          "executed_toy_checks": [
+            {
+              "command_code": "from toy import answer; assert answer()==1; print(1)",
+              "exit_code": 0,
+              "request_sha256": "a721a8e4e20d8f85ae18b385229071abdb5d2afd9f05ea88924a4bf5241bb34c",
+              "response_sha256": "7f192f8f1971d37dfd084cc24a446d68e50ce9b10c97d3468396cf50627c0a2c"
+            }
+          ],
+          "source_unchanged": true,
+          "stage_receipt_sha256": "4f4c7d9479abde1e4c8faa5f0f1254104e8245783c5d931fa2b04cff85c55473"
+        },
+        {
+          "role": "main_implementation",
+          "assigned_model": "opus",
+          "requested_model": "claude-opus-5-5",
+          "requested_effort": "medium",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "model_attribution": "event_observed",
+          "declared_complete": false,
+          "effective_inventory_qualified": true,
+          "actual_toy_source_read": true,
+          "executed_toy_checks": [
+            {
+              "command_code": "from toy import answer; assert answer() in (1,2); assert answer()==2; print(answer())",
+              "exit_code": 0,
+              "request_sha256": "76cb2088e4003706d54bde7e71c22aa51afbfb4dc1f770517a8a4f9623613d47",
+              "response_sha256": "dc78368c3bebb2f2f7a859ab56d12e00ddacd2c5575954e7a7f7e039e5c6c439"
+            },
+            {
+              "command_code": "from toy import answer; assert answer()==2; print(2)",
+              "exit_code": 0,
+              "request_sha256": "09f47b9f2d27d31ca07e9ccce500701b7b395213c64a1e65f4d3648a93ae0c22",
+              "response_sha256": "2495a3167da6593ca1c7dcd799849a5390d93d5ef4259f887e16f0385acb4759"
+            }
+          ],
+          "source_unchanged": null,
+          "stage_receipt_sha256": "ae77ddf5fff9bf974412d879355a9a492c87892da7b45c5752e55153df1986ab"
+        },
+        {
+          "role": "adversarial_reviewer",
+          "assigned_model": "astra",
+          "requested_model": "gpt-6-astra",
+          "requested_effort": "medium",
+          "observed_models": [],
+          "model_attribution": "requested_only",
+          "declared_complete": true,
+          "effective_inventory_qualified": true,
+          "actual_toy_source_read": true,
+          "executed_toy_checks": [
+            {
+              "command_code": "from toy import answer; assert answer() in (1,2); assert answer()==2; print(2)",
+              "exit_code": 0,
+              "request_sha256": "e0b61ddfb635c06875f2daa169eee019f4dae85daad4c840b15b750770e35160",
+              "response_sha256": "8eb80cd85006eb0a805dabe927ac793567f4c81b63e7fce1064ddf01f6ca026d"
+            }
+          ],
+          "source_unchanged": true,
+          "stage_receipt_sha256": "bae75d0aea69bac7297bcd3ca665eac6e7200e1a28ab87338bf19c4f7fd63788"
+        },
+        {
+          "role": "main_repair",
+          "assigned_model": "opus",
+          "requested_model": "claude-opus-5-5",
+          "requested_effort": "medium",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "model_attribution": "event_observed",
+          "declared_complete": true,
+          "effective_inventory_qualified": true,
+          "actual_toy_source_read": true,
+          "executed_toy_checks": [
+            {
+              "command_code": "from toy import answer; assert answer() in (1,2); assert answer()==2; print(answer())",
+              "exit_code": 0,
+              "request_sha256": "a2cb5c5f67b123cdb66406192873356a46c419dc257a60c54b653cd8ab97788d",
+              "response_sha256": "5be1f1c8b0a3fad8b88d4024ec9baf5d652c61717838dc5af4827f337e8b127f"
+            }
+          ],
+          "source_unchanged": null,
+          "stage_receipt_sha256": "b2b6b081b8ef55fc5c1e0d86febf53dc7f206bc700515404f8b55b2834deadcc"
+        }
+      ]
+    }
+  ],
+  "prior_attempt_disclosure": "Attempt1 retained unchanged. Wrapper changed after its seal, and its verifier incorrectly required implementation completion before a scheduled required review. Both toy final behaviors passed, but it cannot qualify the final adapter. Attempt2 sealed the final wrapper and corrected prospective terminal rule; it is a new infrastructure qualification, not a historical-task retry.",
+  "limits": [
+    "Astra accepted requested route and offline declared inventory; no authenticated response model or live wire inventory",
+    "Opus live inventory contains StructuredOutput in addition to seven operational tools",
+    "Codex declares three additional constrained MCP resource handlers; strict seven-tool parity is false",
+    "Reported total cost unknown; known Claude subtotals are not total cost or account charges",
+    "Fixed-stage external routing; separate callback toy is needed for model-triggered Codex-to-Claude delegation",
+    "No real PR task, efficiency, task-solving accuracy or whole-application preservation claim"
+  ]
+}

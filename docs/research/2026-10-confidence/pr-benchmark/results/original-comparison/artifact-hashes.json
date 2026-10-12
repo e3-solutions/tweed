@@ -1,0 +1,752 @@
+[
+  {
+    "trial_id": "tweed-pr31--bounded_repair--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "d0f275ce8b76f97dbe7ce902a20d106ed302026e2443311fdd6cf5b058bb3750",
+    "graded_receipt_sha256": "721a41bb6cbdd59c492c2e97bfaaf9667d0aed94472b5391a3864a780bee4e7c",
+    "production_patch_sha256": "22f74b6843ae670cf02d3e97800c8ffc8510b5e8e937653f3d8733b453026157",
+    "grader_stdout_sha256": "d3fba69f51a646a7e765988a1ef0236a57a7aa36750b9d34e19a0ab9502367ec",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr31--compact_routing--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "ef5a084b21a8c6aa4ccba15b72a110e412001055aea874e16441e8430ac073c2",
+    "graded_receipt_sha256": "e3420da126468880b77be86e7d3e5cbc122f47fdd878955d35c8d8a117df4118",
+    "production_patch_sha256": "68045892b5d47ec02081e8b3eb3c8cda57076db049750558b47c655450a70636",
+    "grader_stdout_sha256": "29e1c16cf7bb40e22de3c17cdf9f6d4077732a2884c98ad4b3ac4f867c346fc5",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr31--counterexample_first--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "7fe7daa640019ef84c6759b09f8cdccfd248742e31edd972bf72c8f7621752b7",
+    "graded_receipt_sha256": "6f4f6b280c6ef0516bbc20b775c3d1e1f9fac5ba3e1086308d1c77de214f580e",
+    "production_patch_sha256": "b5322c7ef032b4bf964e6098ec9e27a081d90c5a2b0fc38eeb5d0e924d90999b",
+    "grader_stdout_sha256": "beb48f48f9ebc4fc448bfa0d615d34e94e1d4d33244e9479bc3e905671db1b09",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr31--current_cp_06--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "703a8fbd78d238399e9eec597e6e42b5506c17ee5ed542f3a8954311533c5c05",
+    "graded_receipt_sha256": "d9115b229d712153004e2ba0aafb46547a9891264051eb940041f41b0886727b",
+    "production_patch_sha256": "d06f06472ad7c514eb1bede8e41b56351238abf19c9a90394e9b5c79c8b1230e",
+    "grader_stdout_sha256": "a887ecb16d055e8dd2c80a1ccae4b54059eca683ee1255616bad408101a310ed",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr31--dependency_slicing--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "253f146db3de08194a424b1a06a79899e5697933d361d8f54d36157f64337ee4",
+    "graded_receipt_sha256": "f90e385d40627e645d84bd72d8f55da32c8874fcf4b7d96c559435ebb79bf062",
+    "production_patch_sha256": "593b6de327bd934f83e4b950b65a138eb4a9b180048ab616e3c746293b5d44ce",
+    "grader_stdout_sha256": "fe877a8a5ff877a0394ef1085b1cf6dbfb1bcb541b7186848dd7d4656d1f3a26",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr31--independent_review--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "16bcb7845d46a12d347ee4e619ad16dd1bd345a51f612bcd92623243929b6bd6",
+    "graded_receipt_sha256": "f24bb58f4937adb3d5812829bf314d16e0ee28d6a74d651508b0c4b9f526d027",
+    "production_patch_sha256": "a8f2f1411a8e5774f9809b2d22d425ecb1c9db1987d7bb0074bbe8ac32b515a7",
+    "grader_stdout_sha256": "c454f4cb6c24eecf6c4154ae79916f087c083d3167f51e26eb307e2b825c1569",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr31--original_cp_05--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "40995e1103bebaacccd5cd09ce6d4c7bb3e652eda35c28d2770bbf5a330a7cb7",
+    "graded_receipt_sha256": "4fecea25408c37e93c6f7402c6eb782c6ac404f3a39e249d9122faae58354d81",
+    "production_patch_sha256": "cd005a7bad2c783e4107aacd2fcd7666bccc102853ec56d7899b9de102155ac6",
+    "grader_stdout_sha256": "8788e88cea01a9567f8e5e274feac2d5d5b8bef9e661d3869b369c5a382e43de",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr31--bounded_repair--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "70040d699111f4b61acd9191bf53e0cffceaff5c47accc72f89b8024f5b19f82",
+    "graded_receipt_sha256": "92ea8e39fdbd50e0346a41b5d6f8c2f495d3d57247f84c963dc313ddbe727c8d",
+    "production_patch_sha256": "d88d023300aebc74e1e32dc0946d4742ccb736d0f76d166c74d4ce834489432d",
+    "grader_stdout_sha256": "2f88d14082b218131a9b9d425064d6833f051d99ae19df7f3e0f99eee3729d73",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr31--compact_routing--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "7906da00a82f2b697c0d071ba6d1e5f9614f46a397a3cbdc2ed3a509f37fba0b",
+    "graded_receipt_sha256": "1b6236f37d8516f17b79a25d4b622afc3d8cc69bb62434c0d03b03126f155bec",
+    "production_patch_sha256": "d37aa21d5b17641b21bfc38c5880500b4aca320af0c611f781635495524ac120",
+    "grader_stdout_sha256": "8bbbf0df5e4208e28a239ed624b778af266a00e4f0280c73dca1b19ff3a3e4e9",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr31--counterexample_first--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "4c056bcdfe36724d698e956790c722fb5da0dc910f705e92c4f33c04ce9e6b21",
+    "graded_receipt_sha256": "1c97d49545ae5c87b8953683af9805b221cc447f877810e1cf5ba9023097d0b3",
+    "production_patch_sha256": "4ca46a6164f808ff093bc135313f5291bc46adc2011487a83d2b9b392c953113",
+    "grader_stdout_sha256": "c6942de8da87f965873be3bd2dba9a0ec4b15aaa70b9bd6ad70a58c6c8af27dc",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr31--current_cp_06--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "94ceaa91d5335c30bb2999d18389ec5b1afd924ab9fb04591284eaed1e1737d2",
+    "graded_receipt_sha256": "d93c40b115590afcf4fd7169f6e0298ccead88dbfc6c5dac1a579d13bc7a62d8",
+    "production_patch_sha256": "a0cf404e084eb231cd503f4782aed653338cfa4436c0cd81e87ade558b9c06a3",
+    "grader_stdout_sha256": "3ac107d996a99706bf5ed7af40d10a7f9ec4fbdb60bf753a39b6b84c49b88b3c",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr31--dependency_slicing--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "0b09039798a0e43158ce413220700307a2ec6990c231f5eed7831262766bd271",
+    "graded_receipt_sha256": "b05930b4484eff5b5893028efb5ad1c67cd115560a4bfb9514f42aef687568bc",
+    "production_patch_sha256": "d27b4684eac8fd5c2e6f9532c7b3b6ccd6b4167cd061b15dacc22394e4fde96b",
+    "grader_stdout_sha256": "0e5bfcb500e4da00fca1bd4e0416606cbcc014099555d120eea16661c4603e07",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr31--independent_review--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "c4355cf11279f264809559668c7d915958251885109e7071e8db41c290a7b97c",
+    "graded_receipt_sha256": "73aed948141c84a3c0b2098e49e82d1ce93cc486c191a057c47f60c3c8168b2a",
+    "production_patch_sha256": "09167625608a8c32a5f78e5fde6fa07b7faf74b552ffe69013e9e28bf7225d26",
+    "grader_stdout_sha256": "e011924374e2fc70b0388099fb0b869e4c9238469341442fea4f53e9cf5906fa",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr31--original_cp_05--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "7365cac8780fb84ca14891dbb515f6e98ceea24192d7be7365dbd707fe92e68e",
+    "graded_receipt_sha256": "575f09000e12afd6e0c4ef3ad5037a11f0afea23ec450bdcd342fa6d1fbc5443",
+    "production_patch_sha256": "92e0c5fcadc2c4a6259cb0b81e5788cae5b060dbfec8b9f342e96fd4bf4c09a9",
+    "grader_stdout_sha256": "7d184c67df4eea3927470984cbcd0cb744f0bba8b6ce6b32ab9c9ca93d035812",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr32--bounded_repair--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "58df5ffc7cd717a3e03281ff16edc4e4f1883adf302f0302f61923771bf90825",
+    "graded_receipt_sha256": "81909763c80e68543e5cd5be72cd935156686166f4972d3168e0b450c53d04d4",
+    "production_patch_sha256": "7bb38a45e5f979e76e8d58b4792f528ad868ea3f923c0da0c4e734f605630174",
+    "grader_stdout_sha256": "297dc9742c7dfaeff89af72cea5bc827d8cefebaa9221d3f8674ade85db2bf95",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr32--compact_routing--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "7b688744baa8e4bcd587a01695502aa199c1e81e1f55742b27cd0a039c69813c",
+    "graded_receipt_sha256": "ccdf9e7198ced208bdb8bae7e0559c2c79a7b47c7dbe178a7b3009f17e34738b",
+    "production_patch_sha256": "7979c7fad22959ada389d5104e22bda43090b325e85069e8c63c7e41d25157a3",
+    "grader_stdout_sha256": "5d68e8d6259bd13321b09ab9f5794834b4c314e12057f5350d82017d0dd1f3ff",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr32--counterexample_first--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "4f47fa63a1eccf6e17d2db3a3142d3c6d81aaab02d37a6f94e65e430b132258c",
+    "graded_receipt_sha256": "1a1b86d8072a9f34df4ef8b7000942265cfb9689060b7baecd9a922336f7effb",
+    "production_patch_sha256": "aa924120b7dac981328ab8f69406d56cb771380bf720ef6a33d650b00db516b5",
+    "grader_stdout_sha256": "7fe5b15e76b18872f84342ad133cbeb179e6aa27cb8bd4060b0327c817ab7527",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr32--current_cp_06--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "b48960e427fcc33d38691b0cefd3e7a53cbe09c3cad10752263f6eb51d986489",
+    "graded_receipt_sha256": "8b5ccca7e2cf1d4501146dd52f0b86d80d712d85f5c2b4f83e15cca9b4fc40ad",
+    "production_patch_sha256": "ce92872311c5dadae7df6734d3bcf5cc1dd0c51e6590768d657cad58771e55da",
+    "grader_stdout_sha256": "46c051a39cd3744a5e2e7655c0e1c9ee9d24b5702a24f5459dadedddefa81f66",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr32--dependency_slicing--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "c464928475aaa043df0714edd430d09d18196046de1cd9ba12094c4606f03e22",
+    "graded_receipt_sha256": "2bd2435883b1d1f58079bbde7d3f5276b7499b8dafce0eaaa6a7e6e52fecc3e8",
+    "production_patch_sha256": "544939924458f1ffcffcb64d13304ed8848b4d0a07f03a217fe1c85c0ccc7044",
+    "grader_stdout_sha256": "ae81509f812f75d2532ea870044cb6057a69ec698f8c10c6ef795ef36f4f68e6",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr32--independent_review--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "2427ec6304fd728a9f1ad14b7e053365af443ef47e59b1a4847c4f2045745027",
+    "graded_receipt_sha256": "150cbaf9c7c0591ba95a4ab71e02e7f2331cf36dabfcde6f457154521a7d0a50",
+    "production_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "grader_stdout_sha256": "1f4b673b88c490f2ba87a6d182fb86826da8b43ce3c1db1132be761f899681c7",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr32--original_cp_05--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "d1fe7d7520f1fe9472e96f98139370d08b84fa2a00058d8acebe3f5fc144e640",
+    "graded_receipt_sha256": "2de8ee94af673205a8443325742334fd0ae560953aa2f024348a93f9436316ef",
+    "production_patch_sha256": "aa4b0262cc5c1fd21d0de7bfa52f7d2a8ef65ad1dda42a5c685bb6d63c1f3068",
+    "grader_stdout_sha256": "fdb67cf0430390c15ceb3961e33d2b757f303996a158f622ed1a235d306dcdd3",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr32--bounded_repair--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "7173ab6d3c01ed2ee075031125faf592728b536609bbd7bce0719c226ce1561e",
+    "graded_receipt_sha256": "40a96b2a1d5bf51d918e636a50f46047b544e5389f8e1ecf3ebf668f2161737d",
+    "production_patch_sha256": "53ff63cad484af2fbace67d2ceca7fb6d8cfd19b04061e54cb2cc3a8621cf6f9",
+    "grader_stdout_sha256": "0414c3c7ba41e21a2c178ced1253a4f48e2eee6bc2cb4b96bd5a1f8621451bd0",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr32--compact_routing--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "ab1bd1d611f431c3da13c32cdcf4578b2305a26c100550aef5a2fc6afbadd95c",
+    "graded_receipt_sha256": "c0a91c621287834f57e8379bda6c0dcd1184062cfb319131a31d6e1c61744fa7",
+    "production_patch_sha256": "7fc23b676f809371c541b21a0a4fc331b32a013201d86cdd1da1dca48a04ee66",
+    "grader_stdout_sha256": "0414c3c7ba41e21a2c178ced1253a4f48e2eee6bc2cb4b96bd5a1f8621451bd0",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr32--counterexample_first--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "313fe556c89ef355a2553de7df86fdd0f54df943d6e768d6ff976a0eab68b67a",
+    "graded_receipt_sha256": "e189196bddfac78b750586b6d245b5a986e31606ce74954b1d4327285181187a",
+    "production_patch_sha256": "91300c525554ea169bde2843ce3fe1a57a53fdfc2773d4dd4e34def7f9513b7e",
+    "grader_stdout_sha256": "0414c3c7ba41e21a2c178ced1253a4f48e2eee6bc2cb4b96bd5a1f8621451bd0",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr32--current_cp_06--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "289af5e37694d248b4780b6ce1aab0d016c0c88f0ff33e6573e71515ce520b83",
+    "graded_receipt_sha256": "7cff37b73df4eb3ce7231a01bce25f42986c8c9673a88f0b2ed005963da3883a",
+    "production_patch_sha256": "68fe362874f2c492d68542f970ba6bac96b9fed7fb1786411f261892e1fbb9ea",
+    "grader_stdout_sha256": "037fe50b111175ccebbd0718d3823384b0d562243a63cb613dff95e32bcd45de",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr32--dependency_slicing--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "108879292217997f44d035016ccce1e1206097a770fc83eca07f398d345bbd8d",
+    "graded_receipt_sha256": "085143e08bd69dfb4040eb682b54016fa3a0a08857eb40902a93eb5a1f5e98ad",
+    "production_patch_sha256": "8350e6a636d6678925cb8dd47c10dc0c7509ebcb1a81f1b715e1ee862eb39d71",
+    "grader_stdout_sha256": "6d1d5ed679e99116cf9245ac93bc72ec0f9e3e4be37b78fb855321e0925e62ac",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr32--independent_review--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "e291ca8ced204db78ffc8813145203a7479df327d84f253289200d983d9ff2ba",
+    "graded_receipt_sha256": "733a3a355bf1bf9091bd425196c68ddfc74f628c63d0c691fa8a4c1c5cf83bae",
+    "production_patch_sha256": "1054bf563829df8dc762710f9617f40e5a4b148375639f01ed88cfc1d97fff44",
+    "grader_stdout_sha256": "7a1cd1f38873807cfedd94f4a2d956f104004f0082427fe167e661972238ce20",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr32--original_cp_05--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "8097ffd1ccb09ac2b1b8af5b5dba3bdbedca62b18c4498f43c854a0c7542fa6f",
+    "graded_receipt_sha256": "a878bd4d26f0bdffd4b22adc2f8d8bb69d14baa588c58d6a99b87d8355089371",
+    "production_patch_sha256": "8f0b9b027534789f4210a873875bb125d9400b801c7c872858f9f79ac57ddfbc",
+    "grader_stdout_sha256": "c8c4f2f672b797c94abf60c0fd826343e65ae0ecd2c6569e37009f38057342b4",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr34--bounded_repair--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "936f55270bc998125f16b8518789520f9ece2c5f205ad1d9c784e88791a0b52c",
+    "graded_receipt_sha256": "fc64c9ecdcc11c28b56ad7fabb7bc2854b9658af959fce5283362b24308d2bf6",
+    "production_patch_sha256": "e7cc585921d1b960a1efda8a20a04441c2f2ca2d77910fe403f6a31793330a0b",
+    "grader_stdout_sha256": "fbf58b7623e2fb1c51ac584211b60a2038bce54d926961828afd4a0ab2bf62aa",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr34--compact_routing--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "543dad8d0bfc53007877f45d5a821aeed3668c295374c027a20562a5678bd4a0",
+    "graded_receipt_sha256": "e2451db22c7babaa572bf6b62ecd565460887ab0e036df88639c720caec1cfa0",
+    "production_patch_sha256": "4b0c5777923058b364d8e18ad3fcf4858d8ca31c6712745c56f3da538cc83b4e",
+    "grader_stdout_sha256": "fbf58b7623e2fb1c51ac584211b60a2038bce54d926961828afd4a0ab2bf62aa",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr34--counterexample_first--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "32c3b3b2e3dc40e3612ecc8564651d8665093d8c769fd1393b5bf748a4130d8d",
+    "graded_receipt_sha256": "04e2ceb77935462eaf7802afd5199759a9ac2fd7ef0568916448ebb5601bf1ef",
+    "production_patch_sha256": "5b8492408df8a9ec57c69415d3ea4c968b366a3ea3018a6be966025d2c9adbce",
+    "grader_stdout_sha256": "fbf58b7623e2fb1c51ac584211b60a2038bce54d926961828afd4a0ab2bf62aa",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr34--current_cp_06--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "719e6d18632027334f65713f1f9253be932df9553ba43f00de7505a46125b5a2",
+    "graded_receipt_sha256": "c128d80b5cf99a15e49f3bef67128544310666b1d640c39dd6fdbb66ee948615",
+    "production_patch_sha256": "69de5d467bd5260ff042b0cc06828b94410f24e6cecbdc93d23e09f83fca137e",
+    "grader_stdout_sha256": "fbf58b7623e2fb1c51ac584211b60a2038bce54d926961828afd4a0ab2bf62aa",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr34--dependency_slicing--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "ef6cfb31ee52888f6ef4056ef9ba35750fd10601e1139e155416d11206b93be8",
+    "graded_receipt_sha256": "c612c8cd8267b865631446f11cd1ad09fed4b58c7f8309674ba920270c63ce72",
+    "production_patch_sha256": "33530f6ce3345155b9908a5953377c8412cb81d7d8c69234412c2b24829a77f2",
+    "grader_stdout_sha256": "fbf58b7623e2fb1c51ac584211b60a2038bce54d926961828afd4a0ab2bf62aa",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr34--independent_review--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "40e37bc003e0e8fa3bd88e7ffd5b7fb917888718ac67269536ed01d269449e2e",
+    "graded_receipt_sha256": "02f97e8b4f55fe374df2b952fa2095d905faccd7b7ed4c770c1ff491694e4277",
+    "production_patch_sha256": "dca94b47a658c4698f1f2e980c008f82fa094db5b4a2ee1cc516160b9ceb015c",
+    "grader_stdout_sha256": "fbf58b7623e2fb1c51ac584211b60a2038bce54d926961828afd4a0ab2bf62aa",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr34--original_cp_05--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "febd341ec2feed5f53198ec1083d4369c1cf58aee3a90fb0ec2b8f3c3ca40433",
+    "graded_receipt_sha256": "5cefd5e3872086d4bd4f9d975fec60e2a6865ceaeccf42418ce93b8c84d56bf0",
+    "production_patch_sha256": "cb6eead3ae4b86a83ee8c74b138fdf5b9251a4c3bc4a5d51ce8f008344a6b650",
+    "grader_stdout_sha256": "fbf58b7623e2fb1c51ac584211b60a2038bce54d926961828afd4a0ab2bf62aa",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr34--bounded_repair--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "093e489e52007a2f1680c65fe71b5e69380e94226e0d890a8395720d084adc78",
+    "graded_receipt_sha256": "496c02adf64dab54404149110df1f9116ae91bd683ba31d0996003b7e48fcaca",
+    "production_patch_sha256": "9c176071c58d3070ec1a09dc52cff249b71f3ae52561e9c75ad1ab18c2da053d",
+    "grader_stdout_sha256": "fbf58b7623e2fb1c51ac584211b60a2038bce54d926961828afd4a0ab2bf62aa",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr34--compact_routing--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "b29505540d1a4d71a5687ffe2607862172148536d0616035a3678c7148caeda5",
+    "graded_receipt_sha256": "5f15c1542ac2496c248eab4482eb4f4bd4238b1836784ad41c7edaae6b03ae06",
+    "production_patch_sha256": "01a6aff5c40bd486a77673bf4c7f71a9d4bec2443b43661b0b7c3b8e697ad4b6",
+    "grader_stdout_sha256": "fbf58b7623e2fb1c51ac584211b60a2038bce54d926961828afd4a0ab2bf62aa",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr34--counterexample_first--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "731cc263cc192e5e9f0d289b45c1bfbff7cdffedad35b3b79c1e48cc1c602c7c",
+    "graded_receipt_sha256": "f5790c4dcfd80c55e12e9206e77ad5081e6049000a5c7cf1d03b0e862c74447f",
+    "production_patch_sha256": "abf362e2dffb86cc76cceaccf86fe4a5229ec5f06a8239d667a965326b1f628f",
+    "grader_stdout_sha256": "fbf58b7623e2fb1c51ac584211b60a2038bce54d926961828afd4a0ab2bf62aa",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr34--current_cp_06--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "bea59667d526fcb3379d54d97cba689d13b6bb766025a37cbbbbf56f21fcfdb2",
+    "graded_receipt_sha256": "e60179de8c3965154dea522daaac126b1a54dbf52d840377c7a2d019068c4cb9",
+    "production_patch_sha256": "aa4bcee78425e4388e98be25a46b2bd959d70d0872d1706683556e55de1b5cd0",
+    "grader_stdout_sha256": "fbf58b7623e2fb1c51ac584211b60a2038bce54d926961828afd4a0ab2bf62aa",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr34--dependency_slicing--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "18b0ede8e9f1a1a71ce1dde13b075a52c94bbf68b8efdd52c758b68ca52f11b1",
+    "graded_receipt_sha256": "907332b36a9f413cdd8c3c1c78de3917a5e3a27890e05b6400a29bd4a366bb1a",
+    "production_patch_sha256": "6085e1bc1625b12c793e4dfd5fdb3b924702294b8c7af20268d1adaf06d33145",
+    "grader_stdout_sha256": "fbf58b7623e2fb1c51ac584211b60a2038bce54d926961828afd4a0ab2bf62aa",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr34--independent_review--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "d446de33a7997fa3950ce019fdb572fb83ce921ea310079e9dae800ac3a6f2ed",
+    "graded_receipt_sha256": "3411c603c14d83dac854f69a012851ae2b9682edf4d035f5ed62f4395e0a3708",
+    "production_patch_sha256": "a42ea15060fd6047e8ba72f3ac8dd5bb8ca6f963d11f595696d50e9dee33930b",
+    "grader_stdout_sha256": "fbf58b7623e2fb1c51ac584211b60a2038bce54d926961828afd4a0ab2bf62aa",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr34--original_cp_05--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "925b3c2ea24e7de7f235bf94efecb035553201588391c8ec3bb34168a3a62c94",
+    "graded_receipt_sha256": "501e2e19c4b5658a28a968026eb5361d6fbdf6a368788cd4575a390796484918",
+    "production_patch_sha256": "bceffcb1fc98278d00b8c79be398253dea651a39a4f7687d474bf0aac460afe3",
+    "grader_stdout_sha256": "fbf58b7623e2fb1c51ac584211b60a2038bce54d926961828afd4a0ab2bf62aa",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr35--bounded_repair--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "89841bf11eeaafb1725593c01224a2abb71021bbe0184d6741a0e8e9692ae734",
+    "graded_receipt_sha256": "e48ff026b9e3435952e2468837247768445d0c561a448a1bb50a267f2f41f8ba",
+    "production_patch_sha256": "ffe7db9d0d1bac1aeaa885466186d8a720d1827afe8389619366e1eac815f7bf",
+    "grader_stdout_sha256": "8632c7dd2e14d94a677b57fc164bad2919c110a74b099dd3a838a25a74d046fe",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr35--compact_routing--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "5c773aa47601eba7b3b761ef76872232df52b01550819920218b460bd8ae7043",
+    "graded_receipt_sha256": "527bd84e04f63588cdd51af0b84748168ba990530c6877dae4ff8ccb97cfcf30",
+    "production_patch_sha256": "c005008ae7fb2c4d8fa2da5509bce431f9cca238bb590b1b2533f725671ce693",
+    "grader_stdout_sha256": "526a0ec7dd8877bc38f13b4b2f9d7e857d711b5f9a079c2b43f583e6a589819b",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr35--counterexample_first--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "3591671e8faf5085e85691ce8df33d84cfe06a692d9d7e196d680d6f86976bd1",
+    "graded_receipt_sha256": "53751f538ebc7a68f0f373a50e74bdba4c8445960bf4b1684d0d8b1dc86c566d",
+    "production_patch_sha256": "a7210df6cec92e2b48654598d2bf7325811d3d3f398b6216d45fdf99e6d7f22d",
+    "grader_stdout_sha256": "73c6e6a6d97c5c11584d249b122b90a11a3413538be9343724b7fedad575d523",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr35--current_cp_06--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "fcec2aff743434e465f4a46be191022b6a3b52fbd1722d4a62ef2e70e6b143fb",
+    "graded_receipt_sha256": "ff2d16351ae50eebe3d7a3db171822eb0ccfc471f4d674829d37a25d51fc8586",
+    "production_patch_sha256": "a17848a18d475ae219eee5ed5004df3740276fa34561aa86d24256a714193d6e",
+    "grader_stdout_sha256": "063086628ff0e928e1291e9dc6179bf2822360ab9c37426472f9b965f2114dfb",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr35--dependency_slicing--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "c03e11a46a23298725dec4a83347e2ca474f90f91983af2ef27bb7588e280102",
+    "graded_receipt_sha256": "100694ad49ae295ad116f53a13f7a254fd4a80fa11790d5dcf6a54598b304cef",
+    "production_patch_sha256": "7de536b194bd547e35606ad2bd380a7ed047bd49f41ff01b347421d4e5c2d699",
+    "grader_stdout_sha256": "1cdd72ec01eb161c71f2411988d70597b769cc4393ec8e9cfa2ab14d94c9fc55",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr35--independent_review--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "aaa198a4e0fdb8185217e78a70cb3ebd88fd5fc0e2d7b81ba5d8e3483f6c6217",
+    "graded_receipt_sha256": "662519caa93fe59fc6d00213471d7876f3ff26ccae07aeeebf0cc4e958b8f3d7",
+    "production_patch_sha256": "f851ea1f4342c683525e3fe85360c3eb642ad70ce893b0e52bbc56aa95e68e1f",
+    "grader_stdout_sha256": "f4b7ef8bc377c098cd995b9d8817cf04f56cf47cdbeae543f934292a6c907e7f",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr35--original_cp_05--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "f18e36c61f5659a6020201a48383cf991c8d5da5416bf86b9dcb9c4e5eef3f8e",
+    "graded_receipt_sha256": "9c90bd41a4be66edfae47e13397011d97ae5fd5a061111b027e71cbdc625077d",
+    "production_patch_sha256": "dd25a3f98126cd82caa71f10ffaf946cda151e0288356678bfef0069dec17db1",
+    "grader_stdout_sha256": "07a9049d6074f7a957c51216634b62ea05a4f4ee5d94e09febaf710fc634c736",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr35--bounded_repair--r2",
+    "raw_receipt_sha256": null,
+    "graded_receipt_sha256": null,
+    "production_patch_sha256": null
+  },
+  {
+    "trial_id": "tweed-pr35--compact_routing--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "df679ee83a96e5250dfdaa82174d92027c7d7348de91fe4655c78ee52529395d",
+    "graded_receipt_sha256": "3a6b003dace6956bea738380254dda08dd4dce9fcab6fd96fd3f2383c88ce543",
+    "production_patch_sha256": "7ef34c05277c2b02c18587ea5471c6c259b5afef0f0cdd26f03669a50a2179b0",
+    "grader_stdout_sha256": "4ce0371b5e3a57b747a514dd3187394e99a9bdc76247adfe3ededf4218ad4d1b",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr35--counterexample_first--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "a806ae767526b7d002bcab5f28888a7a90c7138d621832bd3f9851e3cea3311e",
+    "graded_receipt_sha256": "afdfc8c247da84bc59e63f7b024998286838a41a25951061b86a39f7b71aa01f",
+    "production_patch_sha256": "078920337dd055d635dc38bb0cfff1f5a32537e78cc0318d74fc0bab9071ae07",
+    "grader_stdout_sha256": "8f043391945a7b8978c43e06bca3aecaa4bca1bf8548e64d5fd1e828b567da41",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr35--current_cp_06--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "bf77133358889c55b2916b993601fb275a6cb3f64ebb1ada75787488b3a18713",
+    "graded_receipt_sha256": "a3e1cc95c18a29b11aa02391e2417639a0dfbb6563221f6f173ad4a4eea70bbf",
+    "production_patch_sha256": "828d851ded422a54d509634346d4493a09e8261db9ab212cb0fd314cafb54738",
+    "grader_stdout_sha256": "ff5054cf216a673d53996261c413c85440d05913b28a5585b1f860f7d9ba756a",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr35--dependency_slicing--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "270e4703a195e7e870e040fe8410ba303975f31973fd2fe4a918ba7c9eacc200",
+    "graded_receipt_sha256": "6d19a6a23f75383abb51e454f2f6bbc935d4d835f00b74e1f26a16382d6a357e",
+    "production_patch_sha256": "06798bda5b75be98b9580130b7c8307464edade68bcce9fc51179f767b239c99",
+    "grader_stdout_sha256": "92184e67d54e1e22fb173d4699471eac86de6b135ef522d8a7fe1a1931896a84",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr35--independent_review--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "624424ee8f72cf2ef87e0a786589f8fa112579544e8a1155505e96d4d18ef80f",
+    "graded_receipt_sha256": "0590c566897d912bd688d1d9b704c53491ecb9d1d821d291e36dd753beff6af4",
+    "production_patch_sha256": "61b94dcfd73b5b8fabe480c48067460266f107a758f1d419ee90bc8a2173bf30",
+    "grader_stdout_sha256": "bd2f6ce2c194db91aaa774a054a94960b4f00667e90a03622eb3e7965082292c",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr35--original_cp_05--r2",
+    "raw_receipt_sha256": null,
+    "graded_receipt_sha256": null,
+    "production_patch_sha256": null
+  },
+  {
+    "trial_id": "tweed-pr39--bounded_repair--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "a3a6e3c85c788e8ed6343fae8b602d701d4236a6df9bef56ed948747a6543db4",
+    "graded_receipt_sha256": "a2fa3429fb1deddb654b39b095b3128e38c05bf560cac8bb0bb36ee62df62805",
+    "production_patch_sha256": "39884f33dde5fc95af10168c81d4f1707d29adac84988f8d79620a0247a48353",
+    "grader_stdout_sha256": "06f7e339abfcc4c793243f15659140e492fcbbdbf9e7bb486bb6326d2480786a",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr39--compact_routing--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "3c4cc8b06076163cd719209c74705d7d3f9f707167555dde95fc08598010e7a5",
+    "graded_receipt_sha256": "36dfcc448025a049069815cd213ea07572a39a3590026ead539710a88248e63b",
+    "production_patch_sha256": "88626081569c60c60baac288e35bdc8525ad44a172f5f67943560622b31c227a",
+    "grader_stdout_sha256": "81aefeeba6a494142263acc4238e5860b8dadff9401440c8eb320ce171ee467e",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr39--counterexample_first--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "da875fd7a9f982b1061e5fa9ea1d408feb6ef363341d3441b73b9dd7f98d0fc7",
+    "graded_receipt_sha256": "c99b2bc0bde837be8f780f6ee41bf4d2a3694afb42befe87aed2ad2cb368bef8",
+    "production_patch_sha256": "fc8860308cb0dc1468fb6da7557ed322d2cbed43663e0d8f031804aa7abd1117",
+    "grader_stdout_sha256": "5f853fbca908f023e6126d94a02ff5a64ce3d2975f78a2b19b4a16800543a2e2",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr39--current_cp_06--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "953a6bb747c7d4c127d30367f01c5ea6c5bcc287ba38ab43dbae01fb5a3f5e00",
+    "graded_receipt_sha256": "75f0656af369cf67f797d1b69e539ba2111874f7578b4191e766b1c5a9bc1de8",
+    "production_patch_sha256": "e6f26e7f1d699957204962d4f06ac29335b78c4cf6ffbeacd671d575058d8e0e",
+    "grader_stdout_sha256": "aa8ea5b4e214d28ef7df9f379ab62e9d22049231de37a7ec975bc59c5e2d90ea",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr39--dependency_slicing--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "ee87cbc1d3322261f4fe8da58f91fdffd0b61b0a11636cfc2b3a83c755200e20",
+    "graded_receipt_sha256": "089588a44477898da8add69dfe8820e3dd958556accd975b3054054391791584",
+    "production_patch_sha256": "2821f4531b3e8a599aafdc027f6b51acba5a8cc65aa81f1bbdb45e8933ed51af",
+    "grader_stdout_sha256": "5d463137049be828a66f2c2c9f058a092047f821538b40a879a6ea8ca26bffb9",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr39--independent_review--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "a64c09b543b04eb7558a26f2b84a3db1450d096ef5a8fdbb1a3593904c765bd4",
+    "graded_receipt_sha256": "f30ccfce8a4ffed6c603b1fb0972b6c4e45d6f82fe2b83c9704904610697bf42",
+    "production_patch_sha256": "a2cc1720961a17ab21e348491ab1bff5e167896408bf522b410da9b03662cdaa",
+    "grader_stdout_sha256": "6edc7508c3cdb0c899474ce3492dcf328715fd96b009df8fc509be82f81c0079",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr39--original_cp_05--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "10f5180ec247fab6e0d40cec743cd6a0c9b0956c6605723beb368e46aa2bf003",
+    "graded_receipt_sha256": "f45a9ff1731d377589d5653901516dff976454f0596a9ad9a2228406d314a3ee",
+    "production_patch_sha256": "e109ad1234328210a3c29d79ad54f6a2272989f4274cb609d54309734de23ef0",
+    "grader_stdout_sha256": "283cb498155306d58447e5db5378675dd98cf2a31cb4e22300cee04e8b70f14a",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr39--bounded_repair--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "b160583af6436488af370fbf78f14276ed6a5cacc7cf4752de792999ca71cb56",
+    "graded_receipt_sha256": "4eead83f0686120759ba0e67232006085ccd415bf60ae13d5825a5d783f857df",
+    "production_patch_sha256": "5d0a54bbffad43fe1afa75ca83840e06a14bf16489e08fa90f002eda1dd41eb7",
+    "grader_stdout_sha256": "fc344335333c49627af8884f5a3d9d856b75c373206c4f6758a91b1b9a6b0734",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr39--compact_routing--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "fb50fc51984fc5adc971a3b5bb45474a358ccd244841e60b64ab6f21a35c2216",
+    "graded_receipt_sha256": "0340635e758508a30fea2c6dd091d538abb29b5bc092ab5843746ded5d514d89",
+    "production_patch_sha256": "163b65e015b7a6ae860c61614d8b03903ca49d6a0726ce0f68cc06ff51bc6d78",
+    "grader_stdout_sha256": "10012b676e9cfc951121eeece938bccf736dff51053b0756708f02bc5acb3f51",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr39--counterexample_first--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "e2597ae2ab46da7c6801334c2fb25dcba11575b056911ebda17ac868231efff0",
+    "graded_receipt_sha256": "de870ca7f256fdac2d3297c7807ee9a3c13d679429ba8717b0867ab498804d56",
+    "production_patch_sha256": "ceed59c77470063da3d6154133d1fb462bd494710a0e216efb92dd080d509224",
+    "grader_stdout_sha256": "7d3152fa61e920c0f98dab021d3b482f5c9975991f479c170cbc57982459d3e1",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr39--current_cp_06--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "ca48a64f6a2855a8516a9e04ad08fedb47ecc75edb0d02ec6d80ce876c2e8800",
+    "graded_receipt_sha256": "353dd9f9d47d72f3c23f47019ff427def40cf4be2ad1576b26b05953a7c3f8df",
+    "production_patch_sha256": "0fba17d242b228f1bbc98758eb5ac7ebc5eaff5d17ab27c485478a589ea1c77b",
+    "grader_stdout_sha256": "4e7d25f19a345bf34b503a7a363318e709f73f9afe7b27da0b4a071cb45d438c",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr39--dependency_slicing--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "b0ebc4b8da7d14e6569c663a1a1d3f80420fa2181dababcb67376176ca462b7f",
+    "graded_receipt_sha256": "0c4962fde6d0e1440608048e377d1c8af30cd8262191879e085d69ae8fa8e249",
+    "production_patch_sha256": "ba17573d05991c1cf2da2a039574afd7b4ebda13078cbfe967e204ea398dd408",
+    "grader_stdout_sha256": "b995586bc8e2ed2bdb6677be4f3d41343fff818e81d5cc8c8facbd4fce3143be",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr39--independent_review--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "68fcfb760dd6a46d2d6246d631ef071deb13d152738225596934f0685b13012f",
+    "graded_receipt_sha256": "f98a2ee7beeb68653eaf19a14fe7c2643cbb72052a7613c35660f4b4deb67261",
+    "production_patch_sha256": "fe1c14168ad8f9daf3b03b7252e3750b197e7a1c17f153adc586ec470d858705",
+    "grader_stdout_sha256": "ab8d3bf50ed6d25478b8f03081680e4ebd7222e794ddf15b32224cfbfb85c836",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr39--original_cp_05--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "3dd74f35cdbb190a8c355d0ae8ff1fe8389042a8a932a7bf2bf360ae1fa15fa9",
+    "graded_receipt_sha256": "3f6ccc1a3357d59187d0247b3133b4e4e35df07d3b69b93e35bb159588185393",
+    "production_patch_sha256": "3b75f35979c37050fa1999a2bd7d7aa533e7f4a94d8f22aafbe36ebf7eaad437",
+    "grader_stdout_sha256": "f1804f761c961c3741e720dd8ef1f8a97ab1a43f414d2c8dfeeebae1789e7b25",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr40--bounded_repair--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "c8e07b9272e4734b1d5f9a4327e08939f5a5c844c62d9c7065751c804f2e7921",
+    "graded_receipt_sha256": "d9bcd58ecc61d21078ef9c93aefde3b099f86ea281ddebc7232d7c0c884998ce",
+    "production_patch_sha256": "669fe8762fb00107b3fcfae86783ae77d98ee863087fc7c940eb37db77dc9a4f",
+    "grader_stdout_sha256": "90be085a851e53cfc166991531720d7e649b7e9b554c4899d001e74dad3e1c7a",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr40--compact_routing--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "012e8cd5ae7873d206d83464b321d5cae54beb9568644c02a9127edf2542c815",
+    "graded_receipt_sha256": "6dbe040d856d0193ccd107f20ff3771b60a0a554b8132b8408e19edcb64b3283",
+    "production_patch_sha256": "b0d0ac469b614c02313f553c741944ade72eb2463fabd74278a9b148714ea0ce",
+    "grader_stdout_sha256": "80d33d6d0b248cabe72452649ce99396f7eea380a666479d19909b9730912df5",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr40--counterexample_first--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "20297cb15ff2e14033c072ff951915389c6672a675d28297bd392b66862edbdd",
+    "graded_receipt_sha256": "c4303ba6acd84cbdb2c1a4c95d1fe4fbc6587693630f43b7988f744744f94e7a",
+    "production_patch_sha256": "9b156dd807c253550dd85e09dc8aef25b555a75d6e070833497394e44caf7574",
+    "grader_stdout_sha256": "9656a83599f2c78c3dee51d8c59b2b766a481451600cce5a74a137cbcb6e0d79",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr40--current_cp_06--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "fff18f4b1c3680432648a9169cfd0535552710be4979b5eb19e5a0f09cf13947",
+    "graded_receipt_sha256": "16247593272638c4700fcf7561a9e85f763bad8544edd1391b6dde0b88dbef14",
+    "production_patch_sha256": "caccac5910373238dc72c75551539e0a5c3be4da41a4945b74d58cfbff4f5efe",
+    "grader_stdout_sha256": "f218006b94d215dc6d47aadc884db744f4637422180fb8f895e97b9dd0f92736",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr40--dependency_slicing--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "f5d86a4403c6fb5b0f163f16b55ec23152dfec22aedd9032f414ac6054854ffc",
+    "graded_receipt_sha256": "5e9027652ae7adb70be2fb15c3e4644c03e070d5b2f8314ce9bd39c7d844e6ea",
+    "production_patch_sha256": "994e8e98d81d6a3ad15f87485907254661b570ff0544d51b28c4157bd1ccfa9e",
+    "grader_stdout_sha256": "0a444c9d21f33b78bcf878f1fb6d21c5975754fb21c8d37d843130ec0863f8d2",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr40--independent_review--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "04d5d9bb662d49d916e07f7dfe960b8bcd6b3ba93cceca1a817514e0f56847aa",
+    "graded_receipt_sha256": "ab861375c7329ddd2632d1efbc2a76f53f964dcfec1018c7d9ff4fef87bc0991",
+    "production_patch_sha256": "136d401c0556f3da4cd352a861fe982e4f6307877010e2ea165c9924815fb792",
+    "grader_stdout_sha256": "2e6cfb277bebe7965a38f6fe72eb36d05ea983165c140bb3f40b83c846db727e",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr40--original_cp_05--r1",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "8f3c9efe895454d7996b640e0466e42edc55868a4565d481bea856a4a3c6cfec",
+    "graded_receipt_sha256": "91c931da1e3c68e78e8c0beb967b75e13e03b8a95d9e10b58259b60abaf59833",
+    "production_patch_sha256": "194636d88ffc9c17e896b7f64f10a3e0f98e4a4229911b27dda59370b06a4fea",
+    "grader_stdout_sha256": "427b17f891dcbd46e5fbb71cf3bff545a1c9a459df1160eec926e6b3a9f007e1",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr40--bounded_repair--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "407c977ab930b06366126f5f98a32265a6cbbc603e0ca89b5fa9e582ea9c61fd",
+    "graded_receipt_sha256": "637696f300f5f8fd6e9161a7ba3155ff9ed1389796e85e016331fe17e4280da1",
+    "production_patch_sha256": "5d3a9fd67f6aceee70154937315bf3c266ae78f894de347769b3c0a10af05ad8",
+    "grader_stdout_sha256": "38a09193c872c9c8ad72315956462ff84f5afd4cf38b95e761f48ba964b95c96",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr40--compact_routing--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "0b99fd2d29c2987f14c2d581596a99757ce0c57d1cd0368d98352864d08b3f45",
+    "graded_receipt_sha256": "ee16ec38925b7b9b43b566d23ef7eaabb0f330e60d49f6cb68fed7420c038a15",
+    "production_patch_sha256": "12e04eae0df0c2e8774c513f87fa18e09c43a8ec8690d66c82a6f02b7be7bd81",
+    "grader_stdout_sha256": "54ad0db6ef3ea39cb3fec1b9789a8615e9c6f961dd4aa77c40da5cada406def2",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr40--counterexample_first--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "e047076045a0904eff782bbb95ca4db53aba49219809af47986ec2c891cc33d2",
+    "graded_receipt_sha256": "939bc8402bd351f30d0971e850c0f09aff7d516bb11a44cf15a03863886fdcb2",
+    "production_patch_sha256": "02cdeabc0d757f1218376d2d628639b7e99af275595736c6a179c99db9638d55",
+    "grader_stdout_sha256": "4d17f212662b5952a69c9c8f966f619390a321b5418f69761631ed4628f6a864",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr40--current_cp_06--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "a20f6e6276a1b24a730ff0383af86c0d1768d0e9bfa2a584a604b00f8a6040bb",
+    "graded_receipt_sha256": "ce5aef1c044bf9fed5c393e10de37c5ee572a13211468eca6c5c807af79462c9",
+    "production_patch_sha256": "9509155f9ee55d27765a5dde6433bb4ae955f771eae0f1456f75f4ab347953bf",
+    "grader_stdout_sha256": "22de2c23f18fbbe466733a2fa829776607403a77ddfa9485646654d27c1db040",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr40--dependency_slicing--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "38643805c0ca16248debd254d16b433f20196d405de34af9a4f5a1fd68721e30",
+    "graded_receipt_sha256": "0dbc931eff83a3ba4bb976906ad99a9d2dce30fab38acd5db5444a9111f29b50",
+    "production_patch_sha256": "9b43bbd17e9a13b205130d214ab3d608016c8de9b7f2631dd2304e245d14a6d7",
+    "grader_stdout_sha256": "5b62c8e04a613176d127109e603a35a818527b278a60f05925f229bd8c183a97",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr40--independent_review--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "c01bcfc54d3425b6d26dfce920150e1666a25081e3691d7c1cce562078d3e81c",
+    "graded_receipt_sha256": "2424fdb3a19ac73cf2ad9dfd7c5b9fb463b84660ae42c7c6830cbdbfc46d2a47",
+    "production_patch_sha256": "f9403b62c5e2013c58873d7a04f79aca7cfad9354ef3aa06b507a9df29a69b8d",
+    "grader_stdout_sha256": "2856b5ff7443fde8e5ccee191334d45cc983674b7c54153b50c9931126e0c035",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "trial_id": "tweed-pr40--original_cp_05--r2",
+    "grading_receipt_filename": "graded-receipt.json",
+    "raw_receipt_sha256": "cb802202efbec348a93f229d1bd7c537b8adb72b3ff06e3bac7ef6da08df71cb",
+    "graded_receipt_sha256": "f110c9a9725ddaa723828aedffa0346e74d5ed8920e8292d688ec0308fcf8df6",
+    "production_patch_sha256": "92a7d93c13793a6415ad3d05afc09508782fa5c09ec3149237dd9e3c9fb2afd6",
+    "grader_stdout_sha256": "85bfa9c77c377b307cce286d8f1ca278b90d01d6f7fad3b10d29be2dfb8c948c",
+    "grader_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+]

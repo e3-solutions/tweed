@@ -1,0 +1,47 @@
+diff --git a/bonaparte_native.py b/bonaparte_native.py
+index 8ec992a..cd5950b 100644
+--- a/bonaparte_native.py
++++ b/bonaparte_native.py
+@@ -97,6 +97,28 @@ def terminate_and_reap(process: subprocess.Popen) -> None:
+                     pass
+ 
+ 
++def active_turn_completion(
++    params: dict, turn: dict, active_thread: str | None, active_turn: str | None
++) -> dict | None:
++    """Return ``turn`` only when it is the active coordinator turn's outcome.
++
++    Native child threads complete their own turns on the same connection;
++    those completions must never finish or replace the coordinator turn.
++    Legacy notifications without a threadId are accepted only for the active
++    turn ID. A different turn on the coordinator thread itself fails closed.
++    """
++    if active_turn is None:
++        return None
++    thread_id = params.get("threadId")
++    if thread_id is None:
++        return turn if turn.get("id") == active_turn else None
++    if thread_id != active_thread:
++        return None
++    if turn.get("id") != active_turn:
++        raise RuntimeError("Codex app-server completed the wrong turn")
++    return turn
++
++
+ class AppServerPhaseDriver:
+     """Drive one native app-server turn without retaining its raw event stream."""
+ 
+@@ -306,7 +328,12 @@ class AppServerPhaseDriver:
+             turn = params.get("turn")
+             if not isinstance(turn, dict):
+                 raise RuntimeError("Codex app-server turn completion is malformed")
+-            return method, turn
++            return method, active_turn_completion(
++                params,
++                turn,
++                getattr(self, "_receipt_thread_id", None),
++                getattr(self, "_receipt_turn_id", None),
++            )
+         return method, None
+ 
+     def request(self, method: str, params: dict) -> dict:

@@ -1,0 +1,150 @@
+diff --git a/bonaparte b/bonaparte
+index 888b766..53cd00d 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -452,6 +452,7 @@ def run_phase(
+         for role, description in child_configs.items()
+     }
+     expected_branch = None
++    canonical_branch = None
+     if resume_session_id:
+         replay_policy = (
+             "This clarification may be an at-least-once replay after an ambiguous "
+@@ -481,6 +482,7 @@ def run_phase(
+                 phase,
+                 values[1] if len(values) == 2 else None,
+             )
++            canonical_branch = handoff["issue"].get("git_branch_name")
+             if phase == "implement":
+                 expected_branch = handoff["issue"]["git_branch_name"]
+             phase_input = json.dumps(handoff, ensure_ascii=False)
+@@ -557,8 +559,12 @@ def run_phase(
+     observer = EventObserver(_ACTIVE_PROGRESS)
+     driver = None
+     failed = True
++    receipt = None
+     try:
+         driver = AppServerPhaseDriver(repository, observer)
++        driver.child_branch = (
++            canonical_branch if isinstance(canonical_branch, str) else None
++        )
+         driver.request(
+             "initialize", {"clientInfo": {"name": "bonaparte", "version": "1"}}
+         )
+@@ -708,6 +714,10 @@ def run_phase(
+         if observation is not None:
+             observation.update(observed)
+         if driver is not None:
++            # A session awaiting clarification must stay resumable.
++            driver.retain_root = (
++                isinstance(receipt, dict) and receipt.get("state") == "needs-input"
++            )
+             try:
+                 driver.close(failed=failed)
+             except BaseException:
+diff --git a/bonaparte_native.py b/bonaparte_native.py
+index e9a607c..08f27e1 100644
+--- a/bonaparte_native.py
++++ b/bonaparte_native.py
+@@ -121,6 +121,11 @@ class AppServerPhaseDriver:
+         self._last_agent_message: str | None = None
+         self._receipt_thread_id: str | None = None
+         self._receipt_turn_id: str | None = None
++        # Thread ownership observed from actual thread/started notifications.
++        self._started_threads: dict[str, str | None] = {}
++        self._root_terminal = False
++        self.child_branch: str | None = None
++        self.retain_root = False
+         self._reader = threading.Thread(target=self._read, daemon=True)
+         self._reader.start()
+ 
+@@ -274,6 +279,7 @@ class AppServerPhaseDriver:
+         if method == "thread/started":
+             thread = params.get("thread")
+             if isinstance(thread, dict) and isinstance(thread.get("id"), str):
++                self._started_threads.setdefault(thread["id"], thread_parent(thread))
+                 self.observer.feed(
+                     json.dumps({"type": "thread.started", "thread_id": thread["id"]})
+                 )
+@@ -314,6 +320,7 @@ class AppServerPhaseDriver:
+                     or thread_id == self._receipt_thread_id
+                 )
+             ):
++                self._root_terminal = True
+                 return method, turn
+         return method, None
+ 
+@@ -345,5 +352,72 @@ class AppServerPhaseDriver:
+     def last_agent_message(self) -> str | None:
+         return self._last_agent_message
+ 
++    def owned_descendants(self) -> list[str]:
++        """Started threads whose observed parent chain reaches the started root."""
++        root = self._receipt_thread_id
++        if root is None or root not in self._started_threads:
++            return []
++        owned: list[str] = []
++        for identifier in self._started_threads:
++            seen = {identifier}
++            parent = self._started_threads[identifier]
++            while parent is not None and parent not in seen:
++                if parent == root:
++                    owned.append(identifier)
++                    break
++                seen.add(parent)
++                parent = self._started_threads.get(parent)
++        return owned
++
+     def close(self, *, failed: bool) -> None:
+-        terminate_and_reap(self.process)
++        """Finish a terminal root's native lifecycle, then always reap the server.
++
++        Every cleanup step is attempted; failures surface only after reaping.
++        """
++        errors: list[str] = []
++        root = getattr(self, "_receipt_thread_id", None)
++        started = getattr(self, "_started_threads", {})
++        try:
++            if getattr(self, "_root_terminal", False) and root in started:
++                if getattr(self, "child_branch", None):
++                    for child in self.owned_descendants():
++                        try:
++                            self.request(
++                                "thread/metadata/update",
++                                {
++                                    "threadId": child,
++                                    "gitInfo": {"branch": self.child_branch},
++                                },
++                            )
++                        except Exception as error:
++                            errors.append(f"metadata update for {child}: {error}")
++                if not getattr(self, "retain_root", False):
++                    try:
++                        self.request("thread/archive", {"threadId": root})
++                    except Exception as error:
++                        errors.append(f"archive of {root}: {error}")
++        finally:
++            terminate_and_reap(self.process)
++        if errors:
++            raise RuntimeError(
++                "Codex app-server session cleanup failed: " + "; ".join(errors)
++            )
++
++
++def thread_parent(thread: dict) -> str | None:
++    """Return the spawning parent thread identity carried by a started thread."""
++    for key in ("parentThreadId", "parent_thread_id"):
++        value = thread.get(key)
++        if isinstance(value, str) and value:
++            return value
++    source = thread.get("source")
++    if isinstance(source, dict):
++        sub_agent = source.get("subAgent", source.get("sub_agent"))
++        if isinstance(sub_agent, dict):
++            spawn = sub_agent.get("thread_spawn", sub_agent.get("threadSpawn"))
++            if isinstance(spawn, dict):
++                for key in ("parent_thread_id", "parentThreadId"):
++                    value = spawn.get(key)
++                    if isinstance(value, str) and value:
++                        return value
++    return None

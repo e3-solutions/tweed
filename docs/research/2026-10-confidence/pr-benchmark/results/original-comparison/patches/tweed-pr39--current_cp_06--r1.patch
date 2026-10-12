@@ -1,0 +1,198 @@
+diff --git a/bonaparte b/bonaparte
+index 888b766..57aa0d4 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -452,6 +452,7 @@ def run_phase(
+         for role, description in child_configs.items()
+     }
+     expected_branch = None
++    canonical_branch = None
+     if resume_session_id:
+         replay_policy = (
+             "This clarification may be an at-least-once replay after an ambiguous "
+@@ -481,6 +482,9 @@ def run_phase(
+                 phase,
+                 values[1] if len(values) == 2 else None,
+             )
++            branch_name = handoff["issue"].get("git_branch_name")
++            if isinstance(branch_name, str) and branch_name:
++                canonical_branch = branch_name
+             if phase == "implement":
+                 expected_branch = handoff["issue"]["git_branch_name"]
+             phase_input = json.dumps(handoff, ensure_ascii=False)
+@@ -559,6 +563,7 @@ def run_phase(
+     failed = True
+     try:
+         driver = AppServerPhaseDriver(repository, observer)
++        driver.canonical_branch = canonical_branch
+         driver.request(
+             "initialize", {"clientInfo": {"name": "bonaparte", "version": "1"}}
+         )
+@@ -702,6 +707,9 @@ def run_phase(
+         if not driver.last_agent_message:
+             raise RuntimeError("Codex app-server returned no final receipt")
+         receipt = json.loads(driver.last_agent_message)
++        if isinstance(receipt, dict) and receipt.get("state") == "needs-input":
++            # The pending clarification resumes this exact root session.
++            driver.archive_root = False
+         failed = False
+     finally:
+         observed = observer.finish()
+diff --git a/bonaparte_native.py b/bonaparte_native.py
+index e9a607c..6b15fc5 100644
+--- a/bonaparte_native.py
++++ b/bonaparte_native.py
+@@ -18,6 +18,7 @@ PHASE_CHILD_ENV = "BONAPARTE_PHASE_CHILD"
+ COORDINATOR_TERMINATE_GRACE_SECONDS = 1.0
+ COORDINATOR_KILL_GRACE_SECONDS = 5.0
+ APP_SERVER_REQUEST_TIMEOUT_SECONDS = 45.0
++TEARDOWN_REQUEST_TIMEOUT_SECONDS = 10.0
+ 
+ 
+ def find_codex() -> str:
+@@ -121,6 +122,11 @@ class AppServerPhaseDriver:
+         self._last_agent_message: str | None = None
+         self._receipt_thread_id: str | None = None
+         self._receipt_turn_id: str | None = None
++        # Thread identity -> parent identity, recorded only from thread/started.
++        self._started_threads: dict[str, str | None] = {}
++        self._root_finished = False
++        self.canonical_branch: str | None = None
++        self.archive_root = True
+         self._reader = threading.Thread(target=self._read, daemon=True)
+         self._reader.start()
+ 
+@@ -273,7 +279,7 @@ class AppServerPhaseDriver:
+             raise RuntimeError(f"unsupported app-server request: {method}")
+         if method == "thread/started":
+             thread = params.get("thread")
+-            if isinstance(thread, dict) and isinstance(thread.get("id"), str):
++            if self._track_started(params) and isinstance(thread, dict):
+                 self.observer.feed(
+                     json.dumps({"type": "thread.started", "thread_id": thread["id"]})
+                 )
+@@ -314,6 +320,7 @@ class AppServerPhaseDriver:
+                     or thread_id == self._receipt_thread_id
+                 )
+             ):
++                self._root_finished = True
+                 return method, turn
+         return method, None
+ 
+@@ -345,5 +352,115 @@ class AppServerPhaseDriver:
+     def last_agent_message(self) -> str | None:
+         return self._last_agent_message
+ 
++    @staticmethod
++    def _parent_thread_id(params: dict, thread: dict) -> str | None:
++        for candidate in (
++            thread.get("parentThreadId"),
++            thread.get("parent_thread_id"),
++            params.get("parentThreadId"),
++        ):
++            if isinstance(candidate, str) and candidate:
++                return candidate
++        source = thread.get("source")
++        if isinstance(source, dict):
++            sub_agent = source.get("subAgent", source.get("sub_agent"))
++            if isinstance(sub_agent, dict):
++                spawn = sub_agent.get("thread_spawn", sub_agent.get("threadSpawn"))
++                if isinstance(spawn, dict):
++                    for key in ("parent_thread_id", "parentThreadId"):
++                        candidate = spawn.get(key)
++                        if isinstance(candidate, str) and candidate:
++                            return candidate
++        return None
++
++    def _track_started(self, params: dict) -> bool:
++        thread = params.get("thread")
++        if not isinstance(thread, dict):
++            return False
++        thread_id = thread.get("id")
++        if not isinstance(thread_id, str) or not thread_id:
++            return False
++        parent = self._parent_thread_id(params, thread)
++        # The first start event fixes ownership; a later event cannot re-parent.
++        self._started_threads.setdefault(thread_id, parent)
++        return True
++
++    def owned_descendants(self) -> list[str]:
++        """Started threads transitively spawned by the started root, in start order."""
++        root = self._receipt_thread_id
++        if root is None or root not in self._started_threads:
++            return []
++        owned = {root}
++        changed = True
++        while changed:
++            changed = False
++            for thread_id, parent in self._started_threads.items():
++                if thread_id not in owned and parent in owned:
++                    owned.add(thread_id)
++                    changed = True
++        return [
++            thread_id
++            for thread_id in self._started_threads
++            if thread_id in owned and thread_id != root
++        ]
++
++    def _teardown_request(self, method: str, params: dict) -> None:
++        request_id = self.send(method, params)
++        deadline = time.monotonic() + TEARDOWN_REQUEST_TIMEOUT_SECONDS
++        while True:
++            try:
++                message = self.next_message(max(0.0, deadline - time.monotonic()))
++            except TimeoutError as error:
++                raise RuntimeError(
++                    f"Codex app-server timed out during {method}"
++                ) from error
++            if "method" in message:
++                notification = message.get("params")
++                if message.get("method") == "thread/started" and isinstance(
++                    notification, dict
++                ):
++                    self._track_started(notification)
++                continue
++            response_id = message.get("id")
++            if isinstance(response_id, int) and response_id < request_id:
++                continue  # late reply to an earlier teardown request that timed out
++            if response_id != request_id:
++                raise RuntimeError("Codex app-server response correlation failed")
++            if "error" in message:
++                raise RuntimeError(
++                    f"Codex app-server rejected {method}: {message['error']}"
++                )
++            return
++
++    def _finish_session(self) -> list[str]:
++        """Attempt every teardown step for a finished, started root; return failures."""
++        root = getattr(self, "_receipt_thread_id", None)
++        started = getattr(self, "_started_threads", {})
++        if not getattr(self, "_root_finished", False) or root not in started:
++            return []
++        failures: list[str] = []
++        if getattr(self, "canonical_branch", None):
++            for child in self.owned_descendants():
++                try:
++                    self._teardown_request(
++                        "thread/metadata/update",
++                        {"threadId": child, "gitInfo": {"branch": self.canonical_branch}},
++                    )
++                except Exception as error:
++                    failures.append(f"descendant {child} metadata update: {error}")
++        if getattr(self, "archive_root", True):
++            try:
++                self._teardown_request("thread/archive", {"threadId": root})
++            except Exception as error:
++                failures.append(f"root {root} archive: {error}")
++        return failures
++
+     def close(self, *, failed: bool) -> None:
+-        terminate_and_reap(self.process)
++        try:
++            failures = self._finish_session()
++        finally:
++            terminate_and_reap(self.process)
++        if failures:
++            raise RuntimeError(
++                "Codex native session cleanup failed: " + "; ".join(failures)
++            )

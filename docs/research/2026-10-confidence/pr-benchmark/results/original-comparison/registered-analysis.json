@@ -1,0 +1,547 @@
+{
+  "baseline": "original_cp_05",
+  "arms": {
+    "bounded_repair": {
+      "attempts": 12,
+      "passed": 2,
+      "oracle_passed_including_invalid": 3,
+      "success_rate": 0.16666666666666666,
+      "harness_invalid": 1,
+      "declared_complete": 1,
+      "false_completion": 0,
+      "grading_unknown": 1,
+      "receipts_missing": 1,
+      "completion_unknown": 11,
+      "total_known_cost_usd": 0.48624339999999994,
+      "cost_unknown": 11,
+      "mean_known_cost_usd": 0.48624339999999994,
+      "mean_wall_seconds": 229.251319977272,
+      "median_wall_seconds": 240.65579954199347,
+      "autonomous_successes": 2,
+      "interventions_unknown": 1,
+      "denials": 2,
+      "paired": {
+        "wins": 1,
+        "losses": 2,
+        "ties": 3,
+        "trial_wins": 1,
+        "trial_losses": 2,
+        "trial_ties": 9,
+        "missing_baseline_pairs": 0,
+        "task_deltas": {
+          "tweed-pr31": 0,
+          "tweed-pr32": 0.5,
+          "tweed-pr34": -0.5,
+          "tweed-pr35": 0,
+          "tweed-pr39": 0,
+          "tweed-pr40": -0.5
+        },
+        "mean_task_delta": -0.08333333333333333,
+        "descriptive_bootstrap_95_percent": [
+          -0.3333333333333333,
+          0.16666666666666666
+        ],
+        "false_completion": {
+          "complete_pairs": 1,
+          "task_deltas": {
+            "tweed-pr34": 0
+          },
+          "mean_task_delta": 0,
+          "descriptive_bootstrap_95_percent": [
+            0,
+            0
+          ]
+        },
+        "cost_usd": {
+          "complete_pairs": 1,
+          "task_deltas": {
+            "tweed-pr34": -0.7244754000000002
+          },
+          "mean_task_delta": -0.7244754000000002,
+          "descriptive_bootstrap_95_percent": [
+            -0.7244754000000002,
+            -0.7244754000000002
+          ]
+        },
+        "wall_seconds": {
+          "complete_pairs": 11,
+          "task_deltas": {
+            "tweed-pr31": -39.43680393799974,
+            "tweed-pr32": 8.432602728997153,
+            "tweed-pr34": -60.962805624997486,
+            "tweed-pr35": -0.12275324999791337,
+            "tweed-pr39": -0.09105097949975516,
+            "tweed-pr40": -0.05877689599947189
+          },
+          "mean_task_delta": -15.373264659916202,
+          "descriptive_bootstrap_95_percent": [
+            -37.08455379533195,
+            2.7503575276665893
+          ]
+        }
+      }
+    },
+    "compact_routing": {
+      "attempts": 12,
+      "passed": 4,
+      "oracle_passed_including_invalid": 4,
+      "success_rate": 0.3333333333333333,
+      "harness_invalid": 0,
+      "declared_complete": 0,
+      "false_completion": 0,
+      "grading_unknown": 0,
+      "receipts_missing": 0,
+      "completion_unknown": 12,
+      "total_known_cost_usd": 0,
+      "cost_unknown": 12,
+      "mean_known_cost_usd": null,
+      "mean_wall_seconds": 240.73247886483193,
+      "median_wall_seconds": 240.7241151044982,
+      "autonomous_successes": 4,
+      "interventions_unknown": 0,
+      "denials": 11,
+      "paired": {
+        "wins": 2,
+        "losses": 1,
+        "ties": 3,
+        "trial_wins": 2,
+        "trial_losses": 1,
+        "trial_ties": 9,
+        "missing_baseline_pairs": 0,
+        "task_deltas": {
+          "tweed-pr31": 0,
+          "tweed-pr32": 0.5,
+          "tweed-pr34": 0,
+          "tweed-pr35": 0.5,
+          "tweed-pr39": 0,
+          "tweed-pr40": -0.5
+        },
+        "mean_task_delta": 0.08333333333333333,
+        "descriptive_bootstrap_95_percent": [
+          -0.16666666666666666,
+          0.3333333333333333
+        ],
+        "false_completion": {
+          "complete_pairs": 0,
+          "task_deltas": {},
+          "mean_task_delta": null,
+          "descriptive_bootstrap_95_percent": null
+        },
+        "cost_usd": {
+          "complete_pairs": 0,
+          "task_deltas": {},
+          "mean_task_delta": null,
+          "descriptive_bootstrap_95_percent": null
+        },
+        "wall_seconds": {
+          "complete_pairs": 11,
+          "task_deltas": {
+            "tweed-pr31": -39.588548771000205,
+            "tweed-pr32": 8.523858916501922,
+            "tweed-pr34": 1.9147340209988215,
+            "tweed-pr35": 0.06226675000652904,
+            "tweed-pr39": 0.05795518749994244,
+            "tweed-pr40": 0.09372495849311235
+          },
+          "mean_task_delta": -4.822668156249979,
+          "descriptive_bootstrap_95_percent": [
+            -19.454396465331456,
+            4.298305868001989
+          ]
+        }
+      }
+    },
+    "counterexample_first": {
+      "attempts": 12,
+      "passed": 4,
+      "oracle_passed_including_invalid": 5,
+      "success_rate": 0.3333333333333333,
+      "harness_invalid": 1,
+      "declared_complete": 0,
+      "false_completion": 0,
+      "grading_unknown": 0,
+      "receipts_missing": 0,
+      "completion_unknown": 12,
+      "total_known_cost_usd": 2.1411586,
+      "cost_unknown": 11,
+      "mean_known_cost_usd": 2.1411586,
+      "mean_wall_seconds": 237.0912695069164,
+      "median_wall_seconds": 240.6949617499995,
+      "autonomous_successes": 4,
+      "interventions_unknown": 0,
+      "denials": 8,
+      "paired": {
+        "wins": 2,
+        "losses": 1,
+        "ties": 3,
+        "trial_wins": 2,
+        "trial_losses": 1,
+        "trial_ties": 9,
+        "missing_baseline_pairs": 0,
+        "task_deltas": {
+          "tweed-pr31": 0,
+          "tweed-pr32": 0.5,
+          "tweed-pr34": 0,
+          "tweed-pr35": 0.5,
+          "tweed-pr39": 0,
+          "tweed-pr40": -0.5
+        },
+        "mean_task_delta": 0.08333333333333333,
+        "descriptive_bootstrap_95_percent": [
+          -0.16666666666666666,
+          0.3333333333333333
+        ],
+        "false_completion": {
+          "complete_pairs": 0,
+          "task_deltas": {},
+          "mean_task_delta": null,
+          "descriptive_bootstrap_95_percent": null
+        },
+        "cost_usd": {
+          "complete_pairs": 0,
+          "task_deltas": {},
+          "mean_task_delta": null,
+          "descriptive_bootstrap_95_percent": null
+        },
+        "wall_seconds": {
+          "complete_pairs": 11,
+          "task_deltas": {
+            "tweed-pr31": -39.50737131299883,
+            "tweed-pr32": 8.45197889550036,
+            "tweed-pr34": 1.9885680830010415,
+            "tweed-pr35": -44.02925104199676,
+            "tweed-pr39": -0.027457167000079608,
+            "tweed-pr40": 0.02812252099829493
+          },
+          "mean_task_delta": -12.182568337082662,
+          "descriptive_bootstrap_95_percent": [
+            -28.589813232832086,
+            3.4710299371671076
+          ]
+        }
+      }
+    },
+    "current_cp_06": {
+      "attempts": 12,
+      "passed": 4,
+      "oracle_passed_including_invalid": 4,
+      "success_rate": 0.3333333333333333,
+      "harness_invalid": 0,
+      "declared_complete": 2,
+      "false_completion": 0,
+      "grading_unknown": 0,
+      "receipts_missing": 0,
+      "completion_unknown": 10,
+      "total_known_cost_usd": 1.3218924,
+      "cost_unknown": 10,
+      "mean_known_cost_usd": 0.6609462,
+      "mean_wall_seconds": 221.08048974299956,
+      "median_wall_seconds": 240.69685870849935,
+      "autonomous_successes": 4,
+      "interventions_unknown": 0,
+      "denials": 9,
+      "paired": {
+        "wins": 1,
+        "losses": 0,
+        "ties": 5,
+        "trial_wins": 1,
+        "trial_losses": 0,
+        "trial_ties": 11,
+        "missing_baseline_pairs": 0,
+        "task_deltas": {
+          "tweed-pr31": 0,
+          "tweed-pr32": 0,
+          "tweed-pr34": 0,
+          "tweed-pr35": 0.5,
+          "tweed-pr39": 0,
+          "tweed-pr40": 0
+        },
+        "mean_task_delta": 0.08333333333333333,
+        "descriptive_bootstrap_95_percent": [
+          0,
+          0.25
+        ],
+        "false_completion": {
+          "complete_pairs": 1,
+          "task_deltas": {
+            "tweed-pr34": 0
+          },
+          "mean_task_delta": 0,
+          "descriptive_bootstrap_95_percent": [
+            0,
+            0
+          ]
+        },
+        "cost_usd": {
+          "complete_pairs": 1,
+          "task_deltas": {
+            "tweed-pr34": -0.37422960000000016
+          },
+          "mean_task_delta": -0.37422960000000016,
+          "descriptive_bootstrap_95_percent": [
+            -0.37422960000000016,
+            -0.37422960000000016
+          ]
+        },
+        "wall_seconds": {
+          "complete_pairs": 11,
+          "task_deltas": {
+            "tweed-pr31": -39.553982604497776,
+            "tweed-pr32": 8.44087237450367,
+            "tweed-pr34": -115.83099320850192,
+            "tweed-pr35": -0.22818512500089128,
+            "tweed-pr39": -0.09270027099648814,
+            "tweed-pr40": 0.19052677049694466
+          },
+          "mean_task_delta": -24.51241034399941,
+          "descriptive_bootstrap_95_percent": [
+            -64.44431811483494,
+            2.8010713399999077
+          ]
+        }
+      }
+    },
+    "dependency_slicing": {
+      "attempts": 12,
+      "passed": 3,
+      "oracle_passed_including_invalid": 4,
+      "success_rate": 0.25,
+      "harness_invalid": 1,
+      "declared_complete": 2,
+      "false_completion": 0,
+      "grading_unknown": 0,
+      "receipts_missing": 0,
+      "completion_unknown": 9,
+      "total_known_cost_usd": 10.150867,
+      "cost_unknown": 6,
+      "mean_known_cost_usd": 1.6918111666666666,
+      "mean_wall_seconds": 216.51462837508492,
+      "median_wall_seconds": 240.4601262085016,
+      "autonomous_successes": 3,
+      "interventions_unknown": 0,
+      "denials": 4,
+      "paired": {
+        "wins": 1,
+        "losses": 1,
+        "ties": 4,
+        "trial_wins": 1,
+        "trial_losses": 1,
+        "trial_ties": 10,
+        "missing_baseline_pairs": 0,
+        "task_deltas": {
+          "tweed-pr31": 0,
+          "tweed-pr32": 0,
+          "tweed-pr34": 0,
+          "tweed-pr35": 0.5,
+          "tweed-pr39": 0,
+          "tweed-pr40": -0.5
+        },
+        "mean_task_delta": 0.0,
+        "descriptive_bootstrap_95_percent": [
+          -0.25,
+          0.25
+        ],
+        "false_completion": {
+          "complete_pairs": 1,
+          "task_deltas": {
+            "tweed-pr34": 0
+          },
+          "mean_task_delta": 0,
+          "descriptive_bootstrap_95_percent": [
+            0,
+            0
+          ]
+        },
+        "cost_usd": {
+          "complete_pairs": 2,
+          "task_deltas": {
+            "tweed-pr31": -0.5367448000000001,
+            "tweed-pr34": -0.6878232000000001
+          },
+          "mean_task_delta": -0.612284,
+          "descriptive_bootstrap_95_percent": [
+            -0.6878232000000001,
+            -0.5367448000000001
+          ]
+        },
+        "wall_seconds": {
+          "complete_pairs": 11,
+          "task_deltas": {
+            "tweed-pr31": -15.481735562998608,
+            "tweed-pr32": 8.573992458503199,
+            "tweed-pr34": -124.67853035449752,
+            "tweed-pr35": -0.5949633329946664,
+            "tweed-pr39": -0.908507145996964,
+            "tweed-pr40": -27.63862031250028
+          },
+          "mean_task_delta": -26.78806070841414,
+          "descriptive_bootstrap_95_percent": [
+            -67.59900425374741,
+            -0.07203074299641798
+          ]
+        }
+      }
+    },
+    "independent_review": {
+      "attempts": 12,
+      "passed": 4,
+      "oracle_passed_including_invalid": 4,
+      "success_rate": 0.3333333333333333,
+      "harness_invalid": 0,
+      "declared_complete": 0,
+      "false_completion": 0,
+      "grading_unknown": 0,
+      "receipts_missing": 0,
+      "completion_unknown": 12,
+      "total_known_cost_usd": 0,
+      "cost_unknown": 12,
+      "mean_known_cost_usd": null,
+      "mean_wall_seconds": 240.99726832316597,
+      "median_wall_seconds": 240.78442827099883,
+      "autonomous_successes": 4,
+      "interventions_unknown": 0,
+      "denials": 4,
+      "paired": {
+        "wins": 1,
+        "losses": 1,
+        "ties": 4,
+        "trial_wins": 2,
+        "trial_losses": 1,
+        "trial_ties": 9,
+        "missing_baseline_pairs": 0,
+        "task_deltas": {
+          "tweed-pr31": 0,
+          "tweed-pr32": 0,
+          "tweed-pr34": 0,
+          "tweed-pr35": 1,
+          "tweed-pr39": 0,
+          "tweed-pr40": -0.5
+        },
+        "mean_task_delta": 0.08333333333333333,
+        "descriptive_bootstrap_95_percent": [
+          -0.25,
+          0.5
+        ],
+        "false_completion": {
+          "complete_pairs": 0,
+          "task_deltas": {},
+          "mean_task_delta": null,
+          "descriptive_bootstrap_95_percent": null
+        },
+        "cost_usd": {
+          "complete_pairs": 0,
+          "task_deltas": {},
+          "mean_task_delta": null,
+          "descriptive_bootstrap_95_percent": null
+        },
+        "wall_seconds": {
+          "complete_pairs": 11,
+          "task_deltas": {
+            "tweed-pr31": -39.50180020850121,
+            "tweed-pr32": 8.600747208500252,
+            "tweed-pr34": 2.158918916999255,
+            "tweed-pr35": 0.24243491700326558,
+            "tweed-pr39": -0.13145812499840304,
+            "tweed-pr40": -0.031164833500952227
+          },
+          "mean_task_delta": -4.7770536874162985,
+          "descriptive_bootstrap_95_percent": [
+            -19.40146856258438,
+            4.3303911459170195
+          ]
+        }
+      }
+    },
+    "original_cp_05": {
+      "attempts": 12,
+      "passed": 3,
+      "oracle_passed_including_invalid": 4,
+      "success_rate": 0.25,
+      "harness_invalid": 1,
+      "declared_complete": 2,
+      "false_completion": 1,
+      "grading_unknown": 1,
+      "receipts_missing": 1,
+      "completion_unknown": 10,
+      "total_known_cost_usd": 5.4437766,
+      "cost_unknown": 9,
+      "mean_known_cost_usd": 1.8145922,
+      "mean_wall_seconds": 246.0109947653626,
+      "median_wall_seconds": 240.6959282079988,
+      "autonomous_successes": 3,
+      "interventions_unknown": 1,
+      "denials": 4,
+      "paired": {
+        "wins": 0,
+        "losses": 0,
+        "ties": 6,
+        "trial_wins": 0,
+        "trial_losses": 0,
+        "trial_ties": 12,
+        "missing_baseline_pairs": 0,
+        "task_deltas": {
+          "tweed-pr31": 0,
+          "tweed-pr32": 0,
+          "tweed-pr34": 0,
+          "tweed-pr35": 0,
+          "tweed-pr39": 0,
+          "tweed-pr40": 0
+        },
+        "mean_task_delta": 0,
+        "descriptive_bootstrap_95_percent": [
+          0,
+          0
+        ],
+        "false_completion": {
+          "complete_pairs": 2,
+          "task_deltas": {
+            "tweed-pr32": 0,
+            "tweed-pr34": 0
+          },
+          "mean_task_delta": 0,
+          "descriptive_bootstrap_95_percent": [
+            0,
+            0
+          ]
+        },
+        "cost_usd": {
+          "complete_pairs": 3,
+          "task_deltas": {
+            "tweed-pr31": 0.0,
+            "tweed-pr32": 0.0,
+            "tweed-pr34": 0.0
+          },
+          "mean_task_delta": 0.0,
+          "descriptive_bootstrap_95_percent": [
+            0.0,
+            0.0
+          ]
+        },
+        "wall_seconds": {
+          "complete_pairs": 11,
+          "task_deltas": {
+            "tweed-pr31": 0.0,
+            "tweed-pr32": 0.0,
+            "tweed-pr34": 0.0,
+            "tweed-pr35": 0.0,
+            "tweed-pr39": 0.0,
+            "tweed-pr40": 0.0
+          },
+          "mean_task_delta": 0.0,
+          "descriptive_bootstrap_95_percent": [
+            0.0,
+            0.0
+          ]
+        }
+      }
+    }
+  },
+  "scheduled_trials": 84,
+  "observed_receipts": 84,
+  "limitations": [
+    "Repeated trials are clustered by PR; they do not enlarge the independent task count.",
+    "Bootstrap intervals are descriptive on a small selected task set, not a population efficacy guarantee.",
+    "Missing cost is not treated as zero; harness-invalid and unfinished runs remain in attempt denominators.",
+    "Passing a held-out oracle does not prove all behavior correct or eliminate possible training contamination."
+  ]
+}

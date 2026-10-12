@@ -1,0 +1,64 @@
+diff --git a/bonaparte-launcher b/bonaparte-launcher
+index 67681b7..1764948 100755
+--- a/bonaparte-launcher
++++ b/bonaparte-launcher
+@@ -93,10 +93,31 @@ def latest_tag() -> tuple[str, str]:
+     return tag, oid
+ 
+ 
++def status(home: Path) -> int:
++    """Report installed and latest stable releases without changing state."""
++
++    installed = current_release(home).name
++    print(f"installed: {installed}", flush=True)
++    try:
++        tag, _ = latest_tag()
++    except Exception as error:
++        print("latest: unavailable\ncurrent: unknown", flush=True)
++        print(f"bonaparte: cannot resolve latest release: {error}", file=sys.stderr)
++        return 1
++    installed_version = tag_version(installed)
++    current = installed_version is not None and installed_version >= tag_version(tag)
++    print(f"latest: {tag}\ncurrent: {'yes' if current else 'no'}")
++    return 0
++
++
+ def validate_release(release: Path) -> None:
+-    missing = [name for name in REQUIRED if not (release / name).exists()]
+-    if missing:
+-        raise RuntimeError(f"release is missing {', '.join(missing)}")
++    invalid = [
++        name
++        for name in (*REQUIRED, "autoresearch")
++        if (release / name).is_symlink() or not (release / name).is_file()
++    ]
++    if invalid:
++        raise RuntimeError(f"release is missing or has invalid {', '.join(invalid)}")
+     for name in (
+         "bonaparte",
+         "bonaparte-launcher",
+@@ -184,14 +205,22 @@ def automatic_update(home: Path) -> None:
+         return
+     try:
+         checked.touch()
+-        update(home)
++        tag, _ = latest_tag()
++        installed = tag_version(current_release(home).name)
++        if installed is None or installed < tag_version(tag):
++            print(
++                f"bonaparte: {tag} is available; run `bonaparte update`",
++                file=sys.stderr,
++            )
+     except Exception as error:
+-        print(f"bonaparte: automatic update failed: {error}", file=sys.stderr)
++        print(f"bonaparte: update check failed: {error}", file=sys.stderr)
+ 
+ 
+ def main() -> int:
+     home = bonaparte_home()
+     try:
++        if sys.argv[1:] == ["status"]:
++            return status(home)
+         migrate_autoresearch_link(home)
+         if sys.argv[1:] == ["update"]:
+             tag = update(home)

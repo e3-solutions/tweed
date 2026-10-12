@@ -86,3 +86,25 @@ This checks waiting across the former stored deadline; it does not exhaust every
 | `tweed-pr40--original_cp_05--r1` | GREEN | `ca2be6e23bac821404d91b29be8fade8b4adc8ff58f7308b439829506cc8d717` |
 
 All source, configuration, old selection versions and raw control receipts remain in `budget-resume-audit/prospective-nine/`. The original 84 primary results and unchanged all-14 eight-case secondary results are preserved separately.
+
+
+## Complete 14-artifact secondary inventory
+
+All 14 scheduled original PR40 artifacts have been evaluated once with the unchanged eight-case secondary source and bundle. Primary and secondary oracle verdicts are preserved separately; original source-scope/model validity rules and comparative scores are not rewritten. This complete inventory includes every scheduled arm and both repeats, rather than selecting successful artifacts. Repeats remain clustered at one PR.
+
+| Arm | Repeat | Frozen primary oracle | Retrospective public CLI oracle | Secondary failed cases |
+| --- | ---: | --- | --- | --- |
+| `current_cp_06` | 1 | RED | GREEN | None |
+| `compact_routing` | 1 | RED | GREEN | None |
+| `counterexample_first` | 1 | RED | GREEN | None |
+| `dependency_slicing` | 1 | RED | GREEN | None |
+| `independent_review` | 1 | RED | GREEN | None |
+| `bounded_repair` | 1 | RED | GREEN | None |
+| `original_cp_05` | 1 | RED | GREEN | None |
+| `counterexample_first` | 2 | RED | GREEN | None |
+| `compact_routing` | 2 | RED | GREEN | None |
+| `current_cp_06` | 2 | GREEN | GREEN | None |
+| `original_cp_05` | 2 | GREEN | GREEN | None |
+| `bounded_repair` | 2 | RED | GREEN | None |
+| `independent_review` | 2 | RED | GREEN | None |
+| `dependency_slicing` | 2 | RED | GREEN | None |

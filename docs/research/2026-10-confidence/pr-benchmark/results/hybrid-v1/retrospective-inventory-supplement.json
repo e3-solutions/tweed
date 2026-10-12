@@ -1,0 +1,3701 @@
+{
+  "schema_version": 1,
+  "analysis": "retrospective_supplement_only_no_accuracy_ranking",
+  "registered_primary_unchanged": true,
+  "assignments": 48,
+  "assignment_counts": {
+    "completed_receipt": 19,
+    "interrupted_before_receipt": 2,
+    "never_started": 27
+  },
+  "independently_graded_observed": 19,
+  "opus_observed_inventory_counts": {
+    "False": 40
+  },
+  "supplemental_verified_success_count": 0,
+  "schedule_sha256": "e9f386420185a5f17f69fb2a80752c71b74dd8f67dd61787fd968cfe5e6eeb66",
+  "original_registration_sha256": "acf9947ece810c8b8d0b8962a4a8bedb3c1e433074cb0c8d7541a32f237fe67d",
+  "astra_error_classes": {
+    "PermissionError": 17,
+    "OSError": 1
+  },
+  "rows": [
+    {
+      "trial_id": "tweed-pr35--astra_main_astra_peer--r1",
+      "task_id": "tweed-pr35",
+      "arm_id": "astra_main_astra_peer",
+      "repeat": 1,
+      "assignment_state": "completed_receipt",
+      "recorded_provider_requests": 3,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": false,
+      "raw_receipt_sha256": "5b40165250936beb4b928f432336c219abe890867ad243e56c2d080255ddca3b",
+      "graded_receipt_sha256": "9df03aeee4d44846ede0a2946722d0df9607fa5f6e0d6ede912a415c15aba915",
+      "stage_qualifications": [
+        {
+          "total_cost_usd": null,
+          "timed_out": false,
+          "role": "test_designer",
+          "status": "completed",
+          "model_requested": "gpt-6-astra",
+          "observed_models": [],
+          "usage": {
+            "input_tokens": 162187,
+            "cached_input_tokens": 139008,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1690,
+            "reasoning_output_tokens": 182
+          },
+          "qualification": {
+            "passed": true,
+            "live_wire_inventory_observed": false,
+            "strict_seven_tool_parity": false,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "additional_resource_handlers": [
+              "functions.list_mcp_resources",
+              "functions.list_mcp_resource_templates",
+              "functions.read_mcp_resource"
+            ],
+            "observed_tool_call_names": [
+              "confidence",
+              "list_files",
+              "read_file"
+            ],
+            "local": null,
+            "declared_inventory": {
+              "passed": true,
+              "strict_seven_tool_parity": false,
+              "missing_tools": [],
+              "unexpected_tools": [],
+              "declared_tools": [
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource",
+                "mcp__cp_trial.confidence",
+                "mcp__cp_trial.list_files",
+                "mcp__cp_trial.read_file",
+                "mcp__cp_trial.replace_text",
+                "mcp__cp_trial.request_review",
+                "mcp__cp_trial.run_tests",
+                "mcp__cp_trial.write_file"
+              ],
+              "expected_tools": [
+                "mcp__cp_trial__list_files",
+                "mcp__cp_trial__read_file",
+                "mcp__cp_trial__write_file",
+                "mcp__cp_trial__replace_text",
+                "mcp__cp_trial__run_tests",
+                "mcp__cp_trial__confidence",
+                "mcp__cp_trial__request_review",
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource"
+              ]
+            }
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": null,
+          "timed_out": null,
+          "role": "main_implementation",
+          "status": null,
+          "model_requested": "gpt-6-astra",
+          "observed_models": null,
+          "usage": null,
+          "qualification": {
+            "passed": null,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "local": null
+          },
+          "error_class": "PermissionError"
+        },
+        {
+          "total_cost_usd": null,
+          "timed_out": null,
+          "role": "adversarial_reviewer",
+          "status": null,
+          "model_requested": "gpt-6-astra",
+          "observed_models": null,
+          "usage": null,
+          "qualification": {
+            "passed": null,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "local": null
+          },
+          "error_class": "OSError"
+        },
+        {
+          "total_cost_usd": null,
+          "timed_out": null,
+          "role": "main_repair",
+          "status": null,
+          "model_requested": "gpt-6-astra",
+          "observed_models": null,
+          "usage": null,
+          "qualification": {
+            "passed": null,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "local": null
+          },
+          "error_class": "PermissionError"
+        }
+      ]
+    },
+    {
+      "trial_id": "tweed-pr35--opus_main_opus_peer--r1",
+      "task_id": "tweed-pr35",
+      "arm_id": "opus_main_opus_peer",
+      "repeat": 1,
+      "assignment_state": "completed_receipt",
+      "recorded_provider_requests": 4,
+      "supplemental_harness_invalid": true,
+      "supplemental_verified_success": false,
+      "raw_receipt_sha256": "53c9fc3a10e44337988102562eb78c523855f6917efb28f5fadc1e22327be8c8",
+      "graded_receipt_sha256": "f7ba9f93050feed1373fd4e940ec11cf1911127df8824609b255c528326e372b",
+      "stage_qualifications": [
+        {
+          "total_cost_usd": 0.040260000000000004,
+          "timed_out": false,
+          "role": "test_designer",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 2464,
+            "cache_read_input_tokens": 0,
+            "output_tokens": 1027
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": 0.0408804,
+          "timed_out": false,
+          "role": "main_implementation",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 2644,
+            "cache_read_input_tokens": 602,
+            "output_tokens": 980
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": 0.0506684,
+          "timed_out": false,
+          "role": "adversarial_reviewer",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 2955,
+            "cache_read_input_tokens": 602,
+            "output_tokens": 1345
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": 0.051268400000000006,
+          "timed_out": false,
+          "role": "main_repair",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 3940,
+            "cache_read_input_tokens": 602,
+            "output_tokens": 981
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        }
+      ]
+    },
+    {
+      "trial_id": "tweed-pr35--astra_main_opus_peer--r1",
+      "task_id": "tweed-pr35",
+      "arm_id": "astra_main_opus_peer",
+      "repeat": 1,
+      "assignment_state": "completed_receipt",
+      "recorded_provider_requests": 4,
+      "supplemental_harness_invalid": true,
+      "supplemental_verified_success": false,
+      "raw_receipt_sha256": "ed4d4af249076ef8a3970b8f9ba4747431a0555298e6882c4570280b40ac0c99",
+      "graded_receipt_sha256": "20586f024184fa5ee030b3410d4b8daede27b8fb4812d45b65334683a3e16d08",
+      "stage_qualifications": [
+        {
+          "total_cost_usd": 0.0317816,
+          "timed_out": false,
+          "role": "test_designer",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 436,
+            "cache_read_input_tokens": 2028,
+            "output_tokens": 1394
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": null,
+          "timed_out": null,
+          "role": "main_implementation",
+          "status": null,
+          "model_requested": "gpt-6-astra",
+          "observed_models": null,
+          "usage": null,
+          "qualification": {
+            "passed": null,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "local": null
+          },
+          "error_class": "PermissionError"
+        },
+        {
+          "total_cost_usd": 1.4145764,
+          "timed_out": false,
+          "role": "adversarial_reviewer",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 0,
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 0,
+            "output_tokens": 0
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": null,
+          "timed_out": null,
+          "role": "main_repair",
+          "status": null,
+          "model_requested": "gpt-6-astra",
+          "observed_models": null,
+          "usage": null,
+          "qualification": {
+            "passed": null,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "local": null
+          },
+          "error_class": "PermissionError"
+        }
+      ]
+    },
+    {
+      "trial_id": "tweed-pr35--opus_main_astra_peer--r1",
+      "task_id": "tweed-pr35",
+      "arm_id": "opus_main_astra_peer",
+      "repeat": 1,
+      "assignment_state": "completed_receipt",
+      "recorded_provider_requests": 4,
+      "supplemental_harness_invalid": true,
+      "supplemental_verified_success": false,
+      "raw_receipt_sha256": "3aa88dfef95e5d414ce4dea57ada6e8d493ab742cc7a112f9e4a5d594924ae2c",
+      "graded_receipt_sha256": "2fbc3ef4a1b7de853275c06057d58978a62a190dfeda2e35496579283a095188",
+      "stage_qualifications": [
+        {
+          "total_cost_usd": null,
+          "timed_out": false,
+          "role": "test_designer",
+          "status": "completed",
+          "model_requested": "gpt-6-astra",
+          "observed_models": [],
+          "usage": {
+            "input_tokens": 155631,
+            "cached_input_tokens": 121344,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1607,
+            "reasoning_output_tokens": 57
+          },
+          "qualification": {
+            "passed": true,
+            "live_wire_inventory_observed": false,
+            "strict_seven_tool_parity": false,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "additional_resource_handlers": [
+              "functions.list_mcp_resources",
+              "functions.list_mcp_resource_templates",
+              "functions.read_mcp_resource"
+            ],
+            "observed_tool_call_names": [
+              "list_files",
+              "read_file",
+              "run_tests"
+            ],
+            "local": null,
+            "declared_inventory": {
+              "passed": true,
+              "strict_seven_tool_parity": false,
+              "missing_tools": [],
+              "unexpected_tools": [],
+              "declared_tools": [
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource",
+                "mcp__cp_trial.confidence",
+                "mcp__cp_trial.list_files",
+                "mcp__cp_trial.read_file",
+                "mcp__cp_trial.replace_text",
+                "mcp__cp_trial.request_review",
+                "mcp__cp_trial.run_tests",
+                "mcp__cp_trial.write_file"
+              ],
+              "expected_tools": [
+                "mcp__cp_trial__list_files",
+                "mcp__cp_trial__read_file",
+                "mcp__cp_trial__write_file",
+                "mcp__cp_trial__replace_text",
+                "mcp__cp_trial__run_tests",
+                "mcp__cp_trial__confidence",
+                "mcp__cp_trial__request_review",
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource"
+              ]
+            }
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": 0.046036400000000005,
+          "timed_out": false,
+          "role": "main_implementation",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 3616,
+            "cache_read_input_tokens": 602,
+            "output_tokens": 849
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": null,
+          "timed_out": false,
+          "role": "adversarial_reviewer",
+          "status": "completed",
+          "model_requested": "gpt-6-astra",
+          "observed_models": [],
+          "usage": {
+            "input_tokens": 166630,
+            "cached_input_tokens": 110464,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1780,
+            "reasoning_output_tokens": 110
+          },
+          "qualification": {
+            "passed": true,
+            "live_wire_inventory_observed": false,
+            "strict_seven_tool_parity": false,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "additional_resource_handlers": [
+              "functions.list_mcp_resources",
+              "functions.list_mcp_resource_templates",
+              "functions.read_mcp_resource"
+            ],
+            "observed_tool_call_names": [
+              "read_file",
+              "run_tests"
+            ],
+            "local": null,
+            "declared_inventory": {
+              "passed": true,
+              "strict_seven_tool_parity": false,
+              "missing_tools": [],
+              "unexpected_tools": [],
+              "declared_tools": [
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource",
+                "mcp__cp_trial.confidence",
+                "mcp__cp_trial.list_files",
+                "mcp__cp_trial.read_file",
+                "mcp__cp_trial.replace_text",
+                "mcp__cp_trial.request_review",
+                "mcp__cp_trial.run_tests",
+                "mcp__cp_trial.write_file"
+              ],
+              "expected_tools": [
+                "mcp__cp_trial__list_files",
+                "mcp__cp_trial__read_file",
+                "mcp__cp_trial__write_file",
+                "mcp__cp_trial__replace_text",
+                "mcp__cp_trial__run_tests",
+                "mcp__cp_trial__confidence",
+                "mcp__cp_trial__request_review",
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource"
+              ]
+            }
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": 0.0526484,
+          "timed_out": false,
+          "role": "main_repair",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 3260,
+            "cache_read_input_tokens": 602,
+            "output_tokens": 1322
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        }
+      ]
+    },
+    {
+      "trial_id": "tweed-pr35--opus_main_opus_peer--r2",
+      "task_id": "tweed-pr35",
+      "arm_id": "opus_main_opus_peer",
+      "repeat": 2,
+      "assignment_state": "completed_receipt",
+      "recorded_provider_requests": 4,
+      "supplemental_harness_invalid": true,
+      "supplemental_verified_success": false,
+      "raw_receipt_sha256": "40e1cf5d2c586b928c0969b6a86bbefd0ae821b2d193f0126a0401987e785870",
+      "graded_receipt_sha256": "95f84a5a49bc97dcd359d1b950ac43ccfc694b9a51ff72dc5fbedc137535804c",
+      "stage_qualifications": [
+        {
+          "total_cost_usd": 0.030173600000000002,
+          "timed_out": false,
+          "role": "test_designer",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 435,
+            "cache_read_input_tokens": 2028,
+            "output_tokens": 1314
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": 0.0454204,
+          "timed_out": false,
+          "role": "main_implementation",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 2894,
+            "cache_read_input_tokens": 602,
+            "output_tokens": 1107
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": 0.0536404,
+          "timed_out": false,
+          "role": "adversarial_reviewer",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 3109,
+            "cache_read_input_tokens": 602,
+            "output_tokens": 1432
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": 0.0599724,
+          "timed_out": false,
+          "role": "main_repair",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 4228,
+            "cache_read_input_tokens": 602,
+            "output_tokens": 1301
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        }
+      ]
+    },
+    {
+      "trial_id": "tweed-pr35--astra_main_astra_peer--r2",
+      "task_id": "tweed-pr35",
+      "arm_id": "astra_main_astra_peer",
+      "repeat": 2,
+      "assignment_state": "completed_receipt",
+      "recorded_provider_requests": 4,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": false,
+      "raw_receipt_sha256": "03fd976a385db5a8ecc9391f616c6d6c1c682b6180a94ae28d3e8f2510d25505",
+      "graded_receipt_sha256": "eaf83cafa748f2144c599cd6b2938ac716f4173d6b4c135666c01243b9b1d3cf",
+      "stage_qualifications": [
+        {
+          "total_cost_usd": null,
+          "timed_out": false,
+          "role": "test_designer",
+          "status": "completed",
+          "model_requested": "gpt-6-astra",
+          "observed_models": [],
+          "usage": {
+            "input_tokens": 147207,
+            "cached_input_tokens": 97536,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1494,
+            "reasoning_output_tokens": 71
+          },
+          "qualification": {
+            "passed": true,
+            "live_wire_inventory_observed": false,
+            "strict_seven_tool_parity": false,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "additional_resource_handlers": [
+              "functions.list_mcp_resources",
+              "functions.list_mcp_resource_templates",
+              "functions.read_mcp_resource"
+            ],
+            "observed_tool_call_names": [
+              "list_files",
+              "read_file"
+            ],
+            "local": null,
+            "declared_inventory": {
+              "passed": true,
+              "strict_seven_tool_parity": false,
+              "missing_tools": [],
+              "unexpected_tools": [],
+              "declared_tools": [
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource",
+                "mcp__cp_trial.confidence",
+                "mcp__cp_trial.list_files",
+                "mcp__cp_trial.read_file",
+                "mcp__cp_trial.replace_text",
+                "mcp__cp_trial.request_review",
+                "mcp__cp_trial.run_tests",
+                "mcp__cp_trial.write_file"
+              ],
+              "expected_tools": [
+                "mcp__cp_trial__list_files",
+                "mcp__cp_trial__read_file",
+                "mcp__cp_trial__write_file",
+                "mcp__cp_trial__replace_text",
+                "mcp__cp_trial__run_tests",
+                "mcp__cp_trial__confidence",
+                "mcp__cp_trial__request_review",
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource"
+              ]
+            }
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": null,
+          "timed_out": null,
+          "role": "main_implementation",
+          "status": null,
+          "model_requested": "gpt-6-astra",
+          "observed_models": null,
+          "usage": null,
+          "qualification": {
+            "passed": null,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "local": null
+          },
+          "error_class": "PermissionError"
+        },
+        {
+          "total_cost_usd": null,
+          "timed_out": null,
+          "role": "adversarial_reviewer",
+          "status": null,
+          "model_requested": "gpt-6-astra",
+          "observed_models": null,
+          "usage": null,
+          "qualification": {
+            "passed": null,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "local": null
+          },
+          "error_class": "PermissionError"
+        },
+        {
+          "total_cost_usd": null,
+          "timed_out": false,
+          "role": "main_repair",
+          "status": "completed",
+          "model_requested": "gpt-6-astra",
+          "observed_models": [],
+          "usage": {
+            "input_tokens": 553326,
+            "cached_input_tokens": 493312,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1149,
+            "reasoning_output_tokens": 185
+          },
+          "qualification": {
+            "passed": true,
+            "live_wire_inventory_observed": false,
+            "strict_seven_tool_parity": false,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "additional_resource_handlers": [
+              "functions.list_mcp_resources",
+              "functions.list_mcp_resource_templates",
+              "functions.read_mcp_resource"
+            ],
+            "observed_tool_call_names": [
+              "confidence",
+              "read_file",
+              "replace_text",
+              "run_tests"
+            ],
+            "local": null,
+            "declared_inventory": {
+              "passed": true,
+              "strict_seven_tool_parity": false,
+              "missing_tools": [],
+              "unexpected_tools": [],
+              "declared_tools": [
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource",
+                "mcp__cp_trial.confidence",
+                "mcp__cp_trial.list_files",
+                "mcp__cp_trial.read_file",
+                "mcp__cp_trial.replace_text",
+                "mcp__cp_trial.request_review",
+                "mcp__cp_trial.run_tests",
+                "mcp__cp_trial.write_file"
+              ],
+              "expected_tools": [
+                "mcp__cp_trial__list_files",
+                "mcp__cp_trial__read_file",
+                "mcp__cp_trial__write_file",
+                "mcp__cp_trial__replace_text",
+                "mcp__cp_trial__run_tests",
+                "mcp__cp_trial__confidence",
+                "mcp__cp_trial__request_review",
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource"
+              ]
+            }
+          },
+          "error_class": null
+        }
+      ]
+    },
+    {
+      "trial_id": "tweed-pr35--opus_main_astra_peer--r2",
+      "task_id": "tweed-pr35",
+      "arm_id": "opus_main_astra_peer",
+      "repeat": 2,
+      "assignment_state": "completed_receipt",
+      "recorded_provider_requests": 4,
+      "supplemental_harness_invalid": true,
+      "supplemental_verified_success": false,
+      "raw_receipt_sha256": "6e6096715f1c253f636ed356817914daf5ea72da55b46f1533d86fff59b5ba76",
+      "graded_receipt_sha256": "0805b0b30083d0b588f35a7efe2e3719717982a232bfc875aea8f2f6be553b61",
+      "stage_qualifications": [
+        {
+          "total_cost_usd": null,
+          "timed_out": false,
+          "role": "test_designer",
+          "status": "completed",
+          "model_requested": "gpt-6-astra",
+          "observed_models": [],
+          "usage": {
+            "input_tokens": 132634,
+            "cached_input_tokens": 100608,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1444,
+            "reasoning_output_tokens": 93
+          },
+          "qualification": {
+            "passed": true,
+            "live_wire_inventory_observed": false,
+            "strict_seven_tool_parity": false,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "additional_resource_handlers": [
+              "functions.list_mcp_resources",
+              "functions.list_mcp_resource_templates",
+              "functions.read_mcp_resource"
+            ],
+            "observed_tool_call_names": [
+              "list_files",
+              "read_file"
+            ],
+            "local": null,
+            "declared_inventory": {
+              "passed": true,
+              "strict_seven_tool_parity": false,
+              "missing_tools": [],
+              "unexpected_tools": [],
+              "declared_tools": [
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource",
+                "mcp__cp_trial.confidence",
+                "mcp__cp_trial.list_files",
+                "mcp__cp_trial.read_file",
+                "mcp__cp_trial.replace_text",
+                "mcp__cp_trial.request_review",
+                "mcp__cp_trial.run_tests",
+                "mcp__cp_trial.write_file"
+              ],
+              "expected_tools": [
+                "mcp__cp_trial__list_files",
+                "mcp__cp_trial__read_file",
+                "mcp__cp_trial__write_file",
+                "mcp__cp_trial__replace_text",
+                "mcp__cp_trial__run_tests",
+                "mcp__cp_trial__confidence",
+                "mcp__cp_trial__request_review",
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource"
+              ]
+            }
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": 0.0482324,
+          "timed_out": false,
+          "role": "main_implementation",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 3493,
+            "cache_read_input_tokens": 602,
+            "output_tokens": 1008
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": null,
+          "timed_out": false,
+          "role": "adversarial_reviewer",
+          "status": "completed",
+          "model_requested": "gpt-6-astra",
+          "observed_models": [],
+          "usage": {
+            "input_tokens": 162416,
+            "cached_input_tokens": 115584,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1802,
+            "reasoning_output_tokens": 67
+          },
+          "qualification": {
+            "passed": true,
+            "live_wire_inventory_observed": false,
+            "strict_seven_tool_parity": false,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "additional_resource_handlers": [
+              "functions.list_mcp_resources",
+              "functions.list_mcp_resource_templates",
+              "functions.read_mcp_resource"
+            ],
+            "observed_tool_call_names": [
+              "read_file",
+              "run_tests"
+            ],
+            "local": null,
+            "declared_inventory": {
+              "passed": true,
+              "strict_seven_tool_parity": false,
+              "missing_tools": [],
+              "unexpected_tools": [],
+              "declared_tools": [
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource",
+                "mcp__cp_trial.confidence",
+                "mcp__cp_trial.list_files",
+                "mcp__cp_trial.read_file",
+                "mcp__cp_trial.replace_text",
+                "mcp__cp_trial.request_review",
+                "mcp__cp_trial.run_tests",
+                "mcp__cp_trial.write_file"
+              ],
+              "expected_tools": [
+                "mcp__cp_trial__list_files",
+                "mcp__cp_trial__read_file",
+                "mcp__cp_trial__write_file",
+                "mcp__cp_trial__replace_text",
+                "mcp__cp_trial__run_tests",
+                "mcp__cp_trial__confidence",
+                "mcp__cp_trial__request_review",
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource"
+              ]
+            }
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": 0.0487324,
+          "timed_out": false,
+          "role": "main_repair",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 3363,
+            "cache_read_input_tokens": 602,
+            "output_tokens": 1085
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        }
+      ]
+    },
+    {
+      "trial_id": "tweed-pr35--astra_main_opus_peer--r2",
+      "task_id": "tweed-pr35",
+      "arm_id": "astra_main_opus_peer",
+      "repeat": 2,
+      "assignment_state": "completed_receipt",
+      "recorded_provider_requests": 4,
+      "supplemental_harness_invalid": true,
+      "supplemental_verified_success": false,
+      "raw_receipt_sha256": "68ee2dd6f3ba474626410ab9dc7d7395404a84ba214865e729fc821175eece9d",
+      "graded_receipt_sha256": "ac6deb34a376c7895ec09571ffcfd518dd57924d039bd86e97a9d069919d83d5",
+      "stage_qualifications": [
+        {
+          "total_cost_usd": 0.0306056,
+          "timed_out": false,
+          "role": "test_designer",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 434,
+            "cache_read_input_tokens": 2028,
+            "output_tokens": 1336
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": null,
+          "timed_out": null,
+          "role": "main_implementation",
+          "status": null,
+          "model_requested": "gpt-6-astra",
+          "observed_models": null,
+          "usage": null,
+          "qualification": {
+            "passed": null,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "local": null
+          },
+          "error_class": "PermissionError"
+        },
+        {
+          "total_cost_usd": 1.0193764,
+          "timed_out": false,
+          "role": "adversarial_reviewer",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 0,
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 0,
+            "output_tokens": 0
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": null,
+          "timed_out": null,
+          "role": "main_repair",
+          "status": null,
+          "model_requested": "gpt-6-astra",
+          "observed_models": null,
+          "usage": null,
+          "qualification": {
+            "passed": null,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "local": null
+          },
+          "error_class": "PermissionError"
+        }
+      ]
+    },
+    {
+      "trial_id": "tweed-pr39--opus_main_opus_peer--r1",
+      "task_id": "tweed-pr39",
+      "arm_id": "opus_main_opus_peer",
+      "repeat": 1,
+      "assignment_state": "completed_receipt",
+      "recorded_provider_requests": 4,
+      "supplemental_harness_invalid": true,
+      "supplemental_verified_success": false,
+      "raw_receipt_sha256": "e2a33620d05dad327de58fc3585aa2a5e2021ef4c8aa83058f2d367492a6c645",
+      "graded_receipt_sha256": "7f0044d75b66321e9dc4146f895478ad89e0ea2a0b3dbd33cd6fd578240fadf8",
+      "stage_qualifications": [
+        {
+          "total_cost_usd": 0.0307164,
+          "timed_out": false,
+          "role": "test_designer",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 1751,
+            "cache_read_input_tokens": 602,
+            "output_tokens": 829
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": 0.034824400000000005,
+          "timed_out": false,
+          "role": "main_implementation",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 2297,
+            "cache_read_input_tokens": 602,
+            "output_tokens": 816
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": 0.0433364,
+          "timed_out": false,
+          "role": "adversarial_reviewer",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 2656,
+            "cache_read_input_tokens": 602,
+            "output_tokens": 1098
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": 0.0470924,
+          "timed_out": false,
+          "role": "main_repair",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 3518,
+            "cache_read_input_tokens": 602,
+            "output_tokens": 941
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        }
+      ]
+    },
+    {
+      "trial_id": "tweed-pr39--astra_main_opus_peer--r1",
+      "task_id": "tweed-pr39",
+      "arm_id": "astra_main_opus_peer",
+      "repeat": 1,
+      "assignment_state": "completed_receipt",
+      "recorded_provider_requests": 4,
+      "supplemental_harness_invalid": true,
+      "supplemental_verified_success": false,
+      "raw_receipt_sha256": "c447be42dcd93a16280170bec529a6ea313cf0ce765a8beba06795afb15bcd30",
+      "graded_receipt_sha256": "c528f787e4b75678068d0af3036962b4f1c5bc96ae2ac6a326de6d06e0764819",
+      "stage_qualifications": [
+        {
+          "total_cost_usd": 0.0230118,
+          "timed_out": false,
+          "role": "test_designer",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 435,
+            "cache_read_input_tokens": 1919,
+            "output_tokens": 957
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": null,
+          "timed_out": false,
+          "role": "main_implementation",
+          "status": "completed",
+          "model_requested": "gpt-6-astra",
+          "observed_models": [],
+          "usage": {
+            "input_tokens": 1178330,
+            "cached_input_tokens": 1124480,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 4453,
+            "reasoning_output_tokens": 535
+          },
+          "qualification": {
+            "passed": true,
+            "live_wire_inventory_observed": false,
+            "strict_seven_tool_parity": false,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "additional_resource_handlers": [
+              "functions.list_mcp_resources",
+              "functions.list_mcp_resource_templates",
+              "functions.read_mcp_resource"
+            ],
+            "observed_tool_call_names": [
+              "confidence",
+              "read_file",
+              "replace_text",
+              "run_tests",
+              "write_file"
+            ],
+            "local": null,
+            "declared_inventory": {
+              "passed": true,
+              "strict_seven_tool_parity": false,
+              "missing_tools": [],
+              "unexpected_tools": [],
+              "declared_tools": [
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource",
+                "mcp__cp_trial.confidence",
+                "mcp__cp_trial.list_files",
+                "mcp__cp_trial.read_file",
+                "mcp__cp_trial.replace_text",
+                "mcp__cp_trial.request_review",
+                "mcp__cp_trial.run_tests",
+                "mcp__cp_trial.write_file"
+              ],
+              "expected_tools": [
+                "mcp__cp_trial__list_files",
+                "mcp__cp_trial__read_file",
+                "mcp__cp_trial__write_file",
+                "mcp__cp_trial__replace_text",
+                "mcp__cp_trial__run_tests",
+                "mcp__cp_trial__confidence",
+                "mcp__cp_trial__request_review",
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource"
+              ]
+            }
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": 0.7705684,
+          "timed_out": false,
+          "role": "adversarial_reviewer",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 0,
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 0,
+            "output_tokens": 0
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": null,
+          "timed_out": false,
+          "role": "main_repair",
+          "status": "completed",
+          "model_requested": "gpt-6-astra",
+          "observed_models": [],
+          "usage": {
+            "input_tokens": 1331253,
+            "cached_input_tokens": 1249792,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 2166,
+            "reasoning_output_tokens": 184
+          },
+          "qualification": {
+            "passed": true,
+            "live_wire_inventory_observed": false,
+            "strict_seven_tool_parity": false,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "additional_resource_handlers": [
+              "functions.list_mcp_resources",
+              "functions.list_mcp_resource_templates",
+              "functions.read_mcp_resource"
+            ],
+            "observed_tool_call_names": [
+              "confidence",
+              "read_file",
+              "replace_text",
+              "run_tests"
+            ],
+            "local": null,
+            "declared_inventory": {
+              "passed": true,
+              "strict_seven_tool_parity": false,
+              "missing_tools": [],
+              "unexpected_tools": [],
+              "declared_tools": [
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource",
+                "mcp__cp_trial.confidence",
+                "mcp__cp_trial.list_files",
+                "mcp__cp_trial.read_file",
+                "mcp__cp_trial.replace_text",
+                "mcp__cp_trial.request_review",
+                "mcp__cp_trial.run_tests",
+                "mcp__cp_trial.write_file"
+              ],
+              "expected_tools": [
+                "mcp__cp_trial__list_files",
+                "mcp__cp_trial__read_file",
+                "mcp__cp_trial__write_file",
+                "mcp__cp_trial__replace_text",
+                "mcp__cp_trial__run_tests",
+                "mcp__cp_trial__confidence",
+                "mcp__cp_trial__request_review",
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource"
+              ]
+            }
+          },
+          "error_class": null
+        }
+      ]
+    },
+    {
+      "trial_id": "tweed-pr39--opus_main_astra_peer--r1",
+      "task_id": "tweed-pr39",
+      "arm_id": "opus_main_astra_peer",
+      "repeat": 1,
+      "assignment_state": "completed_receipt",
+      "recorded_provider_requests": 4,
+      "supplemental_harness_invalid": true,
+      "supplemental_verified_success": false,
+      "raw_receipt_sha256": "9fd098a9c8067b79d6a9c68620e63d55c3ad2cecfa3403c1bb46a9ebe4ad0223",
+      "graded_receipt_sha256": "e63d38b0cc06d9af10ab0a294840831c71811e4872e04da902a82e59a9e8d510",
+      "stage_qualifications": [
+        {
+          "total_cost_usd": null,
+          "timed_out": null,
+          "role": "test_designer",
+          "status": null,
+          "model_requested": "gpt-6-astra",
+          "observed_models": null,
+          "usage": null,
+          "qualification": {
+            "passed": null,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "local": null
+          },
+          "error_class": "PermissionError"
+        },
+        {
+          "total_cost_usd": 0.028280399999999997,
+          "timed_out": false,
+          "role": "main_implementation",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 1634,
+            "cache_read_input_tokens": 602,
+            "output_tokens": 754
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": null,
+          "timed_out": false,
+          "role": "adversarial_reviewer",
+          "status": "completed",
+          "model_requested": "gpt-6-astra",
+          "observed_models": [],
+          "usage": {
+            "input_tokens": 197773,
+            "cached_input_tokens": 160384,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1140,
+            "reasoning_output_tokens": 30
+          },
+          "qualification": {
+            "passed": true,
+            "live_wire_inventory_observed": false,
+            "strict_seven_tool_parity": false,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "additional_resource_handlers": [
+              "functions.list_mcp_resources",
+              "functions.list_mcp_resource_templates",
+              "functions.read_mcp_resource"
+            ],
+            "observed_tool_call_names": [
+              "read_file",
+              "run_tests"
+            ],
+            "local": null,
+            "declared_inventory": {
+              "passed": true,
+              "strict_seven_tool_parity": false,
+              "missing_tools": [],
+              "unexpected_tools": [],
+              "declared_tools": [
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource",
+                "mcp__cp_trial.confidence",
+                "mcp__cp_trial.list_files",
+                "mcp__cp_trial.read_file",
+                "mcp__cp_trial.replace_text",
+                "mcp__cp_trial.request_review",
+                "mcp__cp_trial.run_tests",
+                "mcp__cp_trial.write_file"
+              ],
+              "expected_tools": [
+                "mcp__cp_trial__list_files",
+                "mcp__cp_trial__read_file",
+                "mcp__cp_trial__write_file",
+                "mcp__cp_trial__replace_text",
+                "mcp__cp_trial__run_tests",
+                "mcp__cp_trial__confidence",
+                "mcp__cp_trial__request_review",
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource"
+              ]
+            }
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": 0.041836399999999996,
+          "timed_out": false,
+          "role": "main_repair",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 2851,
+            "cache_read_input_tokens": 602,
+            "output_tokens": 945
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        }
+      ]
+    },
+    {
+      "trial_id": "tweed-pr39--astra_main_astra_peer--r1",
+      "task_id": "tweed-pr39",
+      "arm_id": "astra_main_astra_peer",
+      "repeat": 1,
+      "assignment_state": "completed_receipt",
+      "recorded_provider_requests": 4,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": false,
+      "raw_receipt_sha256": "9c9335c9fee423fe76ba8e23360906755d2bd60df098398ec8d3da3953a7d06e",
+      "graded_receipt_sha256": "bebf5c99b6638552663366aaa6ee89564769a5c60159d65853118a88b03e2054",
+      "stage_qualifications": [
+        {
+          "total_cost_usd": null,
+          "timed_out": false,
+          "role": "test_designer",
+          "status": "completed",
+          "model_requested": "gpt-6-astra",
+          "observed_models": [],
+          "usage": {
+            "input_tokens": 374366,
+            "cached_input_tokens": 332544,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1669,
+            "reasoning_output_tokens": 104
+          },
+          "qualification": {
+            "passed": true,
+            "live_wire_inventory_observed": false,
+            "strict_seven_tool_parity": false,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "additional_resource_handlers": [
+              "functions.list_mcp_resources",
+              "functions.list_mcp_resource_templates",
+              "functions.read_mcp_resource"
+            ],
+            "observed_tool_call_names": [
+              "confidence",
+              "list_files",
+              "read_file",
+              "run_tests"
+            ],
+            "local": null,
+            "declared_inventory": {
+              "passed": true,
+              "strict_seven_tool_parity": false,
+              "missing_tools": [],
+              "unexpected_tools": [],
+              "declared_tools": [
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource",
+                "mcp__cp_trial.confidence",
+                "mcp__cp_trial.list_files",
+                "mcp__cp_trial.read_file",
+                "mcp__cp_trial.replace_text",
+                "mcp__cp_trial.request_review",
+                "mcp__cp_trial.run_tests",
+                "mcp__cp_trial.write_file"
+              ],
+              "expected_tools": [
+                "mcp__cp_trial__list_files",
+                "mcp__cp_trial__read_file",
+                "mcp__cp_trial__write_file",
+                "mcp__cp_trial__replace_text",
+                "mcp__cp_trial__run_tests",
+                "mcp__cp_trial__confidence",
+                "mcp__cp_trial__request_review",
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource"
+              ]
+            }
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": null,
+          "timed_out": null,
+          "role": "main_implementation",
+          "status": null,
+          "model_requested": "gpt-6-astra",
+          "observed_models": null,
+          "usage": null,
+          "qualification": {
+            "passed": null,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "local": null
+          },
+          "error_class": "PermissionError"
+        },
+        {
+          "total_cost_usd": null,
+          "timed_out": false,
+          "role": "adversarial_reviewer",
+          "status": "completed",
+          "model_requested": "gpt-6-astra",
+          "observed_models": [],
+          "usage": {
+            "input_tokens": 539185,
+            "cached_input_tokens": 467072,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1215,
+            "reasoning_output_tokens": 169
+          },
+          "qualification": {
+            "passed": true,
+            "live_wire_inventory_observed": false,
+            "strict_seven_tool_parity": false,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "additional_resource_handlers": [
+              "functions.list_mcp_resources",
+              "functions.list_mcp_resource_templates",
+              "functions.read_mcp_resource"
+            ],
+            "observed_tool_call_names": [
+              "read_file",
+              "run_tests"
+            ],
+            "local": null,
+            "declared_inventory": {
+              "passed": true,
+              "strict_seven_tool_parity": false,
+              "missing_tools": [],
+              "unexpected_tools": [],
+              "declared_tools": [
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource",
+                "mcp__cp_trial.confidence",
+                "mcp__cp_trial.list_files",
+                "mcp__cp_trial.read_file",
+                "mcp__cp_trial.replace_text",
+                "mcp__cp_trial.request_review",
+                "mcp__cp_trial.run_tests",
+                "mcp__cp_trial.write_file"
+              ],
+              "expected_tools": [
+                "mcp__cp_trial__list_files",
+                "mcp__cp_trial__read_file",
+                "mcp__cp_trial__write_file",
+                "mcp__cp_trial__replace_text",
+                "mcp__cp_trial__run_tests",
+                "mcp__cp_trial__confidence",
+                "mcp__cp_trial__request_review",
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource"
+              ]
+            }
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": null,
+          "timed_out": null,
+          "role": "main_repair",
+          "status": null,
+          "model_requested": "gpt-6-astra",
+          "observed_models": null,
+          "usage": null,
+          "qualification": {
+            "passed": null,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "local": null
+          },
+          "error_class": "PermissionError"
+        }
+      ]
+    },
+    {
+      "trial_id": "tweed-pr39--astra_main_opus_peer--r2",
+      "task_id": "tweed-pr39",
+      "arm_id": "astra_main_opus_peer",
+      "repeat": 2,
+      "assignment_state": "completed_receipt",
+      "recorded_provider_requests": 4,
+      "supplemental_harness_invalid": true,
+      "supplemental_verified_success": false,
+      "raw_receipt_sha256": "360e24840725a2421d8c122dcb0c60a1d363108d66f1df408869806ac0d1937a",
+      "graded_receipt_sha256": "3428a146313a0a56741bdaf0d88182292de5dbfed214b6befc72374e1102c036",
+      "stage_qualifications": [
+        {
+          "total_cost_usd": 0.023843800000000002,
+          "timed_out": false,
+          "role": "test_designer",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 434,
+            "cache_read_input_tokens": 1919,
+            "output_tokens": 999
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": null,
+          "timed_out": null,
+          "role": "main_implementation",
+          "status": null,
+          "model_requested": "gpt-6-astra",
+          "observed_models": null,
+          "usage": null,
+          "qualification": {
+            "passed": null,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "local": null
+          },
+          "error_class": "PermissionError"
+        },
+        {
+          "total_cost_usd": 0.9591404,
+          "timed_out": false,
+          "role": "adversarial_reviewer",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 0,
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 0,
+            "output_tokens": 0
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": null,
+          "timed_out": false,
+          "role": "main_repair",
+          "status": "completed",
+          "model_requested": "gpt-6-astra",
+          "observed_models": [],
+          "usage": {
+            "input_tokens": 932629,
+            "cached_input_tokens": 851584,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1939,
+            "reasoning_output_tokens": 81
+          },
+          "qualification": {
+            "passed": true,
+            "live_wire_inventory_observed": false,
+            "strict_seven_tool_parity": false,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "additional_resource_handlers": [
+              "functions.list_mcp_resources",
+              "functions.list_mcp_resource_templates",
+              "functions.read_mcp_resource"
+            ],
+            "observed_tool_call_names": [
+              "confidence",
+              "read_file",
+              "replace_text",
+              "run_tests",
+              "write_file"
+            ],
+            "local": null,
+            "declared_inventory": {
+              "passed": true,
+              "strict_seven_tool_parity": false,
+              "missing_tools": [],
+              "unexpected_tools": [],
+              "declared_tools": [
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource",
+                "mcp__cp_trial.confidence",
+                "mcp__cp_trial.list_files",
+                "mcp__cp_trial.read_file",
+                "mcp__cp_trial.replace_text",
+                "mcp__cp_trial.request_review",
+                "mcp__cp_trial.run_tests",
+                "mcp__cp_trial.write_file"
+              ],
+              "expected_tools": [
+                "mcp__cp_trial__list_files",
+                "mcp__cp_trial__read_file",
+                "mcp__cp_trial__write_file",
+                "mcp__cp_trial__replace_text",
+                "mcp__cp_trial__run_tests",
+                "mcp__cp_trial__confidence",
+                "mcp__cp_trial__request_review",
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource"
+              ]
+            }
+          },
+          "error_class": null
+        }
+      ]
+    },
+    {
+      "trial_id": "tweed-pr39--opus_main_opus_peer--r2",
+      "task_id": "tweed-pr39",
+      "arm_id": "opus_main_opus_peer",
+      "repeat": 2,
+      "assignment_state": "completed_receipt",
+      "recorded_provider_requests": 4,
+      "supplemental_harness_invalid": true,
+      "supplemental_verified_success": false,
+      "raw_receipt_sha256": "98e23c50734c70f9f57fac71802e8e05f01ed267813482ef9194c0890cffc3da",
+      "graded_receipt_sha256": "e244bc8ae76b25b24d93805bfbc55128d8033ea64688e22fa51f7bcb753931cb",
+      "stage_qualifications": [
+        {
+          "total_cost_usd": 0.024079800000000005,
+          "timed_out": false,
+          "role": "test_designer",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 436,
+            "cache_read_input_tokens": 1919,
+            "output_tokens": 1010
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": 0.0403124,
+          "timed_out": false,
+          "role": "main_implementation",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 2503,
+            "cache_read_input_tokens": 602,
+            "output_tokens": 1008
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": 0.0422924,
+          "timed_out": false,
+          "role": "adversarial_reviewer",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 2863,
+            "cache_read_input_tokens": 602,
+            "output_tokens": 963
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": 0.0509044,
+          "timed_out": false,
+          "role": "main_repair",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 3587,
+            "cache_read_input_tokens": 602,
+            "output_tokens": 1104
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        }
+      ]
+    },
+    {
+      "trial_id": "tweed-pr39--astra_main_astra_peer--r2",
+      "task_id": "tweed-pr39",
+      "arm_id": "astra_main_astra_peer",
+      "repeat": 2,
+      "assignment_state": "completed_receipt",
+      "recorded_provider_requests": 4,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": false,
+      "raw_receipt_sha256": "86921b239aefacd09ef814580ca77284d02e1174777c7f156a121a2139804fad",
+      "graded_receipt_sha256": "468cacf13759011bd5b75983c7cf96b2362b284761c0294674f29f389aa37cf8",
+      "stage_qualifications": [
+        {
+          "total_cost_usd": null,
+          "timed_out": false,
+          "role": "test_designer",
+          "status": "completed",
+          "model_requested": "gpt-6-astra",
+          "observed_models": [],
+          "usage": {
+            "input_tokens": 457114,
+            "cached_input_tokens": 403072,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1531,
+            "reasoning_output_tokens": 60
+          },
+          "qualification": {
+            "passed": true,
+            "live_wire_inventory_observed": false,
+            "strict_seven_tool_parity": false,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "additional_resource_handlers": [
+              "functions.list_mcp_resources",
+              "functions.list_mcp_resource_templates",
+              "functions.read_mcp_resource"
+            ],
+            "observed_tool_call_names": [
+              "confidence",
+              "list_files",
+              "read_file",
+              "run_tests"
+            ],
+            "local": null,
+            "declared_inventory": {
+              "passed": true,
+              "strict_seven_tool_parity": false,
+              "missing_tools": [],
+              "unexpected_tools": [],
+              "declared_tools": [
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource",
+                "mcp__cp_trial.confidence",
+                "mcp__cp_trial.list_files",
+                "mcp__cp_trial.read_file",
+                "mcp__cp_trial.replace_text",
+                "mcp__cp_trial.request_review",
+                "mcp__cp_trial.run_tests",
+                "mcp__cp_trial.write_file"
+              ],
+              "expected_tools": [
+                "mcp__cp_trial__list_files",
+                "mcp__cp_trial__read_file",
+                "mcp__cp_trial__write_file",
+                "mcp__cp_trial__replace_text",
+                "mcp__cp_trial__run_tests",
+                "mcp__cp_trial__confidence",
+                "mcp__cp_trial__request_review",
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource"
+              ]
+            }
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": null,
+          "timed_out": null,
+          "role": "main_implementation",
+          "status": null,
+          "model_requested": "gpt-6-astra",
+          "observed_models": null,
+          "usage": null,
+          "qualification": {
+            "passed": null,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "local": null
+          },
+          "error_class": "PermissionError"
+        },
+        {
+          "total_cost_usd": null,
+          "timed_out": false,
+          "role": "adversarial_reviewer",
+          "status": "completed",
+          "model_requested": "gpt-6-astra",
+          "observed_models": [],
+          "usage": {
+            "input_tokens": 819077,
+            "cached_input_tokens": 727552,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1586,
+            "reasoning_output_tokens": 115
+          },
+          "qualification": {
+            "passed": true,
+            "live_wire_inventory_observed": false,
+            "strict_seven_tool_parity": false,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "additional_resource_handlers": [
+              "functions.list_mcp_resources",
+              "functions.list_mcp_resource_templates",
+              "functions.read_mcp_resource"
+            ],
+            "observed_tool_call_names": [
+              "confidence",
+              "read_file",
+              "run_tests"
+            ],
+            "local": null,
+            "declared_inventory": {
+              "passed": true,
+              "strict_seven_tool_parity": false,
+              "missing_tools": [],
+              "unexpected_tools": [],
+              "declared_tools": [
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource",
+                "mcp__cp_trial.confidence",
+                "mcp__cp_trial.list_files",
+                "mcp__cp_trial.read_file",
+                "mcp__cp_trial.replace_text",
+                "mcp__cp_trial.request_review",
+                "mcp__cp_trial.run_tests",
+                "mcp__cp_trial.write_file"
+              ],
+              "expected_tools": [
+                "mcp__cp_trial__list_files",
+                "mcp__cp_trial__read_file",
+                "mcp__cp_trial__write_file",
+                "mcp__cp_trial__replace_text",
+                "mcp__cp_trial__run_tests",
+                "mcp__cp_trial__confidence",
+                "mcp__cp_trial__request_review",
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource"
+              ]
+            }
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": null,
+          "timed_out": false,
+          "role": "main_repair",
+          "status": "completed",
+          "model_requested": "gpt-6-astra",
+          "observed_models": [],
+          "usage": {
+            "input_tokens": 1033306,
+            "cached_input_tokens": 938240,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 3304,
+            "reasoning_output_tokens": 515
+          },
+          "qualification": {
+            "passed": true,
+            "live_wire_inventory_observed": false,
+            "strict_seven_tool_parity": false,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "additional_resource_handlers": [
+              "functions.list_mcp_resources",
+              "functions.list_mcp_resource_templates",
+              "functions.read_mcp_resource"
+            ],
+            "observed_tool_call_names": [
+              "confidence",
+              "read_file",
+              "replace_text",
+              "run_tests",
+              "write_file"
+            ],
+            "local": null,
+            "declared_inventory": {
+              "passed": true,
+              "strict_seven_tool_parity": false,
+              "missing_tools": [],
+              "unexpected_tools": [],
+              "declared_tools": [
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource",
+                "mcp__cp_trial.confidence",
+                "mcp__cp_trial.list_files",
+                "mcp__cp_trial.read_file",
+                "mcp__cp_trial.replace_text",
+                "mcp__cp_trial.request_review",
+                "mcp__cp_trial.run_tests",
+                "mcp__cp_trial.write_file"
+              ],
+              "expected_tools": [
+                "mcp__cp_trial__list_files",
+                "mcp__cp_trial__read_file",
+                "mcp__cp_trial__write_file",
+                "mcp__cp_trial__replace_text",
+                "mcp__cp_trial__run_tests",
+                "mcp__cp_trial__confidence",
+                "mcp__cp_trial__request_review",
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource"
+              ]
+            }
+          },
+          "error_class": null
+        }
+      ]
+    },
+    {
+      "trial_id": "tweed-pr39--opus_main_astra_peer--r2",
+      "task_id": "tweed-pr39",
+      "arm_id": "opus_main_astra_peer",
+      "repeat": 2,
+      "assignment_state": "completed_receipt",
+      "recorded_provider_requests": 4,
+      "supplemental_harness_invalid": true,
+      "supplemental_verified_success": false,
+      "raw_receipt_sha256": "f602eee32283e9c025b7c39a92fd9a3d1788cd9da7cfd0f4ee7790c3f81456ab",
+      "graded_receipt_sha256": "e7c9a15f693503c9201ee3c160291c4b7ec0ad380f9e45522b779c4716345315",
+      "stage_qualifications": [
+        {
+          "total_cost_usd": null,
+          "timed_out": false,
+          "role": "test_designer",
+          "status": "completed",
+          "model_requested": "gpt-6-astra",
+          "observed_models": [],
+          "usage": {
+            "input_tokens": 333785,
+            "cached_input_tokens": 296192,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1321,
+            "reasoning_output_tokens": 36
+          },
+          "qualification": {
+            "passed": true,
+            "live_wire_inventory_observed": false,
+            "strict_seven_tool_parity": false,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "additional_resource_handlers": [
+              "functions.list_mcp_resources",
+              "functions.list_mcp_resource_templates",
+              "functions.read_mcp_resource"
+            ],
+            "observed_tool_call_names": [
+              "confidence",
+              "list_files",
+              "read_file",
+              "run_tests"
+            ],
+            "local": null,
+            "declared_inventory": {
+              "passed": true,
+              "strict_seven_tool_parity": false,
+              "missing_tools": [],
+              "unexpected_tools": [],
+              "declared_tools": [
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource",
+                "mcp__cp_trial.confidence",
+                "mcp__cp_trial.list_files",
+                "mcp__cp_trial.read_file",
+                "mcp__cp_trial.replace_text",
+                "mcp__cp_trial.request_review",
+                "mcp__cp_trial.run_tests",
+                "mcp__cp_trial.write_file"
+              ],
+              "expected_tools": [
+                "mcp__cp_trial__list_files",
+                "mcp__cp_trial__read_file",
+                "mcp__cp_trial__write_file",
+                "mcp__cp_trial__replace_text",
+                "mcp__cp_trial__run_tests",
+                "mcp__cp_trial__confidence",
+                "mcp__cp_trial__request_review",
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource"
+              ]
+            }
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": 0.0399124,
+          "timed_out": false,
+          "role": "main_implementation",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 2913,
+            "cache_read_input_tokens": 602,
+            "output_tokens": 824
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": null,
+          "timed_out": false,
+          "role": "adversarial_reviewer",
+          "status": "completed",
+          "model_requested": "gpt-6-astra",
+          "observed_models": [],
+          "usage": {
+            "input_tokens": 242326,
+            "cached_input_tokens": 208128,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1236,
+            "reasoning_output_tokens": 23
+          },
+          "qualification": {
+            "passed": true,
+            "live_wire_inventory_observed": false,
+            "strict_seven_tool_parity": false,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "additional_resource_handlers": [
+              "functions.list_mcp_resources",
+              "functions.list_mcp_resource_templates",
+              "functions.read_mcp_resource"
+            ],
+            "observed_tool_call_names": [
+              "confidence",
+              "list_files",
+              "read_file",
+              "run_tests"
+            ],
+            "local": null,
+            "declared_inventory": {
+              "passed": true,
+              "strict_seven_tool_parity": false,
+              "missing_tools": [],
+              "unexpected_tools": [],
+              "declared_tools": [
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource",
+                "mcp__cp_trial.confidence",
+                "mcp__cp_trial.list_files",
+                "mcp__cp_trial.read_file",
+                "mcp__cp_trial.replace_text",
+                "mcp__cp_trial.request_review",
+                "mcp__cp_trial.run_tests",
+                "mcp__cp_trial.write_file"
+              ],
+              "expected_tools": [
+                "mcp__cp_trial__list_files",
+                "mcp__cp_trial__read_file",
+                "mcp__cp_trial__write_file",
+                "mcp__cp_trial__replace_text",
+                "mcp__cp_trial__run_tests",
+                "mcp__cp_trial__confidence",
+                "mcp__cp_trial__request_review",
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource"
+              ]
+            }
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": 0.0424164,
+          "timed_out": false,
+          "role": "main_repair",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 2971,
+            "cache_read_input_tokens": 602,
+            "output_tokens": 926
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        }
+      ]
+    },
+    {
+      "trial_id": "tweed-pr31--astra_main_opus_peer--r1",
+      "task_id": "tweed-pr31",
+      "arm_id": "astra_main_opus_peer",
+      "repeat": 1,
+      "assignment_state": "completed_receipt",
+      "recorded_provider_requests": 4,
+      "supplemental_harness_invalid": true,
+      "supplemental_verified_success": false,
+      "raw_receipt_sha256": "3d8c38dbfa5c785b233bedde66bda7dd0925c9aaf33ab49a0dfe2be616e4256d",
+      "graded_receipt_sha256": "fb2a9f1e8d358322fc383b861f65e2e122e615dd59d82ac31a8bf4d8c9b331f3",
+      "stage_qualifications": [
+        {
+          "total_cost_usd": 0.029744399999999997,
+          "timed_out": false,
+          "role": "test_designer",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 1622,
+            "cache_read_input_tokens": 602,
+            "output_tokens": 832
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": null,
+          "timed_out": false,
+          "role": "main_implementation",
+          "status": "completed",
+          "model_requested": "gpt-6-astra",
+          "observed_models": [],
+          "usage": {
+            "input_tokens": 1164642,
+            "cached_input_tokens": 1065856,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 5223,
+            "reasoning_output_tokens": 495
+          },
+          "qualification": {
+            "passed": true,
+            "live_wire_inventory_observed": false,
+            "strict_seven_tool_parity": false,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "additional_resource_handlers": [
+              "functions.list_mcp_resources",
+              "functions.list_mcp_resource_templates",
+              "functions.read_mcp_resource"
+            ],
+            "observed_tool_call_names": [
+              "confidence",
+              "read_file",
+              "replace_text",
+              "run_tests",
+              "write_file"
+            ],
+            "local": null,
+            "declared_inventory": {
+              "passed": true,
+              "strict_seven_tool_parity": false,
+              "missing_tools": [],
+              "unexpected_tools": [],
+              "declared_tools": [
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource",
+                "mcp__cp_trial.confidence",
+                "mcp__cp_trial.list_files",
+                "mcp__cp_trial.read_file",
+                "mcp__cp_trial.replace_text",
+                "mcp__cp_trial.request_review",
+                "mcp__cp_trial.run_tests",
+                "mcp__cp_trial.write_file"
+              ],
+              "expected_tools": [
+                "mcp__cp_trial__list_files",
+                "mcp__cp_trial__read_file",
+                "mcp__cp_trial__write_file",
+                "mcp__cp_trial__replace_text",
+                "mcp__cp_trial__run_tests",
+                "mcp__cp_trial__confidence",
+                "mcp__cp_trial__request_review",
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource"
+              ]
+            }
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": 0.9109164,
+          "timed_out": false,
+          "role": "adversarial_reviewer",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 0,
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 0,
+            "output_tokens": 0
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": null,
+          "timed_out": null,
+          "role": "main_repair",
+          "status": null,
+          "model_requested": "gpt-6-astra",
+          "observed_models": null,
+          "usage": null,
+          "qualification": {
+            "passed": null,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "local": null
+          },
+          "error_class": "PermissionError"
+        }
+      ]
+    },
+    {
+      "trial_id": "tweed-pr31--opus_main_astra_peer--r1",
+      "task_id": "tweed-pr31",
+      "arm_id": "opus_main_astra_peer",
+      "repeat": 1,
+      "assignment_state": "completed_receipt",
+      "recorded_provider_requests": 4,
+      "supplemental_harness_invalid": true,
+      "supplemental_verified_success": false,
+      "raw_receipt_sha256": "632809841814236bb70946ee2d6ae7db11378328fbd14929c00294bc105cbb3b",
+      "graded_receipt_sha256": "374cff9c8d2ef96ecfcba03cf4e856f67582a658c58f21e3d4e4ecb80f09712f",
+      "stage_qualifications": [
+        {
+          "total_cost_usd": null,
+          "timed_out": null,
+          "role": "test_designer",
+          "status": null,
+          "model_requested": "gpt-6-astra",
+          "observed_models": null,
+          "usage": null,
+          "qualification": {
+            "passed": null,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "local": null
+          },
+          "error_class": "PermissionError"
+        },
+        {
+          "total_cost_usd": 0.029140400000000004,
+          "timed_out": false,
+          "role": "main_implementation",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 1504,
+            "cache_read_input_tokens": 602,
+            "output_tokens": 849
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": null,
+          "timed_out": null,
+          "role": "adversarial_reviewer",
+          "status": null,
+          "model_requested": "gpt-6-astra",
+          "observed_models": null,
+          "usage": null,
+          "qualification": {
+            "passed": null,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "local": null
+          },
+          "error_class": "PermissionError"
+        },
+        {
+          "total_cost_usd": 0.038168400000000005,
+          "timed_out": false,
+          "role": "main_repair",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 2445,
+            "cache_read_input_tokens": 602,
+            "output_tokens": 924
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        }
+      ]
+    },
+    {
+      "trial_id": "tweed-pr31--astra_main_astra_peer--r1",
+      "task_id": "tweed-pr31",
+      "arm_id": "astra_main_astra_peer",
+      "repeat": 1,
+      "assignment_state": "interrupted_before_receipt",
+      "recorded_provider_requests": 2,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": null,
+      "raw_receipt_sha256": null,
+      "graded_receipt_sha256": null,
+      "stage_qualifications": [
+        {
+          "total_cost_usd": null,
+          "timed_out": null,
+          "role": "test_designer",
+          "status": null,
+          "model_requested": "gpt-6-astra",
+          "observed_models": null,
+          "usage": null,
+          "qualification": {
+            "passed": null,
+            "local_pipeline_observed": false,
+            "basis": "historical_offline_declared_codex_inventory_only",
+            "local": null
+          },
+          "error_class": "PermissionError"
+        }
+      ]
+    },
+    {
+      "trial_id": "tweed-pr31--opus_main_opus_peer--r1",
+      "task_id": "tweed-pr31",
+      "arm_id": "opus_main_opus_peer",
+      "repeat": 1,
+      "assignment_state": "completed_receipt",
+      "recorded_provider_requests": 4,
+      "supplemental_harness_invalid": true,
+      "supplemental_verified_success": false,
+      "raw_receipt_sha256": "015509faa2006323b81894fc508e7334d87342ec0f2801a4d9810f99e847115c",
+      "graded_receipt_sha256": "26d9381cc41e20afa727d04a84216466db4fb8105f140c78fdfe713905c0a814",
+      "stage_qualifications": [
+        {
+          "total_cost_usd": 0.0200258,
+          "timed_out": false,
+          "role": "test_designer",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 435,
+            "cache_read_input_tokens": 1789,
+            "output_tokens": 809
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": 0.0327604,
+          "timed_out": false,
+          "role": "main_implementation",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 2174,
+            "cache_read_input_tokens": 602,
+            "output_tokens": 762
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": 0.0399124,
+          "timed_out": false,
+          "role": "adversarial_reviewer",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 2488,
+            "cache_read_input_tokens": 602,
+            "output_tokens": 994
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        },
+        {
+          "total_cost_usd": 0.0433684,
+          "timed_out": false,
+          "role": "main_repair",
+          "status": null,
+          "model_requested": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 3240,
+            "cache_read_input_tokens": 602,
+            "output_tokens": 866
+          },
+          "qualification": {
+            "passed": false,
+            "connected": false,
+            "strict_seven_tool_parity": false,
+            "basis": "live_claude_init",
+            "schema_output_tool": "StructuredOutput",
+            "missing_tools": [
+              "mcp__cp_trial__confidence",
+              "mcp__cp_trial__list_files",
+              "mcp__cp_trial__read_file",
+              "mcp__cp_trial__replace_text",
+              "mcp__cp_trial__request_review",
+              "mcp__cp_trial__run_tests",
+              "mcp__cp_trial__write_file"
+            ],
+            "unexpected_tools": [],
+            "effective_tools": [
+              "StructuredOutput"
+            ],
+            "local": null
+          },
+          "error_class": null
+        }
+      ]
+    },
+    {
+      "trial_id": "tweed-pr31--opus_main_astra_peer--r2",
+      "task_id": "tweed-pr31",
+      "arm_id": "opus_main_astra_peer",
+      "repeat": 2,
+      "assignment_state": "interrupted_before_receipt",
+      "recorded_provider_requests": 1,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": null,
+      "raw_receipt_sha256": null,
+      "graded_receipt_sha256": null,
+      "stage_qualifications": []
+    },
+    {
+      "trial_id": "tweed-pr31--astra_main_opus_peer--r2",
+      "task_id": "tweed-pr31",
+      "arm_id": "astra_main_opus_peer",
+      "repeat": 2,
+      "assignment_state": "never_started",
+      "recorded_provider_requests": 0,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": null,
+      "raw_receipt_sha256": null,
+      "graded_receipt_sha256": null,
+      "stage_qualifications": []
+    },
+    {
+      "trial_id": "tweed-pr31--opus_main_opus_peer--r2",
+      "task_id": "tweed-pr31",
+      "arm_id": "opus_main_opus_peer",
+      "repeat": 2,
+      "assignment_state": "never_started",
+      "recorded_provider_requests": 0,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": null,
+      "raw_receipt_sha256": null,
+      "graded_receipt_sha256": null,
+      "stage_qualifications": []
+    },
+    {
+      "trial_id": "tweed-pr31--astra_main_astra_peer--r2",
+      "task_id": "tweed-pr31",
+      "arm_id": "astra_main_astra_peer",
+      "repeat": 2,
+      "assignment_state": "never_started",
+      "recorded_provider_requests": 0,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": null,
+      "raw_receipt_sha256": null,
+      "graded_receipt_sha256": null,
+      "stage_qualifications": []
+    },
+    {
+      "trial_id": "tweed-pr32--opus_main_astra_peer--r1",
+      "task_id": "tweed-pr32",
+      "arm_id": "opus_main_astra_peer",
+      "repeat": 1,
+      "assignment_state": "never_started",
+      "recorded_provider_requests": 0,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": null,
+      "raw_receipt_sha256": null,
+      "graded_receipt_sha256": null,
+      "stage_qualifications": []
+    },
+    {
+      "trial_id": "tweed-pr32--astra_main_astra_peer--r1",
+      "task_id": "tweed-pr32",
+      "arm_id": "astra_main_astra_peer",
+      "repeat": 1,
+      "assignment_state": "never_started",
+      "recorded_provider_requests": 0,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": null,
+      "raw_receipt_sha256": null,
+      "graded_receipt_sha256": null,
+      "stage_qualifications": []
+    },
+    {
+      "trial_id": "tweed-pr32--opus_main_opus_peer--r1",
+      "task_id": "tweed-pr32",
+      "arm_id": "opus_main_opus_peer",
+      "repeat": 1,
+      "assignment_state": "never_started",
+      "recorded_provider_requests": 0,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": null,
+      "raw_receipt_sha256": null,
+      "graded_receipt_sha256": null,
+      "stage_qualifications": []
+    },
+    {
+      "trial_id": "tweed-pr32--astra_main_opus_peer--r1",
+      "task_id": "tweed-pr32",
+      "arm_id": "astra_main_opus_peer",
+      "repeat": 1,
+      "assignment_state": "never_started",
+      "recorded_provider_requests": 0,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": null,
+      "raw_receipt_sha256": null,
+      "graded_receipt_sha256": null,
+      "stage_qualifications": []
+    },
+    {
+      "trial_id": "tweed-pr32--astra_main_astra_peer--r2",
+      "task_id": "tweed-pr32",
+      "arm_id": "astra_main_astra_peer",
+      "repeat": 2,
+      "assignment_state": "never_started",
+      "recorded_provider_requests": 0,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": null,
+      "raw_receipt_sha256": null,
+      "graded_receipt_sha256": null,
+      "stage_qualifications": []
+    },
+    {
+      "trial_id": "tweed-pr32--opus_main_astra_peer--r2",
+      "task_id": "tweed-pr32",
+      "arm_id": "opus_main_astra_peer",
+      "repeat": 2,
+      "assignment_state": "never_started",
+      "recorded_provider_requests": 0,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": null,
+      "raw_receipt_sha256": null,
+      "graded_receipt_sha256": null,
+      "stage_qualifications": []
+    },
+    {
+      "trial_id": "tweed-pr32--astra_main_opus_peer--r2",
+      "task_id": "tweed-pr32",
+      "arm_id": "astra_main_opus_peer",
+      "repeat": 2,
+      "assignment_state": "never_started",
+      "recorded_provider_requests": 0,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": null,
+      "raw_receipt_sha256": null,
+      "graded_receipt_sha256": null,
+      "stage_qualifications": []
+    },
+    {
+      "trial_id": "tweed-pr32--opus_main_opus_peer--r2",
+      "task_id": "tweed-pr32",
+      "arm_id": "opus_main_opus_peer",
+      "repeat": 2,
+      "assignment_state": "never_started",
+      "recorded_provider_requests": 0,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": null,
+      "raw_receipt_sha256": null,
+      "graded_receipt_sha256": null,
+      "stage_qualifications": []
+    },
+    {
+      "trial_id": "tweed-pr34--astra_main_astra_peer--r1",
+      "task_id": "tweed-pr34",
+      "arm_id": "astra_main_astra_peer",
+      "repeat": 1,
+      "assignment_state": "never_started",
+      "recorded_provider_requests": 0,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": null,
+      "raw_receipt_sha256": null,
+      "graded_receipt_sha256": null,
+      "stage_qualifications": []
+    },
+    {
+      "trial_id": "tweed-pr34--opus_main_opus_peer--r1",
+      "task_id": "tweed-pr34",
+      "arm_id": "opus_main_opus_peer",
+      "repeat": 1,
+      "assignment_state": "never_started",
+      "recorded_provider_requests": 0,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": null,
+      "raw_receipt_sha256": null,
+      "graded_receipt_sha256": null,
+      "stage_qualifications": []
+    },
+    {
+      "trial_id": "tweed-pr34--astra_main_opus_peer--r1",
+      "task_id": "tweed-pr34",
+      "arm_id": "astra_main_opus_peer",
+      "repeat": 1,
+      "assignment_state": "never_started",
+      "recorded_provider_requests": 0,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": null,
+      "raw_receipt_sha256": null,
+      "graded_receipt_sha256": null,
+      "stage_qualifications": []
+    },
+    {
+      "trial_id": "tweed-pr34--opus_main_astra_peer--r1",
+      "task_id": "tweed-pr34",
+      "arm_id": "opus_main_astra_peer",
+      "repeat": 1,
+      "assignment_state": "never_started",
+      "recorded_provider_requests": 0,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": null,
+      "raw_receipt_sha256": null,
+      "graded_receipt_sha256": null,
+      "stage_qualifications": []
+    },
+    {
+      "trial_id": "tweed-pr34--opus_main_opus_peer--r2",
+      "task_id": "tweed-pr34",
+      "arm_id": "opus_main_opus_peer",
+      "repeat": 2,
+      "assignment_state": "never_started",
+      "recorded_provider_requests": 0,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": null,
+      "raw_receipt_sha256": null,
+      "graded_receipt_sha256": null,
+      "stage_qualifications": []
+    },
+    {
+      "trial_id": "tweed-pr34--astra_main_astra_peer--r2",
+      "task_id": "tweed-pr34",
+      "arm_id": "astra_main_astra_peer",
+      "repeat": 2,
+      "assignment_state": "never_started",
+      "recorded_provider_requests": 0,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": null,
+      "raw_receipt_sha256": null,
+      "graded_receipt_sha256": null,
+      "stage_qualifications": []
+    },
+    {
+      "trial_id": "tweed-pr34--opus_main_astra_peer--r2",
+      "task_id": "tweed-pr34",
+      "arm_id": "opus_main_astra_peer",
+      "repeat": 2,
+      "assignment_state": "never_started",
+      "recorded_provider_requests": 0,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": null,
+      "raw_receipt_sha256": null,
+      "graded_receipt_sha256": null,
+      "stage_qualifications": []
+    },
+    {
+      "trial_id": "tweed-pr34--astra_main_opus_peer--r2",
+      "task_id": "tweed-pr34",
+      "arm_id": "astra_main_opus_peer",
+      "repeat": 2,
+      "assignment_state": "never_started",
+      "recorded_provider_requests": 0,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": null,
+      "raw_receipt_sha256": null,
+      "graded_receipt_sha256": null,
+      "stage_qualifications": []
+    },
+    {
+      "trial_id": "tweed-pr40--opus_main_opus_peer--r1",
+      "task_id": "tweed-pr40",
+      "arm_id": "opus_main_opus_peer",
+      "repeat": 1,
+      "assignment_state": "never_started",
+      "recorded_provider_requests": 0,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": null,
+      "raw_receipt_sha256": null,
+      "graded_receipt_sha256": null,
+      "stage_qualifications": []
+    },
+    {
+      "trial_id": "tweed-pr40--astra_main_opus_peer--r1",
+      "task_id": "tweed-pr40",
+      "arm_id": "astra_main_opus_peer",
+      "repeat": 1,
+      "assignment_state": "never_started",
+      "recorded_provider_requests": 0,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": null,
+      "raw_receipt_sha256": null,
+      "graded_receipt_sha256": null,
+      "stage_qualifications": []
+    },
+    {
+      "trial_id": "tweed-pr40--opus_main_astra_peer--r1",
+      "task_id": "tweed-pr40",
+      "arm_id": "opus_main_astra_peer",
+      "repeat": 1,
+      "assignment_state": "never_started",
+      "recorded_provider_requests": 0,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": null,
+      "raw_receipt_sha256": null,
+      "graded_receipt_sha256": null,
+      "stage_qualifications": []
+    },
+    {
+      "trial_id": "tweed-pr40--astra_main_astra_peer--r1",
+      "task_id": "tweed-pr40",
+      "arm_id": "astra_main_astra_peer",
+      "repeat": 1,
+      "assignment_state": "never_started",
+      "recorded_provider_requests": 0,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": null,
+      "raw_receipt_sha256": null,
+      "graded_receipt_sha256": null,
+      "stage_qualifications": []
+    },
+    {
+      "trial_id": "tweed-pr40--astra_main_opus_peer--r2",
+      "task_id": "tweed-pr40",
+      "arm_id": "astra_main_opus_peer",
+      "repeat": 2,
+      "assignment_state": "never_started",
+      "recorded_provider_requests": 0,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": null,
+      "raw_receipt_sha256": null,
+      "graded_receipt_sha256": null,
+      "stage_qualifications": []
+    },
+    {
+      "trial_id": "tweed-pr40--opus_main_opus_peer--r2",
+      "task_id": "tweed-pr40",
+      "arm_id": "opus_main_opus_peer",
+      "repeat": 2,
+      "assignment_state": "never_started",
+      "recorded_provider_requests": 0,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": null,
+      "raw_receipt_sha256": null,
+      "graded_receipt_sha256": null,
+      "stage_qualifications": []
+    },
+    {
+      "trial_id": "tweed-pr40--astra_main_astra_peer--r2",
+      "task_id": "tweed-pr40",
+      "arm_id": "astra_main_astra_peer",
+      "repeat": 2,
+      "assignment_state": "never_started",
+      "recorded_provider_requests": 0,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": null,
+      "raw_receipt_sha256": null,
+      "graded_receipt_sha256": null,
+      "stage_qualifications": []
+    },
+    {
+      "trial_id": "tweed-pr40--opus_main_astra_peer--r2",
+      "task_id": "tweed-pr40",
+      "arm_id": "opus_main_astra_peer",
+      "repeat": 2,
+      "assignment_state": "never_started",
+      "recorded_provider_requests": 0,
+      "supplemental_harness_invalid": null,
+      "supplemental_verified_success": null,
+      "raw_receipt_sha256": null,
+      "graded_receipt_sha256": null,
+      "stage_qualifications": []
+    }
+  ],
+  "source_supplement_sha256": "121b3f2ebfd7c2a3aa243110402c0062c6e153dd4ad9d618c1291cd7ac7c2507"
+}

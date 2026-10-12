@@ -1,0 +1,236 @@
+diff --git a/bonaparte b/bonaparte
+index 888b766..d84668b 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -481,8 +481,7 @@ def run_phase(
+                 phase,
+                 values[1] if len(values) == 2 else None,
+             )
+-            if phase == "implement":
+-                expected_branch = handoff["issue"]["git_branch_name"]
++            expected_branch = handoff["issue"]["git_branch_name"]
+             phase_input = json.dumps(handoff, ensure_ascii=False)
+             context_policy = (
+                 "\n\n# Context policy\n\n"
+@@ -584,6 +583,8 @@ def run_phase(
+         if not isinstance(thread, dict) or not isinstance(thread.get("id"), str):
+             raise RuntimeError("Codex app-server returned no thread identity")
+         session_id = thread["id"]
++        driver.root_thread_id = session_id
++        driver.issue_branch = expected_branch
+         observer.observation["session_id"] = session_id
+         if resume_session_id and session_id != resume_session_id:
+             raise RuntimeError("Codex resumed a different session")
+@@ -702,6 +703,53 @@ def run_phase(
+         if not driver.last_agent_message:
+             raise RuntimeError("Codex app-server returned no final receipt")
+         receipt = json.loads(driver.last_agent_message)
++        validate_schema(receipt, RECEIPT_SCHEMA)
++        if receipt["phase"] != phase:
++            raise RuntimeError("Codex returned the wrong phase")
++        if receipt["state"] == "completed" and (
++            not receipt["issue"] or not receipt["linear_url"]
++        ):
++            raise RuntimeError("completed phase is missing its Linear issue")
++        if receipt["state"] == "completed" and (
++            receipt["result"] != COMPLETED_RESULTS[phase]
++        ):
++            raise RuntimeError(f"completed {phase} returned the wrong result")
++        if receipt["state"] == "needs-input" and not receipt["question"]:
++            raise RuntimeError("phase requested input without a question")
++        if steered:
++            if receipt["state"] != "needs-input":
++                raise RuntimeError("soft-budget wrap-up did not request continuation")
++            question = receipt["question"]
++            if question != SOFT_BUDGET_CONTINUE_QUESTION and not question.startswith(
++                "Clarification required:"
++            ):
++                raise RuntimeError("soft-budget wrap-up returned an invalid question")
++            if "unverified" not in receipt["summary"].casefold():
++                raise RuntimeError(
++                    "soft-budget wrap-up omitted unverified proof obligations"
++                )
++        if receipt["state"] == "needs-input":
++            receipt["resume_session_id"] = session_id
++        else:
++            receipt["resume_session_id"] = None
++        if phase in {"implement", "review", "publish"} and receipt["state"] == "completed":
++            if not receipt["branch"] or not receipt["commit"]:
++                raise RuntimeError(f"completed {phase} is missing Git provenance")
++        if (
++            phase == "implement"
++            and receipt["state"] == "completed"
++            and resume_session_id is None
++            and receipt["branch"] != expected_branch
++        ):
++            raise RuntimeError("completed implementation did not use Linear's branch name")
++        require_pull_request(receipt, phase)
++        driver.terminal_session = receipt["state"] in {"completed", "blocked"}
++        if driver.terminal_session and not expected_branch and receipt.get("issue"):
++            def load_issue_branch():
++                canonical_issue, _comments = call_linear(repository, receipt["issue"])
++                return canonical_issue.get("gitBranchName")
++
++            driver.issue_branch_loader = load_issue_branch
+         failed = False
+     finally:
+         observed = observer.finish()
+@@ -714,46 +762,6 @@ def run_phase(
+                 if not failed:
+                     raise
+ 
+-    validate_schema(receipt, RECEIPT_SCHEMA)
+-    if receipt["phase"] != phase:
+-        raise RuntimeError("Codex returned the wrong phase")
+-    if receipt["state"] == "completed" and (
+-        not receipt["issue"] or not receipt["linear_url"]
+-    ):
+-        raise RuntimeError("completed phase is missing its Linear issue")
+-    if receipt["state"] == "completed" and (
+-        receipt["result"] != COMPLETED_RESULTS[phase]
+-    ):
+-        raise RuntimeError(f"completed {phase} returned the wrong result")
+-    if receipt["state"] == "needs-input" and not receipt["question"]:
+-        raise RuntimeError("phase requested input without a question")
+-    if steered:
+-        if receipt["state"] != "needs-input":
+-            raise RuntimeError("soft-budget wrap-up did not request continuation")
+-        question = receipt["question"]
+-        if question != SOFT_BUDGET_CONTINUE_QUESTION and not question.startswith(
+-            "Clarification required:"
+-        ):
+-            raise RuntimeError("soft-budget wrap-up returned an invalid question")
+-        if "unverified" not in receipt["summary"].casefold():
+-            raise RuntimeError(
+-                "soft-budget wrap-up omitted unverified proof obligations"
+-            )
+-    if receipt["state"] == "needs-input":
+-        receipt["resume_session_id"] = session_id
+-    else:
+-        receipt["resume_session_id"] = None
+-    if phase in {"implement", "review", "publish"} and receipt["state"] == "completed":
+-        if not receipt["branch"] or not receipt["commit"]:
+-            raise RuntimeError(f"completed {phase} is missing Git provenance")
+-    if (
+-        phase == "implement"
+-        and receipt["state"] == "completed"
+-        and resume_session_id is None
+-        and receipt["branch"] != expected_branch
+-    ):
+-        raise RuntimeError("completed implementation did not use Linear's branch name")
+-    require_pull_request(receipt, phase)
+     return receipt
+ 
+ 
+diff --git a/bonaparte_native.py b/bonaparte_native.py
+index e9a607c..b8425fa 100644
+--- a/bonaparte_native.py
++++ b/bonaparte_native.py
+@@ -118,6 +118,11 @@ class AppServerPhaseDriver:
+             raise RuntimeError("Codex app-server pipes are unavailable")
+         self._messages: queue.Queue = queue.Queue(maxsize=64)
+         self._request_id = 0
++        self._started_threads: dict[str, str | None] = {}
++        self.root_thread_id: str | None = None
++        self.issue_branch: str | None = None
++        self.terminal_session = False
++        self._closed = False
+         self._last_agent_message: str | None = None
+         self._receipt_thread_id: str | None = None
+         self._receipt_turn_id: str | None = None
+@@ -273,10 +278,17 @@ class AppServerPhaseDriver:
+             raise RuntimeError(f"unsupported app-server request: {method}")
+         if method == "thread/started":
+             thread = params.get("thread")
+-            if isinstance(thread, dict) and isinstance(thread.get("id"), str):
+-                self.observer.feed(
+-                    json.dumps({"type": "thread.started", "thread_id": thread["id"]})
+-                )
++            if isinstance(thread, dict) and isinstance(thread.get("id"), str) and thread["id"]:
++                # Only a native started event establishes lifecycle ownership.
++                source = thread.get("source")
++                subagent = source.get("subAgent") if isinstance(source, dict) else None
++                spawn = subagent.get("thread_spawn") if isinstance(subagent, dict) else None
++                parent = spawn.get("parent_thread_id") if isinstance(spawn, dict) else None
++                if not isinstance(parent, str) or not parent:
++                    parent = None
++                self._started_threads.setdefault(thread["id"], parent)
++                if thread["id"] == self.root_thread_id:
++                    self.observer.observation["session_id"] = thread["id"]
+         if method in {"item/started", "item/completed"}:
+             item = params.get("item")
+             if not isinstance(item, dict):
+@@ -345,5 +357,72 @@ class AppServerPhaseDriver:
+     def last_agent_message(self) -> str | None:
+         return self._last_agent_message
+ 
++    def owned_descendants(self) -> list[str]:
++        """Resolve ancestry after observation, including child-before-parent events."""
++        root = self.root_thread_id
++        if root not in self._started_threads or self._started_threads[root] is not None:
++            return []
++        owned = {root}
++        while True:
++            children = {
++                identifier for identifier, parent in self._started_threads.items()
++                if parent in owned and identifier not in owned
++            }
++            if not children:
++                return sorted(owned - {root})
++            owned.update(children)
++
+     def close(self, *, failed: bool) -> None:
+-        terminate_and_reap(self.process)
++        if getattr(self, "_closed", False):
++            return
++        self._closed = True
++        errors: list[BaseException] = []
++        try:
++            if not failed and getattr(self, "terminal_session", False):
++                root = self.root_thread_id
++                if root in self._started_threads and self._started_threads[root] is None:
++                    attempted: set[str] = set()
++                    archive_attempted = False
++                    branch_loaded = False
++                    while True:
++                        pending = set(self.owned_descendants()) - attempted
++                        if not pending:
++                            if archive_attempted:
++                                break
++                            archive_attempted = True
++                            try:
++                                self.request("thread/archive", {"threadId": root})
++                            except BaseException as error:
++                                errors.append(error)
++                            # request() can observe new descendants even on failure.
++                            continue
++                        if not branch_loaded:
++                            branch_loaded = True
++                            loader = getattr(self, "issue_branch_loader", None)
++                            if loader is not None:
++                                try:
++                                    self.issue_branch = loader()
++                                except BaseException as error:
++                                    self.metadata_error = error
++                        for identifier in sorted(pending):
++                            attempted.add(identifier)
++                            try:
++                                if getattr(self, "metadata_error", None) is not None:
++                                    raise self.metadata_error
++                                if not isinstance(self.issue_branch, str) or not self.issue_branch.strip():
++                                    raise RuntimeError("canonical issue branch unavailable for child metadata")
++                                self.request("thread/metadata/update", {
++                                    "threadId": identifier,
++                                    "gitInfo": {"branch": self.issue_branch},
++                                })
++                            except BaseException as error:
++                                errors.append(error)
++        finally:
++            try:
++                terminate_and_reap(self.process)
++            except BaseException as error:
++                errors.append(error)
++        if errors:
++            if len(errors) > 1 and isinstance(errors[0], Exception):
++                raise RuntimeError("; ".join(str(error) for error in errors)) from errors[0]
++            raise errors[0]

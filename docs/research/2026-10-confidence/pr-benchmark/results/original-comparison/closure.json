@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "closed_at_utc": "2026-10-12T17:26:43.662660+00:00",
+  "grading_receipt_filename": "graded-receipt.json",
+  "schedule_sha256": "f230f71992ee5f0518d6b000e10f61378d9a96be285e9e050aed02f446fb87fd",
+  "private_inventory_sha256": "543cd17ea4c28e23eb0aef0a53c8d7eb57b03a1feef59ddc3179129b21f5fbce",
+  "closure_manifest_sha256": "734db95cc1c21c3a374e2eb36e0c46b6692dfce386609d1086ad82bb0e529594",
+  "classification": {
+    "completed_receipt": 82,
+    "interrupted_no_receipt": 2
+  },
+  "assignments": 84,
+  "missing_assignments": [
+    {
+      "trial_id": "tweed-pr35--bounded_repair--r2",
+      "task_id": "tweed-pr35",
+      "arm_id": "bounded_repair",
+      "repeat": 2,
+      "assignment_state": "interrupted_no_receipt"
+    },
+    {
+      "trial_id": "tweed-pr35--original_cp_05--r2",
+      "task_id": "tweed-pr35",
+      "arm_id": "original_cp_05",
+      "repeat": 2,
+      "assignment_state": "interrupted_no_receipt"
+    }
+  ],
+  "completion_evidence_sha256": "06012f73332544daac3a8119374e50e46c4a0a16df536497c231b1f037288afb",
+  "note": "Missing scheduled outcomes remain null. This closure does not turn interrupted or unstarted assignments into attempted failures."
+}

@@ -1,0 +1,79 @@
+diff --git a/bonaparte-launcher b/bonaparte-launcher
+index 67681b7..c9ffa9e 100755
+--- a/bonaparte-launcher
++++ b/bonaparte-launcher
+@@ -93,10 +93,24 @@ def latest_tag() -> tuple[str, str]:
+     return tag, oid
+ 
+ 
++def invalid_required_path(release: Path, name: str) -> bool:
++    """A required path counts only as a regular file inside the snapshot."""
++
++    path = release / name
++    if not path.is_file():
++        return True
++    parent = path
++    while parent != release:
++        if parent.is_symlink():
++            return True
++        parent = parent.parent
++    return False
++
++
+ def validate_release(release: Path) -> None:
+-    missing = [name for name in REQUIRED if not (release / name).exists()]
++    missing = [name for name in REQUIRED if invalid_required_path(release, name)]
+     if missing:
+-        raise RuntimeError(f"release is missing {', '.join(missing)}")
++        raise RuntimeError(f"release has missing or invalid {', '.join(missing)}")
+     for name in (
+         "bonaparte",
+         "bonaparte-launcher",
+@@ -160,16 +174,33 @@ def fetch_release(home: Path, tag: str, expected_oid: str) -> Path:
+             shutil.rmtree(staging)
+ 
+ 
++def is_current(release_id: str, tag: str) -> bool:
++    version = tag_version(release_id)
++    return bool(version) and version >= tag_version(tag)
++
++
++def status(home: Path) -> int:
++    """Report installed and latest stable releases without changing state."""
++
++    installed = current_release(home).name
++    try:
++        tag, _ = latest_tag()
++    except Exception as error:
++        print(f"installed: {installed}\nlatest: unavailable\ncurrent: unknown")
++        print(f"bonaparte: cannot resolve latest release: {error}", file=sys.stderr)
++        return 1
++    print(f"installed: {installed}\nlatest: {tag}")
++    print(f"current: {'yes' if is_current(installed, tag) else 'no'}")
++    return 0
++
++
+ def update(home: Path) -> str | None:
+     migrate_autoresearch_link(home)
+     tag, oid = latest_tag()
+-    current = current_release(home)
+-    current_version = tag_version(current.name)
+-    if current_version and current_version >= tag_version(tag):
++    if is_current(current_release(home).name, tag):
+         return None
+     release = fetch_release(home, tag, oid)
+-    current_version = tag_version(current_release(home).name)
+-    if current_version and current_version >= tag_version(tag):
++    if is_current(current_release(home).name, tag):
+         return None
+     atomic_link(f"releases/{release.name}", home / "current")
+     migrate_autoresearch_link(home)
+@@ -192,6 +223,8 @@ def automatic_update(home: Path) -> None:
+ def main() -> int:
+     home = bonaparte_home()
+     try:
++        if sys.argv[1:] == ["status"]:
++            return status(home)
+         migrate_autoresearch_link(home)
+         if sys.argv[1:] == ["update"]:
+             tag = update(home)

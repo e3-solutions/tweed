@@ -102,7 +102,7 @@ We reconciled owned child results and retained both failed and repaired receipts
 The final acceptance proof comes from current local regression captures and CI,
 not from subagent counts, anecdotes or unchecked parent summaries.
 
-## Evaluation scope and next experiment
+## Evaluation scope and real PR experiments
 
 The core began with 179 passing regressions. New tests exercise the actual CLI,
 real Git source, captures, artifact hashes, source relocation and HTTP telemetry.
@@ -125,8 +125,27 @@ Report escaped defects, false completion, unresolved required proof, user
 interventions, recovery correctness, task completion, time, tokens and cost, with
 denominators, variation and invalid/denied runs visible. A cheaper route only wins
 if consequential correctness is preserved. Cross-model review is a testable
-hypothesis, not an automatic proof multiplier. This PR supplies stronger workflow
-invariants and falsifiable tests; it does not claim those comparative task trials ran.
+hypothesis, not an automatic proof multiplier.
+
+The [real PR replay report](pr-benchmark/README.md) now records six proposed
+approaches against CP0.5 on six historical public PR tasks, with two repeats:
+84 assignments, 82 independently graded receipts and two interrupted outcomes
+retained as unknown. CP0.6's nominal4/12 versus3/12 acceptance difference comes
+entirely from an interrupted baseline pair; its11 complete-pair task difference
+is zero. Separate public-behavior audits exposed representation coupling in two
+old acceptance oracles. The original scores, code and registration remain intact;
+posthoc audit results are reported separately. This does not establish improved
+model task accuracy.
+
+Actual Codex-to-Claude callback controls also passed, with runtime-observed Opus5.5,
+executed peer checks, a denied peer source write and a returned receipt subsequently
+used by Codex. The first mixed-provider block had invalid workspace-tool transport
+and cannot rank accuracy. The separately sealed V2 block qualifies full staged
+execution, actual baseline commands, timeouts, source/lifecycle metadata and an
+independent grader before historical-task dispatch. Its fixed-main peer-provider
+contrasts remain exploratory, with unknown Codex dollar cost and model attribution
+limits. [Bridge proof](pr-benchmark/BRIDGE-PROOF.json),
+[V2 registration](pr-benchmark/HYBRID-V2-REGISTRATION.json).
 
 ## Limits and rollback
 

@@ -79,6 +79,16 @@ Validate the effective tool inventory: disabling shell tools alone may leave a
 patch tool, resource handlers or delegation tools available. Keep credentials in
 the provider process and expose only authorized source to its execution children.
 
+Qualify the composed workflow using its actual child cwd, configuration paths,
+sandbox, environment and executable resolution. Component probes alone can miss
+delivery failures. Run the task's visible baseline checks through that same tool
+boundary before interpreting model results. Supply an empty confined home when
+tests need one, and keep writable test scratch outside a source tree that tests
+copy; a temporary destination inside its own input can recurse. Preserve both
+normal-completion and forced-timeout receipts. Reap an exited direct child before
+escalating original-group cleanup on systems where unreaped zombies affect group
+signals; still stop live group members and retain genuine cleanup failures.
+
 Use both providers' independently available accounts to distribute authorized
 work. This does not combine or raise their quotas. Preserve missing dollar costs
 as unknown and distinguish reported list-price estimates from subscription
