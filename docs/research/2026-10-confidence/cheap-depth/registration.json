@@ -1,0 +1,27 @@
+{
+  "sealed_at_utc": "2026-10-12T18:17:30.761843+00:00",
+  "synthetic_cases": 8,
+  "zero_model_outcomes": true,
+  "models_requested": [
+    "gpt-6-luna",
+    "gpt-5.6-terra",
+    "claude-haiku-5-5"
+  ],
+  "no_fallback": true,
+  "attempts_per_model": 1,
+  "relationship": "Separate exploratory synthetic triage pilot; never modify or pool with running48PRcohort",
+  "packet_sha256": "b43f0740407689b3342d8515d2ff46204485db4c04ad41bc3bff7078e0984cef",
+  "schema_sha256": "7d18ea445887515974be913e4ed413eea4df162b34b9e16cd15eefa355bacedb",
+  "sealed_expected_sha256": "be79012f7072346d0de65cc2e980ff6455e8ff0e3b65c8ca7be12f27ba1185c9",
+  "assessment": "Check exactlabels and JSONpointergrounding with deterministic verifier plus strongerowner review; unknown costs preserved; runtime model metadata not authenticated weights",
+  "public_api_rate_sources": [
+    "https://developers.openai.com/api/docs/models/gpt-6-luna",
+    "https://developers.openai.com/api/docs/models/gpt-5.6-terra",
+    "https://platform.claude.com/docs/en/models/haiku-5-5/overview"
+  ],
+  "limits": [
+    "Illustrative result-informed cases, not representative tasks or hidden holdout",
+    "Native Codex and Claude Code surfaces differ; this is not a matched cost/harness experiment",
+    "Synthetic triage success cannot close a real software obligation"
+  ]
+}
