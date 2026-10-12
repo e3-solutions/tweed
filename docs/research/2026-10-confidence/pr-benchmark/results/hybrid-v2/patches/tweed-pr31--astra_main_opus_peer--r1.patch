@@ -1,0 +1,154 @@
+diff --git a/bonaparte b/bonaparte
+index 26a168f..a41fafe 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -409,6 +409,19 @@ def require_pull_request(receipt: dict, phase: str) -> None:
+         raise RuntimeError(f"completed {phase} is missing its pull request")
+ 
+ 
++class SoftBudgetFailure(RuntimeError):
++    """A native turn reached a recoverable soft-budget guard."""
++
++
++class SavedContinuationFailure(RuntimeError):
++    """A failure whose continuation was durably saved before emission."""
++
++    def __init__(self, receipt: dict, exit_code: int):
++        super().__init__(receipt["summary"])
++        self.receipt = receipt
++        self.exit_code = exit_code
++
++
+ def run_phase(
+     repository: Path,
+     phase: str,
+@@ -544,6 +557,7 @@ def run_phase(
+         )
+     observer = EventObserver(_ACTIVE_PROGRESS)
+     driver = None
++    continuation_session = None
+     failed = True
+     try:
+         driver = AppServerPhaseDriver(repository, observer)
+@@ -572,9 +586,15 @@ def run_phase(
+         if not isinstance(thread, dict) or not isinstance(thread.get("id"), str):
+             raise RuntimeError("Codex app-server returned no thread identity")
+         session_id = thread["id"]
+-        observer.observation["session_id"] = session_id
+         if resume_session_id and session_id != resume_session_id:
+             raise RuntimeError("Codex resumed a different session")
++        try:
++            if str(uuid.UUID(session_id)) != session_id:
++                raise ValueError
++        except ValueError as error:
++            raise RuntimeError("Codex app-server returned an invalid thread identity") from error
++        continuation_session = session_id
++        observer.observation["session_id"] = session_id
+         turn_params = {
+             "threadId": session_id,
+             "input": [{"type": "text", "text": prompt}],
+@@ -665,11 +685,12 @@ def run_phase(
+             steer_acknowledged = True
+         if terminal.get("status") != "completed":
+             detail = terminal.get("error")
+-            raise RuntimeError(
++            failure_type = SoftBudgetFailure if steer_acknowledged else RuntimeError
++            raise failure_type(
+                 f"{phase} coordinator failed: {detail or terminal.get('status')}"
+             )
+         if post_steer_work:
+-            raise RuntimeError("coordinator started new work after soft-budget steer")
++            raise SoftBudgetFailure("coordinator started new work after soft-budget steer")
+         if not driver.last_agent_message:
+             items = terminal.get("items")
+             if isinstance(items, list):
+@@ -687,6 +708,7 @@ def run_phase(
+         observed = observer.finish()
+         if observation is not None:
+             observation.update(observed)
++            observation["session_id"] = continuation_session
+         if driver is not None:
+             try:
+                 driver.close(failed=failed)
+@@ -709,14 +731,14 @@ def run_phase(
+         raise RuntimeError("phase requested input without a question")
+     if steered:
+         if receipt["state"] != "needs-input":
+-            raise RuntimeError("soft-budget wrap-up did not request continuation")
++            raise SoftBudgetFailure("soft-budget wrap-up did not request continuation")
+         question = receipt["question"]
+         if question != SOFT_BUDGET_CONTINUE_QUESTION and not question.startswith(
+             "Clarification required:"
+         ):
+-            raise RuntimeError("soft-budget wrap-up returned an invalid question")
++            raise SoftBudgetFailure("soft-budget wrap-up returned an invalid question")
+         if "unverified" not in receipt["summary"].casefold():
+-            raise RuntimeError(
++            raise SoftBudgetFailure(
+                 "soft-budget wrap-up omitted unverified proof obligations"
+             )
+     if receipt["state"] == "needs-input":
+@@ -1123,16 +1145,40 @@ def run_and_checkpoint(
+ ) -> dict:
+     base_git = capture_git_state(repository) if session_id is None else None
+     observation: dict = {}
+-    receipt = run_phase(
+-        repository,
+-        phase,
+-        phase_input,
+-        session_id,
+-        model,
+-        reasoning,
+-        observation=observation,
+-        soft_phase_budget_seconds=soft_phase_budget_seconds,
+-    )
++    try:
++        receipt = run_phase(
++            repository,
++            phase,
++            phase_input,
++            session_id,
++            model,
++            reasoning,
++            observation=observation,
++            soft_phase_budget_seconds=soft_phase_budget_seconds,
++        )
++    except (SoftBudgetFailure, KeyboardInterrupt) as error:
++        # Only a validated native identity can become a continuation token.
++        coordinator_session = observation.get("session_id")
++        if not coordinator_session:
++            raise
++        interrupted = isinstance(error, KeyboardInterrupt)
++        summary = "Bonaparte was interrupted." if interrupted else str(error)
++        summary = summary.replace("\n", " ")[:600] + " Unfinished proof obligations remain unverified."
++        receipt = fail(summary)
++        receipt.update(
++            phase=phase,
++            state="needs-input",
++            question=SOFT_BUDGET_CONTINUE_QUESTION,
++        )
++        checkpoint = new_question_checkpoint(
++            repository, phase, receipt, coordinator_session, model, reasoning,
++            observation, base_git or capture_git_state(repository),
++            soft_phase_budget_seconds,
++        )
++        raise SavedContinuationFailure(
++            checkpoint_receipt(checkpoint, state="failed", summary=summary),
++            130 if interrupted else 1,
++        ) from error
+     if receipt["state"] != "needs-input":
+         return receipt
+     coordinator_session = observation.get("session_id") or session_id
+@@ -1343,6 +1389,12 @@ def main() -> int:
+             if terminal_state not in PROGRESS_TERMINAL_STATES:
+                 raise ValueError("invalid progress state")
+             serialized_receipt = serialize_receipt(result_receipt)
++        except SavedContinuationFailure as error:
++            progress.stop_heartbeat()
++            progress.report("finalizing")
++            serialized_receipt = serialize_receipt(error.receipt)
++            terminal_state = "failed"
++            exit_code = error.exit_code
+         except KeyboardInterrupt:
+             progress.stop_heartbeat()
+             progress.report("finalizing")

@@ -1,0 +1,300 @@
+diff --git a/bonaparte b/bonaparte
+index 888b766..45b6029 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -431,6 +431,7 @@ def run_phase(
+     observation: dict | None = None,
+     replayed_answer: bool = False,
+     soft_phase_budget_seconds: float = DEFAULT_SOFT_PHASE_BUDGET_SECONDS,
++    canonical_issue_branch: str | None = None,
+ ) -> dict:
+     soft_phase_budget_seconds = resolve_soft_phase_budget(soft_phase_budget_seconds)
+     workflow_name, assignment = WORKFLOWS[phase]
+@@ -481,8 +482,9 @@ def run_phase(
+                 phase,
+                 values[1] if len(values) == 2 else None,
+             )
++            canonical_issue_branch = handoff["issue"]["git_branch_name"]
+             if phase == "implement":
+-                expected_branch = handoff["issue"]["git_branch_name"]
++                expected_branch = canonical_issue_branch
+             phase_input = json.dumps(handoff, ensure_ascii=False)
+             context_policy = (
+                 "\n\n# Context policy\n\n"
+@@ -559,6 +561,8 @@ def run_phase(
+     failed = True
+     try:
+         driver = AppServerPhaseDriver(repository, observer)
++        driver.canonical_issue_branch = canonical_issue_branch
++        observer.observation["canonical_issue_branch"] = canonical_issue_branch
+         driver.request(
+             "initialize", {"clientInfo": {"name": "bonaparte", "version": "1"}}
+         )
+@@ -587,6 +591,7 @@ def run_phase(
+         observer.observation["session_id"] = session_id
+         if resume_session_id and session_id != resume_session_id:
+             raise RuntimeError("Codex resumed a different session")
++        driver.root_thread_id = session_id
+         turn_params = {
+             "threadId": session_id,
+             "input": [{"type": "text", "text": prompt}],
+@@ -702,59 +707,64 @@ def run_phase(
+         if not driver.last_agent_message:
+             raise RuntimeError("Codex app-server returned no final receipt")
+         receipt = json.loads(driver.last_agent_message)
++        validate_schema(receipt, RECEIPT_SCHEMA)
++        if receipt["phase"] != phase:
++            raise RuntimeError("Codex returned the wrong phase")
++        if receipt["state"] == "completed" and (
++            not receipt["issue"] or not receipt["linear_url"]
++        ):
++            raise RuntimeError("completed phase is missing its Linear issue")
++        if receipt["state"] == "completed" and (
++            receipt["result"] != COMPLETED_RESULTS[phase]
++        ):
++            raise RuntimeError(f"completed {phase} returned the wrong result")
++        if receipt["state"] == "needs-input" and not receipt["question"]:
++            raise RuntimeError("phase requested input without a question")
++        if steered:
++            if receipt["state"] != "needs-input":
++                raise RuntimeError("soft-budget wrap-up did not request continuation")
++            question = receipt["question"]
++            if question != SOFT_BUDGET_CONTINUE_QUESTION and not question.startswith(
++                "Clarification required:"
++            ):
++                raise RuntimeError("soft-budget wrap-up returned an invalid question")
++            if "unverified" not in receipt["summary"].casefold():
++                raise RuntimeError(
++                    "soft-budget wrap-up omitted unverified proof obligations"
++                )
++        if receipt["state"] == "needs-input":
++            receipt["resume_session_id"] = session_id
++        else:
++            receipt["resume_session_id"] = None
++        if phase in {"implement", "review", "publish"} and receipt["state"] == "completed":
++            if not receipt["branch"] or not receipt["commit"]:
++                raise RuntimeError(f"completed {phase} is missing Git provenance")
++        if (
++            phase == "implement"
++            and receipt["state"] == "completed"
++            and resume_session_id is None
++            and receipt["branch"] != expected_branch
++        ):
++            raise RuntimeError("completed implementation did not use Linear's branch name")
++        require_pull_request(receipt, phase)
++        driver.terminal = receipt["state"] != "needs-input"
+         failed = False
++        return receipt
+     finally:
+-        observed = observer.finish()
+-        if observation is not None:
+-            observation.update(observed)
+-        if driver is not None:
+-            try:
+-                driver.close(failed=failed)
+-            except BaseException:
+-                if not failed:
+-                    raise
+-
+-    validate_schema(receipt, RECEIPT_SCHEMA)
+-    if receipt["phase"] != phase:
+-        raise RuntimeError("Codex returned the wrong phase")
+-    if receipt["state"] == "completed" and (
+-        not receipt["issue"] or not receipt["linear_url"]
+-    ):
+-        raise RuntimeError("completed phase is missing its Linear issue")
+-    if receipt["state"] == "completed" and (
+-        receipt["result"] != COMPLETED_RESULTS[phase]
+-    ):
+-        raise RuntimeError(f"completed {phase} returned the wrong result")
+-    if receipt["state"] == "needs-input" and not receipt["question"]:
+-        raise RuntimeError("phase requested input without a question")
+-    if steered:
+-        if receipt["state"] != "needs-input":
+-            raise RuntimeError("soft-budget wrap-up did not request continuation")
+-        question = receipt["question"]
+-        if question != SOFT_BUDGET_CONTINUE_QUESTION and not question.startswith(
+-            "Clarification required:"
+-        ):
+-            raise RuntimeError("soft-budget wrap-up returned an invalid question")
+-        if "unverified" not in receipt["summary"].casefold():
+-            raise RuntimeError(
+-                "soft-budget wrap-up omitted unverified proof obligations"
+-            )
+-    if receipt["state"] == "needs-input":
+-        receipt["resume_session_id"] = session_id
+-    else:
+-        receipt["resume_session_id"] = None
+-    if phase in {"implement", "review", "publish"} and receipt["state"] == "completed":
+-        if not receipt["branch"] or not receipt["commit"]:
+-            raise RuntimeError(f"completed {phase} is missing Git provenance")
+-    if (
+-        phase == "implement"
+-        and receipt["state"] == "completed"
+-        and resume_session_id is None
+-        and receipt["branch"] != expected_branch
+-    ):
+-        raise RuntimeError("completed implementation did not use Linear's branch name")
+-    require_pull_request(receipt, phase)
+-    return receipt
++        primary_error = sys.exc_info()[1]
++        try:
++            observed = observer.finish()
++            if observation is not None:
++                observation.update(observed)
++        finally:
++            primary_error = primary_error or sys.exc_info()[1]
++            if driver is not None:
++                try:
++                    driver.close(failed=failed)
++                except BaseException as cleanup_error:
++                    if primary_error is None:
++                        raise
++                    raise primary_error from cleanup_error
+ 
+ 
+ def _coordinator_receipt(receipt: dict) -> dict:
+@@ -873,7 +883,10 @@ def new_question_checkpoint(
+         ),
+         "question": receipt["question"],
+         "pending_answer": None,
+-        "receipt": _coordinator_receipt(receipt),
++        "receipt": {
++            **_coordinator_receipt(receipt),
++            "canonical_issue_branch": observation.get("canonical_issue_branch"),
++        },
+         "branch": current_git.get("branch"),
+         "files_changed": current_git["files_changed"],
+         "files_changed_total_count": current_git["files_changed_total_count"],
+@@ -1077,6 +1090,8 @@ def resume_checkpoint(
+             observation,
+             replayed_answer,
+             checkpoint["soft_phase_budget_seconds"],
++            **({"canonical_issue_branch": checkpoint["receipt"]["canonical_issue_branch"]}
++               if checkpoint["receipt"].get("canonical_issue_branch") else {}),
+         )
+     except KeyboardInterrupt:
+         _update_checkpoint_observation(checkpoint, observation)
+@@ -1096,7 +1111,10 @@ def resume_checkpoint(
+ 
+     _update_checkpoint_observation(checkpoint, observation)
+     checkpoint.update(
+-        receipt=_coordinator_receipt(receipt),
++        receipt={
++            **_coordinator_receipt(receipt),
++            "canonical_issue_branch": observation.get("canonical_issue_branch"),
++        },
+         pending_answer=None,
+         remote_state_changed=_combine_remote(
+             checkpoint.get("remote_state_changed"),
+diff --git a/bonaparte_native.py b/bonaparte_native.py
+index e9a607c..4cdd8ae 100644
+--- a/bonaparte_native.py
++++ b/bonaparte_native.py
+@@ -118,6 +118,12 @@ class AppServerPhaseDriver:
+             raise RuntimeError("Codex app-server pipes are unavailable")
+         self._messages: queue.Queue = queue.Queue(maxsize=64)
+         self._request_id = 0
++        self._started_threads: dict[str, str | None] = {}
++        self.root_thread_id: str | None = None
++        self.canonical_issue_branch: str | None = None
++        self.terminal = False
++        self._closed = False
++        self._expired_requests: set[int] = set()
+         self._last_agent_message: str | None = None
+         self._receipt_thread_id: str | None = None
+         self._receipt_turn_id: str | None = None
+@@ -273,7 +279,14 @@ class AppServerPhaseDriver:
+             raise RuntimeError(f"unsupported app-server request: {method}")
+         if method == "thread/started":
+             thread = params.get("thread")
+-            if isinstance(thread, dict) and isinstance(thread.get("id"), str):
++            if isinstance(thread, dict) and isinstance(thread.get("id"), str) and thread["id"]:
++                # Only native start notifications establish existence and ownership.
++                source = thread.get("source")
++                subagent = source.get("subAgent") if isinstance(source, dict) else None
++                spawn = subagent.get("thread_spawn") if isinstance(subagent, dict) else None
++                parent = spawn.get("parent_thread_id") if isinstance(spawn, dict) else None
++                parent = parent if isinstance(parent, str) and parent else None
++                self._started_threads.setdefault(thread["id"], parent)
+                 self.observer.feed(
+                     json.dumps({"type": "thread.started", "thread_id": thread["id"]})
+                 )
+@@ -314,6 +327,7 @@ class AppServerPhaseDriver:
+                     or thread_id == self._receipt_thread_id
+                 )
+             ):
++                self.terminal = True
+                 return method, turn
+         return method, None
+ 
+@@ -324,12 +338,16 @@ class AppServerPhaseDriver:
+             try:
+                 message = self.next_message(max(0.0, deadline - time.monotonic()))
+             except TimeoutError as error:
++                self._expired_requests.add(request_id)
+                 raise RuntimeError(
+                     f"Codex app-server timed out during {method}"
+                 ) from error
+             if "method" in message:
+                 self.observe_notification(message)
+                 continue
++            if message.get("id") in self._expired_requests:
++                self._expired_requests.discard(message["id"])
++                continue
+             if message.get("id") != request_id:
+                 raise RuntimeError("Codex app-server response correlation failed")
+             if "error" in message:
+@@ -345,5 +363,51 @@ class AppServerPhaseDriver:
+     def last_agent_message(self) -> str | None:
+         return self._last_agent_message
+ 
++    def _owned_descendants(self) -> list[str]:
++        owned = {self.root_thread_id}
++        while True:
++            children = {
++                identifier for identifier, parent in self._started_threads.items()
++                if parent is not None and parent in owned and identifier not in owned
++            }
++            if not children:
++                break
++            owned.update(children)
++        return sorted(owned - {self.root_thread_id})
++
+     def close(self, *, failed: bool) -> None:
+-        terminate_and_reap(self.process)
++        if getattr(self, "_closed", False):
++            return
++        self._closed = True
++        errors: list[BaseException] = []
++        try:
++            root = getattr(self, "root_thread_id", None)
++            if (
++                getattr(self, "terminal", False)
++                and root in getattr(self, "_started_threads", {})
++            ):
++                branch = self.canonical_issue_branch
++                if isinstance(branch, str) and branch:
++                    for identifier in self._owned_descendants():
++                        try:
++                            self.request("thread/metadata/update", {
++                                "threadId": identifier,
++                                "gitInfo": {"branch": branch},
++                            })
++                        except BaseException as error:
++                            errors.append(error)
++                try:
++                    self.request("thread/archive", {"threadId": root})
++                except BaseException as error:
++                    errors.append(error)
++        finally:
++            try:
++                terminate_and_reap(self.process)
++            except BaseException as error:
++                errors.append(error)
++        if errors:
++            if len(errors) == 1:
++                raise errors[0]
++            raise RuntimeError(
++                "Native cleanup failures: " + "; ".join(str(error) for error in errors)
++            ) from errors[0]

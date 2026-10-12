@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "closed_at_utc": "2026-10-12T20:12:07.564526+00:00",
+  "grading_receipt_filename": "v2-graded-receipt.json",
+  "schedule_sha256": "e9f386420185a5f17f69fb2a80752c71b74dd8f67dd61787fd968cfe5e6eeb66",
+  "private_inventory_sha256": "7e1874c707bb141e1f8ff554990f71667ea59c2f0a092ecd03ebe010a2132f79",
+  "closure_manifest_sha256": "f497b95101602f96318775caf5ac87034dd9d43ee926db2c17083ee8c397865d",
+  "classification": {
+    "completed_receipt": 48
+  },
+  "assignments": 48,
+  "missing_assignments": [],
+  "completion_evidence_sha256": "4e5464ee09a0b93c834eb7c81c0bfd21e98d942a4be9dcfa7d26270a816b3558",
+  "note": "Missing scheduled outcomes remain null. This closure does not turn interrupted or unstarted assignments into attempted failures."
+}

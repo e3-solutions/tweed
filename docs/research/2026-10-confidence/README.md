@@ -150,9 +150,13 @@ used by Codex. The first mixed-provider block had invalid workspace-tool transpo
 and cannot rank accuracy. The separately sealed V2 block qualifies full staged
 execution, actual baseline commands, timeouts, source/lifecycle metadata and an
 independent grader before historical-task dispatch. Its fixed-main peer-provider
-contrasts remain exploratory, with unknown Codex dollar cost and model attribution
-limits. [Bridge proof](pr-benchmark/BRIDGE-PROOF.json),
-[V2 registration](pr-benchmark/HYBRID-V2-REGISTRATION.json).
+contrasts now close48 assignments: Opus main/Astra peers accepted8/12 versus5/12
+with Opus peers, while Astra main/Opus peers accepted2/12 versus5/12 with Astra
+peers. Both descriptive six-task intervals include zero; strict completion was
+lower and all whole-arm dollar totals remain unknown. These exploratory directional
+results do not establish a general accuracy gain. [Bridge proof](pr-benchmark/BRIDGE-PROOF.json),
+[V2 registration](pr-benchmark/HYBRID-V2-REGISTRATION.json),
+[closed V2 analysis](pr-benchmark/HYBRID-V2-ANALYSIS.md).
 
 ## Limits and rollback
 

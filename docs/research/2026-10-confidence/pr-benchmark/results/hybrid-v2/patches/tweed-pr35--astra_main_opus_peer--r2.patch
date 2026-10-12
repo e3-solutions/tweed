@@ -1,0 +1,184 @@
+diff --git a/bonaparte-launcher b/bonaparte-launcher
+index 67681b7..d0ab5bd 100755
+--- a/bonaparte-launcher
++++ b/bonaparte-launcher
+@@ -17,7 +17,7 @@ REPOSITORY = os.environ.get(
+ )
+ TAG_PATTERN = re.compile(r"v(\d+)\.(\d+)\.(\d+)")
+ CHECK_INTERVAL = 24 * 60 * 60
+-REQUIRED = """bonaparte bonaparte-launcher bonaparte_checkpoint.py
++REQUIRED = """bonaparte autoresearch bonaparte-launcher bonaparte_checkpoint.py
+ bonaparte_native.py bonaparte_progress.py
+ bonaparte_linear.py
+ skills/use-bonaparte/SKILL.md
+@@ -71,10 +71,34 @@ def current_release(home: Path) -> Path:
+ 
+ 
+ def tag_version(tag: str) -> tuple[int, int, int] | None:
+-    match = TAG_PATTERN.search(tag)
++    match = TAG_PATTERN.fullmatch(tag)
++    if match is None:
++        match = re.fullmatch(r"local-v(\d+)\.(\d+)\.(\d+)-[0-9a-f]+", tag)
+     return tuple(map(int, match.groups())) if match else None
+ 
+ 
++def is_current(release: Path, tag: str) -> bool:
++    version = tag_version(release.name)
++    return version is not None and version >= tag_version(tag)
++
++
++def status(home: Path) -> int:
++    try:
++        release = current_release(home)
++    except RuntimeError:
++        release = None
++    print(f"installed: {release.name if release else 'unavailable'}")
++    try:
++        tag, _ = latest_tag()
++    except Exception:
++        print("latest: unavailable")
++        print("current: unknown")
++        return 1
++    print(f"latest: {tag}")
++    print(f"current: {'yes' if release and is_current(release, tag) else 'no'}")
++    return 0 if release else 1
++
++
+ def latest_tag() -> tuple[str, str]:
+     output = subprocess.check_output(
+         ["git", "ls-remote", "--tags", "--refs", REPOSITORY],
+@@ -94,11 +118,24 @@ def latest_tag() -> tuple[str, str]:
+ 
+ 
+ def validate_release(release: Path) -> None:
+-    missing = [name for name in REQUIRED if not (release / name).exists()]
+-    if missing:
+-        raise RuntimeError(f"release is missing {', '.join(missing)}")
++    root = release.resolve()
++    for name in REQUIRED:
++        source = release / name
++        if not source.is_file():
++            raise RuntimeError(f"release is missing a required regular file: {name}")
++        if not source.resolve().is_relative_to(root):
++            raise RuntimeError(f"required path escapes release: {name}")
++    # Every symlink must stay inside the snapshot, including optional modules.
++    for source in release.rglob("*"):
++        if source.is_symlink() and (
++            source.readlink().is_absolute()
++            or not source.resolve().is_relative_to(root)
++            or not source.exists()
++        ):
++            raise RuntimeError(f"invalid release symlink: {source.relative_to(release)}")
+     for name in (
+         "bonaparte",
++        "autoresearch",
+         "bonaparte-launcher",
+         "bonaparte_checkpoint.py",
+         "bonaparte_linear.py",
+@@ -107,8 +144,12 @@ def validate_release(release: Path) -> None:
+     ):
+         source = release / name
+         compile(source.read_text(), str(source), "exec")
++    for name in ("bonaparte-launcher", "bonaparte", "autoresearch"):
++        if not os.access(release / name, os.X_OK):
++            raise RuntimeError(f"release entry point is not executable: {name}")
+     environment = updater_environment()
+     environment["BONAPARTE_AUTO_UPDATE"] = "0"
++    environment["PYTHONDONTWRITEBYTECODE"] = "1"
+     subprocess.run(
+         [sys.executable, str(release / "bonaparte"), "--help"],
+         check=True,
+@@ -125,6 +166,38 @@ def validate_release(release: Path) -> None:
+         env=environment,
+         timeout=10,
+     )
++    # Exercise the actual executable launcher against this candidate, with no
++    # access through the installed current link during the smoke check.
++    with tempfile.TemporaryDirectory(prefix=".smoke-", dir=release.parent) as temporary:
++        smoke_home = Path(temporary)
++        (smoke_home / "current").symlink_to(root, target_is_directory=True)
++        (smoke_home / "bin").mkdir()
++        environment["BONAPARTE_HOME"] = str(smoke_home)
++        environment["BONAPARTE_BIN_DIR"] = str(smoke_home / "bin")
++        subprocess.run(
++            [str(root / "bonaparte-launcher"), "--help"],
++            check=True,
++            stdout=subprocess.DEVNULL,
++            stderr=subprocess.PIPE,
++            env=environment,
++            timeout=10,
++        )
++
++
++def same_snapshot(left: Path, right: Path) -> bool:
++    """Compare all paths, bytes, link targets and executable modes without following links."""
++    if left.is_symlink() or right.is_symlink():
++        return left.is_symlink() and right.is_symlink() and left.readlink() == right.readlink()
++    if left.is_dir() and right.is_dir():
++        names = {p.name for p in left.iterdir()}
++        return names == {p.name for p in right.iterdir()} and all(
++            same_snapshot(left / name, right / name) for name in names
++        )
++    return (
++        left.is_file() and right.is_file()
++        and (left.stat().st_mode & 0o111) == (right.stat().st_mode & 0o111)
++        and left.read_bytes() == right.read_bytes()
++    )
+ 
+ 
+ def git(directory: Path, *arguments: str, output: bool = False):
+@@ -140,9 +213,6 @@ def git(directory: Path, *arguments: str, output: bool = False):
+ 
+ def fetch_release(home: Path, tag: str, expected_oid: str) -> Path:
+     destination = home / "releases" / tag
+-    if destination.exists():
+-        validate_release(destination)
+-        return destination
+     staging = Path(tempfile.mkdtemp(prefix=".update-", dir=home))
+     try:
+         git(staging, "init", "-q")
+@@ -153,6 +223,10 @@ def fetch_release(home: Path, tag: str, expected_oid: str) -> Path:
+         git(staging, "checkout", "-q", "--detach", "FETCH_HEAD")
+         validate_release(staging)
+         shutil.rmtree(staging / ".git")
++        if destination.exists() or destination.is_symlink():
++            if destination.is_symlink() or not same_snapshot(staging, destination):
++                raise RuntimeError(f"existing release differs from verified tag: {destination}")
++            return destination
+         staging.rename(destination)
+         return destination
+     finally:
+@@ -164,12 +238,10 @@ def update(home: Path) -> str | None:
+     migrate_autoresearch_link(home)
+     tag, oid = latest_tag()
+     current = current_release(home)
+-    current_version = tag_version(current.name)
+-    if current_version and current_version >= tag_version(tag):
++    if is_current(current, tag):
+         return None
+     release = fetch_release(home, tag, oid)
+-    current_version = tag_version(current_release(home).name)
+-    if current_version and current_version >= tag_version(tag):
++    if is_current(current_release(home), tag):
+         return None
+     atomic_link(f"releases/{release.name}", home / "current")
+     migrate_autoresearch_link(home)
+@@ -184,14 +256,16 @@ def automatic_update(home: Path) -> None:
+         return
+     try:
+         checked.touch()
+-        update(home)
++        latest_tag()
+     except Exception as error:
+-        print(f"bonaparte: automatic update failed: {error}", file=sys.stderr)
++        print(f"bonaparte: availability check failed: {error}", file=sys.stderr)
+ 
+ 
+ def main() -> int:
+     home = bonaparte_home()
+     try:
++        if sys.argv[1:] == ["status"]:
++            return status(home)
+         migrate_autoresearch_link(home)
+         if sys.argv[1:] == ["update"]:
+             tag = update(home)

@@ -1,0 +1,380 @@
+{
+  "schema_version": 1,
+  "classification": "Independent closed-study custody and publication consistency review; not oracle regrading or semantic quality proof",
+  "observed_at_utc": "2026-10-12T20:20:36.577458+00:00",
+  "verdict": "PASS",
+  "scope": "Closed V2 only; existing bytes and metadata, independent count/bootstrap reconstruction; no oracle/model/grade execution, no source or Git changes.",
+  "review_artifact_sha256": "506a868d3c02c6aebc5cb17c9c160cb5cca8416694d21f59e7c21cd7416ce37d",
+  "review_role": "Independent closed-V2 custody and publication reviewer",
+  "passed_checks": {
+    "governing_25_byte_pins": true,
+    "registration_cross_bindings": true,
+    "canonical_protocol_manifest_pins": true,
+    "registered_source_and_oracle_bytes": true,
+    "exact48_schedule_queue_raw_normalized": true,
+    "no_recorded_started_tuple_retrial": true,
+    "all48_custody_bindings_current": true,
+    "distinct_complete_role_source_sidecar_material_audits": true,
+    "closure_and_export_integrity": true,
+    "public_projection_exact_allowlist": true,
+    "public_safe_projection_and_patch_scan": true,
+    "independent_arm_counts_match": true,
+    "independent_contrast_astra": true,
+    "independent_contrast_opus": true,
+    "analysis_input_hashes_current": true,
+    "publication_json_exact_analysis_bytes": true,
+    "analysis_payload_digest": true,
+    "publication_markdown_printed_hashes_match": true,
+    "publication_no_private_paths": true,
+    "public_private_25_governing_hash_sets": true
+  },
+  "verified_material_counts": {
+    "mismatches": [],
+    "oracle_output_files": 96,
+    "actual_stream_files": 192,
+    "durable_regular_material_files": 12583,
+    "closure_inventory_files": 528,
+    "stage_role_counts": {
+      "test_designer": 48,
+      "main_implementation": 48,
+      "adversarial_reviewer": 48,
+      "main_repair": 48
+    }
+  },
+  "independently_reconstructed_arm_counts": {
+    "astra_main_astra_peer": {
+      "assigned": 12,
+      "accepted": 5,
+      "strict_truthful_success": 3,
+      "both_peers_closed": 8,
+      "peer_role_closed": {
+        "test_designer": 9,
+        "adversarial_reviewer": 9
+      },
+      "terminal_unknown": 6,
+      "declared_complete_true": 3,
+      "false_completion_count": 0,
+      "false_completion_denominator": 3,
+      "oracle_known": 12,
+      "harness_invalid": 0,
+      "complete_cost_known": 0,
+      "sum_known_complete_totals": null,
+      "known_stage_subtotal": 0,
+      "whole_arm_reported_total": null
+    },
+    "astra_main_opus_peer": {
+      "assigned": 12,
+      "accepted": 2,
+      "strict_truthful_success": 1,
+      "both_peers_closed": 3,
+      "peer_role_closed": {
+        "test_designer": 12,
+        "adversarial_reviewer": 3
+      },
+      "terminal_unknown": 2,
+      "declared_complete_true": 1,
+      "false_completion_count": 0,
+      "false_completion_denominator": 1,
+      "oracle_known": 12,
+      "harness_invalid": 0,
+      "complete_cost_known": 0,
+      "sum_known_complete_totals": null,
+      "known_stage_subtotal": 12.131196200000002,
+      "whole_arm_reported_total": null
+    },
+    "opus_main_astra_peer": {
+      "assigned": 12,
+      "accepted": 8,
+      "strict_truthful_success": 1,
+      "both_peers_closed": 8,
+      "peer_role_closed": {
+        "test_designer": 10,
+        "adversarial_reviewer": 9
+      },
+      "terminal_unknown": 3,
+      "declared_complete_true": 3,
+      "false_completion_count": 0,
+      "false_completion_denominator": 3,
+      "oracle_known": 12,
+      "harness_invalid": 0,
+      "complete_cost_known": 0,
+      "sum_known_complete_totals": null,
+      "known_stage_subtotal": 14.4522768,
+      "whole_arm_reported_total": null
+    },
+    "opus_main_opus_peer": {
+      "assigned": 12,
+      "accepted": 5,
+      "strict_truthful_success": 0,
+      "both_peers_closed": 5,
+      "peer_role_closed": {
+        "test_designer": 12,
+        "adversarial_reviewer": 5
+      },
+      "terminal_unknown": 0,
+      "declared_complete_true": 2,
+      "false_completion_count": 1,
+      "false_completion_denominator": 2,
+      "oracle_known": 12,
+      "harness_invalid": 0,
+      "complete_cost_known": 11,
+      "sum_known_complete_totals": 22.0564532,
+      "known_stage_subtotal": 23.9795716,
+      "whole_arm_reported_total": null
+    }
+  },
+  "independently_reconstructed_primary_contrasts": [
+    {
+      "intervention": "astra_main_opus_peer",
+      "control": "astra_main_astra_peer",
+      "paired_both_declared_complete_true": 1,
+      "accepted_observed_lower_bound_difference": {
+        "paired_trials": 12,
+        "task_clusters": 6,
+        "task_deltas": {
+          "tweed-pr31": 0,
+          "tweed-pr32": -1,
+          "tweed-pr34": 0,
+          "tweed-pr35": 0,
+          "tweed-pr39": 0,
+          "tweed-pr40": -0.5
+        },
+        "mean_task_delta": -0.25,
+        "task_wins": 0,
+        "task_losses": 2,
+        "task_ties": 4,
+        "descriptive_task_bootstrap_95_percent": [
+          -0.5833333333333334,
+          0
+        ],
+        "ordered_task_resamples": 46656
+      },
+      "strict_truthful_success_observed_difference": {
+        "paired_trials": 12,
+        "task_clusters": 6,
+        "task_deltas": {
+          "tweed-pr31": 0,
+          "tweed-pr32": -0.5,
+          "tweed-pr34": -0.5,
+          "tweed-pr35": 0,
+          "tweed-pr39": 0,
+          "tweed-pr40": 0
+        },
+        "mean_task_delta": -0.16666666666666666,
+        "task_wins": 0,
+        "task_losses": 2,
+        "task_ties": 4,
+        "descriptive_task_bootstrap_95_percent": [
+          -0.3333333333333333,
+          0
+        ],
+        "ordered_task_resamples": 46656
+      },
+      "false_completion_complete_cases_secondary": {
+        "paired_trials": 6,
+        "task_clusters": 4,
+        "task_deltas": {
+          "tweed-pr31": 0,
+          "tweed-pr32": 0,
+          "tweed-pr34": 0,
+          "tweed-pr40": 0
+        },
+        "mean_task_delta": 0,
+        "task_wins": 0,
+        "task_losses": 0,
+        "task_ties": 4,
+        "descriptive_task_bootstrap_95_percent": [
+          0,
+          0
+        ],
+        "ordered_task_resamples": 256
+      },
+      "reported_total_cost_complete_cases_secondary": {
+        "paired_trials": 0,
+        "task_clusters": 0,
+        "task_deltas": {},
+        "mean_task_delta": null,
+        "task_wins": 0,
+        "task_losses": 0,
+        "task_ties": 0,
+        "descriptive_task_bootstrap_95_percent": null,
+        "ordered_task_resamples": 0
+      },
+      "wall_seconds_complete_cases_secondary": {
+        "paired_trials": 12,
+        "task_clusters": 6,
+        "task_deltas": {
+          "tweed-pr31": -164.32325508300028,
+          "tweed-pr32": -146.89056695850013,
+          "tweed-pr34": -100.34713360399928,
+          "tweed-pr35": -53.3236750829999,
+          "tweed-pr39": -167.18774704149973,
+          "tweed-pr40": -80.86611916649963
+        },
+        "mean_task_delta": -118.82308282274983,
+        "task_wins": 0,
+        "task_losses": 6,
+        "task_ties": 0,
+        "descriptive_task_bootstrap_95_percent": [
+          -151.70995080191656,
+          -84.25125551708315
+        ],
+        "ordered_task_resamples": 46656
+      }
+    },
+    {
+      "intervention": "opus_main_astra_peer",
+      "control": "opus_main_opus_peer",
+      "paired_both_declared_complete_true": 1,
+      "accepted_observed_lower_bound_difference": {
+        "paired_trials": 12,
+        "task_clusters": 6,
+        "task_deltas": {
+          "tweed-pr31": 0,
+          "tweed-pr32": 1,
+          "tweed-pr34": 0,
+          "tweed-pr35": 0.5,
+          "tweed-pr39": 0,
+          "tweed-pr40": 0
+        },
+        "mean_task_delta": 0.25,
+        "task_wins": 2,
+        "task_losses": 0,
+        "task_ties": 4,
+        "descriptive_task_bootstrap_95_percent": [
+          0,
+          0.5833333333333334
+        ],
+        "ordered_task_resamples": 46656
+      },
+      "strict_truthful_success_observed_difference": {
+        "paired_trials": 12,
+        "task_clusters": 6,
+        "task_deltas": {
+          "tweed-pr31": 0,
+          "tweed-pr32": 0.5,
+          "tweed-pr34": 0,
+          "tweed-pr35": 0,
+          "tweed-pr39": 0,
+          "tweed-pr40": 0
+        },
+        "mean_task_delta": 0.08333333333333333,
+        "task_wins": 1,
+        "task_losses": 0,
+        "task_ties": 5,
+        "descriptive_task_bootstrap_95_percent": [
+          0,
+          0.25
+        ],
+        "ordered_task_resamples": 46656
+      },
+      "false_completion_complete_cases_secondary": {
+        "paired_trials": 9,
+        "task_clusters": 6,
+        "task_deltas": {
+          "tweed-pr31": 0,
+          "tweed-pr32": -0.5,
+          "tweed-pr34": 0,
+          "tweed-pr35": 0,
+          "tweed-pr39": 0,
+          "tweed-pr40": 0
+        },
+        "mean_task_delta": -0.08333333333333333,
+        "task_wins": 0,
+        "task_losses": 1,
+        "task_ties": 5,
+        "descriptive_task_bootstrap_95_percent": [
+          -0.25,
+          0
+        ],
+        "ordered_task_resamples": 46656
+      },
+      "reported_total_cost_complete_cases_secondary": {
+        "paired_trials": 0,
+        "task_clusters": 0,
+        "task_deltas": {},
+        "mean_task_delta": null,
+        "task_wins": 0,
+        "task_losses": 0,
+        "task_ties": 0,
+        "descriptive_task_bootstrap_95_percent": null,
+        "ordered_task_resamples": 0
+      },
+      "wall_seconds_complete_cases_secondary": {
+        "paired_trials": 12,
+        "task_clusters": 6,
+        "task_deltas": {
+          "tweed-pr31": 22.891352584000288,
+          "tweed-pr32": 153.52954783299992,
+          "tweed-pr34": 92.52331970900013,
+          "tweed-pr35": 115.16073072900076,
+          "tweed-pr39": 108.46358610450034,
+          "tweed-pr40": 86.94348764549977
+        },
+        "mean_task_delta": 96.58533743416687,
+        "task_wins": 6,
+        "task_losses": 0,
+        "task_ties": 0,
+        "descriptive_task_bootstrap_95_percent": [
+          63.20697703850029,
+          125.71795488883367
+        ],
+        "ordered_task_resamples": 46656
+      }
+    }
+  ],
+  "governing_source_sha256": {
+    "docs/research/2026-10-confidence/pr-benchmark/hybrid-v2-protocol.json": "fb1d855a539eaff82a39e1b87fca23a4bc6931ae2690c7258a857563b4746423",
+    ".confidence/benchmark/curation/hybrid-manifest.json": "d975e71aaf733d7594c0455f8362cf80a5b5b6c1942797c7448e5df317824472",
+    "docs/research/2026-10-confidence/pr-benchmark/hybrid_runner.py": "2e560c9300d16adba435048f45383293aea6ace3b7749ae17a0aea6652657a8d",
+    "docs/research/2026-10-confidence/pr-benchmark/cross_backend.py": "a4c94f220d66be06c40c88fdbb65578d45ce61a46b07e11c607f3aab50281739",
+    "docs/research/2026-10-confidence/pr-benchmark/runner.py": "1f5e9ab2e5f0823a34c8f637ae08b4b3e7e1d1ac7bbbf5aab64ab79c95288fb8",
+    "docs/research/2026-10-confidence/pr-benchmark/grading_adapter.py": "bcec860d709ddbe3c3566fb7bcdc86805b4a3e5c69131167b7743c91cbb2a007",
+    "docs/research/2026-10-confidence/pr-benchmark/hybrid_grader.py": "28f49892a059f4cd628618a4aff0e347b55946bb14159a606629261184cd4932",
+    "docs/research/2026-10-confidence/pr-benchmark/hybrid_process.py": "c1f1da477c8d13e1824e604fc83a0e64483d52208cede728ac80439b88c11b96",
+    ".confidence/benchmark/hybrid-v2-final/requests.json": "1789c2d131f031704afc4a8000c868d542a4136e9964b12f4dde7bde53b69fb4",
+    ".confidence/benchmark/hybrid-v2-final/schedule.json": "e9f386420185a5f17f69fb2a80752c71b74dd8f67dd61787fd968cfe5e6eeb66",
+    ".confidence/benchmark/hybrid-v2-final/capabilities.json": "e7cd45f1a17f227cf4bde6ffde295bb9195a421dbfe4106c98311c577f61c744",
+    ".confidence/benchmark/hybrid-v2-final/inventory.json": "9329ec5b70154937300b520301d75448d036eded85469f0069fc207fac573943",
+    "docs/research/2026-10-confidence/pr-benchmark/seal_hybrid_v2.py": "e7084d4c2e95a85c58346a8049f65969d77e4964f9870b90f3c629f5d9f7e900",
+    "docs/research/2026-10-confidence/pr-benchmark/hybrid_v2.py": "926a1fde84379ebd591939ad10706bdbfb7cb64503d75d7c8bf5e39a9a1ad7d6",
+    "docs/research/2026-10-confidence/pr-benchmark/hybrid_process_v2.py": "631e695e36f5c000b3fef02d4f64f8c518edc31befac116db559816750d8e95f",
+    "docs/research/2026-10-confidence/pr-benchmark/hybrid_runtime_v2.py": "7b5c3bbabe03f7bd3b2ce3fa8b1dc049e8ee4659cd567590a42fcbe5617c76e6",
+    "docs/research/2026-10-confidence/pr-benchmark/hybrid_v2_grader.py": "48bf6aa09a4bd34d718f6f2761b8b631c2af5b48716df27ca7f5b62a1205481a",
+    "docs/research/2026-10-confidence/pr-benchmark/v2_controls.py": "c7fc3b0f7fe1efa22248508bded95022459b53bafa49bb4cab212bbed5349df6",
+    "docs/research/2026-10-confidence/pr-benchmark/v2_grading_controls.py": "d11aaf952baf84fd77bac8229dad0cf1d8bd9cf31776374651f8b9e369521b5d",
+    "docs/research/2026-10-confidence/pr-benchmark/HYBRID-V2-PREREGISTRATION.md": "5a2cd00f8d1a6f4b8024dbe600a8fca746ecc9d6dd8e2339454a1d7a93e5059f",
+    ".confidence/benchmark/v2-pipeline-qualification-4/qualification-summary.json": "007cb4a2e262a45bcfba5e20c6c959d5d685c814c1e147b6d8b955485c6ad169",
+    ".confidence/benchmark/v2-pipeline-qualification-4/toy-registration.json": "5d30c3dbcf73b08ef4be0eb19118f990dffb25b7479328d6f322336dee9752de",
+    ".confidence/benchmark/hybrid-v2-grade-independent-controls-runtime-sealed.json": "b2a3383572850200061062077be43e4f1d9ffb4b4f1a0e534cb1a0ad4f0859a5",
+    ".confidence/benchmark/v2-final-adversarial.json": "f23f5e5637f94f05babc6c1dbfe767c2ab6d9f8d2a91d0047e435dec2f62621f",
+    ".confidence/benchmark/hybrid-v2-final/pipeline-qualification.json": "4778181516821744efe97e05d405c4ee4516cdc335615795502d44888a1612e9"
+  },
+  "before_after_unchanged": true,
+  "publication_recheck": {
+    "observed_at_utc": "2026-10-12T20:22:18.993072+00:00",
+    "original_publication_markdown_sha256": "e123607d0e0b7d4f2c165a276ab6477f380f8b4d3c0ce7ff93770aaae309ca70",
+    "final_publication_markdown_sha256": "cf637f9ac91acb003a1fcbb706d480294b9cec3df9ff89730a7bcfe7bf57592f",
+    "publication_json_sha256": "54b923831ff2e64853d88b944f95d1cda2b7583b17a2116497e3d31f557ee59a",
+    "README_sha256": "1bd2c5a9dc98c7e46771327d6ad8fa51d96ef3113129933dac024ea2bd9b4144",
+    "checks": {
+      "wording_issue_resolved": true,
+      "postlaunch_observation_scope_explicit": true,
+      "study_and_analysis_hashes_unchanged": true,
+      "public_json_remains_exact_analysis_bytes": true,
+      "no_private_host_paths": true,
+      "README_same_main_direction_and_counts": true
+    },
+    "changed_study_inputs": {},
+    "changed_governing_inputs": {},
+    "resolved_issue_reference": "publication_review.nonblocking_clarification",
+    "resolved_wording": "Terminal-known paired false-completion event-indicator comparisons explicitly include complete=false; arm declaring-complete conditional rates remain distinct. Post-launch observer coverage limits are explicit.",
+    "scope": "Fresh prose recheck only; independent count/bootstrap reconstruction and original input hashes retained. README directional summary agrees with exact primary contrasts; no regrading/model/oracle calls."
+  },
+  "limits": [
+    "PASS establishes current consistency of the recorded closure and publication, not authenticated independent authorship/reasoning, hidden model weights, absolute continuous immutability, or absence of unrecorded pre-observer events.",
+    "Observers began at 17:59:00 UTC and 18:05:53 UTC after study launch at 17:48:03 UTC. No recorded retries plus preserved observer material is not uninterrupted observation from before launch.",
+    "No whole-application or proof-packet semantic-quality inference; original84, invalidV148, current guide, Core and newintentguide are outside this analysis.",
+    "Provider wall windows were common; tokens, cost, provider load and actual billing were not matched or authenticated."
+  ]
+}

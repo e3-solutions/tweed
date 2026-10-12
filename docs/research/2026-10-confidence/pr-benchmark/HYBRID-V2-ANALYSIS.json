@@ -1,0 +1,536 @@
+{
+  "schema_version": 1,
+  "benchmark_id": "confidence-mixed-provider-v2-2026-10-12",
+  "assigned": 48,
+  "independent_task_clusters": 6,
+  "arms": {
+    "astra_main_astra_peer": {
+      "assigned": 12,
+      "observed_receipts": 12,
+      "missing_receipts": 0,
+      "harness_invalid": 0,
+      "eligibility_unknown": 0,
+      "eligible_receipts": 12,
+      "accepted_submissions": 5,
+      "accepted_assigned_lower_bound_rate": 0.4166666666666667,
+      "eligible_acceptance_known": 12,
+      "unknown_verified_acceptance_possibilities": 0,
+      "ineligible_verified_acceptance_fixed_zero": 0,
+      "logical_verified_acceptance_count_bounds": [
+        5,
+        5
+      ],
+      "logical_verified_acceptance_rate_bounds": [
+        0.4166666666666667,
+        0.4166666666666667
+      ],
+      "eligible_oracle_known": 12,
+      "eligible_oracle_unknown": 0,
+      "all_receipts_oracle_known": 12,
+      "invalid_oracle_results_diagnostic_only": 0,
+      "strict_truthful_success": 3,
+      "terminal_declaration_unknown": 6,
+      "declared_complete_true": 3,
+      "required_peer_roles": {
+        "adversarial_reviewer": {
+          "closed": 9,
+          "recorded_gap": 3
+        },
+        "test_designer": {
+          "closed": 9,
+          "recorded_gap": 3
+        }
+      },
+      "both_required_peers_closed": 8,
+      "peer_closure_unknown": 0,
+      "false_completion": {
+        "count": 0,
+        "eligible_complete_true_known_oracle_denominator": 3,
+        "rate": 0.0,
+        "eligible_complete_true_unknown_oracle": 0
+      },
+      "costs": {
+        "reported_total_known_assignments": 0,
+        "reported_total_unknown_assignments": 12,
+        "sum_observed_complete_totals_usd": null,
+        "whole_arm_reported_total_usd": null,
+        "known_stage_subtotal_usd": 0,
+        "subtotal_observed_assignments": 12,
+        "note": "Subtotals and harness-reported estimates are not total cost or billed subscription charges."
+      },
+      "proof_packet_quality": "unassessed",
+      "correctness_beyond_oracle": "unassessed"
+    },
+    "opus_main_opus_peer": {
+      "assigned": 12,
+      "observed_receipts": 12,
+      "missing_receipts": 0,
+      "harness_invalid": 0,
+      "eligibility_unknown": 0,
+      "eligible_receipts": 12,
+      "accepted_submissions": 5,
+      "accepted_assigned_lower_bound_rate": 0.4166666666666667,
+      "eligible_acceptance_known": 12,
+      "unknown_verified_acceptance_possibilities": 0,
+      "ineligible_verified_acceptance_fixed_zero": 0,
+      "logical_verified_acceptance_count_bounds": [
+        5,
+        5
+      ],
+      "logical_verified_acceptance_rate_bounds": [
+        0.4166666666666667,
+        0.4166666666666667
+      ],
+      "eligible_oracle_known": 12,
+      "eligible_oracle_unknown": 0,
+      "all_receipts_oracle_known": 12,
+      "invalid_oracle_results_diagnostic_only": 0,
+      "strict_truthful_success": 0,
+      "terminal_declaration_unknown": 0,
+      "declared_complete_true": 2,
+      "required_peer_roles": {
+        "adversarial_reviewer": {
+          "closed": 5,
+          "recorded_gap": 7
+        },
+        "test_designer": {
+          "closed": 12,
+          "recorded_gap": 0
+        }
+      },
+      "both_required_peers_closed": 5,
+      "peer_closure_unknown": 0,
+      "false_completion": {
+        "count": 1,
+        "eligible_complete_true_known_oracle_denominator": 2,
+        "rate": 0.5,
+        "eligible_complete_true_unknown_oracle": 0
+      },
+      "costs": {
+        "reported_total_known_assignments": 11,
+        "reported_total_unknown_assignments": 1,
+        "sum_observed_complete_totals_usd": 22.0564532,
+        "whole_arm_reported_total_usd": null,
+        "known_stage_subtotal_usd": 23.9795716,
+        "subtotal_observed_assignments": 12,
+        "note": "Subtotals and harness-reported estimates are not total cost or billed subscription charges."
+      },
+      "proof_packet_quality": "unassessed",
+      "correctness_beyond_oracle": "unassessed"
+    },
+    "astra_main_opus_peer": {
+      "assigned": 12,
+      "observed_receipts": 12,
+      "missing_receipts": 0,
+      "harness_invalid": 0,
+      "eligibility_unknown": 0,
+      "eligible_receipts": 12,
+      "accepted_submissions": 2,
+      "accepted_assigned_lower_bound_rate": 0.16666666666666666,
+      "eligible_acceptance_known": 12,
+      "unknown_verified_acceptance_possibilities": 0,
+      "ineligible_verified_acceptance_fixed_zero": 0,
+      "logical_verified_acceptance_count_bounds": [
+        2,
+        2
+      ],
+      "logical_verified_acceptance_rate_bounds": [
+        0.16666666666666666,
+        0.16666666666666666
+      ],
+      "eligible_oracle_known": 12,
+      "eligible_oracle_unknown": 0,
+      "all_receipts_oracle_known": 12,
+      "invalid_oracle_results_diagnostic_only": 0,
+      "strict_truthful_success": 1,
+      "terminal_declaration_unknown": 2,
+      "declared_complete_true": 1,
+      "required_peer_roles": {
+        "adversarial_reviewer": {
+          "closed": 3,
+          "recorded_gap": 9
+        },
+        "test_designer": {
+          "closed": 12,
+          "recorded_gap": 0
+        }
+      },
+      "both_required_peers_closed": 3,
+      "peer_closure_unknown": 0,
+      "false_completion": {
+        "count": 0,
+        "eligible_complete_true_known_oracle_denominator": 1,
+        "rate": 0.0,
+        "eligible_complete_true_unknown_oracle": 0
+      },
+      "costs": {
+        "reported_total_known_assignments": 0,
+        "reported_total_unknown_assignments": 12,
+        "sum_observed_complete_totals_usd": null,
+        "whole_arm_reported_total_usd": null,
+        "known_stage_subtotal_usd": 12.131196200000002,
+        "subtotal_observed_assignments": 12,
+        "note": "Subtotals and harness-reported estimates are not total cost or billed subscription charges."
+      },
+      "proof_packet_quality": "unassessed",
+      "correctness_beyond_oracle": "unassessed"
+    },
+    "opus_main_astra_peer": {
+      "assigned": 12,
+      "observed_receipts": 12,
+      "missing_receipts": 0,
+      "harness_invalid": 0,
+      "eligibility_unknown": 0,
+      "eligible_receipts": 12,
+      "accepted_submissions": 8,
+      "accepted_assigned_lower_bound_rate": 0.6666666666666666,
+      "eligible_acceptance_known": 12,
+      "unknown_verified_acceptance_possibilities": 0,
+      "ineligible_verified_acceptance_fixed_zero": 0,
+      "logical_verified_acceptance_count_bounds": [
+        8,
+        8
+      ],
+      "logical_verified_acceptance_rate_bounds": [
+        0.6666666666666666,
+        0.6666666666666666
+      ],
+      "eligible_oracle_known": 12,
+      "eligible_oracle_unknown": 0,
+      "all_receipts_oracle_known": 12,
+      "invalid_oracle_results_diagnostic_only": 0,
+      "strict_truthful_success": 1,
+      "terminal_declaration_unknown": 3,
+      "declared_complete_true": 3,
+      "required_peer_roles": {
+        "adversarial_reviewer": {
+          "closed": 9,
+          "recorded_gap": 3
+        },
+        "test_designer": {
+          "closed": 10,
+          "recorded_gap": 2
+        }
+      },
+      "both_required_peers_closed": 8,
+      "peer_closure_unknown": 0,
+      "false_completion": {
+        "count": 0,
+        "eligible_complete_true_known_oracle_denominator": 3,
+        "rate": 0.0,
+        "eligible_complete_true_unknown_oracle": 0
+      },
+      "costs": {
+        "reported_total_known_assignments": 0,
+        "reported_total_unknown_assignments": 12,
+        "sum_observed_complete_totals_usd": null,
+        "whole_arm_reported_total_usd": null,
+        "known_stage_subtotal_usd": 14.4522768,
+        "subtotal_observed_assignments": 12,
+        "note": "Subtotals and harness-reported estimates are not total cost or billed subscription charges."
+      },
+      "proof_packet_quality": "unassessed",
+      "correctness_beyond_oracle": "unassessed"
+    }
+  },
+  "primary_fixed_main_contrasts": [
+    {
+      "intervention": "astra_main_opus_peer",
+      "control": "astra_main_astra_peer",
+      "fixed_main_provider": "astra",
+      "assigned_paired_trials": 12,
+      "accepted_observed_lower_bound_difference": {
+        "paired_trials": 12,
+        "task_clusters": 6,
+        "task_deltas": {
+          "tweed-pr31": 0,
+          "tweed-pr32": -1,
+          "tweed-pr34": 0,
+          "tweed-pr35": 0,
+          "tweed-pr39": 0,
+          "tweed-pr40": -0.5
+        },
+        "mean_task_delta": -0.25,
+        "task_wins": 0,
+        "task_losses": 2,
+        "task_ties": 4,
+        "descriptive_task_bootstrap_95_percent": [
+          -0.5833333333333334,
+          0
+        ],
+        "ordered_task_resamples": 46656
+      },
+      "strict_truthful_success_observed_difference": {
+        "paired_trials": 12,
+        "task_clusters": 6,
+        "task_deltas": {
+          "tweed-pr31": 0,
+          "tweed-pr32": -0.5,
+          "tweed-pr34": -0.5,
+          "tweed-pr35": 0,
+          "tweed-pr39": 0,
+          "tweed-pr40": 0
+        },
+        "mean_task_delta": -0.16666666666666666,
+        "task_wins": 0,
+        "task_losses": 2,
+        "task_ties": 4,
+        "descriptive_task_bootstrap_95_percent": [
+          -0.3333333333333333,
+          0
+        ],
+        "ordered_task_resamples": 46656
+      },
+      "logical_verified_acceptance_difference_bounds": [
+        -0.25,
+        -0.25
+      ],
+      "complete_case_acceptance_secondary": {
+        "paired_trials": 12,
+        "task_clusters": 6,
+        "task_deltas": {
+          "tweed-pr31": 0,
+          "tweed-pr32": -1,
+          "tweed-pr34": 0,
+          "tweed-pr35": 0,
+          "tweed-pr39": 0,
+          "tweed-pr40": -0.5
+        },
+        "mean_task_delta": -0.25,
+        "task_wins": 0,
+        "task_losses": 2,
+        "task_ties": 4,
+        "descriptive_task_bootstrap_95_percent": [
+          -0.5833333333333334,
+          0
+        ],
+        "ordered_task_resamples": 46656
+      },
+      "false_completion_complete_cases_secondary": {
+        "paired_trials": 6,
+        "task_clusters": 4,
+        "task_deltas": {
+          "tweed-pr31": 0,
+          "tweed-pr32": 0,
+          "tweed-pr34": 0,
+          "tweed-pr40": 0
+        },
+        "mean_task_delta": 0,
+        "task_wins": 0,
+        "task_losses": 0,
+        "task_ties": 4,
+        "descriptive_task_bootstrap_95_percent": [
+          0,
+          0
+        ],
+        "ordered_task_resamples": 256
+      },
+      "reported_total_cost_complete_cases_secondary": {
+        "paired_trials": 0,
+        "task_clusters": 0,
+        "task_deltas": {},
+        "mean_task_delta": null,
+        "task_wins": 0,
+        "task_losses": 0,
+        "task_ties": 0,
+        "descriptive_task_bootstrap_95_percent": null,
+        "ordered_task_resamples": 0
+      },
+      "wall_seconds_complete_cases_secondary": {
+        "paired_trials": 12,
+        "task_clusters": 6,
+        "task_deltas": {
+          "tweed-pr31": -164.32325508300028,
+          "tweed-pr32": -146.89056695850013,
+          "tweed-pr34": -100.34713360399928,
+          "tweed-pr35": -53.3236750829999,
+          "tweed-pr39": -167.18774704149973,
+          "tweed-pr40": -80.86611916649963
+        },
+        "mean_task_delta": -118.82308282274983,
+        "task_wins": 0,
+        "task_losses": 6,
+        "task_ties": 0,
+        "descriptive_task_bootstrap_95_percent": [
+          -151.70995080191656,
+          -84.25125551708315
+        ],
+        "ordered_task_resamples": 46656
+      },
+      "complete_case_limit": "Reduced pairs/clusters can be selected by missingness; not a replacement ITT estimate."
+    },
+    {
+      "intervention": "opus_main_astra_peer",
+      "control": "opus_main_opus_peer",
+      "fixed_main_provider": "opus",
+      "assigned_paired_trials": 12,
+      "accepted_observed_lower_bound_difference": {
+        "paired_trials": 12,
+        "task_clusters": 6,
+        "task_deltas": {
+          "tweed-pr31": 0,
+          "tweed-pr32": 1,
+          "tweed-pr34": 0,
+          "tweed-pr35": 0.5,
+          "tweed-pr39": 0,
+          "tweed-pr40": 0
+        },
+        "mean_task_delta": 0.25,
+        "task_wins": 2,
+        "task_losses": 0,
+        "task_ties": 4,
+        "descriptive_task_bootstrap_95_percent": [
+          0,
+          0.5833333333333334
+        ],
+        "ordered_task_resamples": 46656
+      },
+      "strict_truthful_success_observed_difference": {
+        "paired_trials": 12,
+        "task_clusters": 6,
+        "task_deltas": {
+          "tweed-pr31": 0,
+          "tweed-pr32": 0.5,
+          "tweed-pr34": 0,
+          "tweed-pr35": 0,
+          "tweed-pr39": 0,
+          "tweed-pr40": 0
+        },
+        "mean_task_delta": 0.08333333333333333,
+        "task_wins": 1,
+        "task_losses": 0,
+        "task_ties": 5,
+        "descriptive_task_bootstrap_95_percent": [
+          0,
+          0.25
+        ],
+        "ordered_task_resamples": 46656
+      },
+      "logical_verified_acceptance_difference_bounds": [
+        0.25,
+        0.25
+      ],
+      "complete_case_acceptance_secondary": {
+        "paired_trials": 12,
+        "task_clusters": 6,
+        "task_deltas": {
+          "tweed-pr31": 0,
+          "tweed-pr32": 1,
+          "tweed-pr34": 0,
+          "tweed-pr35": 0.5,
+          "tweed-pr39": 0,
+          "tweed-pr40": 0
+        },
+        "mean_task_delta": 0.25,
+        "task_wins": 2,
+        "task_losses": 0,
+        "task_ties": 4,
+        "descriptive_task_bootstrap_95_percent": [
+          0,
+          0.5833333333333334
+        ],
+        "ordered_task_resamples": 46656
+      },
+      "false_completion_complete_cases_secondary": {
+        "paired_trials": 9,
+        "task_clusters": 6,
+        "task_deltas": {
+          "tweed-pr31": 0,
+          "tweed-pr32": -0.5,
+          "tweed-pr34": 0,
+          "tweed-pr35": 0,
+          "tweed-pr39": 0,
+          "tweed-pr40": 0
+        },
+        "mean_task_delta": -0.08333333333333333,
+        "task_wins": 0,
+        "task_losses": 1,
+        "task_ties": 5,
+        "descriptive_task_bootstrap_95_percent": [
+          -0.25,
+          0
+        ],
+        "ordered_task_resamples": 46656
+      },
+      "reported_total_cost_complete_cases_secondary": {
+        "paired_trials": 0,
+        "task_clusters": 0,
+        "task_deltas": {},
+        "mean_task_delta": null,
+        "task_wins": 0,
+        "task_losses": 0,
+        "task_ties": 0,
+        "descriptive_task_bootstrap_95_percent": null,
+        "ordered_task_resamples": 0
+      },
+      "wall_seconds_complete_cases_secondary": {
+        "paired_trials": 12,
+        "task_clusters": 6,
+        "task_deltas": {
+          "tweed-pr31": 22.891352584000288,
+          "tweed-pr32": 153.52954783299992,
+          "tweed-pr34": 92.52331970900013,
+          "tweed-pr35": 115.16073072900076,
+          "tweed-pr39": 108.46358610450034,
+          "tweed-pr40": 86.94348764549977
+        },
+        "mean_task_delta": 96.58533743416687,
+        "task_wins": 6,
+        "task_losses": 0,
+        "task_ties": 0,
+        "descriptive_task_bootstrap_95_percent": [
+          63.20697703850029,
+          125.71795488883367
+        ],
+        "ordered_task_resamples": 46656
+      },
+      "complete_case_limit": "Reduced pairs/clusters can be selected by missingness; not a replacement ITT estimate."
+    }
+  ],
+  "definitions": {
+    "accepted_submissions": "passed=true and harness_invalid=false; full assigned denominator, an observed lower bound.",
+    "oracle_known": "Observed oracle true/false; eligibility is reported separately. Invalid oracle results are diagnostic only.",
+    "strict_truthful_success": "Observed lower-bound count from independent V2 grader: valid acceptance, repair complete=true with no remaining gaps, both required peers complete with no unfinished work.",
+    "peer_closure": "Captured assigned-role completion and no recorded required review gap; not proof of software correctness.",
+    "false_completion": "Eligible repair complete=true and observed oracle=false. Rate denominator is eligible complete=true with known oracle.",
+    "logical_verified_acceptance_bounds": "Known harness-ineligible assignments are fixed zero for verified acceptance, without changing their observed oracle. Eligible null acceptance and missing receipts with unknown validity allow either binary value. Bounds are arithmetic possibilities, not imputed grades, confidence intervals, or underlying software-correctness bounds.",
+    "false_completion_secondary_pairs": "Paired event-indicator differences require both eligible terminals and known oracles; this is distinct from the arm conditional false-completion rates.",
+    "bootstrap": "Exact empirical resampling of whole task means, retaining both repeats; primary six clusters give 6^6=46656 ordered resamples."
+  },
+  "limitations": [
+    "V2 alone; no pooling original84 or invalidV148, no vendor ranking, and no protocol-effect attribution across blocks.",
+    "Exploratory result-informed infrastructure replay on six selected historical PR tasks; not a population efficacy or significance claim.",
+    "Primary observed lower-bound differences can change with unequal missingness. Logical verified-acceptance bounds fix known ineligible rows at zero; valid-only complete-case pairs exclude them rather than count them as oracle failures.",
+    "CP0.6 frozen package only; later shipped small-model routing instructions are not measured by this replay.",
+    "Common wall windows, not cost/token matching; provider harnesses, system prompts, tokenization, caching and Claude budget guards differ.",
+    "Astra response model and live wire tool inventory are unobserved; requested route is not hidden-weight authentication.",
+    "Strict success uses the hash-bound grader facts; no independent proof-packet quality assessment or semantic claim beyond its oracle.",
+    "Original process-group cleanup excludes detached descendants; audited sampled preservation is not absolute continuous immutability."
+  ],
+  "oracle_output_evidence": {
+    "hash_bound_files": 96,
+    "unbound_present_files": 0,
+    "absent_unrecorded_files": 0,
+    "limit": "Unknown grading may leave absent or unrecorded output files. Those files supply no bound oracle evidence; recorded digests alone are checked against current bytes."
+  },
+  "input_sha256": {
+    "normalized_results": "5ceb5d5b9a887703e52d0c44a4d3881797a24032faab5457af3515ebf4476809",
+    "schedule": "e9f386420185a5f17f69fb2a80752c71b74dd8f67dd61787fd968cfe5e6eeb66",
+    "closure": "f497b95101602f96318775caf5ac87034dd9d43ee926db2c17083ee8c397865d",
+    "public_registration": "db078f1bf1219be7316f2579d39e02b150134a505b8dc7d2e3871f1231d5abbc",
+    "private_registration": "26b7874b80c18efbdcd17d5eef6631bf69e2d0446cc86e04c6766947997d36bb",
+    "protocol": "fb1d855a539eaff82a39e1b87fca23a4bc6931ae2690c7258a857563b4746423",
+    "metadata_audit": "4e5464ee09a0b93c834eb7c81c0bfd21e98d942a4be9dcfa7d26270a816b3558",
+    "stream_audit": "c99d17f434055f00d2a8f852b843f17ef22a077032cb4965440ef1693218d04c",
+    "independent_material_seals": "250323f6c332596aeb14a00de56164d00d887db8a30698067e4a27aebda1d149",
+    "metadata_observer_registration": "ede9287057dabf6bc0fadbbfadd25f46cf05b8f0a7798735a77f6a234b819774",
+    "stream_observer_registration": "8878c06e1a3fbfa5fbf12612eb8976b8698ed87cbbdefe3763b3c85f384b299c",
+    "metadata_observer_source": "770cacd19829db54de35a5e4d0f4a3d5a1eb92cf8a867bb46d6f539d15e71ec9",
+    "stream_observer_source": "ef4b4cb1de2b74e4010479f220d96d933ae64ed2fa65985a0f793a0c0565cb8e",
+    "analysis_utility": "15368e2a0be3ee1fc6c62ec5073f42d6b49372f4a5fd93cc5fcce044d0be510b",
+    "frozen_bootstrap_helper": "a94197c1ceeca0c6f48486111d6d667b55c246dab60b951f3e8fbec33b87f369"
+  },
+  "observer_provenance_limit": "Distinct declared source/sidecar/role bindings and current bytes establish consistency, not authenticated authorship or independent reasoning. Observer-registration file hashes are observations of this analysis, not final-audit attestations of those whole files.",
+  "analysis_payload_sha256": "b111b361a1c87c4fd8ea78743d39fc6a4d60188cd6c6a71c53367d487fd67c95",
+  "payload_digest_scope": "Canonical result object excluding analysis_payload_sha256 and payload_digest_scope; output file bytes have a separate external digest."
+}

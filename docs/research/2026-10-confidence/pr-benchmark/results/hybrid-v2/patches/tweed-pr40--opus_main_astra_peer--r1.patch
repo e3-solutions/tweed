@@ -1,0 +1,281 @@
+diff --git a/bonaparte b/bonaparte
+index 597efab..120e399 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -53,6 +53,7 @@ RECEIPT_MAX_BYTES = 4096
+ MAX_CHANGED_FILES = 500
+ GLOBAL_MODEL_ENV = "BONAPARTE_MODEL"
+ DEFAULT_SOFT_PHASE_BUDGET_SECONDS = 300.0
++SOFT_PHASE_BUDGET_ENV = "BONAPARTE_SOFT_PHASE_BUDGET"
+ SOFT_BUDGET_CONTINUE_QUESTION = (
+     "Soft phase budget reached. Resume this token with Continue."
+ )
+@@ -770,10 +771,26 @@ def resolve_reasoning(override: str | None = None) -> str:
+     return reasoning
+ 
+ 
+-def resolve_soft_phase_budget(value: object) -> float:
++class _DisabledSoftPhaseBudget:
++    def __repr__(self) -> str:
++        return "SOFT_PHASE_BUDGET_DISABLED"
++
++
++# Resume override meaning "explicitly disable"; None keeps the saved choice.
++SOFT_PHASE_BUDGET_DISABLED = _DisabledSoftPhaseBudget()
++
++
++def resolve_soft_phase_budget(value: object, *, allow_disabled: bool = False):
++    """Return a positive finite budget, or None when disabling is allowed."""
++    if value is None and allow_disabled:
++        return None
++    if isinstance(value, bool) or not isinstance(value, (int, float, str)):
++        raise RuntimeError(
++            "soft phase budget requires one positive finite seconds value"
++        )
+     try:
+         budget = float(value)
+-    except (TypeError, ValueError) as error:
++    except (OverflowError, TypeError, ValueError) as error:
+         raise RuntimeError(
+             "soft phase budget requires one positive finite seconds value"
+         ) from error
+@@ -784,6 +801,23 @@ def resolve_soft_phase_budget(value: object) -> float:
+     return budget
+ 
+ 
++def default_soft_phase_budget(environ=None) -> float | None:
++    """Default budget; BONAPARTE_SOFT_PHASE_BUDGET=off disables it."""
++    environment = os.environ if environ is None else environ
++    configured = environment.get(SOFT_PHASE_BUDGET_ENV, "").strip()
++    if not configured:
++        return DEFAULT_SOFT_PHASE_BUDGET_SECONDS
++    if configured.casefold() == "off":
++        return None
++    try:
++        return resolve_soft_phase_budget(configured)
++    except RuntimeError as error:
++        raise RuntimeError(
++            f"{SOFT_PHASE_BUDGET_ENV} must be off or one positive finite "
++            "seconds value"
++        ) from error
++
++
+ def require_pull_request(receipt: dict, phase: str) -> None:
+     if (
+         phase in {"implement", "review", "publish"}
+@@ -802,10 +836,13 @@ def run_phase(
+     reasoning: str = COORDINATOR_EFFORT,
+     observation: dict | None = None,
+     replayed_answer: bool = False,
+-    soft_phase_budget_seconds: float = DEFAULT_SOFT_PHASE_BUDGET_SECONDS,
++    soft_phase_budget_seconds: float | None = DEFAULT_SOFT_PHASE_BUDGET_SECONDS,
+ ) -> dict:
++    # Validate before any finalization retry can start a provider process.
++    soft_phase_budget_seconds = resolve_soft_phase_budget(
++        soft_phase_budget_seconds, allow_disabled=True
++    )
+     retry_pending_finalizations(repository)
+-    soft_phase_budget_seconds = resolve_soft_phase_budget(soft_phase_budget_seconds)
+     workflow_name, assignment = WORKFLOWS[phase]
+     workflow = (Path(__file__).resolve().parent / "workflows" / workflow_name).read_text()
+     child_configs = {
+@@ -1027,16 +1064,29 @@ def run_phase(
+             raise RuntimeError("Codex app-server returned no turn identity")
+         turn_id = turn["id"]
+         driver._receipt_turn_id = turn_id
+-        deadline = time.monotonic() + soft_phase_budget_seconds
++        deadline = (
++            None
++            if soft_phase_budget_seconds is None
++            else time.monotonic() + soft_phase_budget_seconds
++        )
+         steered = False
+         steer_acknowledged = False
+         terminal = None
+         post_steer_work = False
+         while terminal is None or (steered and not steer_acknowledged):
+-            timeout = None if steered else max(0.0, deadline - time.monotonic())
++            capped_wait = False
++            if steered or deadline is None:
++                timeout = None
++            else:
++                timeout = max(0.0, deadline - time.monotonic())
++                # Bound each native queue wait; huge finite budgets overflow it.
++                if timeout > 3600.0:
++                    timeout, capped_wait = 3600.0, True
+             try:
+                 message = driver.next_message(timeout)
+             except TimeoutError:
++                if capped_wait:
++                    continue
+                 try:
+                     message = driver.next_message(0)
+                 except TimeoutError:
+@@ -1282,7 +1332,7 @@ def new_question_checkpoint(
+     reasoning: str,
+     observation: dict,
+     base_git: dict,
+-    soft_phase_budget_seconds: float = DEFAULT_SOFT_PHASE_BUDGET_SECONDS,
++    soft_phase_budget_seconds: float | None = DEFAULT_SOFT_PHASE_BUDGET_SECONDS,
+ ) -> dict:
+     current_git = capture_git_state(repository, base_git.get("head"))
+     if not current_git["git_dir"]:
+@@ -1299,7 +1349,7 @@ def new_question_checkpoint(
+         "model": model,
+         "reasoning": reasoning,
+         "soft_phase_budget_seconds": resolve_soft_phase_budget(
+-            soft_phase_budget_seconds
++            soft_phase_budget_seconds, allow_disabled=True
+         ),
+         "question": receipt["question"],
+         "pending_answer": None,
+@@ -1454,8 +1504,20 @@ def resume_checkpoint(
+     answer: str,
+     model_override: str | None,
+     reasoning_override: str | None,
+-    soft_phase_budget_override: float | None = None,
++    soft_phase_budget_override: object = None,
+ ) -> tuple[dict, int]:
++    """Resume a checkpoint.
++
++    soft_phase_budget_override: None keeps the saved budget choice,
++    SOFT_PHASE_BUDGET_DISABLED disables the budget, and a positive finite
++    number replaces it.
++    """
++    if soft_phase_budget_override is None:
++        selected_budget = checkpoint["soft_phase_budget_seconds"]
++    elif soft_phase_budget_override is SOFT_PHASE_BUDGET_DISABLED:
++        selected_budget = None
++    else:
++        selected_budget = resolve_soft_phase_budget(soft_phase_budget_override)
+     pending = checkpoint.get("pending_answer")
+     replayed_answer = bool(pending)
+     if pending:
+@@ -1483,10 +1545,7 @@ def resume_checkpoint(
+         checkpoint["model"] = resolve_model(model_override)
+     if reasoning_override is not None:
+         checkpoint["reasoning"] = resolve_reasoning(reasoning_override)
+-    if soft_phase_budget_override is not None:
+-        checkpoint["soft_phase_budget_seconds"] = resolve_soft_phase_budget(
+-            soft_phase_budget_override
+-        )
++    checkpoint["soft_phase_budget_seconds"] = selected_budget
+     checkpoint.update(activity="coordinating", blocker=None, updated_at=utc_now())
+     write_checkpoint(checkpoint)
+ 
+@@ -1569,7 +1628,7 @@ def run_and_checkpoint(
+     session_id: str | None,
+     model: str | None,
+     reasoning: str,
+-    soft_phase_budget_seconds: float = DEFAULT_SOFT_PHASE_BUDGET_SECONDS,
++    soft_phase_budget_seconds: float | None = DEFAULT_SOFT_PHASE_BUDGET_SECONDS,
+ ) -> tuple[dict, int]:
+     base_git = capture_git_state(repository) if session_id is None else None
+     observation: dict = {}
+@@ -1673,11 +1732,27 @@ def parse() -> tuple[
+     )
+     parser.add_argument(
+         "--soft-phase-budget-seconds",
+-        help="positive finite soft target for each coordinator turn (default: 300)",
++        help=(
++            "positive finite soft target for each coordinator turn (default: 300, "
++            f"or disabled by {SOFT_PHASE_BUDGET_ENV}=off)"
++        ),
++    )
++    parser.add_argument(
++        "--no-soft-phase-budget",
++        action="store_true",
++        help=(
++            "disable the soft phase budget; the coordinator turn waits for "
++            "normal completion (persisted on resume)"
++        ),
+     )
+     parser.add_argument("command")
+     parser.add_argument("input", nargs=argparse.REMAINDER)
+     args = parser.parse_args()
++    if args.no_soft_phase_budget and args.soft_phase_budget_seconds is not None:
++        raise RuntimeError(
++            "--no-soft-phase-budget and --soft-phase-budget-seconds are "
++            "mutually exclusive"
++        )
+     command = args.command.casefold()
+     values = args.input
+     request_kind = None
+@@ -1733,14 +1808,29 @@ def parse() -> tuple[
+         resume_session_id,
+         args.model if command == "resume" else resolve_model(args.model),
+         args.reasoning if command == "resume" else resolve_reasoning(args.reasoning),
+-        (
+-            resolve_soft_phase_budget(args.soft_phase_budget_seconds)
+-            if args.soft_phase_budget_seconds is not None
+-            else (None if command == "resume" else DEFAULT_SOFT_PHASE_BUDGET_SECONDS)
+-        ),
++        _parsed_soft_phase_budget(args, resume=command == "resume"),
+     )
+ 
+ 
++def _parsed_soft_phase_budget(args, *, resume: bool):
++    """Fresh runs: float or None (disabled). Resume: None keeps the saved
++    choice, SOFT_PHASE_BUDGET_DISABLED disables, or a float overrides."""
++    if args.no_soft_phase_budget:
++        return SOFT_PHASE_BUDGET_DISABLED if resume else None
++    if args.soft_phase_budget_seconds is not None:
++        return resolve_soft_phase_budget(args.soft_phase_budget_seconds)
++    return None if resume else default_soft_phase_budget()
++
++
++def _fresh_soft_phase_budget(selected: object) -> float | None:
++    """Map a parsed resume budget onto a run without a saved checkpoint."""
++    if selected is SOFT_PHASE_BUDGET_DISABLED:
++        return None
++    if selected is None:
++        return default_soft_phase_budget()
++    return resolve_soft_phase_budget(selected)
++
++
+ def fail(summary: str) -> dict:
+     return {
+         "phase": None,
+@@ -1807,6 +1897,9 @@ def main() -> int:
+             elif session_id is not None:
+                 selected_model = resolve_model(selected_model)
+                 selected_reasoning = resolve_reasoning(selected_reasoning)
++                selected_soft_phase_budget = _fresh_soft_phase_budget(
++                    selected_soft_phase_budget
++                )
+                 progress = acquire_progress_reporter(True, selected_phase)
+                 _ACTIVE_PROGRESS = progress
+                 progress.start()
+@@ -1817,8 +1910,7 @@ def main() -> int:
+                     session_id,
+                     selected_model,
+                     selected_reasoning,
+-                    selected_soft_phase_budget
+-                    or DEFAULT_SOFT_PHASE_BUDGET_SECONDS,
++                    selected_soft_phase_budget,
+                 )
+             else:
+                 progress = acquire_progress_reporter(True, selected_phase)
+@@ -1831,8 +1923,7 @@ def main() -> int:
+                     None,
+                     selected_model,
+                     selected_reasoning,
+-                    selected_soft_phase_budget
+-                    or DEFAULT_SOFT_PHASE_BUDGET_SECONDS,
++                    selected_soft_phase_budget,
+                 )
+             progress.stop_heartbeat()
+             progress.report("finalizing")
+diff --git a/bonaparte_checkpoint.py b/bonaparte_checkpoint.py
+index 8d3b9c5..5461a23 100644
+--- a/bonaparte_checkpoint.py
++++ b/bonaparte_checkpoint.py
+@@ -217,6 +217,8 @@ def _validate_common(value: dict, token=None) -> None:
+ 
+ 
+ def _validate_soft_phase_budget(value: object) -> None:
++    if value is None:  # null persists an explicitly disabled soft budget
++        return
+     if type(value) not in (int, float):
+         raise RuntimeError(
+             "checkpoint soft phase budget must be a positive finite number"

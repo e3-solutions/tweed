@@ -4,7 +4,8 @@ The original comparison tested six proposed workflows against Confidence Protoco
 0.5 on six historical public PR tasks. It produced a small descriptive difference,
 not a demonstrated accuracy gain. Codex-to-Claude delegation separately worked
 in actual provider calls. The first mixed-provider block had invalid transport;
-a corrected block requires qualified baselines and a fresh public registration.
+a qualified corrected block closed48 assignments and showed opposite observed
+peer-routing differences at the two fixed main providers.
 
 This directory preserves the original registrations, code and evidence rather
 than silently repairing unsuccessful trials. Production patches, bound result
@@ -148,10 +149,28 @@ Process groups do not contain descendants that detach with `setsid`. No complete
 descendant containment, absolute artifact immutability or strict seven-tool parity
 is claimed.
 
+## Closed V2 routing comparison
+
+The [closed V2 analysis](HYBRID-V2-ANALYSIS.md) has48 raw/graded receipts, no
+harness-invalid assignments and known selected-oracle outcomes. Both distinct final
+observers passed their complete custody checks. At fixed Astra main, Opus peers
+accepted2/12 versus5/12 with Astra peers (−25 percentage points; descriptive
+six-task bootstrap interval[−58⅓,0]). At fixed Opus main, Astra peers accepted8/12
+versus5/12 with Opus peers (+25 points; interval[0,58⅓]). Strict completion counts
+were1 versus3 and1 versus0 respectively; acceptance does not establish completed
+proof or semantic proof-packet quality. All whole-arm dollar totals remain unknown.
+
+These are two separately registered directional comparisons in an exploratory
+staged workflow, not evidence of universal cross-provider benefit or a CP accuracy
+gain. Native callback capability was tested separately. The package remains9f3afa6:
+new smaller-model guidance, intent flows and the Matt Pocock review are outside
+this experiment. Original84 and invalid V148 are not pooled with V2.
+
 ## Inspect and reproduce
 
 Original public results are in [results/original-comparison](results/original-comparison);
-invalid first-block results are in [results/hybrid-v1](results/hybrid-v1).
+invalid first-block results are in [results/hybrid-v1](results/hybrid-v1);
+closed V2 results and48 preserved patches are in [results/hybrid-v2](results/hybrid-v2).
 `artifact-hashes.json` binds each production patch to its raw and graded receipts;
 closure files preserve the full assignment roster and missing states. The private
 raw evidence remains locally available for authorized audit.

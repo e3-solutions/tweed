@@ -1,0 +1,58 @@
+diff --git a/bonaparte b/bonaparte
+index 26a168f..8ca3279 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -609,7 +609,7 @@ def run_phase(
+                 if message is not None:
+                     if "method" in message:
+                         _method, completed_turn = driver.observe_notification(message)
+-                        if completed_turn is not None:
++                        if completed_turn is not None and terminal is None:
+                             if completed_turn.get("id") != turn_id:
+                                 raise RuntimeError(
+                                     "Codex app-server completed the wrong turn"
+@@ -632,7 +632,11 @@ def run_phase(
+                     params = message.get("params")
+                     item = params.get("item") if isinstance(params, dict) else None
+                     item_type = item.get("type") if isinstance(item, dict) else None
+-                    if isinstance(params, dict) and params.get("threadId") == session_id:
++                    if (
++                        isinstance(params, dict)
++                        and params.get("threadId") == session_id
++                        and params.get("turnId", turn_id) == turn_id
++                    ):
+                         post_steer_work = post_steer_work or item_type in {
+                             "commandExecution",
+                             "dynamicToolCall",
+@@ -648,7 +652,7 @@ def run_phase(
+                             and item.get("kind") == "started"
+                         )
+                 _method, completed_turn = driver.observe_notification(message)
+-                if completed_turn is not None:
++                if completed_turn is not None and terminal is None:
+                     if completed_turn.get("id") != turn_id:
+                         raise RuntimeError("Codex app-server completed the wrong turn")
+                     terminal = completed_turn
+diff --git a/bonaparte_native.py b/bonaparte_native.py
+index 8ec992a..ccd4113 100644
+--- a/bonaparte_native.py
++++ b/bonaparte_native.py
+@@ -303,9 +303,18 @@ class AppServerPhaseDriver:
+                 )
+             )
+         if method == "turn/completed":
++            # Native child threads share this stream but cannot end our turn.
++            # Legacy notifications omit threadId; their turn ID must still match.
++            if (
++                "threadId" in params
++                and params["threadId"] != self._receipt_thread_id
++            ):
++                return method, None
+             turn = params.get("turn")
+             if not isinstance(turn, dict):
+                 raise RuntimeError("Codex app-server turn completion is malformed")
++            if self._receipt_turn_id is None or turn.get("id") != self._receipt_turn_id:
++                return method, None
+             return method, turn
+         return method, None
+ 

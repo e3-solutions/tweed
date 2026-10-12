@@ -1,0 +1,81 @@
+diff --git a/bonaparte b/bonaparte
+index 26a168f..b0e6136 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -409,6 +409,22 @@ def require_pull_request(receipt: dict, phase: str) -> None:
+         raise RuntimeError(f"completed {phase} is missing its pull request")
+ 
+ 
++def _is_coordinator_completion(
++    message: dict, completed_turn: dict | None, session_id: str, turn_id: str
++) -> bool:
++    """Whether a turn/completed notification belongs to the active coordinator turn.
++
++    Child threads and stale coordinator turns are observed but ignored. A legacy
++    notification that omits threadId entirely is accepted only for the active turn.
++    """
++    if completed_turn is None or completed_turn.get("id") != turn_id:
++        return False
++    params = message.get("params")
++    if not isinstance(params, dict):
++        return False
++    return "threadId" not in params or params["threadId"] == session_id
++
++
+ def run_phase(
+     repository: Path,
+     phase: str,
+@@ -609,11 +625,9 @@ def run_phase(
+                 if message is not None:
+                     if "method" in message:
+                         _method, completed_turn = driver.observe_notification(message)
+-                        if completed_turn is not None:
+-                            if completed_turn.get("id") != turn_id:
+-                                raise RuntimeError(
+-                                    "Codex app-server completed the wrong turn"
+-                                )
++                        if terminal is None and _is_coordinator_completion(
++                            message, completed_turn, session_id, turn_id
++                        ):
+                             terminal = completed_turn
+                         continue
+                     raise RuntimeError("Codex app-server response correlation failed")
+@@ -632,7 +646,11 @@ def run_phase(
+                     params = message.get("params")
+                     item = params.get("item") if isinstance(params, dict) else None
+                     item_type = item.get("type") if isinstance(item, dict) else None
+-                    if isinstance(params, dict) and params.get("threadId") == session_id:
++                    if (
++                        isinstance(params, dict)
++                        and params.get("threadId") == session_id
++                        and params.get("turnId", turn_id) == turn_id
++                    ):
+                         post_steer_work = post_steer_work or item_type in {
+                             "commandExecution",
+                             "dynamicToolCall",
+@@ -648,9 +666,9 @@ def run_phase(
+                             and item.get("kind") == "started"
+                         )
+                 _method, completed_turn = driver.observe_notification(message)
+-                if completed_turn is not None:
+-                    if completed_turn.get("id") != turn_id:
+-                        raise RuntimeError("Codex app-server completed the wrong turn")
++                if terminal is None and _is_coordinator_completion(
++                    message, completed_turn, session_id, turn_id
++                ):
+                     terminal = completed_turn
+                 continue
+             if not steered or message.get("id") != steer_id:
+diff --git a/bonaparte_native.py b/bonaparte_native.py
+index 8ec992a..0755434 100644
+--- a/bonaparte_native.py
++++ b/bonaparte_native.py
+@@ -284,6 +284,8 @@ class AppServerPhaseDriver:
+             if (
+                 method == "item/completed"
+                 and item.get("type") == "agentMessage"
++                and self._receipt_thread_id is not None
++                and self._receipt_turn_id is not None
+                 and params.get("threadId") == self._receipt_thread_id
+                 and params.get("turnId") == self._receipt_turn_id
+             ):
