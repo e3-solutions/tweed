@@ -8,7 +8,7 @@ from check_release import REQUIRED, validate_archive
 
 
 class ReleaseArchiveTest(unittest.TestCase):
-    def archive(self, *, manifest=None, source=None, remove=None, extra=None):
+    def archive(self, *, manifest=None, source=None, remove=None, extra=None, non_regular=None):
         files = {name: b"fixture" for name in REQUIRED}
         files[".codex-plugin/plugin.json"] = json.dumps(
             manifest if manifest is not None else {"name": "confidence-protocol", "version": "candidate"}
@@ -24,6 +24,15 @@ class ReleaseArchiveTest(unittest.TestCase):
         with tarfile.open(fileobj=output, mode="w") as bundle:
             for name, data in files.items():
                 member = tarfile.TarInfo(name)
+                if non_regular and name == non_regular[0]:
+                    member.type = non_regular[1]
+                    if member.type in (tarfile.SYMTYPE, tarfile.LNKTYPE):
+                        target = tarfile.TarInfo("valid-link-target")
+                        target.size = len(data)
+                        bundle.addfile(target, io.BytesIO(data))
+                        member.linkname = target.name
+                    bundle.addfile(member)
+                    continue
                 member.size = len(data)
                 bundle.addfile(member, io.BytesIO(data))
         return output.getvalue()
@@ -51,6 +60,13 @@ class ReleaseArchiveTest(unittest.TestCase):
     def test_missing_required_file_is_rejected(self):
         with self.assertRaisesRegex(ValueError, "release is missing"):
             validate_archive(self.archive(remove="README.md"))
+
+    def test_every_required_resource_must_be_regular_even_with_valid_link_target(self):
+        for name in sorted(REQUIRED):
+            for kind in (tarfile.DIRTYPE, tarfile.SYMTYPE, tarfile.LNKTYPE, tarfile.FIFOTYPE):
+                with self.subTest(resource=name, tar_type=kind):
+                    with self.assertRaisesRegex(ValueError, "requires a regular file"):
+                        validate_archive(self.archive(non_regular=(name, kind)))
 
     def test_repository_only_files_are_still_rejected(self):
         with self.assertRaisesRegex(ValueError, "repository-only"):

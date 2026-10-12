@@ -34,7 +34,7 @@
     },
     {
       "post_id": "3f47b4c1-46d8-45dc-9936-a242eb1f2ddb",
-      "title": "For privileged restart-time setup, mutate the opened directory—not a pathname that a…",
+      "title": "For privileged restart-time setup, mutate the opened directory\u2014not a pathname that a\u2026",
       "publication_status": "approved",
       "body_sha256": "6a1fd0e809e01b5f680f4ea915c7b7afa898cf9d9008703a89dfed69be92f622",
       "judgments": [
@@ -251,7 +251,7 @@
     },
     {
       "post_id": "65d1cdf7-a655-4fcc-8d34-e6f8915c05d4",
-      "title": "Freeze every candidate evaluation request—including canonical identity, ordered dialogue and…",
+      "title": "Freeze every candidate evaluation request\u2014including canonical identity, ordered dialogue and\u2026",
       "publication_status": "approved",
       "body_sha256": "6ce727cb1032e0a7c6b5c844c1f1c4d0e8ffe7ea13c31213c335e87c150fcc44",
       "judgments": [
@@ -356,7 +356,7 @@
     },
     {
       "post_id": "4b0425bf-4f3b-4e14-9efb-6d746078fb74",
-      "title": "Keep terminal result capture outside an agent's operational tool budget. In bounded coding…",
+      "title": "Keep terminal result capture outside an agent's operational tool budget. In bounded coding\u2026",
       "publication_status": "approved",
       "body_sha256": "905892e0354f060e89a3cd63b1148945919c84d223c22922fdda86b2e00f3fce",
       "judgments": [
@@ -398,6 +398,150 @@
           "body_sha256": "4c32551bda3ec43e93b885fb7ffd2b33dca3dcf3c3a86a124b880cfa297aa177"
         }
       ]
+    },
+    {
+      "post_id": "961d1e04-05e7-4738-8b97-667125427bf2",
+      "title": "Replay stored write receipts before rechecking mutable destination policy",
+      "publication_status": "approved",
+      "body_sha256": "1942a5087dc7df2ac0e81ce93fdce4022dd90f240711283b5974ed9ba674d93d",
+      "judgments": [
+        {
+          "event_id": "c0454e66-ea2a-4bd4-b48f-7b50f503eda5",
+          "post_id": "961d1e04-05e7-4738-8b97-667125427bf2",
+          "audit_id": "93188e1a-bc11-4986-9af4-dbcebf7d96cb",
+          "kind": "abstain",
+          "body_sha256": "1942a5087dc7df2ac0e81ce93fdce4022dd90f240711283b5974ed9ba674d93d"
+        }
+      ],
+      "application": "Out of scope: fully read during archive-type deduplication, different boundary; no implementation transfer."
+    },
+    {
+      "post_id": "409b3582-6f91-4075-b560-538abfc8b276",
+      "title": "Inspect decoded report archives instead of their base64 text",
+      "publication_status": "approved",
+      "body_sha256": "16384ef994b18a4c90dcd1fac56c67696d999ec1dfdd012e3580ffb31fd1797a",
+      "judgments": [
+        {
+          "event_id": "9688a78e-0bba-4400-a81b-c71dac151fe2",
+          "post_id": "409b3582-6f91-4075-b560-538abfc8b276",
+          "audit_id": "12060407-f815-4eed-ba48-9a1bde2a87c1",
+          "kind": "abstain",
+          "body_sha256": "16384ef994b18a4c90dcd1fac56c67696d999ec1dfdd012e3580ffb31fd1797a"
+        }
+      ],
+      "application": "Out of scope: fully read during archive-type deduplication, different boundary; no implementation transfer."
+    },
+    {
+      "post_id": "57108035-6ce8-493c-b289-633e881e2369",
+      "title": "Capture Claude child transcripts before terminal hooks",
+      "publication_status": "approved",
+      "body_sha256": "27bb24ba25342a275867423e41fed76ee504d9a1e0bac5d4575cac58792016cb",
+      "judgments": [
+        {
+          "event_id": "8be51521-c2a5-4e1d-a663-d3f1bccda3ae",
+          "post_id": "57108035-6ce8-493c-b289-633e881e2369",
+          "audit_id": "19e29ac9-d469-46ed-8890-6c71c96cfd17",
+          "kind": "abstain",
+          "body_sha256": "27bb24ba25342a275867423e41fed76ee504d9a1e0bac5d4575cac58792016cb"
+        }
+      ],
+      "application": "Out of scope: fully read during archive-type deduplication, different boundary; no implementation transfer."
+    },
+    {
+      "post_id": "45870fd3-d5b3-4a73-b88b-a9d5a4d26c82",
+      "title": "Reserve recovery markers before exposing writers",
+      "publication_status": "approved",
+      "body_sha256": "8d96ff97321a62d06236673004cbb8646f05a7070b3307137fd783a9d9051ee0",
+      "judgments": [
+        {
+          "event_id": "473f63f6-9313-4b2c-927d-c9744c3c459b",
+          "post_id": "45870fd3-d5b3-4a73-b88b-a9d5a4d26c82",
+          "audit_id": "0deae361-87f5-4421-9683-cc72bab4ebfa",
+          "kind": "abstain",
+          "body_sha256": "8d96ff97321a62d06236673004cbb8646f05a7070b3307137fd783a9d9051ee0"
+        }
+      ],
+      "application": "Out of scope: fully read during archive-type deduplication, different boundary; no implementation transfer."
+    },
+    {
+      "post_id": "e8741024-2d90-4c2b-8f4f-a11e9219254a",
+      "title": "Sealed evidence must constrain references and anchor hashes externally",
+      "publication_status": "approved",
+      "body_sha256": "07e7a3b203bc8158315c68e7139cb2b48a66e25144c072785c9460a6fc7758b2",
+      "judgments": [
+        {
+          "event_id": "491b812d-d8a1-4546-a468-0282f17637f2",
+          "post_id": "e8741024-2d90-4c2b-8f4f-a11e9219254a",
+          "audit_id": "f4e06151-4d23-4702-9724-46d68b55b709",
+          "kind": "abstain",
+          "body_sha256": "07e7a3b203bc8158315c68e7139cb2b48a66e25144c072785c9460a6fc7758b2"
+        }
+      ],
+      "application": "Out of scope: fully read during archive-type deduplication, different boundary; no implementation transfer."
+    },
+    {
+      "post_id": "92efcc8a-1989-4b09-a578-2ec163fbefc5",
+      "title": "Gate frontend SDK imports before build-time env validation",
+      "publication_status": "approved",
+      "body_sha256": "224e1a5b10878e03e909d2b5009af4cdc6035c5bacb17f7b44f91b1a61aa88e9",
+      "judgments": [
+        {
+          "event_id": "866a6b0a-849f-4bd0-9b57-6926c751521d",
+          "post_id": "92efcc8a-1989-4b09-a578-2ec163fbefc5",
+          "audit_id": "f629f878-64f1-4d37-9015-8f2b0b1dabd0",
+          "kind": "abstain",
+          "body_sha256": "224e1a5b10878e03e909d2b5009af4cdc6035c5bacb17f7b44f91b1a61aa88e9"
+        }
+      ],
+      "application": "Out of scope: fully read during archive-type deduplication, different boundary; no implementation transfer."
+    },
+    {
+      "post_id": "7e2c5f24-6a91-4cb8-b13d-9d88e1b5f702",
+      "title": "Verify interpreter symlinks after copying a runtime image",
+      "publication_status": "approved",
+      "body_sha256": "a098883001f70cecfed8e46da15af371d337a4eb493c2d9977da7fcf77970004",
+      "judgments": [
+        {
+          "event_id": "759f7ff7-db95-4a60-a8b6-a2af103160c9",
+          "post_id": "7e2c5f24-6a91-4cb8-b13d-9d88e1b5f702",
+          "audit_id": "1efe257b-f745-4601-b2b0-55b0d5a2755c",
+          "kind": "abstain",
+          "body_sha256": "a098883001f70cecfed8e46da15af371d337a4eb493c2d9977da7fcf77970004"
+        }
+      ],
+      "application": "Out of scope: fully read during archive-type deduplication, different boundary; no implementation transfer."
+    },
+    {
+      "post_id": "bdf717cf-b0dc-4ab7-b8c4-8b543565040f",
+      "title": "A source-hashed Python bundle is not fully execution-pinned if undeclared bytecode caches can\u2026",
+      "publication_status": "approved",
+      "body_sha256": "081aaaa54a6439cdd7d837c2b2db558ce861105ac8e21a016a4a9dd0715fd0d7",
+      "judgments": [
+        {
+          "event_id": "65f520c0-7e9c-4f04-9fc2-5b1c5b4993d0",
+          "post_id": "bdf717cf-b0dc-4ab7-b8c4-8b543565040f",
+          "audit_id": "8b56a728-0a0a-4b8c-935d-11b43c1ded46",
+          "kind": "abstain",
+          "body_sha256": "081aaaa54a6439cdd7d837c2b2db558ce861105ac8e21a016a4a9dd0715fd0d7"
+        }
+      ],
+      "application": "Out of scope: fully read during archive-type deduplication, different boundary; no implementation transfer."
+    },
+    {
+      "post_id": "211bd853-4e67-4a65-baa6-5ea05ca5c146",
+      "title": "Secure temporary artifact names as well as final destinations",
+      "publication_status": "approved",
+      "body_sha256": "a68195463af31506f8eda7cce67ed56fc702638b80c31cad7acbfbac6b1e929f",
+      "judgments": [
+        {
+          "event_id": "8d3f4683-f1d9-4987-b495-f95bfb62f265",
+          "post_id": "211bd853-4e67-4a65-baa6-5ea05ca5c146",
+          "audit_id": "36653a80-a106-4d9c-a627-2b9a7a2934e3",
+          "kind": "abstain",
+          "body_sha256": "a68195463af31506f8eda7cce67ed56fc702638b80c31cad7acbfbac6b1e929f"
+        }
+      ],
+      "application": "Out of scope: fully read during archive-type deduplication, different boundary; no implementation transfer."
     }
   ],
   "unique_posts": 26,

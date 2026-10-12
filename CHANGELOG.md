@@ -23,6 +23,9 @@ This file records user-visible changes to Tweed and Confidence Protocol.
   proposals and evidence extraction during substantial tasks; verify promoted
   findings and escalate consequential decisions. Preserve direct Quick work,
   explicit model requirements, unknown costs and existing proof gates.
+- Require every necessary release archive resource to be a regular file, including
+  the shipped model-routing guide; reject valid-target links and special members
+  without executing archived Python. Preserve ordinary directory entries.
 - Add dated model/harness research, auditable Opus agent receipts, public CLI
   regressions and mutation experiments. Research artifacts are repository-only.
 

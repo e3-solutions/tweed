@@ -1,0 +1,188 @@
+{
+  "schema_version": 1,
+  "title": "Required archive resource type proof",
+  "date": "2026-10-12",
+  "verdict": "PASS for the stated release type contract",
+  "contract": {
+    "required_names": [
+      ".codex-plugin/plugin.json",
+      "CHANGELOG.md",
+      "README.md",
+      "skills/confidence-protocol/SKILL.md",
+      "skills/confidence-protocol/scripts/confidence.py",
+      "skills/confidence-protocol/scripts/diagnostics.py",
+      "skills/confidence-protocol/references/complex-tasks.md",
+      "skills/confidence-protocol/references/harnesses.md",
+      "skills/confidence-protocol/references/model-routing.md"
+    ],
+    "regular_file_semantics": "Every required named member must satisfy TarInfo.isfile(); a valid link target does not substitute for a regular member. Ordinary non-required directory entries remain permitted.",
+    "archived_python": "Inspect archive bytes through JSON and AST parsing without executing archived Python."
+  },
+  "roles": {
+    "preimplementation_proof_designer": {
+      "actor": "separate prior proof designer",
+      "scope": "Specified contract and adversarial controls before implementation; found 28 unrefused nonregular cases.",
+      "model_identity": "not asserted"
+    },
+    "postimplementation_reviewer": {
+      "actor": "release_filetype_review",
+      "scope": "Separate child actor; did not implement the patch. Read current raw source, earlier proof design and RED/GREEN logs; authored and ran isolated controls.",
+      "independence_limits": "Separate actor and origin, with shared repository and parent context; no claim of blind review, model diversity or authenticated identity.",
+      "model_identity": "not asserted"
+    }
+  },
+  "source_hashes": {
+    "preserved_preimplementation_baseline": {
+      "skills/confidence-protocol/tests/check_release.py": "6a8fc4c5ca35c6c6449b45917452b4397cee15555043f9670d049203889e4908",
+      "skills/confidence-protocol/tests/test_release_archive.py": "0b3849d5b2c80a47131e4ca14d6fea6beead131d2183b8579e6e4217443dff73"
+    },
+    "reviewed_current_before": {
+      "skills/confidence-protocol/tests/check_release.py": "d128b13dbab97cb38fad248b53c84a808de915b41827e726f255baa6b57cb03e",
+      "skills/confidence-protocol/tests/test_release_archive.py": "a93e5c1d3a5a6554c5d79cbfaf477a45cb1d61b2e90acc6c0f840c22cf901057"
+    },
+    "reviewed_current_after": {
+      "skills/confidence-protocol/tests/check_release.py": "d128b13dbab97cb38fad248b53c84a808de915b41827e726f255baa6b57cb03e",
+      "skills/confidence-protocol/tests/test_release_archive.py": "a93e5c1d3a5a6554c5d79cbfaf477a45cb1d61b2e90acc6c0f840c22cf901057"
+    },
+    "current_at_public_proof_creation": {
+      "skills/confidence-protocol/tests/check_release.py": "d128b13dbab97cb38fad248b53c84a808de915b41827e726f255baa6b57cb03e",
+      "skills/confidence-protocol/tests/test_release_archive.py": "a93e5c1d3a5a6554c5d79cbfaf477a45cb1d61b2e90acc6c0f840c22cf901057"
+    },
+    "baseline_bytes_rehashed": true,
+    "current_source_unchanged_during_review": true,
+    "note": "Preserved baseline test file had six tests. RED and GREEN run the expanded seven-test suite; individual RED source bytes are not reconstructed from its workspace receipt."
+  },
+  "private_evidence_hashes": {
+    "preimplementation_proof_design_sha256": "ad29df055c125d8c14126d3daba75f7d1ab42d4ae12331530933f91100bbf2de",
+    "postimplementation_review_sha256": "f87eb5e42f3b317c213918ae8fd059a019a67f8b405e8f85af98ddf6b575c935",
+    "review_harness_sha256": "772cedd00bb9d472699ce8002484cb192846e4f4085c80891dbafdbc0e115219",
+    "copied_seven_test_run_log_sha256": "2cb5093715a41f1737af6b3c3d7cd43a2400b34914019922f161772a4ad3fef9"
+  },
+  "red_green_runs": [
+    {
+      "label": "RED",
+      "id": "release-types-before",
+      "receipt_sha256": "e3d7590f2b1c877cb890352fca9bbb56a1eb9ea895bc8b91994e3fe8434c820e",
+      "log_sha256": "030cb0b95da18acb66dcf986959153e5fafcabe1c0c8ae5297993a62ee3437d7",
+      "capture_sha256": "d1a39e0fe2c7f54810d145d4d14780089f8440d903cca7030ec8cbe5add3455a",
+      "recorded_exit_code": 1,
+      "test_count": 7,
+      "failure_count": 28,
+      "workspace_binding": {
+        "kind": "git-content-v1",
+        "start_sha256": "5b26ded4b6824089f2c0a83e9af7a9d6d14fab48dad8556a8155e6faed9784cb",
+        "end_sha256": "5b26ded4b6824089f2c0a83e9af7a9d6d14fab48dad8556a8155e6faed9784cb",
+        "endpoints_equal": true
+      },
+      "log_hash_verified": true
+    },
+    {
+      "label": "GREEN",
+      "id": "release-types-after",
+      "receipt_sha256": "3d1a39cc7faf1c03a64924c79075206f31c21ebd27db9db89ba46c07669a66c3",
+      "log_sha256": "2cb5093715a41f1737af6b3c3d7cd43a2400b34914019922f161772a4ad3fef9",
+      "capture_sha256": "36350644f6c59ea7a1acb7d078f737f8dc354ccd410ca5c1f877f97b85aa2bfb",
+      "recorded_exit_code": 0,
+      "test_count": 7,
+      "failure_count": 0,
+      "workspace_binding": {
+        "kind": "git-content-v1",
+        "start_sha256": "d6ab54f642eaa982792d01e7dd5c981ba399cf3f53ad2229704f074312794986",
+        "end_sha256": "d6ab54f642eaa982792d01e7dd5c981ba399cf3f53ad2229704f074312794986",
+        "endpoints_equal": true
+      },
+      "log_hash_verified": true
+    }
+  ],
+  "review_results": {
+    "isolated_controls": 97,
+    "passed": 97,
+    "required_type_matrix": {
+      "required_resources": 9,
+      "kinds": [
+        "directory",
+        "symlink",
+        "hardlink",
+        "fifo",
+        "character_device",
+        "block_device",
+        "unknown_type"
+      ],
+      "negative_cases": 63,
+      "observed": "All rejected with ValueError naming the resource as requiring a regular file."
+    },
+    "additional_valid_link_target_cases": {
+      "count": 18,
+      "observed": "All rejected, including relative symlink and same-directory hardlink targets containing valid original bytes."
+    },
+    "additional_controls": [
+      "Healthy all-regular archive and ordinary-directory archive accepted.",
+      "Future required resource regular member accepted; symlink rejected.",
+      "Each of nine missing required resources rejected.",
+      "Repository-only resource rejected.",
+      "Duplicate selected-last nonregular member rejected.",
+      "Historical real Git archive accepted."
+    ],
+    "copied_current_suite": {
+      "tests": 7,
+      "exit_code": 0
+    },
+    "caught_mutations": [
+      {
+        "name": "model_routing_only",
+        "source_sha256": "ffabd9119c5fa13772e00c1c52990bc063bf01608acd9b5a45c09f15ff71a403",
+        "counterexample": "README.md symlink to valid bytes",
+        "observed": "accepted",
+        "caught": true
+      },
+      {
+        "name": "blanket_nonregular_rejection",
+        "source_sha256": "b9e238456d2e6dfcb62ec11cd98a67a33cae49a958838dbfe069bcb48fbf068c",
+        "counterexample": "healthy regular required files plus ordinary directory entries",
+        "observed": "rejected",
+        "caught": true
+      }
+    ],
+    "archived_python_execution_control": {
+      "payloads": "Both archived Python resources contained filesystem-write and raising side effects; diagnostics retained a matching literal TOOL_VERSION.",
+      "healthy_archives_accepted": true,
+      "execution_marker_created": false,
+      "archive_extracted_to_disk": false
+    }
+  },
+  "historical_real_git_archive": {
+    "head": "c34d330a0c194cb49a88a2b8e533d65401d8e765",
+    "archive_sha256": "848d36565c0496d9f55701a7e954c66a7e98eddc38198fa73fc5f5cab7461853",
+    "entries": 26,
+    "normal_directory_entries": 7,
+    "directory_names": [
+      ".codex-plugin",
+      "skills",
+      "skills/confidence-protocol",
+      "skills/confidence-protocol/assets",
+      "skills/confidence-protocol/assets/runs",
+      "skills/confidence-protocol/references",
+      "skills/confidence-protocol/scripts"
+    ],
+    "validator_result": "accepted",
+    "scope": "Read-only Git archive of that historical HEAD, validated by copied current checker; not a claim about a future HEAD or published package."
+  },
+  "findings": {
+    "actionable": [],
+    "nonblocking": [
+      "Existing release suite lacks a normal-directory positive case; independent controls cover it here.",
+      "Existing suite imports REQUIRED, so removing a resource from that set could weaken enumeration; review asserted an independent literal nine-name contract."
+    ]
+  },
+  "binding_limits": [
+    "Receipt log hashes were verified against actual local logs. Recorded whole-workspace start/end hashes bind endpoints, not a continuous audit of the interval.",
+    "Earlier RED workspace was not reconstructed. Preserved baseline hashes and current file hashes are separate observations; the receipt workspace hash alone cannot prove each earlier file revision.",
+    "Private harness, archive and log hashes identify observed bytes; private raw paths and logs are omitted. Public source hashes allow comparison but do not authenticate reviewer identity."
+  ],
+  "scope_limits": [
+    "No changes to real source, Git, live trials, model processes or global settings; no model or external oracle calls during this review.",
+    "TarInfo.isfile() is the bounded acceptance contract, not a general tar extraction or security guarantee.",
+    "No exhaustive duplicate, path-normalization, malformed archive, sparse format, archive-bomb or payload-emptiness coverage.",
+    "No verification of published artifacts, deployment, live benchmarks or general Confidence Protocol efficacy."
+  ]
+}

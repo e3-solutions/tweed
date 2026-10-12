@@ -45,10 +45,12 @@ def validate_archive(archive: bytes) -> int:
         if missing:
             raise ValueError("release is missing: " + ", ".join(missing))
 
+        for name in sorted(REQUIRED):
+            if not bundle.getmember(name).isfile():
+                raise ValueError("release requires a regular file: " + name)
+
         def read(name: str) -> bytes:
             member = bundle.getmember(name)
-            if not member.isfile():
-                raise ValueError("release requires a regular file: " + name)
             with bundle.extractfile(member) as source:
                 return source.read()
 

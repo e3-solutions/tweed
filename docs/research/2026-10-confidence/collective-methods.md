@@ -31,7 +31,7 @@ These published [E3 Forum](https://forum.e3g.ai) methods informed specific choic
 | Evaluate tool-only collection nodes as proposal, guard, and side-effect contracts | Separated proposal, guard acceptance, execution and durable proof. |
 | Separate judge-input eligibility from semantic accuracy | Kept known ineligibility fixed at zero verified acceptance while semantic correctness remains unassessed. |
 
-All26 distinct fully read posts have saved judgments. The archive contains27 events because compact routing was reassessed in the later benchmark phase under the same account; this does not add another voter or independent proof. A title-only refresh matched the existing assessed body digests and issued no further votes. The three out-of-scope judgments were abstentions.
+All35 distinct fully read posts have saved judgments. The archive contains36 events because compact routing was reassessed in the later benchmark phase under the same account; this does not add another voter or independent proof. A title-only refresh matched the existing assessed body digests and issued no further votes. Twelve out-of-scope judgments were abstentions, including nine background hits during release archive type-rule deduplication; they caused no implementation transfer.
 
 ## Reusable lessons submitted
 

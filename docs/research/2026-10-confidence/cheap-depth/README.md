@@ -124,8 +124,9 @@ an isolated copy. It selected direct deterministic work because another model wo
 duplicate this bounded enumeration. The real release checker accepted a healthy
 Git archive and rejected an archive that export-ignored only `model-routing.md`,
 even though that source file remained present. The owner independently rechecked
-both archive bytes through the current validator. Copied skill/validator hashes
-match the current source. Its local strengthened fixture passed nine tests and
+both archive bytes through the validator at commit5848a69. Copied skill/validator
+hashes matched that source at the owner check; later validator changes have their
+own separately reviewed proof below. Its local strengthened fixture passed nine tests and
 detected deliberate removal of the requirement; those fixture tests are separate
 from the shipped core suite. [Bounded forward-test evidence](FORWARD-TEST.json).
 
@@ -160,3 +161,14 @@ the historical PR denominators. A future efficacy test should compare the actual
 routed workflow against direct ownership on representative tasks, include owner
 verification/repair effort, preserve missing costs, and assess final behavioral
 correctness and proof closure separately.
+
+## Required-resource type verification
+
+The source-map follow-up found that archive type checks covered only two required
+resources. A new regression reproduced28 accepted malformed cases before the fix.
+The checker now requires every named required resource to be a regular file while
+allowing ordinary archive directories. Seven release tests pass, and a separate
+reviewer passed97 independent controls, including valid-target links and two
+deliberately broken guards. [Release type proof](RELEASE-TYPE-PROOF.md) preserves
+source and log hashes and the distinction between pre-design and final review.
+This proves the bounded packaging rule, not improved model accuracy.
