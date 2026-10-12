@@ -23,6 +23,10 @@ This file records user-visible changes to Tweed and Confidence Protocol.
   proposals and evidence extraction during substantial tasks; verify promoted
   findings and escalate consequential decisions. Preserve direct Quick work,
   explicit model requirements, unknown costs and existing proof gates.
+- Route substantial work through intent intake, checkable acceptance, task-specific
+  engineering flows, observable slices and separate requirements/standards review.
+  Reuse known decisions and authorization; keep consequential unknowns and test
+  misses explicit. Adapt pinned upstream fundamentals without adding a dispatcher.
 - Require every necessary release archive resource to be a regular file, including
   the shipped model-routing guide; reject valid-target links and special members
   without executing archived Python. Preserve ordinary directory entries.

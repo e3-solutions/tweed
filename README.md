@@ -73,6 +73,13 @@ availability and cost per verified result, including checking and repair; model
 names and agent counts do not establish accuracy or savings. See
 [model routing](skills/confidence-protocol/references/model-routing.md).
 
+New or substantial tasks start with [intent and task flows](skills/confidence-protocol/references/intent-flows.md):
+recover the desired outcome and known decisions, investigate facts, resolve the
+remaining consequential choices, then choose the relevant engineering flow.
+Acceptance examples guide observable slices and checks; required behavior and
+repository standards remain separate review judgments. Questions and documents
+stay proportional to the task, and new evidence can reopen an unresolved choice.
+
 For complex work, optional obligation dependencies let Codex choose the next useful
 proof and preserve blockers across handoffs. `next --json` validates current
 evidence and returns the ready frontier without executing anything or writing

@@ -1,0 +1,1650 @@
+{
+  "version": 1,
+  "date": "2026-10-12",
+  "type": "post-launch-upstream-source-review",
+  "repository": "mattpocock/skills",
+  "pin": "49dd158d1076134a641b33efb035946536778336",
+  "license": {
+    "name": "MIT",
+    "copyright": "Copyright (c) 2026 Matt Pocock",
+    "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/LICENSE",
+    "sha256": "0e7ac423bf2c6e223b7c5b156f8cf72da49d748e56a1641402c31f22ad07dbb5",
+    "reuse_condition": "Retain the upstream copyright and permission notice if copying code or substantial source text. This public report paraphrases mechanisms."
+  },
+  "catalog": {
+    "current_website": "https://www.aihero.dev/skills",
+    "website_sha256": "419a28378ff49715b9fabdf5b9f464dd3f457bfca6a1744d0d5e9b33a77a9d85",
+    "website_count": 27,
+    "plugin_version": "1.3.1",
+    "plugin_count": 27,
+    "all_entry_files_count": 38,
+    "website_plugin_names_match": true,
+    "discrepancy": "No released-catalog name/count discrepancy: 27 released entries. Recursive source count is 38 because 7 in-progress and 4 misc entries are excluded from the plugin.",
+    "inventory": [
+      {
+        "name": "ask-matt",
+        "path": "skills/engineering/ask-matt/SKILL.md",
+        "summary": "Routes main flow, bug/triage on-ramps, references and phase transitions; entry read required.",
+        "entry_read": true,
+        "sha256": "1371f5ce005de0992a44b137748bfb960a56948aa9871b405fe9d90b24332e3c",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/ask-matt/SKILL.md"
+      },
+      {
+        "name": "diagnosing-bugs",
+        "path": "skills/engineering/diagnosing-bugs/SKILL.md",
+        "summary": "Executed symptom loop, reduction, hypotheses, targeted probes, regression and original-scenario rerun.",
+        "entry_read": true,
+        "sha256": "849198df88cdb65fd0d97236604c1fca7ff2f22d2f705f9724a800d0266b118d",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/diagnosing-bugs/SKILL.md"
+      },
+      {
+        "name": "grill-with-docs",
+        "path": "skills/engineering/grill-with-docs/SKILL.md",
+        "summary": "Composes interview and durable glossary/ADR mechanisms.",
+        "entry_read": true,
+        "sha256": "7de372c13488f1ee96cc11cd8907b56b6809cc93eef776eeddd37de6b6cbe3fe",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/grill-with-docs/SKILL.md"
+      },
+      {
+        "name": "triage",
+        "path": "skills/engineering/triage/SKILL.md",
+        "summary": "Existing issue/PR verification, category/state machine and durable briefs/resumption.",
+        "entry_read": true,
+        "sha256": "917b0baf74be583e74f110857ed45df2766617f75c00baf61fd136d7af515edf",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/triage/SKILL.md"
+      },
+      {
+        "name": "improve-codebase-architecture",
+        "path": "skills/engineering/improve-codebase-architecture/SKILL.md",
+        "summary": "Hotspot-informed architectural survey, visual candidate report and chosen design exploration.",
+        "entry_read": true,
+        "sha256": "552240a5ab5cec6b67c15dd1ad6e9f6962b1bca6ce870059a8c2713760c20392",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/improve-codebase-architecture/SKILL.md"
+      },
+      {
+        "name": "setup-matt-pocock-skills",
+        "path": "skills/engineering/setup-matt-pocock-skills/SKILL.md",
+        "summary": "Tracker, triage label and domain-doc setup with explicit human choices.",
+        "entry_read": true,
+        "sha256": "f148858ffb7f63c03c06fca06e6fdb1d91a35c6b293244b8fdfacd5f4cc028c4",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/setup-matt-pocock-skills/SKILL.md"
+      },
+      {
+        "name": "tdd",
+        "path": "skills/engineering/tdd/SKILL.md",
+        "summary": "Public seam tests, independent expected values and one red-green vertical slice.",
+        "entry_read": true,
+        "sha256": "5505d25bbaa8fc14a79e4d20163936958992a2995b7f1dd1d6197edc9ed722e0",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/tdd/SKILL.md"
+      },
+      {
+        "name": "to-spec",
+        "path": "skills/engineering/to-spec/SKILL.md",
+        "summary": "Synthesis from known context, problem/solution/stories/decisions/test/out-of-scope template.",
+        "entry_read": true,
+        "sha256": "43ad9cf318e5e7d3d1fa360253a37021796dc87a0c2e595ad262661a10f85088",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/to-spec/SKILL.md"
+      },
+      {
+        "name": "to-tickets",
+        "path": "skills/engineering/to-tickets/SKILL.md",
+        "summary": "Self-verifiable vertical slices, blocker edges and wide-refactor expand–contract exception.",
+        "entry_read": true,
+        "sha256": "56ec23c5b2782785d4e65bff9e315b6d3aeb4ef977c174a219e99489fada1995",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/to-tickets/SKILL.md"
+      },
+      {
+        "name": "wayfinder",
+        "path": "skills/engineering/wayfinder/SKILL.md",
+        "summary": "Decision map separates unresolved known questions, in-scope unknowns and excluded scope.",
+        "entry_read": true,
+        "sha256": "9be7b478c389605a24517d27752f278933588da97a1b5921b165f455edf4c5b7",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/wayfinder/SKILL.md"
+      },
+      {
+        "name": "implement",
+        "path": "skills/engineering/implement/SKILL.md",
+        "summary": "Ticket/spec implementation, test-first reference, focused/full checks, review and commit.",
+        "entry_read": true,
+        "sha256": "483bdc4ccf4ac31d86ac7beeaa0d0db80313e71e120bb8c59b3196ae5decd53d",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/implement/SKILL.md"
+      },
+      {
+        "name": "implement-spec",
+        "path": "skills/engineering/implement-spec/SKILL.md",
+        "summary": "Ticket DAG frontier, worktree implementers, serialized integration and final review.",
+        "entry_read": true,
+        "sha256": "7a22dd2e60b8fcece478ced9d2533582adf3520d695acd3ab715341535c9e56d",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/implement-spec/SKILL.md"
+      },
+      {
+        "name": "prototype",
+        "path": "skills/engineering/prototype/SKILL.md",
+        "summary": "One design question, logic/UI branch, visible state and isolated throwaway artifact.",
+        "entry_read": true,
+        "sha256": "714de632d116bb73f65cdb5a882db15b9369a6713b9a47c0fad827848f0bfbe3",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/prototype/SKILL.md"
+      },
+      {
+        "name": "research",
+        "path": "skills/engineering/research/SKILL.md",
+        "summary": "Background primary-source reading and cited artifact.",
+        "entry_read": true,
+        "sha256": "985569f15739c713d6784887c3d186d4ef9ac85bec5ad9c068d25bf0739928e4",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/research/SKILL.md"
+      },
+      {
+        "name": "domain-modeling",
+        "path": "skills/engineering/domain-modeling/SKILL.md",
+        "summary": "Domain glossary, concrete scenarios, source comparison and sparing ADR criteria.",
+        "entry_read": true,
+        "sha256": "7b925d7b1e341a2eeae33ad68a8a8c0ab889a38ddd22a7598e4c240e5a7556a3",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/domain-modeling/SKILL.md"
+      },
+      {
+        "name": "codebase-design",
+        "path": "skills/engineering/codebase-design/SKILL.md",
+        "summary": "Deep-module/interface vocabulary, removal heuristic, dependency and alternative-design references.",
+        "entry_read": true,
+        "sha256": "2c20617f87ec8af6a434859f381b2f061a69b530444e74eb39e78bb016a6d1e2",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/codebase-design/SKILL.md"
+      },
+      {
+        "name": "code-review",
+        "path": "skills/engineering/code-review/SKILL.md",
+        "summary": "Separate standards/spec diff reviewers, pinned comparison, citations and distinct judgments.",
+        "entry_read": true,
+        "sha256": "09eb147f793e4647949edd32dbad278f0554dfb56e0d46b699cd4c2c55bf0357",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/code-review/SKILL.md"
+      },
+      {
+        "name": "pr",
+        "path": "skills/engineering/pr/SKILL.md",
+        "summary": "Compact change visualization, before/after evidence, reversibility and blast radius; credits Humanlayer show-me.",
+        "entry_read": true,
+        "sha256": "ab63f1cf78647389edcd386c9427c5dfca27ed2836930c24773ffee834c19bcd",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/pr/SKILL.md"
+      },
+      {
+        "name": "retro",
+        "path": "skills/engineering/retro/SKILL.md",
+        "summary": "Observed session review; deterministic checks for mechanical failures, pointers and discretionary standards.",
+        "entry_read": true,
+        "sha256": "33fbc28568e3146f20fd908b12998bc0ab30aa4f4c87288199a40793efa94696",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/retro/SKILL.md"
+      },
+      {
+        "name": "wizard",
+        "path": "skills/engineering/wizard/SKILL.md",
+        "summary": "Human-only procedure stages, secret-aware template and static verification; avoid agent-runnable steps.",
+        "entry_read": true,
+        "sha256": "bdf31d48211ea559878f95a4f344aeabf8d85897488ba564382bab0b000daac1",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/wizard/SKILL.md"
+      },
+      {
+        "name": "grill-me",
+        "path": "skills/productivity/grill-me/SKILL.md",
+        "summary": "Stateless invocation of grilling primitive.",
+        "entry_read": true,
+        "sha256": "caaf8b8de1684f96e26b28f3c29189db5c89cce4b73e1c93d86164f66ef88637",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/productivity/grill-me/SKILL.md"
+      },
+      {
+        "name": "grilling",
+        "path": "skills/productivity/grilling/SKILL.md",
+        "summary": "Decision frontier rounds; agent discovers facts, human chooses decisions.",
+        "entry_read": true,
+        "sha256": "befdff1e27a1dfe2a294d5871169ac1afe16d983911daa4f32627514a48c1e15",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/productivity/grilling/SKILL.md"
+      },
+      {
+        "name": "handoff",
+        "path": "skills/productivity/handoff/SKILL.md",
+        "summary": "Portable temporary summary with pointers, focus and redaction.",
+        "entry_read": true,
+        "sha256": "4cbb043950dad2ffd3662ff1a5a0b51ae676004b5cae10e3787e8ee7a4ee69d3",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/productivity/handoff/SKILL.md"
+      },
+      {
+        "name": "teach",
+        "path": "skills/productivity/teach/SKILL.md",
+        "summary": "Persistent learning mission/resources/lessons/records and feedback loops.",
+        "entry_read": true,
+        "sha256": "550482c2d674b085c9043b87bfdc14a8f2ec453c736119e7fcbb1e9332bffeba",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/productivity/teach/SKILL.md"
+      },
+      {
+        "name": "to-questionnaire",
+        "path": "skills/productivity/to-questionnaire/SKILL.md",
+        "summary": "Ask about recipient and information gap; produce prioritized asynchronous questions.",
+        "entry_read": true,
+        "sha256": "b5eb929842ee0e93d867c5e906d183d350f2f2d149eaeaa86967d94d8eda1d3b",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/productivity/to-questionnaire/SKILL.md"
+      },
+      {
+        "name": "wait-what",
+        "path": "skills/productivity/wait-what/SKILL.md",
+        "summary": "Restate last message with missing context, plain language and domain vocabulary.",
+        "entry_read": true,
+        "sha256": "d961bb37defd975c539427edb8f450cdbccdcdd552e213c1ece46676a7970905",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/productivity/wait-what/SKILL.md"
+      },
+      {
+        "name": "writing-for-agents",
+        "path": "skills/productivity/writing-for-agents/SKILL.md",
+        "summary": "Pointer triggers, document hierarchy, observable completion, pruning and invocation reference.",
+        "entry_read": true,
+        "sha256": "551adca942227b44192edba88acd4e8db911f0121ce58ad16944ccf6a896a74a",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/productivity/writing-for-agents/SKILL.md"
+      }
+    ],
+    "additional_entries": [
+      {
+        "path": "skills/in-progress/chief-of-staff/SKILL.md",
+        "sha256": "6cc6e47ab5022f3e45e5be0fedbb0f6e645f4f0190d6b0c51c7cd60c2d7c1d98",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/in-progress/chief-of-staff/SKILL.md",
+        "entry_review_scope": "inventory only; not a released mechanism review"
+      },
+      {
+        "path": "skills/in-progress/claude-handoff/SKILL.md",
+        "sha256": "79357a18425d66d4c24048bedf83dceb79d3bba356f38014950f764a7fab4026",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/in-progress/claude-handoff/SKILL.md",
+        "entry_review_scope": "inventory only; not a released mechanism review"
+      },
+      {
+        "path": "skills/in-progress/loop-me/SKILL.md",
+        "sha256": "e44d1cc3e760fb86ac42964c2a5f1fcac511715db50fb375f3f7be814de1eaa7",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/in-progress/loop-me/SKILL.md",
+        "entry_review_scope": "inventory only; not a released mechanism review"
+      },
+      {
+        "path": "skills/in-progress/setup-ts-deep-modules/SKILL.md",
+        "sha256": "29acca66ac99d4532e2a6f0370d8125d7cba1e87c9ac66573203c75189d3e6c7",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/in-progress/setup-ts-deep-modules/SKILL.md",
+        "entry_review_scope": "inventory only; not a released mechanism review"
+      },
+      {
+        "path": "skills/in-progress/writing-beats/SKILL.md",
+        "sha256": "a96abafa2372eede8267d770138b322d6125da8adaa7ccf0a5e08e4ee13ee71e",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/in-progress/writing-beats/SKILL.md",
+        "entry_review_scope": "inventory only; not a released mechanism review"
+      },
+      {
+        "path": "skills/in-progress/writing-fragments/SKILL.md",
+        "sha256": "298b0edd23df229183630de592ed8aa4289233560f2040691f6eb77caeaad4ea",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/in-progress/writing-fragments/SKILL.md",
+        "entry_review_scope": "inventory only; not a released mechanism review"
+      },
+      {
+        "path": "skills/in-progress/writing-shape/SKILL.md",
+        "sha256": "f5e6c57bdd85178ace4a260c92f46da6b64ddee18215b461d875739c68976f72",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/in-progress/writing-shape/SKILL.md",
+        "entry_review_scope": "inventory only; not a released mechanism review"
+      },
+      {
+        "path": "skills/misc/git-guardrails-claude-code/SKILL.md",
+        "sha256": "69b291d655626a01602b998a1836fcb93c058ede68dfafddfd71e87f17074764",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/misc/git-guardrails-claude-code/SKILL.md",
+        "entry_review_scope": "inventory only; not a released mechanism review"
+      },
+      {
+        "path": "skills/misc/migrate-to-shoehorn/SKILL.md",
+        "sha256": "de4da4c11d924fac79c924b2ee3d2db4a5cb98386eb490a599119463d036ae72",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/misc/migrate-to-shoehorn/SKILL.md",
+        "entry_review_scope": "inventory only; not a released mechanism review"
+      },
+      {
+        "path": "skills/misc/scaffold-exercises/SKILL.md",
+        "sha256": "75f5c9d771606fb9762f16522efc954df11c324f87148d8ff069bce166257de9",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/misc/scaffold-exercises/SKILL.md",
+        "entry_review_scope": "inventory only; not a released mechanism review"
+      },
+      {
+        "path": "skills/misc/setup-pre-commit/SKILL.md",
+        "sha256": "c9819d7f1e3b198064edc1faa3154224ed67395e9f07f5d3cea4b67cf0a11a98",
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/misc/setup-pre-commit/SKILL.md",
+        "entry_review_scope": "inventory only; not a released mechanism review"
+      }
+    ]
+  },
+  "source_manifest_sha256": "b72c6a4f117897786664071ba58996d6217da30c0ead0bce997db97d21fef763",
+  "tree_sha256": "c0b98a8f4e7a496d7bfd8ea7f6b4d4b09a7b692ec8e7d66350e6a4f4d93e1ae9",
+  "sources": [
+    {
+      "path": ".claude-plugin/plugin.json",
+      "git_blob_sha": "4f5ee1cc3ca58cad722dc5f1fe083ac9926d33bf",
+      "sha256": "15a5a7227915917856ea019ad82584ee877309b5bc3cabfb86b83b7e2cc6e238",
+      "bytes": 1690,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/.claude-plugin/plugin.json"
+    },
+    {
+      "path": ".out-of-scope/question-limits.md",
+      "git_blob_sha": "5a3a7f677027a48a9e2a08df7c6d601b322f38da",
+      "sha256": "a4c7ab33523e8f88b75be6549f657cf086b86d77be48b87d48276311e368cc9d",
+      "bytes": 1259,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/.out-of-scope/question-limits.md"
+    },
+    {
+      "path": ".out-of-scope/subagent-recursion.md",
+      "git_blob_sha": "7363704e50f0ca0f8bdb742bce6bad756f83433b",
+      "sha256": "27f48a714d63e1a0f5e6ed827855ba45183622429f8ece30036de15573b170cc",
+      "bytes": 1137,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/.out-of-scope/subagent-recursion.md"
+    },
+    {
+      "path": "LICENSE",
+      "git_blob_sha": "f1dd2c09108dde1a5f56097cee8461b3ea834499",
+      "sha256": "0e7ac423bf2c6e223b7c5b156f8cf72da49d748e56a1641402c31f22ad07dbb5",
+      "bytes": 1068,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/LICENSE"
+    },
+    {
+      "path": "README.md",
+      "git_blob_sha": "f7038f139299985eea6c3e18398dbafb379a0010",
+      "sha256": "345041d56cf1411b6b3ca1cc54014d26c563890f817f4cb9e2cb193dcd771a3e",
+      "bytes": 16461,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/README.md"
+    },
+    {
+      "path": "SCOPE.md",
+      "git_blob_sha": "2f09e43ee39df11557aea4f23e613b163ec5f628",
+      "sha256": "4d5c09ef33193d9db3dac2e6e11e5d6b1abcfe08135d20c8a6d9cd3b0d6ed866",
+      "bytes": 2348,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/SCOPE.md"
+    },
+    {
+      "path": "skills/deprecated/README.md",
+      "git_blob_sha": "aa1242c27b1f5e3f762bd5743affbd966811b5b4",
+      "sha256": "8b2009e31b7353f318a4321901b1141377e4d395f092934bacde7e9c5b070e26",
+      "bytes": 160,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/deprecated/README.md"
+    },
+    {
+      "path": "skills/engineering/README.md",
+      "git_blob_sha": "381c82ac4e54427ba73d0569fdf712187ddcc724",
+      "sha256": "32d9469dda4e6103d952909cb83e657b7bec01bc582b6be4cec3b493f66920fd",
+      "bytes": 4287,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/README.md"
+    },
+    {
+      "path": "skills/engineering/ask-matt/PHASE-BOUNDARIES.md",
+      "git_blob_sha": "fb58ef9febcfd558cdb4517e370f19034869ba26",
+      "sha256": "a8aa20158609ef39e2b308b6ba0660c91066838d07a867202e63a7744a88a3ed",
+      "bytes": 4249,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/ask-matt/PHASE-BOUNDARIES.md"
+    },
+    {
+      "path": "skills/engineering/ask-matt/SKILL.md",
+      "git_blob_sha": "4bfeeb61dae548b8b7754c4fba7bd40ab3926099",
+      "sha256": "1371f5ce005de0992a44b137748bfb960a56948aa9871b405fe9d90b24332e3c",
+      "bytes": 12594,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/ask-matt/SKILL.md"
+    },
+    {
+      "path": "skills/engineering/ask-matt/agents/openai.yaml",
+      "git_blob_sha": "5c60d51b5b1248d7210bff8c6b42a5a06524b8a4",
+      "sha256": "bdffbc5a0a99ed1b6ef3253d251d755fd18162b9845972e380007f844b09b05c",
+      "bytes": 137,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/ask-matt/agents/openai.yaml"
+    },
+    {
+      "path": "skills/engineering/code-review/SKILL.md",
+      "git_blob_sha": "373a4f26e6cfa3617778397945bb069d9cb184bc",
+      "sha256": "09eb147f793e4647949edd32dbad278f0554dfb56e0d46b699cd4c2c55bf0357",
+      "bytes": 6670,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/code-review/SKILL.md"
+    },
+    {
+      "path": "skills/engineering/code-review/agents/openai.yaml",
+      "git_blob_sha": "9076774ba327f49068db9273feceda03bfe940fa",
+      "sha256": "8229ca854e11dc8e6aef2131ee03f31fb1561cf905fab9ccc325180cf3331352",
+      "bytes": 100,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/code-review/agents/openai.yaml"
+    },
+    {
+      "path": "skills/engineering/codebase-design/DEEPENING.md",
+      "git_blob_sha": "cd94075cfd754d147555c5d747a16431ed4c7dd8",
+      "sha256": "f3dd099ce99289bd213914d8ee3e2429b78309c3957ca4583f7659551b1d53c1",
+      "bytes": 2553,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/codebase-design/DEEPENING.md"
+    },
+    {
+      "path": "skills/engineering/codebase-design/DESIGN-IT-TWICE.md",
+      "git_blob_sha": "d0990138c35c800bd821289a73115e52680c1620",
+      "sha256": "52b52e75655a27aea59c6966b410bac82448968ad46ef1ebb9f07c274e3ae010",
+      "bytes": 2665,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/codebase-design/DESIGN-IT-TWICE.md"
+    },
+    {
+      "path": "skills/engineering/codebase-design/SKILL.md",
+      "git_blob_sha": "3f63c8146dd2604b419c929e9876b90c30d410e9",
+      "sha256": "2c20617f87ec8af6a434859f381b2f061a69b530444e74eb39e78bb016a6d1e2",
+      "bytes": 6446,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/codebase-design/SKILL.md"
+    },
+    {
+      "path": "skills/engineering/codebase-design/agents/openai.yaml",
+      "git_blob_sha": "3180715edb37f6e96bec42f92f00169faa8886ef",
+      "sha256": "edebc9e4fcfe102114012575eaa9600b9b5fd08c311664f389c36e7bc717740f",
+      "bytes": 102,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/codebase-design/agents/openai.yaml"
+    },
+    {
+      "path": "skills/engineering/diagnosing-bugs/SKILL.md",
+      "git_blob_sha": "d039541ddd1c46e6ddbd662fe99d49b686fc5e12",
+      "sha256": "849198df88cdb65fd0d97236604c1fca7ff2f22d2f705f9724a800d0266b118d",
+      "bytes": 8664,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/diagnosing-bugs/SKILL.md"
+    },
+    {
+      "path": "skills/engineering/diagnosing-bugs/agents/openai.yaml",
+      "git_blob_sha": "a13a755a77634ce61a649a3a0d905a66d3865b35",
+      "sha256": "3e430dbe4334a87597488c060cb3dc3786bb00c9182877d6f5ec41f62490e90b",
+      "bytes": 103,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/diagnosing-bugs/agents/openai.yaml"
+    },
+    {
+      "path": "skills/engineering/diagnosing-bugs/scripts/hitl-loop.template.sh",
+      "git_blob_sha": "243198464a8401a7ba1d63b3708fa43c3d067665",
+      "sha256": "35103539fc36873eea36074769ad454f9379d6fc8b2dc0e26ce987fd3bfe5503",
+      "bytes": 1316,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/diagnosing-bugs/scripts/hitl-loop.template.sh"
+    },
+    {
+      "path": "skills/engineering/domain-modeling/ADR-FORMAT.md",
+      "git_blob_sha": "d7e61f30a9fd8ca70d9ee68f019c2a9ebf2d13f7",
+      "sha256": "944c92aa790e8fbdc9199640b170979abb8a34ba8d0fe18c2a01a63bce140ca0",
+      "bytes": 2733,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/domain-modeling/ADR-FORMAT.md"
+    },
+    {
+      "path": "skills/engineering/domain-modeling/GLOSSARY-FORMAT.md",
+      "git_blob_sha": "9c0b4c7a2e8507c23cbb5e0baa66d81699321cc6",
+      "sha256": "21dcc40cdec8e151a829b98ab1517c1867bc444e3665134a98c6983411996801",
+      "bytes": 2300,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/domain-modeling/GLOSSARY-FORMAT.md"
+    },
+    {
+      "path": "skills/engineering/domain-modeling/SKILL.md",
+      "git_blob_sha": "a4438c6879c517d1a08e2b5fbca049b632688dfe",
+      "sha256": "7b925d7b1e341a2eeae33ad68a8a8c0ab889a38ddd22a7598e4c240e5a7556a3",
+      "bytes": 3346,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/domain-modeling/SKILL.md"
+    },
+    {
+      "path": "skills/engineering/domain-modeling/agents/openai.yaml",
+      "git_blob_sha": "7f1522d2f11506ee205275ab7c282aa52366ecf6",
+      "sha256": "f6bf2aa996c6e6f53fdd0708e18a0d16a56aed8322cca59fedbe3c0d2c75f06b",
+      "bytes": 101,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/domain-modeling/agents/openai.yaml"
+    },
+    {
+      "path": "skills/engineering/grill-with-docs/SKILL.md",
+      "git_blob_sha": "62b9efb6f991d1b229adee7506962f13ced0c499",
+      "sha256": "7de372c13488f1ee96cc11cd8907b56b6809cc93eef776eeddd37de6b6cbe3fe",
+      "bytes": 247,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/grill-with-docs/SKILL.md"
+    },
+    {
+      "path": "skills/engineering/grill-with-docs/agents/openai.yaml",
+      "git_blob_sha": "5dbe2780a51be3e9b118bd7758a73e54a9384e11",
+      "sha256": "94cd0ab161fb468a836349f5ed482ba58ce8e709a05c57ce533d739dbd35cca9",
+      "bytes": 145,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/grill-with-docs/agents/openai.yaml"
+    },
+    {
+      "path": "skills/engineering/implement-spec/SKILL.md",
+      "git_blob_sha": "183923797ab58f1b3ef09e03bc1f1f203c309f37",
+      "sha256": "7a22dd2e60b8fcece478ced9d2533582adf3520d695acd3ab715341535c9e56d",
+      "bytes": 2780,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/implement-spec/SKILL.md"
+    },
+    {
+      "path": "skills/engineering/implement-spec/agents/openai.yaml",
+      "git_blob_sha": "f5e91af21e38eb1a167ea5aa93dfc7da3c4637b4",
+      "sha256": "fd41efb42c60c96320d6531be7e4bf15cbf5518cd652d57dff27ccffa46988e9",
+      "bytes": 168,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/implement-spec/agents/openai.yaml"
+    },
+    {
+      "path": "skills/engineering/implement/SKILL.md",
+      "git_blob_sha": "bd49e472984c7b99aac40286fdae749bb955a842",
+      "sha256": "483bdc4ccf4ac31d86ac7beeaa0d0db80313e71e120bb8c59b3196ae5decd53d",
+      "bytes": 622,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/implement/SKILL.md"
+    },
+    {
+      "path": "skills/engineering/implement/agents/openai.yaml",
+      "git_blob_sha": "f8794dc153b409052a9167baf10858cf01b36175",
+      "sha256": "8970a8596ade0c28ab427f41a4ea242d6bdf6186c59ebf55e1238dbecaab79dc",
+      "bytes": 139,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/implement/agents/openai.yaml"
+    },
+    {
+      "path": "skills/engineering/improve-codebase-architecture/HTML-REPORT.md",
+      "git_blob_sha": "e39e8255b8797cf8257d014fb6658fb533f3a399",
+      "sha256": "581e8bb5a521e46bbda8ca7e19b15948bed882187108092ebb90c62513b77528",
+      "bytes": 6641,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/improve-codebase-architecture/HTML-REPORT.md"
+    },
+    {
+      "path": "skills/engineering/improve-codebase-architecture/SKILL.md",
+      "git_blob_sha": "44cc7d3136c44534d68ac523fa6cd37e759d2846",
+      "sha256": "552240a5ab5cec6b67c15dd1ad6e9f6962b1bca6ce870059a8c2713760c20392",
+      "bytes": 6000,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/improve-codebase-architecture/SKILL.md"
+    },
+    {
+      "path": "skills/engineering/improve-codebase-architecture/agents/openai.yaml",
+      "git_blob_sha": "706fdca096da5937fe57875a9154017d50668c42",
+      "sha256": "c8cb20f68ebf0edb4e497bc11ae5fcaa196004e661cd189015b04f4109ced7f1",
+      "bytes": 166,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/improve-codebase-architecture/agents/openai.yaml"
+    },
+    {
+      "path": "skills/engineering/pr/CREDITS.md",
+      "git_blob_sha": "5314bda2fa6005e264c9b5c1de7c425e719dc91f",
+      "sha256": "a7a087127665d7298a72280ef6e19c41ad8404523712a788c8dc3ab414bc2497",
+      "bytes": 604,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/pr/CREDITS.md"
+    },
+    {
+      "path": "skills/engineering/pr/SKILL.md",
+      "git_blob_sha": "84dd4fb2f068e9f6282690235d20dd505b418119",
+      "sha256": "ab63f1cf78647389edcd386c9427c5dfca27ed2836930c24773ffee834c19bcd",
+      "bytes": 4169,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/pr/SKILL.md"
+    },
+    {
+      "path": "skills/engineering/pr/agents/openai.yaml",
+      "git_blob_sha": "48286f48f53b937cc19c0e39899b5f956271a98d",
+      "sha256": "2295b586624db4ef546f3fd4695492f039d941a46d8a1593a702ce3ca511b8ad",
+      "bytes": 93,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/pr/agents/openai.yaml"
+    },
+    {
+      "path": "skills/engineering/prototype/LOGIC.md",
+      "git_blob_sha": "32be86a0a5d9928db84b3988e55f9debe476ab40",
+      "sha256": "f61c7d249e786a79ef289018901c348271e1798dd0b0bc5607b5c6f4d4a01ab9",
+      "bytes": 6036,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/prototype/LOGIC.md"
+    },
+    {
+      "path": "skills/engineering/prototype/SKILL.md",
+      "git_blob_sha": "a0044501fe0d385b4d8575b610188ede9b236ccf",
+      "sha256": "714de632d116bb73f65cdb5a882db15b9369a6713b9a47c0fad827848f0bfbe3",
+      "bytes": 2931,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/prototype/SKILL.md"
+    },
+    {
+      "path": "skills/engineering/prototype/UI.md",
+      "git_blob_sha": "3977951663490882c2632b40695d9f59a2fe2408",
+      "sha256": "723211e878acbc7b6ff09755263f3295cde724ba902ff0064da41eed51d45ad3",
+      "bytes": 6913,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/prototype/UI.md"
+    },
+    {
+      "path": "skills/engineering/prototype/agents/openai.yaml",
+      "git_blob_sha": "1618b147965bc729b7bf3e8da5f130132067aadc",
+      "sha256": "5af65e43ab41a350436697b81e27b7f848d36782043b73c322bb2c9fa9cc55dc",
+      "bytes": 100,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/prototype/agents/openai.yaml"
+    },
+    {
+      "path": "skills/engineering/research/SKILL.md",
+      "git_blob_sha": "fecee97e9457ba039678d2fcf1b1bc9fca78307d",
+      "sha256": "985569f15739c713d6784887c3d186d4ef9ac85bec5ad9c068d25bf0739928e4",
+      "bytes": 794,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/research/SKILL.md"
+    },
+    {
+      "path": "skills/engineering/research/agents/openai.yaml",
+      "git_blob_sha": "e18b96ca0ccc1003889d5d6991386207c2454bc2",
+      "sha256": "9b4c470d63221c1f68f22df70b83e2f12401b317babe0d1b7b5f24a974474d0d",
+      "bytes": 94,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/research/agents/openai.yaml"
+    },
+    {
+      "path": "skills/engineering/retro/SKILL.md",
+      "git_blob_sha": "12149acf2dd23b4514dec57b04a6293eaa1352fa",
+      "sha256": "33fbc28568e3146f20fd908b12998bc0ab30aa4f4c87288199a40793efa94696",
+      "bytes": 4369,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/retro/SKILL.md"
+    },
+    {
+      "path": "skills/engineering/retro/agents/openai.yaml",
+      "git_blob_sha": "a2f0bac3f9cebf29beee2e79960cb876e0adc65d",
+      "sha256": "cb6fb9d7e6b4be5975f41f6def1dd00a1255bad5d9b02696b124c924a8b8745c",
+      "bytes": 146,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/retro/agents/openai.yaml"
+    },
+    {
+      "path": "skills/engineering/setup-matt-pocock-skills/SKILL.md",
+      "git_blob_sha": "293c25b75590119794af03b037ba4288054a32b3",
+      "sha256": "f148858ffb7f63c03c06fca06e6fdb1d91a35c6b293244b8fdfacd5f4cc028c4",
+      "bytes": 6978,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/setup-matt-pocock-skills/SKILL.md"
+    },
+    {
+      "path": "skills/engineering/setup-matt-pocock-skills/agents/openai.yaml",
+      "git_blob_sha": "65a0da8128c98051183235e490767a8065310868",
+      "sha256": "9527de0110541c45712319025155aeab8dc7d77c6ed6e5e83271bab1851ab939",
+      "bytes": 152,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/setup-matt-pocock-skills/agents/openai.yaml"
+    },
+    {
+      "path": "skills/engineering/setup-matt-pocock-skills/domain.md",
+      "git_blob_sha": "4032de016c1e91119d33d477633e2b8f265f4195",
+      "sha256": "593a7042218689f1d24df89df14eaf0a20e19e0d0a7d479a01947ac78f0784b9",
+      "bytes": 2042,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/setup-matt-pocock-skills/domain.md"
+    },
+    {
+      "path": "skills/engineering/setup-matt-pocock-skills/issue-tracker-github.md",
+      "git_blob_sha": "a63510f74038300d8da354553f9d31d1bd954d94",
+      "sha256": "f0653fe106dd8ee7b33be27bd7fe3104b40555896cb45f61997aed20467020c3",
+      "bytes": 4117,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/setup-matt-pocock-skills/issue-tracker-github.md"
+    },
+    {
+      "path": "skills/engineering/setup-matt-pocock-skills/issue-tracker-gitlab.md",
+      "git_blob_sha": "81499dca459e8097d560b641f8ba7c2e1c7c9da4",
+      "sha256": "591a9e7057382aaccdfbed3f7ea3f2ad07e0cd29f012d18b82ee4e485fd81e24",
+      "bytes": 3816,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/setup-matt-pocock-skills/issue-tracker-gitlab.md"
+    },
+    {
+      "path": "skills/engineering/setup-matt-pocock-skills/issue-tracker-local.md",
+      "git_blob_sha": "0209a19af92c9c485cf3acc3d9e253171517ea17",
+      "sha256": "7dcda20a2eb4bdc89b95d1143423c0691309921cadae3132e6424f371030506e",
+      "bytes": 1810,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/setup-matt-pocock-skills/issue-tracker-local.md"
+    },
+    {
+      "path": "skills/engineering/setup-matt-pocock-skills/triage-labels.md",
+      "git_blob_sha": "5276464244857a3cc29890ff4a978a197b21f3fc",
+      "sha256": "ae512af838c78b8750471c42cd2b20fa32319553e61d84c9a23d171b40ce14aa",
+      "bytes": 1057,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/setup-matt-pocock-skills/triage-labels.md"
+    },
+    {
+      "path": "skills/engineering/tdd/SKILL.md",
+      "git_blob_sha": "01eadaa34e7c9a63a67d6dc3cce1cc81b0e49985",
+      "sha256": "5505d25bbaa8fc14a79e4d20163936958992a2995b7f1dd1d6197edc9ed722e0",
+      "bytes": 3629,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/tdd/SKILL.md"
+    },
+    {
+      "path": "skills/engineering/tdd/agents/openai.yaml",
+      "git_blob_sha": "651b838a7663e027b1b8884491e867f26bb9a021",
+      "sha256": "ea6f01cf1b8c06a4b0f5b649d74b1b8ce8685e72af1b38d70d877693e092af0b",
+      "bytes": 87,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/tdd/agents/openai.yaml"
+    },
+    {
+      "path": "skills/engineering/tdd/mocking.md",
+      "git_blob_sha": "71cbfee674d93244ce81d1830b930ca9a69200bd",
+      "sha256": "3ceb807fdf4a47d6a93d4d9a891e5ba6d362a6247bd08adc451feebfc17361ef",
+      "bytes": 1481,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/tdd/mocking.md"
+    },
+    {
+      "path": "skills/engineering/tdd/tests.md",
+      "git_blob_sha": "7ab86479f925a1f9e8ba680af33cb3b12e015381",
+      "sha256": "859f9e592c188fda4fc7277dd180e4ce9c7a2e13f6efe1f6f29eccc9d28c106a",
+      "bytes": 2214,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/tdd/tests.md"
+    },
+    {
+      "path": "skills/engineering/to-spec/SKILL.md",
+      "git_blob_sha": "3f52599ae2a4347aee5a07432c2707518e691a7f",
+      "sha256": "43ad9cf318e5e7d3d1fa360253a37021796dc87a0c2e595ad262661a10f85088",
+      "bytes": 3043,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/to-spec/SKILL.md"
+    },
+    {
+      "path": "skills/engineering/to-spec/agents/openai.yaml",
+      "git_blob_sha": "549e6f76f020a1b9ba65f52ccda336566ee6222a",
+      "sha256": "1c5b4d1e3d8e52287ef19cc2742fdbbfae1914ac75d33af3e4c8174f08cc55bb",
+      "bytes": 135,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/to-spec/agents/openai.yaml"
+    },
+    {
+      "path": "skills/engineering/to-tickets/SKILL.md",
+      "git_blob_sha": "9b77a01db9460c99c22d03c910c349f890f12c0e",
+      "sha256": "56ec23c5b2782785d4e65bff9e315b6d3aeb4ef977c174a219e99489fada1995",
+      "bytes": 5812,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/to-tickets/SKILL.md"
+    },
+    {
+      "path": "skills/engineering/to-tickets/agents/openai.yaml",
+      "git_blob_sha": "24605a5db64e4fc750b999aa94aea126bee814ee",
+      "sha256": "21bc6215fffcd7614e9f772bb1760e87cc5fc7dcc707e7d282bc9414267a6090",
+      "bytes": 146,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/to-tickets/agents/openai.yaml"
+    },
+    {
+      "path": "skills/engineering/triage/AGENT-BRIEF.md",
+      "git_blob_sha": "1462fcd9e8cc21921158c296149dc05d9be39d20",
+      "sha256": "7f5f87fed3033df1b06e083c480f3e847b1fbb0647746b8a4c6a50f9f26ef44f",
+      "bytes": 7942,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/triage/AGENT-BRIEF.md"
+    },
+    {
+      "path": "skills/engineering/triage/OUT-OF-SCOPE.md",
+      "git_blob_sha": "c9fba2f77ee0619975ec8488c0d4861a0c7e3151",
+      "sha256": "1fbf9b432130c6380aa65813b55553cfda150309b27c595e183f8e335b8a190d",
+      "bytes": 4667,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/triage/OUT-OF-SCOPE.md"
+    },
+    {
+      "path": "skills/engineering/triage/SKILL.md",
+      "git_blob_sha": "3fd5617e906cf9b71a6b17424791adb905fc248b",
+      "sha256": "917b0baf74be583e74f110857ed45df2766617f75c00baf61fd136d7af515edf",
+      "bytes": 6558,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/triage/SKILL.md"
+    },
+    {
+      "path": "skills/engineering/triage/agents/openai.yaml",
+      "git_blob_sha": "acb366cf0f2527e8925ff1223b77610ac0b1be4c",
+      "sha256": "2e683717720cf456d165d0bb1a68bb600d0b6a8ccb61841c172e50d26f95351c",
+      "bytes": 135,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/triage/agents/openai.yaml"
+    },
+    {
+      "path": "skills/engineering/wayfinder/SKILL.md",
+      "git_blob_sha": "e28cf3018906d6d60fc5b25390b4eeea035dd290",
+      "sha256": "9be7b478c389605a24517d27752f278933588da97a1b5921b165f455edf4c5b7",
+      "bytes": 12380,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/wayfinder/SKILL.md"
+    },
+    {
+      "path": "skills/engineering/wayfinder/agents/openai.yaml",
+      "git_blob_sha": "b37544751e0570f9df8de6c02aef238de8c3e1e0",
+      "sha256": "88bc81a11a6d52ac67aeaa76b8b619e387020d47c5133a4dd4927fd15c4ad073",
+      "bytes": 144,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/wayfinder/agents/openai.yaml"
+    },
+    {
+      "path": "skills/engineering/wizard/SKILL.md",
+      "git_blob_sha": "c4294ad8298b9b95fc727496b1b802b1f7363fba",
+      "sha256": "bdf31d48211ea559878f95a4f344aeabf8d85897488ba564382bab0b000daac1",
+      "bytes": 4123,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/wizard/SKILL.md"
+    },
+    {
+      "path": "skills/engineering/wizard/agents/openai.yaml",
+      "git_blob_sha": "b601bdf3a321e7d32d5714681540b811287d3988",
+      "sha256": "98f44d682d58e262f160dc59a8befc365e0aa65820dd0261864af26aa8e59d83",
+      "bytes": 96,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/wizard/agents/openai.yaml"
+    },
+    {
+      "path": "skills/engineering/wizard/template.sh",
+      "git_blob_sha": "081ed3da860729c5e6fb1e7126c86b07b0ed56f0",
+      "sha256": "6566f147299bc6f1d941e64591ed04385416d543e11f96f564c7228f5018d0ed",
+      "bytes": 9498,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/wizard/template.sh"
+    },
+    {
+      "path": "skills/in-progress/README.md",
+      "git_blob_sha": "792ebaa0aecbc24bf02742558df8873c9df72af2",
+      "sha256": "740e1d097748d68ebc00cb98de7b2dadbbac0e714af37a0d6a251819c0073584",
+      "bytes": 1676,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/in-progress/README.md"
+    },
+    {
+      "path": "skills/in-progress/chief-of-staff/SKILL.md",
+      "git_blob_sha": "97da622d09acaaacebbb4482663c907e241f4594",
+      "sha256": "6cc6e47ab5022f3e45e5be0fedbb0f6e645f4f0190d6b0c51c7cd60c2d7c1d98",
+      "bytes": 2112,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/in-progress/chief-of-staff/SKILL.md"
+    },
+    {
+      "path": "skills/in-progress/chief-of-staff/agents/openai.yaml",
+      "git_blob_sha": "080598b44ad9c843dc3457b6e0e32368aaeec84d",
+      "sha256": "c0f68ed9da6977adc97a791be3bb0830d301b2d27f9c635d92d6f325bffefb83",
+      "bytes": 184,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/in-progress/chief-of-staff/agents/openai.yaml"
+    },
+    {
+      "path": "skills/in-progress/claude-handoff/SKILL.md",
+      "git_blob_sha": "77f82fc59c89c3a83ed5a92521dc2869f0533724",
+      "sha256": "79357a18425d66d4c24048bedf83dceb79d3bba356f38014950f764a7fab4026",
+      "bytes": 1424,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/in-progress/claude-handoff/SKILL.md"
+    },
+    {
+      "path": "skills/in-progress/claude-handoff/agents/openai.yaml",
+      "git_blob_sha": "0a7aa5da50d0e73248fc17fb8fe82409ec071eaf",
+      "sha256": "2308a672978864633286fb9f0792b08657e501426b3f7883fc418d5d2eac5eb0",
+      "bytes": 141,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/in-progress/claude-handoff/agents/openai.yaml"
+    },
+    {
+      "path": "skills/in-progress/loop-me/SKILL.md",
+      "git_blob_sha": "e58a474ca80feffdeb28842bc3bdee37da6510e7",
+      "sha256": "e44d1cc3e760fb86ac42964c2a5f1fcac511715db50fb375f3f7be814de1eaa7",
+      "bytes": 2522,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/in-progress/loop-me/SKILL.md"
+    },
+    {
+      "path": "skills/in-progress/loop-me/agents/openai.yaml",
+      "git_blob_sha": "1a4f4111192ff75b4771e8a248c603994d5eafdc",
+      "sha256": "b66fa10079957051be6a812f45e55b67ac394b71d5ba88349962b4c9205802c3",
+      "bytes": 140,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/in-progress/loop-me/agents/openai.yaml"
+    },
+    {
+      "path": "skills/in-progress/setup-ts-deep-modules/SKILL.md",
+      "git_blob_sha": "7e30047eaeda175de5d93886596a37baf365bb90",
+      "sha256": "29acca66ac99d4532e2a6f0370d8125d7cba1e87c9ac66573203c75189d3e6c7",
+      "bytes": 7546,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/in-progress/setup-ts-deep-modules/SKILL.md"
+    },
+    {
+      "path": "skills/in-progress/setup-ts-deep-modules/agents/openai.yaml",
+      "git_blob_sha": "5d0581bdd4f9337cfb1e13feb7e1e18f43ea9db1",
+      "sha256": "159f680217d50747702620c05fd65734a152185b3219a8ca5ee4630878a354fa",
+      "bytes": 149,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/in-progress/setup-ts-deep-modules/agents/openai.yaml"
+    },
+    {
+      "path": "skills/in-progress/setup-ts-deep-modules/dependency-cruiser.config.cjs",
+      "git_blob_sha": "54030ede7d36b7f72fc0f645fa414efa9b6f63ed",
+      "sha256": "3c4973bec69f73b2117654abf9e666a7c28665b213be20e6d39869e29842428e",
+      "bytes": 3712,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/in-progress/setup-ts-deep-modules/dependency-cruiser.config.cjs"
+    },
+    {
+      "path": "skills/in-progress/writing-beats/SKILL.md",
+      "git_blob_sha": "3d3b25b605491adc5c62ae5423127717a94b9632",
+      "sha256": "a96abafa2372eede8267d770138b322d6125da8adaa7ccf0a5e08e4ee13ee71e",
+      "bytes": 4855,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/in-progress/writing-beats/SKILL.md"
+    },
+    {
+      "path": "skills/in-progress/writing-beats/agents/openai.yaml",
+      "git_blob_sha": "e8eaa188d4c70b582eed2d1775fe4c4ea3562b25",
+      "sha256": "ddaef01da61d8e3c5f482c4403033c20cf5823f08a1dbf1d4c871670831d01e2",
+      "bytes": 142,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/in-progress/writing-beats/agents/openai.yaml"
+    },
+    {
+      "path": "skills/in-progress/writing-fragments/SKILL.md",
+      "git_blob_sha": "c7c889b880cf9c8d289119dea5ff240641b615ca",
+      "sha256": "298b0edd23df229183630de592ed8aa4289233560f2040691f6eb77caeaad4ea",
+      "bytes": 3558,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/in-progress/writing-fragments/SKILL.md"
+    },
+    {
+      "path": "skills/in-progress/writing-fragments/agents/openai.yaml",
+      "git_blob_sha": "be3713e91e3ddc6c71e04e6b512b6ad6502d7cc8",
+      "sha256": "81167f25ee8ea1bb4b4958f12b6702ea972ad31b05e03ec91e39fa4bae0c2641",
+      "bytes": 140,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/in-progress/writing-fragments/agents/openai.yaml"
+    },
+    {
+      "path": "skills/in-progress/writing-shape/SKILL.md",
+      "git_blob_sha": "02f2866d13e72504e010f2ad3458eb9b36b876db",
+      "sha256": "f5e6c57bdd85178ace4a260c92f46da6b64ddee18215b461d875739c68976f72",
+      "bytes": 5922,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/in-progress/writing-shape/SKILL.md"
+    },
+    {
+      "path": "skills/in-progress/writing-shape/agents/openai.yaml",
+      "git_blob_sha": "87e0c736be148002f9db275258cd2f405643ad7b",
+      "sha256": "56de45430e23104ff178415f5ecf7821d51a9cfabd8814b1607ebf39da2ef5cd",
+      "bytes": 144,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/in-progress/writing-shape/agents/openai.yaml"
+    },
+    {
+      "path": "skills/misc/README.md",
+      "git_blob_sha": "6b169d22be12c078f1e70763d367fe693de342e2",
+      "sha256": "95f0b467b7f3a2bb27421c6536f35392b6846f5ad26b44ab7df00380ed02edf0",
+      "bytes": 684,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/misc/README.md"
+    },
+    {
+      "path": "skills/misc/git-guardrails-claude-code/SKILL.md",
+      "git_blob_sha": "58bcdd875b164093b95f436fa32a65c6cb5eb572",
+      "sha256": "69b291d655626a01602b998a1836fcb93c058ede68dfafddfd71e87f17074764",
+      "bytes": 2313,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/misc/git-guardrails-claude-code/SKILL.md"
+    },
+    {
+      "path": "skills/misc/git-guardrails-claude-code/agents/openai.yaml",
+      "git_blob_sha": "3f5d756f1b9b97d94cef1473fb480ccda5fdfbc1",
+      "sha256": "d53cd783fc0ac208dec9a4c267989284384785aab6422dccdaed42f9e40243ec",
+      "bytes": 112,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/misc/git-guardrails-claude-code/agents/openai.yaml"
+    },
+    {
+      "path": "skills/misc/git-guardrails-claude-code/scripts/block-dangerous-git.sh",
+      "git_blob_sha": "c40b59cb47880fc9da8fe4179bd742f51f09d17d",
+      "sha256": "234922b83c0a1737ee7300806c21ac0f389b07aaeb65c2d71ccedafbc5e1ea4b",
+      "bytes": 507,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/misc/git-guardrails-claude-code/scripts/block-dangerous-git.sh"
+    },
+    {
+      "path": "skills/misc/migrate-to-shoehorn/SKILL.md",
+      "git_blob_sha": "ae4f965e204fc93cedbc4e2c306e92829d93f800",
+      "sha256": "de4da4c11d924fac79c924b2ee3d2db4a5cb98386eb490a599119463d036ae72",
+      "bytes": 2795,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/misc/migrate-to-shoehorn/SKILL.md"
+    },
+    {
+      "path": "skills/misc/migrate-to-shoehorn/agents/openai.yaml",
+      "git_blob_sha": "3bd79ee2b502075c6d1fe40e6fe98f4fe3f3c5f5",
+      "sha256": "395c2db852e66a199f1cd07f7ed92d66cb6f0787460c5475926f1a5e778b699d",
+      "bytes": 110,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/misc/migrate-to-shoehorn/agents/openai.yaml"
+    },
+    {
+      "path": "skills/misc/scaffold-exercises/SKILL.md",
+      "git_blob_sha": "d87df28e7d8abb4e57ecc6e47d71c274d16054c7",
+      "sha256": "75f5c9d771606fb9762f16522efc954df11c324f87148d8ff069bce166257de9",
+      "bytes": 3589,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/misc/scaffold-exercises/SKILL.md"
+    },
+    {
+      "path": "skills/misc/scaffold-exercises/agents/openai.yaml",
+      "git_blob_sha": "963723a58973effa256cbfe0f23a7bcc03a374b8",
+      "sha256": "525b33913340bea7947ad2de17f2a7c5fb94be543345fe80ae753b9a44ba601d",
+      "bytes": 108,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/misc/scaffold-exercises/agents/openai.yaml"
+    },
+    {
+      "path": "skills/misc/setup-pre-commit/SKILL.md",
+      "git_blob_sha": "1b9708168263067adb4684d06ebb8f4ccfe9682c",
+      "sha256": "c9819d7f1e3b198064edc1faa3154224ed67395e9f07f5d3cea4b67cf0a11a98",
+      "bytes": 2258,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/misc/setup-pre-commit/SKILL.md"
+    },
+    {
+      "path": "skills/misc/setup-pre-commit/agents/openai.yaml",
+      "git_blob_sha": "e5a1c63df9e0703893cdad799bd5e2a6b5e6939d",
+      "sha256": "acf41db398c5c43afe504008bb7d615a97b6498b0f1f6c5b2395254c0bfb57d1",
+      "bytes": 99,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/misc/setup-pre-commit/agents/openai.yaml"
+    },
+    {
+      "path": "skills/productivity/README.md",
+      "git_blob_sha": "6fd3754541f59ef90b420f51603cc061f92f9b7e",
+      "sha256": "8e39d23dc60e4b3e433ea17f0ed79510c73873a2779e9852920c9791a217efc8",
+      "bytes": 1481,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/productivity/README.md"
+    },
+    {
+      "path": "skills/productivity/grill-me/SKILL.md",
+      "git_blob_sha": "3947ff9c4ad980d14fc07fccbf659d47c114e81d",
+      "sha256": "caaf8b8de1684f96e26b28f3c29189db5c89cce4b73e1c93d86164f66ef88637",
+      "bytes": 157,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/productivity/grill-me/SKILL.md"
+    },
+    {
+      "path": "skills/productivity/grill-me/agents/openai.yaml",
+      "git_blob_sha": "4d6fb0c746c5d21364dce5d0cf8c51eab9712e7b",
+      "sha256": "c061e39c3e0f9d865fb1b97556d485704af2a8a58f4b8221a8917a5c2074a32b",
+      "bytes": 137,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/productivity/grill-me/agents/openai.yaml"
+    },
+    {
+      "path": "skills/productivity/grilling/SKILL.md",
+      "git_blob_sha": "df69d9936880cd3314c28858c6c52f48db23b856",
+      "sha256": "befdff1e27a1dfe2a294d5871169ac1afe16d983911daa4f32627514a48c1e15",
+      "bytes": 2049,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/productivity/grilling/SKILL.md"
+    },
+    {
+      "path": "skills/productivity/grilling/agents/openai.yaml",
+      "git_blob_sha": "ddbdb96139c0c1dfe6bca698f39d0465674b8a39",
+      "sha256": "1411d7df7d99b7e621a1ff8283c8133cc2464be63d064e52d8ce169c6800ee9b",
+      "bytes": 113,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/productivity/grilling/agents/openai.yaml"
+    },
+    {
+      "path": "skills/productivity/handoff/SKILL.md",
+      "git_blob_sha": "a224edc643a20ddb989f9bca1547440169159810",
+      "sha256": "4cbb043950dad2ffd3662ff1a5a0b51ae676004b5cae10e3787e8ee7a4ee69d3",
+      "bytes": 940,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/productivity/handoff/SKILL.md"
+    },
+    {
+      "path": "skills/productivity/handoff/agents/openai.yaml",
+      "git_blob_sha": "6e1d8da121beceddc2f9ec7fa8714c1d914dd11a",
+      "sha256": "5c479fd562c691851690e8b18c8501045bef0943c10743d636b2fae26add1d28",
+      "bytes": 141,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/productivity/handoff/agents/openai.yaml"
+    },
+    {
+      "path": "skills/productivity/teach/GLOSSARY-FORMAT.md",
+      "git_blob_sha": "fdd7e366ad9760588b28981e42b3d3b561e56aca",
+      "sha256": "9b99859ec28437668130d8f2ce5a342938970f8a1ed4fd38c3eab4f4b5fff210",
+      "bytes": 2122,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/productivity/teach/GLOSSARY-FORMAT.md"
+    },
+    {
+      "path": "skills/productivity/teach/LEARNING-RECORD-FORMAT.md",
+      "git_blob_sha": "953c61422776b47612c3c945920358ad7b5daee7",
+      "sha256": "701fa34b6748aa89e6c960ffb815257f481a7d77fb2900f9028f7edf3fdd6052",
+      "bytes": 2747,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/productivity/teach/LEARNING-RECORD-FORMAT.md"
+    },
+    {
+      "path": "skills/productivity/teach/MISSION-FORMAT.md",
+      "git_blob_sha": "45250bb1bad70988bf381625931df64645e10246",
+      "sha256": "8cacbb3c0644d3ae0ea4965564797099401a6930a23f7cf462918576587f2418",
+      "bytes": 1540,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/productivity/teach/MISSION-FORMAT.md"
+    },
+    {
+      "path": "skills/productivity/teach/RESOURCES-FORMAT.md",
+      "git_blob_sha": "18b588c8b6f96a50ae2352f264928c643d2782e4",
+      "sha256": "e9cacf34026e11a8d1c8f9de88abe5bcbf654f4ebdb25cae8c0de0d5f48f44ec",
+      "bytes": 1924,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/productivity/teach/RESOURCES-FORMAT.md"
+    },
+    {
+      "path": "skills/productivity/teach/SKILL.md",
+      "git_blob_sha": "493fa3bae0dada971c4dfb965790e56920b1dced",
+      "sha256": "550482c2d674b085c9043b87bfdc14a8f2ec453c736119e7fcbb1e9332bffeba",
+      "bytes": 9733,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/productivity/teach/SKILL.md"
+    },
+    {
+      "path": "skills/productivity/teach/agents/openai.yaml",
+      "git_blob_sha": "3452a850e3b0c1f0a3d41b2bfd45164d2d38d7f6",
+      "sha256": "5856f3ae8aec742f1499c640aecdd5f1d6af5fa210a7c6ec794de8263a6f733f",
+      "bytes": 139,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/productivity/teach/agents/openai.yaml"
+    },
+    {
+      "path": "skills/productivity/to-questionnaire/SKILL.md",
+      "git_blob_sha": "dadd0c00d6a350acaa15bb9ca1b96b20ead684ca",
+      "sha256": "b5eb929842ee0e93d867c5e906d183d350f2f2d149eaeaa86967d94d8eda1d3b",
+      "bytes": 2904,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/productivity/to-questionnaire/SKILL.md"
+    },
+    {
+      "path": "skills/productivity/to-questionnaire/agents/openai.yaml",
+      "git_blob_sha": "a58d14765beb4acb4c9708b516310558e1308a22",
+      "sha256": "9e8a06c38c8842eea8d4922cb9d1ead8e3ace647bab259b943c994a1b4742bc2",
+      "bytes": 166,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/productivity/to-questionnaire/agents/openai.yaml"
+    },
+    {
+      "path": "skills/productivity/wait-what/SKILL.md",
+      "git_blob_sha": "9b15cd1a7dda0854ca093e29e3e0de57e241b2ac",
+      "sha256": "d961bb37defd975c539427edb8f450cdbccdcdd552e213c1ece46676a7970905",
+      "bytes": 396,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/productivity/wait-what/SKILL.md"
+    },
+    {
+      "path": "skills/productivity/wait-what/agents/openai.yaml",
+      "git_blob_sha": "6f7a9c33f99ec4ba70d986d6fc0de06c8b811bc3",
+      "sha256": "b41faadf741d51e4ea184148b2d1854d93f947aaf754c7844f70a00f04194999",
+      "bytes": 158,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/productivity/wait-what/agents/openai.yaml"
+    },
+    {
+      "path": "skills/productivity/writing-for-agents/SKILL-MECHANICS.md",
+      "git_blob_sha": "9cdbdb22aadc438755392216e75ad9a14cc9832e",
+      "sha256": "c768e6307c7c10728c401c213f2c4ba71c542127eeb7ad2956aabd15a0fa0059",
+      "bytes": 2629,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/productivity/writing-for-agents/SKILL-MECHANICS.md"
+    },
+    {
+      "path": "skills/productivity/writing-for-agents/SKILL.md",
+      "git_blob_sha": "a37608daf6e835e767deecfb498facecaaba82ba",
+      "sha256": "551adca942227b44192edba88acd4e8db911f0121ce58ad16944ccf6a896a74a",
+      "bytes": 10886,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/productivity/writing-for-agents/SKILL.md"
+    },
+    {
+      "path": "skills/productivity/writing-for-agents/agents/openai.yaml",
+      "git_blob_sha": "079c933b75743dec18b5d0c01006def20b6aad26",
+      "sha256": "eacb24b2a618cfb81dacb0416f4fdd75ddf3a8060f8ddb99aae1b1e301907e4b",
+      "bytes": 102,
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/productivity/writing-for-agents/agents/openai.yaml"
+    }
+  ],
+  "confidence_protocol_sources": [
+    {
+      "path": "skills/confidence-protocol/SKILL.md",
+      "sha256": "9788b037884656391afb4ed05063dc3c0e7d31055b2f7d4208e20fcdac1914a3"
+    },
+    {
+      "path": "skills/confidence-protocol/references/model-routing.md",
+      "sha256": "9c9f94681a5a4213d8bfd5ce8cccc268188325a056c6b899de663c6582926990"
+    },
+    {
+      "path": "skills/confidence-protocol/references/complex-tasks.md",
+      "sha256": "8c0396928105db561147b65b8f95b6a838ed9429efcbffc2b168030a77ae08c2"
+    },
+    {
+      "path": "skills/confidence-protocol/references/harnesses.md",
+      "sha256": "96b7bf6e19f46579d397efc6b53421c0bf436db915b8baaa087dd982c48a0905"
+    },
+    {
+      "path": "skills/confidence-protocol/references/evidence.md",
+      "sha256": "bd097c352130c5199ee907199bfab369927cf8ee6f990e8133cb79a87ca01d02"
+    }
+  ],
+  "mechanisms": [
+    {
+      "id": "M1",
+      "name": "Prove diagnostic sensitivity before trusting a forced-red run",
+      "sources": [
+        {
+          "path": "skills/engineering/diagnosing-bugs/SKILL.md",
+          "start_line": 57,
+          "end_line": 66,
+          "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/diagnosing-bugs/SKILL.md#L57-L66",
+          "sha256": "849198df88cdb65fd0d97236604c1fca7ff2f22d2f705f9724a800d0266b118d",
+          "verified_marker": "already run"
+        },
+        {
+          "path": "skills/engineering/diagnosing-bugs/SKILL.md",
+          "start_line": 114,
+          "end_line": 128,
+          "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/diagnosing-bugs/SKILL.md#L114-L128",
+          "sha256": "849198df88cdb65fd0d97236604c1fca7ff2f22d2f705f9724a800d0266b118d",
+          "verified_marker": "pristine copy"
+        }
+      ],
+      "observation": "Upstream requires an executed symptom-specific command and, when red is forced by a mutation, a diff against pristine source to establish that the mutation landed. It also repeats the original scenario after the minimized regression passes.",
+      "cp_comparison": "CP already requires reproduction before repair, disprovable checks, retained diagnostics and affected reruns. Mutation-landing confirmation and explicit original-versus-minimized scenario pairing sharpen that guidance.",
+      "adaptation": "When a test sensitivity check mutates source or fixtures, retain the exact disposable mutation diff and show that it reached the intended path. Pair minimized regression evidence with the original triggering scenario where reduction could discard relevant context.",
+      "risk": "Medium; high when a false pass masks trust, persistence or destructive-data behavior.",
+      "checkability": "High for mutation diffs and replayable commands; limited for production-only flakes.",
+      "route": "Owner runs deterministic checks. A qualified lower-cost worker may extract repro details or propose a falsifying mutation; owner verifies the actual mutation and verdict. Strong advisor only for consequential ambiguity.",
+      "acceptance": "In a future separate evaluation, deliberately make the mutation a no-op or target the wrong fixture. The route must reject it as sensitivity evidence. Also test a minimal regression passing while the original multi-caller scenario still fails.",
+      "counterexample": "A fixture change that merely causes setup failure is not the reported bug. Non-deterministic behavior may require bounded repeated observations, not a binary guarantee."
+    },
+    {
+      "id": "M2",
+      "name": "Describe each verification boundary and its misses; use independent expected outcomes",
+      "sources": [
+        {
+          "path": "skills/engineering/tdd/SKILL.md",
+          "start_line": 18,
+          "end_line": 32,
+          "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/tdd/SKILL.md#L18-L32",
+          "sha256": "5505d25bbaa8fc14a79e4d20163936958992a2995b7f1dd1d6197edc9ed722e0",
+          "verified_marker": "what it catches and what it misses"
+        },
+        {
+          "path": "skills/engineering/tdd/tests.md",
+          "start_line": 63,
+          "end_line": 76,
+          "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/tdd/tests.md#L63-L76",
+          "sha256": "859f9e592c188fda4fc7277dd180e4ce9c7a2e13f6efe1f6f29eccc9d28c106a",
+          "verified_marker": "independent, known literal"
+        }
+      ],
+      "observation": "Upstream names the tested public seam, pairs proposed seams with catches/misses, and rejects expected values calculated by the implementation algorithm.",
+      "cp_comparison": "CP already requires public behavior, readable literal failures, non-duplicative coverage and real external-contract checks. A catches/misses note and independent expected-value origin are useful concrete prompts.",
+      "adaptation": "For consequential checks, identify the observed interface, the important behavior it can reject, and relevant boundaries it misses. Derive expected results from a spec, worked example or trusted independent oracle. Reuse existing task authorization rather than adding seam confirmation.",
+      "risk": "Medium to high when a fake substitutes for a real persistence/service contract.",
+      "checkability": "High for observable interface and expected literal; semantic coverage still needs owner judgment.",
+      "route": "Lower-cost worker can draft boundary notes/test candidates from bounded source. Owner checks assertions and executes affected behavior. Independent capable reviewer covers Critical proof design.",
+      "acceptance": "Use cases where a mock returns success without writing to storage, where tests recompute a faulty total, and where internal refactoring preserves behavior. Candidate guidance must retain the external gap, reject tautological expected values, and preserve refactor-stable tests.",
+      "counterexample": "A highest-level UI test can omit a transactional invariant; a direct database assertion can be appropriate for a storage contract. Do not import a universal ban on lower-level checks or require one seam."
+    },
+    {
+      "id": "M3",
+      "name": "Keep requirement coverage distinct from discretionary standards findings",
+      "sources": [
+        {
+          "path": "skills/engineering/code-review/SKILL.md",
+          "start_line": 34,
+          "end_line": 41,
+          "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/code-review/SKILL.md#L34-L41",
+          "sha256": "09eb147f793e4647949edd32dbad278f0554dfb56e0d46b699cd4c2c55bf0357",
+          "verified_marker": "judgement call"
+        },
+        {
+          "path": "skills/engineering/code-review/SKILL.md",
+          "start_line": 62,
+          "end_line": 89,
+          "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/code-review/SKILL.md#L62-L89",
+          "sha256": "09eb147f793e4647949edd32dbad278f0554dfb56e0d46b699cd4c2c55bf0357",
+          "verified_marker": "missing or partial"
+        }
+      ],
+      "observation": "Upstream separates Standards and Spec review: the former distinguishes documented rules from smell heuristics and skips mechanically enforced rules; the latter names missing/partial requirements, scope creep and wrong implementation with spec citations.",
+      "cp_comparison": "CP already has simplicity judgment, independent consequential review, Critical test-design/adversarial roles and attributable scoped review records. Two categories can make a review more inspectable; they do not replace required roles or their evidence.",
+      "adaptation": "Ask reviewers to enumerate requirement gaps separately from maintainability recommendations. Cite the requirement and source hunk for a product defect; identify a smell as judgment and defer to repository standards. Retain both signals without letting numerous style suggestions mask one behavioral failure.",
+      "risk": "Medium; high when missing requirements control readiness.",
+      "checkability": "High for cited rules/hunks, moderate for semantic mismatch, lower for subjective smells.",
+      "route": "Deterministic tooling handles syntactic rules. A bounded lower-cost worker maps requirements to hunks; capable independent reviewer assesses consequential mismatch. Split contexts when useful rather than mandate two agents for every change.",
+      "acceptance": "Present a standards-clean diff that omits one required authorization check and a behavior-correct diff with one discretionary smell. The first must remain incomplete; the second must not be falsely promoted to a product defect by the smell.",
+      "counterexample": "Absence of a formal spec does not justify skipping review of user intent or proof obligations. Native owner must verify alleged defects, and separate headings alone do not establish independent review."
+    },
+    {
+      "id": "M4",
+      "name": "Handle wide refactors with explicit expand, migrate and contract guarantees",
+      "sources": [
+        {
+          "path": "skills/engineering/to-tickets/SKILL.md",
+          "start_line": 25,
+          "end_line": 40,
+          "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/to-tickets/SKILL.md#L25-L40",
+          "sha256": "56ec23c5b2782785d4e65bff9e315b6d3aeb4ef977c174a219e99489fada1995",
+          "verified_marker": "expand–contract"
+        },
+        {
+          "path": "skills/engineering/implement-spec/SKILL.md",
+          "start_line": 13,
+          "end_line": 36,
+          "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/implement-spec/SKILL.md#L13-L36",
+          "sha256": "7a22dd2e60b8fcece478ced9d2533582adf3520d695acd3ab715341535c9e56d",
+          "verified_marker": "frontier"
+        }
+      ],
+      "observation": "Upstream recommends self-verifiable vertical slices, with an explicit exception for a mechanical change spanning many callers: expand both forms, migrate batches, then contract after all batches. If only integration can be green, a final integrate-and-verify ticket owns that guarantee.",
+      "cp_comparison": "CP already has dependency DAGs, readiness frontiers, descendant demotion, isolated ownership and verification after integration. Expand–contract supplies a useful plan shape for broad refactors without changing those gates.",
+      "adaptation": "When independent vertical slices cannot stay compatible, state old/new compatibility obligations and blocker edges. Never claim batch-level green behavior that only final integrated proof establishes. Preserve authority over branch operations and external issue changes.",
+      "risk": "High for schema/API compatibility and destructive retirement; lower for local symbol renames.",
+      "checkability": "High for caller enumeration and compatibility tests if scope is bounded; completeness needs separate deterministic search.",
+      "route": "Lower-cost workers map callers from a deterministic inventory; capable workers own isolated migration batches; strong owner chooses compatibility boundaries and verifies integrated proof. Consequential final review remains independent.",
+      "acceptance": "Create a future disposable refactor case with an unmigrated caller and a batch that works alone but conflicts after merge. The plan must block contraction and final completion until complete caller search and integrated behavior pass.",
+      "counterexample": "A trivial rename does not warrant elaborate migration scaffolding. Coexistence can itself introduce unsafe writes; expansion requires real compatibility proof, not just two symbol names."
+    },
+    {
+      "id": "M5",
+      "name": "Use architectural removal and locality questions as optional review heuristics",
+      "sources": [
+        {
+          "path": "skills/engineering/codebase-design/SKILL.md",
+          "start_line": 60,
+          "end_line": 65,
+          "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/codebase-design/SKILL.md#L60-L65",
+          "sha256": "2c20617f87ec8af6a434859f381b2f061a69b530444e74eb39e78bb016a6d1e2",
+          "verified_marker": "deletion test"
+        },
+        {
+          "path": "skills/engineering/improve-codebase-architecture/SKILL.md",
+          "start_line": 20,
+          "end_line": 35,
+          "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/improve-codebase-architecture/SKILL.md#L20-L35",
+          "sha256": "552240a5ab5cec6b67c15dd1ad6e9f6962b1bca6ce870059a8c2713760c20392",
+          "verified_marker": "hot spots"
+        },
+        {
+          "path": "skills/engineering/codebase-design/DESIGN-IT-TWICE.md",
+          "start_line": 19,
+          "end_line": 38,
+          "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/codebase-design/DESIGN-IT-TWICE.md#L19-L38",
+          "sha256": "52b52e75655a27aea59c6966b410bac82448968ad46ef1ebb9f07c274e3ae010",
+          "verified_marker": "different design constraint"
+        }
+      ],
+      "observation": "Upstream evaluates whether removing a module disperses useful behavior into callers or merely removes indirection, prioritizes recently changing areas, and compares interface alternatives under different constraints.",
+      "cp_comparison": "CP already prefers a single rule owner, justified abstractions and removal of unused scaffolding. The removal thought experiment and recent-change locality provide concrete questions, not a new architecture gate.",
+      "adaptation": "For a consequential abstraction decision, compare a direct implementation with an alternative against actual callers, error modes and change locality. Use recent friction to choose scope. Preserve required trust/persistence adapters even if they look thin.",
+      "risk": "Medium to high when simplification erases a security, transport or persistence boundary.",
+      "checkability": "Moderate; real caller/test behavior can substantiate a judgment, while elegance remains subjective.",
+      "route": "Lower-cost route maps callers/hotspots; strong owner handles consequential tradeoffs. Use at most useful distinct bounded alternatives within capacity; do not adopt a fixed three-plus-agent fanout.",
+      "acceptance": "Use one redundant pass-through and one small adapter that carries authorization or error normalization. The route should remove or justify the first without deleting the second merely because its implementation is short.",
+      "counterexample": "Exactly two adapters is not a universal prerequisite for a valuable interface; a stable single adapter can enforce a consequential contract. Hotspots also miss new or rarely changed critical code."
+    },
+    {
+      "id": "M6",
+      "name": "Check documentation triggers and keep essential decisions beside their caveats",
+      "sources": [
+        {
+          "path": "skills/productivity/writing-for-agents/SKILL.md",
+          "start_line": 10,
+          "end_line": 43,
+          "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/productivity/writing-for-agents/SKILL.md#L10-L43",
+          "sha256": "551adca942227b44192edba88acd4e8db911f0121ce58ad16944ccf6a896a74a",
+          "verified_marker": "condition for reaching it"
+        },
+        {
+          "path": "skills/productivity/writing-for-agents/SKILL.md",
+          "start_line": 45,
+          "end_line": 52,
+          "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/productivity/writing-for-agents/SKILL.md#L45-L52",
+          "sha256": "551adca942227b44192edba88acd4e8db911f0121ce58ad16944ccf6a896a74a",
+          "verified_marker": "completion criterion"
+        },
+        {
+          "path": "skills/productivity/writing-for-agents/SKILL.md",
+          "start_line": 76,
+          "end_line": 81,
+          "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/productivity/writing-for-agents/SKILL.md#L76-L81",
+          "sha256": "551adca942227b44192edba88acd4e8db911f0121ce58ad16944ccf6a896a74a",
+          "verified_marker": "model-relative"
+        },
+        {
+          "path": "skills/engineering/ask-matt/SKILL.md",
+          "start_line": 9,
+          "end_line": 11,
+          "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/ask-matt/SKILL.md#L9-L11",
+          "sha256": "1371f5ce005de0992a44b137748bfb960a56948aa9871b405fe9d90b24332e3c",
+          "verified_marker": "read that skill"
+        }
+      ],
+      "observation": "Upstream treats description/reference wording as a trigger, splits branch-specific reference from common steps, co-locates caveats, sharpens observable completion and tests alleged no-op instructions against actual model behavior. Its router requires reading the actual skill before recommending it.",
+      "cp_comparison": "CP already uses progressive references and concrete evidence/completion rules. Trigger-specific selection and a source-read prerequisite can sharpen documentation review. Assertions about prompt effects or token reduction remain unverified here.",
+      "adaptation": "For each required reference, name the cases that trigger loading and retain any always-needed authority or proof caveat in core context. Before removing a supposedly redundant rule, identify an observed default and test whether removal changes a representative behavior in a separately authorized evaluation.",
+      "risk": "Low for editorial organization; high if authority, external-boundary or completion rules become unreachable.",
+      "checkability": "High for deterministic link/file checks; runtime invocation and behavior require controlled observations.",
+      "route": "Deterministic inventory/link validation first. Lower-cost worker proposes branch mapping with citations; strong owner checks consequential omissions. Use expensive review only when omission has meaningful consequences.",
+      "acceptance": "In a future separate evaluation, supply a task touching persistence, a direct Quick edit and an interrupted cross-provider handoff. Required reference/authority rules must remain reachable while irrelevant references stay unloaded. Include a catalog summary that contradicts an entry file; the entry must win.",
+      "counterexample": "Splitting a document can hide a needed guardrail. Frontmatter and slash-command reach differ by host; source advice is not runtime qualification. Do not import a numeric context threshold or claims that phrasing universally improves accuracy."
+    }
+  ],
+  "opus_review": {
+    "receipt_sha256": "0a447f56788201a987ed3258573a2ec16b4391027c3711a7fa891b718111d419",
+    "request_sha256": "8c9366012f944ca9f0291fff9a9a42d67ec4dc418c574045680eac6a9543b2bd",
+    "packet_sha256": "e609cdbbe79784e9278dcf7d43f7f5d5706605fc22d7372d748f788f45711f72",
+    "prompt_sha256": "44df5f6f09f563a0521358f591de5540431c6d28f35d4a0c98234b6cbd9a67c6",
+    "stream_sha256": "a66c97cb29362ff51afa1495e04d4f710dc098632cd62db3f3bcdeb70896d42a",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runtime_version": "2.1.285 (Claude Code)",
+    "requested_model": "claude-opus-5-5",
+    "observed_assistant_models": [
+      "claude-opus-5-5"
+    ],
+    "requested_effort": "medium",
+    "budget_guard_usd": 1.0,
+    "timeout_seconds": 240,
+    "wall_seconds": 79.40906712500146,
+    "process_exit": 0,
+    "timed_out": false,
+    "total_cost_usd": 0.84926,
+    "cost_basis": "Claude Code modelUsage costBasis=list; runtime-reported list-price estimate, not independently verified account charge",
+    "usage": {
+      "input_tokens": 2,
+      "cache_creation_input_tokens": 85964,
+      "cache_read_input_tokens": 0,
+      "output_tokens": 8077,
+      "output_tokens_details": {
+        "thinking_tokens": 3030
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 85964,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "global",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 8077,
+          "cache_read_input_tokens": 0,
+          "cache_creation_input_tokens": 85964,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 85964
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard",
+      "fallback_credit": null
+    },
+    "model_usage": {
+      "claude-opus-5-5": {
+        "inputTokens": 2,
+        "outputTokens": 8077,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 85964,
+        "webSearchRequests": 0,
+        "costUSD": 0.84926,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 3030,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "terminal_subtype": "success",
+    "terminal_is_error": false,
+    "process_cleanup_scope": "original_process_group",
+    "cleanup_error": null,
+    "detached_descendants_contained": false,
+    "tools": [],
+    "mcp_servers": {},
+    "permission_mode": "dontAsk",
+    "restricted": true,
+    "session_persistence": false,
+    "answer_sha256": "c4c2bb829691c9d15ce8f8c5e917b659df30da2fafb6ab1b75c3bc5b8a9e2ad3"
+  },
+  "native_verification": "All 27 released entries read. Every important adopted source observation verified against exact line-numbered pinned text, including mutation proof, seam notes, standards/spec prompts, expand–contract exception, architecture removal heuristic, pointer triggers. Opus suggestions are advisory; no model-only claim promoted.",
+  "limits": [
+    "Source comparison only: no upstream skill execution, installer, hosted coding trial, oracle evaluation, or representative efficacy measurement.",
+    "Frozen experiment files, routes and outcomes unchanged and not pooled with this source review.",
+    "The bounded peer sees supplied files only; it does not inspect repository implementation or execute verification.",
+    "All 114 fetched files verified by Git blob SHA; additional resources beyond the listed targeted resources were downloaded but not all exhaustively reviewed.",
+    "Host-specific invocation, process confinement, context-threshold, prompting and token-reduction claims are not established by upstream source.",
+    "Runtime cost is a reported estimate, not independently established billing.",
+    "Original-group cleanup does not establish containment of detached descendants.",
+    "The peer exceeded the requested 1600-word response target; that was a prompt bound, not an enforced output cap. The $1.00 guard and 240-second process timer held for this completed attempt."
+  ],
+  "fundamental_flow_map": [
+    {
+      "stage": "Intent intake",
+      "sources": [
+        {
+          "path": "skills/productivity/grilling/SKILL.md",
+          "start_line": 26,
+          "end_line": 30,
+          "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/productivity/grilling/SKILL.md#L26-L30",
+          "sha256": "befdff1e27a1dfe2a294d5871169ac1afe16d983911daa4f32627514a48c1e15",
+          "verified_marker": "facts"
+        },
+        {
+          "path": "skills/engineering/domain-modeling/SKILL.md",
+          "start_line": 44,
+          "end_line": 58,
+          "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/domain-modeling/SKILL.md#L44-L58",
+          "sha256": "7b925d7b1e341a2eeae33ad68a8a8c0ab889a38ddd22a7598e4c240e5a7556a3",
+          "verified_marker": "concrete scenarios"
+        }
+      ],
+      "source_fundamental": "Distinguish discovered facts from human choices; resolve overloaded domain words with concrete scenarios and source comparison.",
+      "cp_adaptation": "First reuse the user request and retained authorization. State the user-visible goal, must/must-not behavior, constraints, non-goals and consequential unknowns. Discover facts directly and reuse answered context. Ask concise grouped questions at each ready consequential decision frontier; re-evaluate that frontier after answers or new evidence, and continue independent work."
+    },
+    {
+      "stage": "Checkable spec/acceptance",
+      "sources": [
+        {
+          "path": "skills/engineering/to-spec/SKILL.md",
+          "start_line": 7,
+          "end_line": 19,
+          "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/to-spec/SKILL.md#L7-L19",
+          "sha256": "43ad9cf318e5e7d3d1fa360253a37021796dc87a0c2e595ad262661a10f85088",
+          "verified_marker": "synthesize"
+        },
+        {
+          "path": "skills/engineering/to-spec/SKILL.md",
+          "start_line": 59,
+          "end_line": 69,
+          "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/to-spec/SKILL.md#L59-L69",
+          "sha256": "43ad9cf318e5e7d3d1fa360253a37021796dc87a0c2e595ad262661a10f85088",
+          "verified_marker": "Out of Scope"
+        }
+      ],
+      "source_fundamental": "Synthesize known intent into problem/solution, decisions, testing and exclusions.",
+      "cp_adaptation": "Author small disprovable proof obligations and expected outcomes, using domain language. Describe catches/misses at the chosen interface. Do not expand stories for exhaustiveness or publish to a tracker by default."
+    },
+    {
+      "stage": "Dependency slices",
+      "sources": [
+        {
+          "path": "skills/engineering/to-tickets/SKILL.md",
+          "start_line": 25,
+          "end_line": 40,
+          "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/to-tickets/SKILL.md#L25-L40",
+          "sha256": "56ec23c5b2782785d4e65bff9e315b6d3aeb4ef977c174a219e99489fada1995",
+          "verified_marker": "blocking edges"
+        }
+      ],
+      "source_fundamental": "Use independently verifiable vertical slices and true blocker edges, with the explicit wide-refactor exception.",
+      "cp_adaptation": "Use CP depends_on only where claims logically require prerequisites. Assign edit ownership and evidence expectations. Choose a ready slice; complex work may use authorized independent parallel scopes."
+    },
+    {
+      "stage": "Implementation/TDD",
+      "sources": [
+        {
+          "path": "skills/engineering/tdd/SKILL.md",
+          "start_line": 28,
+          "end_line": 38,
+          "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/tdd/SKILL.md#L28-L38",
+          "sha256": "5505d25bbaa8fc14a79e4d20163936958992a2995b7f1dd1d6197edc9ed722e0",
+          "verified_marker": "One slice"
+        },
+        {
+          "path": "skills/engineering/diagnosing-bugs/SKILL.md",
+          "start_line": 57,
+          "end_line": 66,
+          "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/diagnosing-bugs/SKILL.md#L57-L66",
+          "sha256": "849198df88cdb65fd0d97236604c1fca7ff2f22d2f705f9724a800d0266b118d",
+          "verified_marker": "specific bug"
+        }
+      ],
+      "source_fundamental": "Test observable behavior with independent expected outcomes, one useful red-green slice at a time; bugs begin with a symptom-sensitive diagnostic.",
+      "cp_adaptation": "Use test-first where it adds proof value. Existing authorized seams do not need approval. Select focused checks and actual external-boundary evidence proportional to the change; a Quick reversible edit can finish without new tests."
+    },
+    {
+      "stage": "Standards plus spec review",
+      "sources": [
+        {
+          "path": "skills/engineering/code-review/SKILL.md",
+          "start_line": 62,
+          "end_line": 89,
+          "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/code-review/SKILL.md#L62-L89",
+          "sha256": "09eb147f793e4647949edd32dbad278f0554dfb56e0d46b699cd4c2c55bf0357",
+          "verified_marker": "Spec"
+        }
+      ],
+      "source_fundamental": "Keep documented-rule/style judgments separate from missing, wrong or unrequested behavior.",
+      "cp_adaptation": "Preserve CP mandatory independent roles for Critical work, source scope and reviewer provenance. Candidate findings need owner confirmation; style recommendations cannot mask requirement failures."
+    },
+    {
+      "stage": "Proof and completion",
+      "sources": [
+        {
+          "path": "skills/engineering/implement-spec/SKILL.md",
+          "start_line": 32,
+          "end_line": 38,
+          "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/implement-spec/SKILL.md#L32-L38",
+          "sha256": "7a22dd2e60b8fcece478ced9d2533582adf3520d695acd3ab715341535c9e56d",
+          "verified_marker": "integration branch"
+        },
+        {
+          "path": "skills/engineering/pr/SKILL.md",
+          "start_line": 158,
+          "end_line": 170,
+          "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/pr/SKILL.md#L158-L170",
+          "sha256": "ab63f1cf78647389edcd386c9427c5dfca27ed2836930c24773ffee834c19bcd",
+          "verified_marker": "before and after"
+        }
+      ],
+      "source_fundamental": "Verify integrated work and present before/after evidence with reversibility and impact.",
+      "cp_adaptation": "CP remains the completion authority: inspect captured logs, bind current integrated source, keep unsupported external claims partial, satisfy required review and report exact observed behavior. Publication/commit authority is unchanged."
+    },
+    {
+      "stage": "Retro and handoff",
+      "sources": [
+        {
+          "path": "skills/engineering/retro/SKILL.md",
+          "start_line": 13,
+          "end_line": 23,
+          "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/retro/SKILL.md#L13-L23",
+          "sha256": "33fbc28568e3146f20fd908b12998bc0ab30aa4f4c87288199a40793efa94696",
+          "verified_marker": "mechanical"
+        },
+        {
+          "path": "skills/productivity/handoff/SKILL.md",
+          "start_line": 8,
+          "end_line": 16,
+          "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/productivity/handoff/SKILL.md#L8-L16",
+          "sha256": "4cbb043950dad2ffd3662ff1a5a0b51ae676004b5cae10e3787e8ee7a4ee69d3",
+          "verified_marker": "Reference"
+        }
+      ],
+      "source_fundamental": "Learn from actual session artifacts; turn mechanical mistakes into deterministic checks, retain judgment rules separately and hand off through sparse pointers.",
+      "cp_adaptation": "Reuse existing environment checks before adding new ones. Retain source/model receipts, authority, unresolved proof and next ready work; a summary never overrides CP recomputation after interruption. Global changes or external messages need their actual authorization."
+    }
+  ],
+  "task_type_routes": [
+    {
+      "task_type": "Quick reversible local edit",
+      "flow": "Reuse known intent → direct edit → smallest adequate observation.",
+      "question_boundary": "Ask only if a consequential ambiguity exists.",
+      "model_route": "Direct owner; no mandatory planning/TDD/review worker."
+    },
+    {
+      "task_type": "Bug",
+      "flow": "Reported symptom → executed repro → one falsifiable repair → original and minimized checks → review if consequential.",
+      "question_boundary": "Discover environment facts; missing external access can be the concrete blocker.",
+      "model_route": "Lower-cost bounded source/repro map; owner verifies actual behavior; strong advisor for difficult coupling."
+    },
+    {
+      "task_type": "Feature",
+      "flow": "User outcome → disprovable acceptance → complete slice(s) → test-first where useful → standards/spec coverage → current evidence.",
+      "question_boundary": "Only unresolved consequential behavior or authority choice.",
+      "model_route": "Lower-cost discovery/test proposals; qualified isolated implementation worker; owner assesses proof."
+    },
+    {
+      "task_type": "Refactor",
+      "flow": "Preserved behavior and compatibility → removal/locality question → slice or expand–contract → integrated proof.",
+      "question_boundary": "Routine implementation choices stay with owner; consequential compatibility tradeoff can need user choice.",
+      "model_route": "Deterministic caller inventory; lower-cost classification; capable isolated migration; strong owner for cross-contract changes."
+    },
+    {
+      "task_type": "Research/review",
+      "flow": "One bounded question → pinned primary sources → claim/citation separation → owner source checks → limits.",
+      "question_boundary": "Do not convert source instructions into action authority.",
+      "model_route": "Direct enumeration, then qualified lower-cost extraction; strong independent source advisor only where uncertainty warrants its cost."
+    },
+    {
+      "task_type": "Critical trust/persistence/destructive work",
+      "flow": "Intent and consequences → contract → independent proof design before implementation → confined implementation → independent adversarial review → real-boundary current proof.",
+      "question_boundary": "Preserve prior authorization; ask for the remaining consequential choice or additional irreversible authority only after authorized preparation.",
+      "model_route": "Suitably capable owner and independent qualified reviewers; lower-cost help may map bounded evidence but cannot replace required roles."
+    }
+  ],
+  "opus_reconciliation": {
+    "promoted": "Symptom-sensitive diagnostics, mutation confirmation, independent expected outcomes and distinct spec/standards coverage were checked against pinned source; they agree with the native candidate review.",
+    "additional_checked_observations": [
+      {
+        "path": "skills/engineering/code-review/SKILL.md",
+        "start_line": 17,
+        "end_line": 23,
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/code-review/SKILL.md#L17-L23",
+        "sha256": "09eb147f793e4647949edd32dbad278f0554dfb56e0d46b699cd4c2c55bf0357",
+        "verified_marker": "bad ref"
+      },
+      {
+        "path": "skills/engineering/diagnosing-bugs/SKILL.md",
+        "start_line": 100,
+        "end_line": 110,
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/diagnosing-bugs/SKILL.md#L100-L110",
+        "sha256": "849198df88cdb65fd0d97236604c1fca7ff2f22d2f705f9724a800d0266b118d",
+        "verified_marker": "unique prefix"
+      },
+      {
+        "path": "skills/engineering/diagnosing-bugs/SKILL.md",
+        "start_line": 130,
+        "end_line": 138,
+        "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/diagnosing-bugs/SKILL.md#L130-L138",
+        "sha256": "849198df88cdb65fd0d97236604c1fca7ff2f22d2f705f9724a800d0266b118d",
+        "verified_marker": "instrumentation removed"
+      }
+    ],
+    "adaptation": "A resolvable-scope check before costly delegation is useful; an intentionally empty enumeration is valid data. Tagged debug-instrumentation cleanup is a focused optional check; it proves only tagged remnants absent. Neither is a new universal pause or completion gate.",
+    "qualifications": "Peer wording that CP lacks symptom matching or scope review was too absolute: CP already requires reproduction, disprovable claims and preservation of scope. Adopt sharpening examples, not a claim that the existing protocol wholly omits these principles. Peer suggestions did not authenticate the CLI implementation."
+  },
+  "public_markdown_sha256": "a41269a594127d961f91177a6c0c06d8e38cc3b961784f49619ed16655796ad3"
+}

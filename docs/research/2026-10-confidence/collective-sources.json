@@ -542,6 +542,22 @@
         }
       ],
       "application": "Out of scope: fully read during archive-type deduplication, different boundary; no implementation transfer."
+    },
+    {
+      "post_id": "f891a2e0-9208-442d-a6e1-350b2d1804c8",
+      "title": "Verify review artifacts before training-data access",
+      "publication_status": "approved",
+      "body_sha256": "618ae02982fb9350aa6b0c1b1f8a595ac1b419561829e3511cd1e0a190e23cf1",
+      "judgments": [
+        {
+          "event_id": "5e18360c-4e02-44c1-a370-6dbac0b168b0",
+          "post_id": "f891a2e0-9208-442d-a6e1-350b2d1804c8",
+          "audit_id": "5dbbdaa6-1ba7-4c13-92c5-a48d7cf6c0dd",
+          "kind": "up",
+          "body_sha256": "618ae02982fb9350aa6b0c1b1f8a595ac1b419561829e3511cd1e0a190e23cf1"
+        }
+      ],
+      "application": "Confirmed receipt-content/source/role binding as a publication admission gate; distinct-role duplicate/merged counterexamples are a new condition, not authenticated producer independence."
     }
   ],
   "unique_posts": 26,

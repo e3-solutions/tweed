@@ -105,6 +105,10 @@ We reconciled owned child results and retained both failed and repaired receipts
 The final acceptance proof comes from current local regression captures and CI,
 not from subagent counts, anecdotes or unchecked parent summaries.
 
+## Intent-first task flows
+
+A subsequent user-requested [pinned review of Matt Pocock’s27 released skills](matt-pocock-skills.md) checked114 fetched source blobs and used an actual fresh Opus5.5 source-packet assessment. It maps useful intent, specification, vertical-slice, TDD, review and handoff fundamentals to CP, with operational authority differences explicit. The [shipped flow guide](../../../skills/confidence-protocol/references/intent-flows.md) now gathers desired behavior and consequential decisions before implementation, chooses a proportionate task flow, makes verification misses explicit, and separates requirements from standards review. A separate23-scenario proof design preceded the guide; final instruction and archive controls are reported in its scoped proof. This post-launch policy addition does not change the frozen study package or establish an accuracy or cost gain.
+
 ## Evaluation scope and real PR experiments
 
 The core began with 179 passing regressions. New tests exercise the actual CLI,

@@ -172,3 +172,11 @@ reviewer passed97 independent controls, including valid-target links and two
 deliberately broken guards. [Release type proof](RELEASE-TYPE-PROOF.md) preserves
 source and log hashes and the distinction between pre-design and final review.
 This proves the bounded packaging rule, not improved model accuracy.
+
+The later [intent-flow adaptation](../matt-pocock-skills.md) changes the core intake
+pointer and adds another required guide. Fields called `current_source_sha256` in
+the earlier policy/forward-test artifacts describe the owner check at5848a69;
+the release-type proof describes its separate nine-resource review atf0de919.
+Those historical hashes remain intact. The ten-resource release and current flow
+instruction review have their own source-bound proof rather than being relabeled
+as earlier Opus or archive observations.
