@@ -68,6 +68,8 @@ class ReportingScopeTest(unittest.TestCase):
         record = confidence.read_json(path)
         record['version'] = 1
         record.pop('workspace_start')
+        record.pop('evidence_directory')
+        record.pop('capture_sha256')
         confidence.write_json(path, record)
         self.report['evidence'][0].update(status='partial', details='Historical command evidence; source binding not established.')
         self.save()

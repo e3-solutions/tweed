@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 from contextlib import contextmanager
+from collections import deque
 import hashlib
 import html
 import json
@@ -81,7 +82,7 @@ def read_json(path: Path) -> dict[str, Any]:
         raise ValueError(f"could not read {path}: {error}") from None
     try:
         value = json.loads(raw, object_pairs_hook=object_without_duplicate_keys)
-    except (json.JSONDecodeError, DuplicateKeyError) as error:
+    except (json.JSONDecodeError, DuplicateKeyError, RecursionError) as error:
         raise ValueError(f"invalid JSON in {path}: {error}") from None
     if not isinstance(value, dict):
         raise ValueError(f"expected an object in {path}")
@@ -187,7 +188,7 @@ def git_workspace_fingerprint(cwd: Path, evidence_directory: Path, *, _retry_mis
         return None
     original_cwd = Path(cwd).resolve()
     def git(*args, allow_missing=False):
-        result = subprocess.run(['git', '-C', str(cwd), *args], capture_output=True, timeout=5)
+        result = subprocess.run(['git', '-c', 'core.fsmonitor=false', '-C', str(cwd), *args], capture_output=True, timeout=5)
         if result.returncode and not (allow_missing and result.returncode == 1):
             raise OSError('Git enumeration failed')
         return result.stdout
@@ -396,6 +397,168 @@ def validate_contract(contract: dict[str, Any]) -> list[str]:
                 errors.append(f"{label}.claim is required")
             if not nonempty_text(item.get("verification")):
                 errors.append(f"{label}.verification is required")
+    if not errors:
+        errors.extend(validate_dependency_graph(contract))
+    policy = contract.get("review_policy")
+    if "review_policy" in contract:
+        if not isinstance(policy, dict) or type(policy.get("records_required")) is not bool:
+            errors.append("contract.review_policy.records_required must be a boolean")
+        elif policy["records_required"] and not nonempty_text(policy.get("implementer")):
+            errors.append("contract.review_policy.implementer is required for attributable review")
+        if isinstance(policy, dict) and "required_roles" in policy:
+            roles = policy["required_roles"]
+            if (not valid_text_list(roles) or not roles or len(roles) != len(set(roles))
+                    or any(role not in REVIEW_ROLES for role in roles)):
+                errors.append("contract.review_policy.required_roles must contain unique known review roles")
+    return errors
+
+
+def validate_dependency_graph(contract: dict[str, Any]) -> list[str]:
+    """Validate optional edges without recursion, including long proof chains."""
+    obligations = contract["proof_obligations"]
+    ids = {item["id"] for item in obligations}
+    edges: dict[str, list[str]] = {}
+    errors = []
+    for item in obligations:
+        dependencies = item.get("depends_on", [])
+        label = f"obligation {item['id']}.depends_on"
+        if not valid_text_list(dependencies):
+            errors.append(f"{label} must be a list of non-empty obligation IDs")
+            continue
+        if len(dependencies) != len(set(dependencies)):
+            errors.append(f"{label} must not contain duplicates")
+        for dependency in dependencies:
+            if dependency == item["id"]:
+                errors.append(f"{label} cannot depend on itself")
+            elif dependency not in ids:
+                errors.append(f"{label} references unknown obligation: {dependency}")
+        edges[item["id"]] = dependencies
+    if errors:
+        return errors
+    remaining = {ident: len(dependencies) for ident, dependencies in edges.items()}
+    children = {ident: [] for ident in ids}
+    for ident, dependencies in edges.items():
+        for dependency in dependencies:
+            children[dependency].append(ident)
+    ready = deque(ident for ident in edges if remaining[ident] == 0)
+    visited = 0
+    while ready:
+        visited += 1
+        for child in children[ready.popleft()]:
+            remaining[child] -= 1
+            if remaining[child] == 0:
+                ready.append(child)
+    return [] if visited == len(ids) else ["proof obligation dependency graph contains a cycle"]
+
+
+def dependency_status_errors(contract: dict[str, Any], evidence: list[dict[str, Any]]) -> list[str]:
+    statuses = {item["obligation_id"]: item.get("status") for item in evidence}
+    return [f"obligation {item['id']} cannot pass before prerequisite {dependency} passes"
+            for item in contract["proof_obligations"] if statuses.get(item["id"]) == "pass"
+            for dependency in item.get("depends_on", []) if statuses.get(dependency) != "pass"]
+
+
+def related_obligations(contract: dict[str, Any], ident: str, *, downstream: bool = False) -> set[str]:
+    edges = {item["id"]: item.get("depends_on", []) for item in contract["proof_obligations"]}
+    if downstream:
+        children: dict[str, list[str]] = {key: [] for key in edges}
+        for child, parents in edges.items():
+            for parent in parents:
+                children[parent].append(child)
+        edges = children
+    found: set[str] = set()
+    pending = list(edges[ident])
+    while pending:
+        candidate = pending.pop()
+        if candidate not in found:
+            found.add(candidate)
+            pending.extend(edges[candidate])
+    return found
+
+
+def contract_digest(contract: dict[str, Any]) -> str:
+    return hashlib.sha256(json.dumps(contract, sort_keys=True, separators=(",", ":"),
+                                     ensure_ascii=True).encode("utf-8")).hexdigest()
+
+
+def capture_digest(record: dict[str, Any]) -> str:
+    """Detect metadata drift, including a relocated exclusion anchor; not a signature."""
+    fields = ("version", "id", "argv", "cwd", "started_at", "ended_at", "exit_code",
+              "termination_reason", "resolved_executable", "workspace", "workspace_start",
+              "evidence_directory", "log", "log_sha256")
+    return contract_digest({key: record.get(key) for key in fields})
+
+
+def validate_review_records(report: dict[str, Any], contract: dict[str, Any], directory: Path) -> list[str]:
+    review = report.get("review", {})
+    records = review.get("records", [])
+    if not isinstance(records, list):
+        return ["report.review.records must be a list"]
+    errors = []
+    ids: set[str] = set()
+    obligations = {item["id"] for item in contract["proof_obligations"]}
+    for index, item in enumerate(records):
+        label = f"report.review.records[{index}]"
+        if not isinstance(item, dict):
+            errors.append(f"{label} must be an object")
+            continue
+        for field in ("id", "reviewer", "model", "harness", "question", "findings"):
+            if not nonempty_text(item.get(field)):
+                errors.append(f"{label}.{field} is required")
+        if nonempty_text(item.get("id")):
+            if item["id"] in ids:
+                errors.append(f"{label}.id must be unique")
+            ids.add(item["id"])
+        if item.get("role") not in REVIEW_ROLES:
+            errors.append(f"{label}.role must be a known review role")
+        if type(item.get("independent")) is not bool:
+            errors.append(f"{label}.independent must be a boolean declaration")
+        if item.get("status") not in STATUSES:
+            errors.append(f"{label}.status must be a known evidence status")
+        scope = item.get("scope")
+        if not valid_text_list(scope) or not scope:
+            errors.append(f"{label}.scope must name proof obligations")
+        elif len(scope) != len(set(scope)) or any(ident not in obligations for ident in scope):
+            errors.append(f"{label}.scope must contain unique known obligation IDs")
+        if item.get("status") != "pass":
+            continue
+        if item.get("contract_sha256") != contract_digest(contract):
+            errors.append(f"{label} contract digest changed; repeat review against current intent")
+        reference = item.get("reference")
+        if not nonempty_text(reference):
+            errors.append(f"{label}.reference is required for pass")
+        else:
+            path = directory / reference
+            try:
+                if not path.resolve().is_relative_to(directory.resolve()):
+                    raise ValueError("review reference must stay inside evidence directory")
+                if sha256_file(path) != item.get("reference_sha256"):
+                    raise ValueError("review reference hash does not match")
+            except (ValueError, OSError) as error:
+                errors.append(f"{label}: {error}")
+        run_id = item.get("run_id")
+        if not valid_run_id(run_id):
+            errors.append(f"{label}.run_id needs a captured review run for pass")
+        else:
+            record, run_errors = validate_run_record(directory, run_id)
+            errors.extend(f"{label}: {error}" for error in run_errors)
+            if record is not None and not run_errors:
+                if record["exit_code"] != 0:
+                    errors.append(f"{label} captured review run must succeed")
+                elif item.get("role") != "test_designer":
+                    errors.extend(f"{label}: {error}" for error in validate_supporting_workspace(
+                        record, directory, require_binding=contract["task"]["type"] != "research"))
+                    if contract["task"]["type"] != "research" and valid_text_list(scope):
+                        reviewer_root = (record.get("workspace") or {}).get("root")
+                        for result in report["evidence"]:
+                            if result["obligation_id"] not in scope or result["status"] != "pass":
+                                continue
+                            for supporting_id in result["run_ids"]:
+                                supporting, supporting_errors = validate_run_record(directory, supporting_id)
+                                if supporting is not None and not supporting_errors:
+                                    root = (supporting.get("workspace") or {}).get("root")
+                                    if root != reviewer_root:
+                                        errors.append(f"{label} review source root does not match scoped obligation {result['obligation_id']}")
     return errors
 
 
@@ -425,6 +588,15 @@ def validate_run_record(
     cwd = record.get("cwd")
     if not isinstance(cwd, str) or not Path(cwd).is_absolute():
         errors.append(f"{label}.cwd must be an absolute path")
+    if "evidence_directory" in record and (not isinstance(record["evidence_directory"], str)
+            or not Path(record["evidence_directory"]).is_absolute()):
+        errors.append(f"{label}.evidence_directory must be an absolute path")
+    if "evidence_directory" in record:
+        try:
+            if record.get("capture_sha256") != capture_digest(record):
+                errors.append(f"{label} capture metadata hash does not match")
+        except RecursionError:
+            errors.append(f"{label} capture metadata is nested too deeply")
 
     started_at = parse_utc(record.get("started_at"))
     ended_at = parse_utc(record.get("ended_at"))
@@ -438,6 +610,11 @@ def validate_run_record(
     exit_code = record.get("exit_code")
     if isinstance(exit_code, bool) or not isinstance(exit_code, int):
         errors.append(f"{label}.exit_code must be an integer")
+    reason = record.get("termination_reason")
+    if reason not in (None, "timeout", "log_limit"):
+        errors.append(f"{label}.termination_reason must be null, timeout or log_limit")
+    elif reason is not None and exit_code != {"timeout": 124, "log_limit": 122}[reason]:
+        errors.append(f"{label} termination reason does not match its stopping status")
 
     expected_log = f"runs/{run_id}.log"
     if record.get("log") != expected_log:
@@ -479,11 +656,12 @@ def validate_run_record(
 
 def validate_supporting_workspace(
     record: dict[str, Any], evidence_directory: Path, *, require_binding: bool = True,
-    fingerprints: dict[Path, dict[str, str] | None] | None = None,
+    fingerprints: dict[tuple[Path, Path], dict[str, str] | None] | None = None,
 ) -> list[str]:
     workspace = record.get("workspace")
-    start = record.get("workspace_start")
-    if workspace is not None and evidence_directory.resolve() == Path(workspace["root"]).resolve():
+    start = record.get("workspace_start") if record.get("version") == 2 else None
+    source_evidence = Path(record.get("evidence_directory", str(evidence_directory)))
+    if workspace is not None and source_evidence.resolve() == Path(workspace["root"]).resolve():
         return [f"run {record['id']} evidence directory is the Git root and excludes all source; recapture with --directory .confidence"]
     if record.get("version") != 2:
         if require_binding:
@@ -500,11 +678,12 @@ def validate_supporting_workspace(
         return []
     cwd = Path(record["cwd"]).resolve()
     if fingerprints is None:
-        current = git_workspace_fingerprint(cwd, evidence_directory)
+        current = git_workspace_fingerprint(cwd, source_evidence)
     else:
-        if cwd not in fingerprints:
-            fingerprints[cwd] = git_workspace_fingerprint(cwd, evidence_directory)
-        current = fingerprints[cwd]
+        key = (cwd, source_evidence.resolve())
+        if key not in fingerprints:
+            fingerprints[key] = git_workspace_fingerprint(cwd, source_evidence)
+        current = fingerprints[key]
     if current is None:
         return [f"run {record['id']} workspace can no longer be fingerprinted"]
     if current["root"] != workspace["root"] or current["sha256"] != workspace["sha256"]:
@@ -523,7 +702,7 @@ def validate_report(
         for item in evidence
         if isinstance(item, dict) and isinstance(item.get("run_ids"), list)
     ) if isinstance(evidence, list) else 0
-    fingerprints: dict[Path, dict[str, str] | None] | None = (
+    fingerprints: dict[tuple[Path, Path], dict[str, str] | None] | None = (
         {} if reference_count > 1 else None
     )
     task = contract.get("task") if isinstance(contract.get("task"), dict) else {}
@@ -556,7 +735,7 @@ def validate_report(
                 errors.append(f"{label} must be an object")
                 continue
             obligation_id = item.get("obligation_id")
-            if obligation_id not in obligation_ids:
+            if not isinstance(obligation_id, str) or obligation_id not in obligation_ids:
                 errors.append(f"{label}.obligation_id does not match the contract")
             elif obligation_id in reported_ids:
                 errors.append(f"duplicate evidence for obligation: {obligation_id}")
@@ -623,6 +802,8 @@ def validate_report(
         missing = obligation_ids - reported_ids
         if missing:
             errors.append(f"missing evidence for: {', '.join(sorted(missing))}")
+        if not errors:
+            errors.extend(dependency_status_errors(contract, evidence))
 
     tests = report.get("tests")
     if not isinstance(tests, dict):
@@ -663,6 +844,8 @@ def validate_report(
             errors.append("report.review.roles must not contain duplicates")
         if not valid_text_list(review.get("findings")):
             errors.append("report.review.findings must be a list of non-empty strings")
+        if not errors:
+            errors.extend(validate_review_records(report, contract, directory))
 
     for key in ("risks", "user_decisions"):
         if not valid_text_list(report.get(key)):
@@ -670,13 +853,13 @@ def validate_report(
     if not nonempty_text(report.get("rollback")):
         errors.append("report.rollback is required; use 'Not applicable' when true")
     if fingerprints is not None:
-        for cwd, before in fingerprints.items():
-            if git_workspace_fingerprint(cwd, directory) != before:
+        for (cwd, source_evidence), before in fingerprints.items():
+            if git_workspace_fingerprint(cwd, source_evidence) != before:
                 errors.append("workspace changed during validation; rerun on a stable tree")
     return errors
 
 
-def completion_errors(report: dict[str, Any]) -> list[str]:
+def completion_errors(report: dict[str, Any], contract: dict[str, Any] | None = None) -> list[str]:
     """Return reasons a structurally valid report is not ready for release."""
     errors: list[str] = []
     evidence = report["evidence"]
@@ -713,6 +896,28 @@ def completion_errors(report: dict[str, Any]) -> list[str]:
                 "critical release requires separate test_designer and "
                 "adversarial_reviewer roles"
             )
+    if contract is not None and contract.get("review_policy", {}).get("records_required"):
+        records = review.get("records", [])
+        implementer = contract["review_policy"]["implementer"].strip().casefold()
+        required_scope = {item["id"] for item in contract["proof_obligations"]}
+        roles |= set(contract["review_policy"].get("required_roles", []))
+        accepted = [item for item in records if item["status"] == "pass" and item["independent"]
+                    and item["reviewer"].strip().casefold() != implementer]
+        if not roles:
+            errors.append("attributable review requires named review roles")
+        if not review["required"]:
+            errors.append("attributable review policy requires review.required to be true")
+        for role in sorted(roles):
+            covered = {ident for item in accepted if item["role"] == role for ident in item["scope"]}
+            if covered != required_scope:
+                errors.append(f"attributable review requires independent pass records covering every obligation for {role}")
+        if any(item["status"] in ("partial", "fail", "not_run") for item in records):
+            errors.append("attributable review cannot contain unresolved review records")
+        if report["mode"] == "critical":
+            designers = {item["reviewer"].strip().casefold() for item in accepted if item["role"] == "test_designer"}
+            adversaries = {item["reviewer"].strip().casefold() for item in accepted if item["role"] == "adversarial_reviewer"}
+            if designers & adversaries:
+                errors.append("critical attributable review requires different test designer and adversarial reviewer identities")
     return errors
 
 
@@ -840,7 +1045,8 @@ written to disk, so incomplete unrelated report sections do not block recording.
 """
     selected = dict(contract)
     selected['proof_obligations'] = [
-        item for item in contract['proof_obligations'] if item['id'] == result['obligation_id']
+        {key: value for key, value in item.items() if key != 'depends_on'}
+        for item in contract['proof_obligations'] if item['id'] == result['obligation_id']
     ]
     task = contract['task']
     probe = initial_report(task['title'], task['mode'])
@@ -915,12 +1121,34 @@ def record_result(args):
             updated['evidence'][ids.index(args.obligation)] = result
         else:
             updated['evidence'].append(result)
+        invalidated = []
+        if (previous.get('status'), previous.get('run_ids')) != (result['status'], result['run_ids']):
+            descendants = related_obligations(contract, args.obligation, downstream=True)
+            if any(item['obligation_id'] in descendants and item.get('status') == 'pass'
+                   and not nonempty_text(item.get('details')) for item in evidence):
+                raise RecordError('REPORT_INVALID', 'Passed descendants need valid details before dependency invalidation')
+            updated['evidence'] = [dict(item, status='partial',
+                details=f"Prerequisite {args.obligation} evidence changed; reverify this dependent claim. " + item['details'])
+                if item['obligation_id'] in descendants and item.get('status') == 'pass' else item
+                for item in updated['evidence']]
+            previously_passed = {item['obligation_id'] for item in evidence if item.get('status') == 'pass'}
+            invalidated = [item['id'] for item in contract['proof_obligations']
+                           if item['id'] in descendants and item['id'] in previously_passed]
+        if args.status == 'pass':
+            ancestors = related_obligations(contract, args.obligation)
+            selected_contract = dict(contract, proof_obligations=[item for item in contract['proof_obligations']
+                                    if item['id'] in ancestors or item['id'] == args.obligation])
+            selected_report = dict(probe, evidence=[item for item in updated['evidence']
+                                  if item['obligation_id'] in ancestors or item['obligation_id'] == args.obligation])
+            errors = validate_report(selected_report, selected_contract, directory)
+            if errors:
+                raise RecordError('RESULT_INVALID', errors)
         if updated != report:
             write_text_atomic(directory / 'report.json', json.dumps(updated, indent=2) + '\n', replace=True)
         return {'ok': True, 'obligation_id': args.obligation, 'status': args.status,
                 'run_ids': args.run, 'diagnostic_run_ids': args.diagnostic_run,
                 'report': 'report.json', 'changed': updated != report,
-                'completion_checked': False}
+                'completion_checked': False, 'invalidated': invalidated}
 
 
 
@@ -1150,9 +1378,11 @@ def command_run(args: argparse.Namespace) -> int:
         or str((cwd / argv[0]).resolve()),
         "workspace": workspace,
         "workspace_start": workspace_start,
+        "evidence_directory": str(directory),
         "log": f"runs/{run_id}.log",
         "log_sha256": digest.hexdigest(),
     }
+    record["capture_sha256"] = capture_digest(record)
     try:
         write_json_exclusive_atomic(record_path, record)
     except FileExistsError:
@@ -1198,8 +1428,48 @@ def load_and_validate(directory: Path) -> tuple[dict[str, Any], dict[str, Any], 
     contract = read_json(directory / "contract.json")
     report = read_json(directory / "report.json")
     errors = validate_contract(contract)
-    errors.extend(validate_report(report, contract, directory))
+    if not errors:
+        errors.extend(validate_report(report, contract, directory))
     return contract, report, errors
+
+
+def command_next(args: argparse.Namespace) -> int:
+    """Reconstruct a proof frontier; never execute claims or write telemetry."""
+    directory = Path(args.directory)
+    try:
+        if directory.is_symlink():
+            raise ValueError("refusing symlink evidence directory")
+        contract, report, errors = load_and_validate(directory)
+    except (ValueError, OSError, RecursionError) as error:
+        errors = [str(error)]
+    if errors:
+        result = {"ok": False, "errors": errors, "ready": [], "blocked": [], "complete": False}
+    else:
+        statuses = {item["obligation_id"]: item["status"] for item in report["evidence"]}
+        ready, blocked = [], []
+        for item in contract["proof_obligations"]:
+            if statuses[item["id"]] == "pass":
+                continue
+            prerequisites = [ident for ident in item.get("depends_on", []) if statuses[ident] != "pass"]
+            if prerequisites:
+                blocked.append({"obligation_id": item["id"], "depends_on": prerequisites})
+            else:
+                ready.append(item["id"])
+        gates = completion_errors(report, contract)
+        result = {"ok": True, "ready": ready, "blocked": blocked, "complete": not gates,
+                  "completion_errors": gates,
+                  "source_scopes": grouped_source_scopes(recorded_source_scopes(report, directory))}
+    if args.json:
+        print(json.dumps(result, separators=(",", ":")))
+    elif result["ok"]:
+        print("Ready proof obligations: " + (", ".join(result["ready"]) or "none"))
+        for item in result["blocked"]:
+            print(f"Blocked {item['obligation_id']}: " + ", ".join(item['depends_on']))
+        print("Evidence checks complete" if result["complete"] else "Completion gates remain: " + "; ".join(result['completion_errors']))
+    else:
+        for error in errors:
+            print(f"ERROR: {error}", file=sys.stderr)
+    return 0 if result["ok"] else 1
 
 
 def recorded_source_scopes(report: dict[str, Any], directory: Path) -> list[dict[str, Any]]:
@@ -1209,6 +1479,10 @@ def recorded_source_scopes(report: dict[str, Any], directory: Path) -> list[dict
         for role, field in (('support', 'run_ids'), ('diagnostic', 'diagnostic_run_ids')):
             for run_id in result.get(field, []):
                 references.setdefault((role, run_id), set()).add(result['status'])
+    for review in report.get('review', {}).get('records', []):
+        if review['status'] == 'pass':
+            role = 'historical test design' if review['role'] == 'test_designer' else 'review'
+            references.setdefault((role, review['run_id']), set()).add(review['status'])
     scopes = []
     for (role, run_id), statuses in sorted(references.items()):
         record = read_json(directory / 'runs' / f'{run_id}.json')
@@ -1281,7 +1555,7 @@ def command_validate(args: argparse.Namespace) -> int:
         return 2
     completion_failed = False
     if not errors and args.require_complete:
-        errors.extend(completion_errors(report))
+        errors.extend(completion_errors(report, contract))
         completion_failed = bool(errors)
     if errors:
         for error in errors:
@@ -1326,6 +1600,22 @@ def markdown_text(value: Any) -> str:
 
 def markdown_cell(value: Any) -> str:
     return markdown_text(value).replace("|", "\\|")
+
+
+def review_records_markdown(report: dict[str, Any]) -> str:
+    records = report["review"].get("records", [])
+    if not records:
+        return "No structured review records. Legacy role declarations do not authenticate review."
+    rows = []
+    for item in records:
+        rows.append("| " + " | ".join(markdown_cell(value) for value in (
+            item['id'], item['role'], item['status'], item['reviewer'],
+            item['model'] + ' / ' + item['harness'], ', '.join(item['scope']),
+            item['question'], item['findings'], item.get('reference', 'None'),
+            item.get('run_id', 'None'))) + " |")
+    return ("Declared provenance; identity and independence are not authenticated.\n\n"
+            "| ID | Role | Status | Reviewer | Model / harness | Scope | Question | Findings | Reference | Run |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n" + "\n".join(rows))
 
 
 def render_markdown(
@@ -1387,6 +1677,10 @@ Task type: {task['type']}
 | --- | --- | --- | --- | --- | --- |
 {chr(10).join(rows)}
 
+Dependencies:
+
+{bullet_list([item['id'] + ': ' + ', '.join(item['depends_on']) for item in contract['proof_obligations'] if item.get('depends_on')])}
+
 {source_scope_markdown(recorded_source_scopes(report, directory))}
 
 ## Tests
@@ -1423,6 +1717,8 @@ Roles:
 Findings and dispositions:
 
 {bullet_list(review['findings'])}
+
+{review_records_markdown(report)}
 
 ## Risks
 
@@ -1557,6 +1853,11 @@ def parser() -> argparse.ArgumentParser:
     record.add_argument("--artifact", action="append", default=[])
     record.set_defaults(handler=command_record)
 
+    next_work = subparsers.add_parser("next", help="read a validated, dependency-aware proof frontier without side effects")
+    next_work.add_argument("--directory", default=".confidence")
+    next_work.add_argument("--json", action="store_true")
+    next_work.set_defaults(handler=command_next)
+
     run = subparsers.add_parser("run", help="run a command and capture evidence")
     run.add_argument("--id", help="unique run ID; generated when omitted")
     run.add_argument("--cwd", default=".", help="command execution directory (default: caller current directory)")
@@ -1615,6 +1916,10 @@ def parser() -> argparse.ArgumentParser:
 
 def main() -> int:
     args = parser().parse_args()
+    if args.action == "next":
+        # Planning must not create local events or send optional remote telemetry,
+        # including on refusal paths. Its handler uses bounded safe readers.
+        return command_next(args)
     requested_operation_id = os.environ.get("CONFIDENCE_OPERATION_ID", "")
     operation_id = (
         requested_operation_id

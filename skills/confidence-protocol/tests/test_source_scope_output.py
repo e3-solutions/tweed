@@ -36,6 +36,15 @@ class SourceScopeOutputTest(unittest.TestCase):
             env={**os.environ, 'CONFIDENCE_DISABLE_DIAGNOSTICS': '1'},
         )
 
+    def write_scope_fixture(self, name, record):
+        # Synthetic scope variants test rendering, not capture-metadata tampering.
+        if record['version'] == 1:
+            record.pop('evidence_directory', None)
+            record.pop('capture_sha256', None)
+        elif 'evidence_directory' in record:
+            record['capture_sha256'] = c.capture_digest(record)
+        c.write_json(self.directory / 'runs' / name, record)
+
     def test_public_handoff_names_recorded_tree_and_rejects_changed_source(self):
         result = self.call("validate", "--require-complete")
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -79,9 +88,9 @@ class SourceScopeOutputTest(unittest.TestCase):
         record = c.read_json(self.directory / "runs/tests.json")
         record["workspace"] = None
         record["workspace_start"] = None
-        c.write_json(self.directory / "runs/tests.json", record)
+        self.write_scope_fixture("tests.json", record)
         diagnostic = dict(record, id="diagnostic", log="runs/diagnostic.log")
-        c.write_json(self.directory / "runs/diagnostic.json", diagnostic)
+        self.write_scope_fixture("diagnostic.json", diagnostic)
         shutil.copyfile(
             self.directory / "runs/tests.log", self.directory / "runs/diagnostic.log"
         )
@@ -110,7 +119,7 @@ class SourceScopeOutputTest(unittest.TestCase):
     def test_partial_start_unknown_preserves_known_end_root(self):
         record = c.read_json(self.directory / "runs/tests.json")
         record["workspace_start"] = None
-        c.write_json(self.directory / "runs/tests.json", record)
+        self.write_scope_fixture("tests.json", record)
         report = c.read_json(self.directory / "report.json")
         report["evidence"][0]["status"] = "partial"
         c.write_json(self.directory / "report.json", report)
@@ -129,7 +138,7 @@ class SourceScopeOutputTest(unittest.TestCase):
         record = c.read_json(self.directory / "runs/tests.json")
         record["version"] = 1
         record.pop("workspace_start", None)
-        c.write_json(self.directory / "runs/tests.json", record)
+        self.write_scope_fixture("tests.json", record)
         report = c.read_json(self.directory / "report.json")
         report["evidence"][0]["status"] = "partial"
         c.write_json(self.directory / "report.json", report)
@@ -146,7 +155,7 @@ class SourceScopeOutputTest(unittest.TestCase):
     def test_changed_endpoints_are_visible_for_partial_observation(self):
         record = c.read_json(self.directory / "runs/tests.json")
         record["workspace_start"]["sha256"] = "a" * 64
-        c.write_json(self.directory / "runs/tests.json", record)
+        self.write_scope_fixture("tests.json", record)
         report = c.read_json(self.directory / "report.json")
         report["evidence"][0]["status"] = "partial"
         c.write_json(self.directory / "report.json", report)

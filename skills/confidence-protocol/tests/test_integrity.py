@@ -67,6 +67,8 @@ class IntegrityTest(unittest.TestCase):
         record = self.capture("print('legacy')")
         record['version'] = 1
         del record['workspace_start']
+        record.pop('evidence_directory')
+        record.pop('capture_sha256')
         (self.directory / 'runs/check.json').write_text(json.dumps(record))
         legacy, errors = confidence.validate_run_record(self.directory, 'check')
         self.assertEqual(errors, [])

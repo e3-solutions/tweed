@@ -16,6 +16,7 @@ FORBIDDEN_PREFIXES = (
     "skills/use-bonaparte/",
     "skills/confidence-protocol/tests/",
     ".confidence/",
+    "docs/research/",
 )
 REQUIRED = {
     ".codex-plugin/plugin.json",
@@ -24,6 +25,8 @@ REQUIRED = {
     "skills/confidence-protocol/SKILL.md",
     "skills/confidence-protocol/scripts/confidence.py",
     "skills/confidence-protocol/scripts/diagnostics.py",
+    "skills/confidence-protocol/references/complex-tasks.md",
+    "skills/confidence-protocol/references/harnesses.md",
 }
 
 

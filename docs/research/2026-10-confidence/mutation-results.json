@@ -1,0 +1,79 @@
+{
+  "schema": 1,
+  "scope": "four targeted guard-removal mutations, eight real subprocess trials",
+  "results": [
+    {
+      "case": "dependency_graph",
+      "mutation": false,
+      "test": "test_dependency_frontier.DependencyFrontierTest.test_cycle_refuses_with_explanation",
+      "exit_code": 0,
+      "oracle_expectation_met": true,
+      "output_sha256": "9f04723efb822bc319b81673b88772dbe04cac1b410f9618f1b93e9caaa43f44",
+      "output": "test_cycle_refuses_with_explanation (test_dependency_frontier.DependencyFrontierTest.test_cycle_refuses_with_explanation) ... ok\n\n----------------------------------------------------------------------\nRan 1 test in 0.128s\n\nOK\n"
+    },
+    {
+      "case": "dependency_graph",
+      "mutation": true,
+      "test": "test_dependency_frontier.DependencyFrontierTest.test_cycle_refuses_with_explanation",
+      "exit_code": 1,
+      "oracle_expectation_met": true,
+      "output_sha256": "f8c7ccfb71f97900c0fac6b241563d4eb37f80dd286d933a1b760ffd9e1adf75",
+      "output": "test_cycle_refuses_with_explanation (test_dependency_frontier.DependencyFrontierTest.test_cycle_refuses_with_explanation) ... FAIL\n\n======================================================================\nFAIL: test_cycle_refuses_with_explanation (test_dependency_frontier.DependencyFrontierTest.test_cycle_refuses_with_explanation)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/confidence-mutation-oay72ed1/skills/confidence-protocol/tests/test_dependency_frontier.py\", line 164, in test_cycle_refuses_with_explanation\n    self.assertEqual(response.returncode, 1)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 0 != 1\n\n----------------------------------------------------------------------\nRan 1 test in 0.125s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "case": "review_integrity",
+      "mutation": false,
+      "test": "test_review_provenance.ReviewProvenanceTest.test_review_artifact_modification_is_detected",
+      "exit_code": 0,
+      "oracle_expectation_met": true,
+      "output_sha256": "6c7179b934ab78ac1dec2112976ebf679f345a9de12480d7af23d6e81598e18f",
+      "output": "test_review_artifact_modification_is_detected (test_review_provenance.ReviewProvenanceTest.test_review_artifact_modification_is_detected) ... ok\n\n----------------------------------------------------------------------\nRan 1 test in 0.299s\n\nOK\n"
+    },
+    {
+      "case": "review_integrity",
+      "mutation": true,
+      "test": "test_review_provenance.ReviewProvenanceTest.test_review_artifact_modification_is_detected",
+      "exit_code": 1,
+      "oracle_expectation_met": true,
+      "output_sha256": "074dc6349605ced5e99745901e9358ce393e129ef801e88bb14e2a66a96e21af",
+      "output": "test_review_artifact_modification_is_detected (test_review_provenance.ReviewProvenanceTest.test_review_artifact_modification_is_detected) ... FAIL\n\n======================================================================\nFAIL: test_review_artifact_modification_is_detected (test_review_provenance.ReviewProvenanceTest.test_review_artifact_modification_is_detected)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/confidence-mutation-nm4sl_qe/skills/confidence-protocol/tests/test_review_provenance.py\", line 201, in test_review_artifact_modification_is_detected\n    self.assert_rejected(\"reference hash does not match\")\n    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/confidence-mutation-nm4sl_qe/skills/confidence-protocol/tests/test_review_provenance.py\", line 59, in assert_rejected\n    self.assertNotEqual(result.returncode, 0, \"incomplete or invalid review must not release\")\n    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 0 == 0 : incomplete or invalid review must not release\n\n----------------------------------------------------------------------\nRan 1 test in 0.261s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "case": "source_freshness",
+      "mutation": false,
+      "test": "test_dependency_frontier.DependencyFrontierTest.test_stale_upstream_cannot_enable_fresh_dependent_pass_or_frontier",
+      "exit_code": 0,
+      "oracle_expectation_met": true,
+      "output_sha256": "82a1ecfb5e5423dc855dfbe5a9e7820d8df615d39dcbe230da403a0f913ec527",
+      "output": "test_stale_upstream_cannot_enable_fresh_dependent_pass_or_frontier (test_dependency_frontier.DependencyFrontierTest.test_stale_upstream_cannot_enable_fresh_dependent_pass_or_frontier) ... ok\n\n----------------------------------------------------------------------\nRan 1 test in 1.016s\n\nOK\n"
+    },
+    {
+      "case": "source_freshness",
+      "mutation": true,
+      "test": "test_dependency_frontier.DependencyFrontierTest.test_stale_upstream_cannot_enable_fresh_dependent_pass_or_frontier",
+      "exit_code": 1,
+      "oracle_expectation_met": true,
+      "output_sha256": "3abbbad0b3d27e3c91dd4d2922a30231a8b7a8a3f7e93459cc4f3705cccfbe7b",
+      "output": "test_stale_upstream_cannot_enable_fresh_dependent_pass_or_frontier (test_dependency_frontier.DependencyFrontierTest.test_stale_upstream_cannot_enable_fresh_dependent_pass_or_frontier) ... FAIL\n\n======================================================================\nFAIL: test_stale_upstream_cannot_enable_fresh_dependent_pass_or_frontier (test_dependency_frontier.DependencyFrontierTest.test_stale_upstream_cannot_enable_fresh_dependent_pass_or_frontier)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/confidence-mutation-xjsx_o_z/skills/confidence-protocol/tests/test_dependency_frontier.py\", line 221, in test_stale_upstream_cannot_enable_fresh_dependent_pass_or_frontier\n    self.assertEqual(response.returncode, 2, response.stdout)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 0 != 2 : {\"ok\":true,\"obligation_id\":\"P2\",\"status\":\"pass\",\"run_ids\":[\"fresh\"],\"diagnostic_run_ids\":[],\"report\":\"report.json\",\"changed\":true,\"completion_checked\":false,\"invalidated\":[]}\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.655s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "case": "review_policy",
+      "mutation": false,
+      "test": "test_review_provenance.ReviewProvenanceTest.test_opted_in_report_cannot_delete_records",
+      "exit_code": 0,
+      "oracle_expectation_met": true,
+      "output_sha256": "a61a3a7f768b1114e3e2700a11eb8f7ad9c02344c2a4341567e541d36b912183",
+      "output": "test_opted_in_report_cannot_delete_records (test_review_provenance.ReviewProvenanceTest.test_opted_in_report_cannot_delete_records) ... ok\n\n----------------------------------------------------------------------\nRan 1 test in 0.259s\n\nOK\n"
+    },
+    {
+      "case": "review_policy",
+      "mutation": true,
+      "test": "test_review_provenance.ReviewProvenanceTest.test_opted_in_report_cannot_delete_records",
+      "exit_code": 1,
+      "oracle_expectation_met": true,
+      "output_sha256": "f531dc24e0c05fe383ad704d708c144637a1b4fe0337f2d3c644ad1b167507ad",
+      "output": "test_opted_in_report_cannot_delete_records (test_review_provenance.ReviewProvenanceTest.test_opted_in_report_cannot_delete_records) ... FAIL\n\n======================================================================\nFAIL: test_opted_in_report_cannot_delete_records (test_review_provenance.ReviewProvenanceTest.test_opted_in_report_cannot_delete_records)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/confidence-mutation-7q8uf9df/skills/confidence-protocol/tests/test_review_provenance.py\", line 87, in test_opted_in_report_cannot_delete_records\n    self.assert_rejected(\"independent pass records\")\n    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/confidence-mutation-7q8uf9df/skills/confidence-protocol/tests/test_review_provenance.py\", line 59, in assert_rejected\n    self.assertNotEqual(result.returncode, 0, \"incomplete or invalid review must not release\")\n    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 0 == 0 : incomplete or invalid review must not release\n\n----------------------------------------------------------------------\nRan 1 test in 0.257s\n\nFAILED (failures=1)\n"
+    }
+  ],
+  "pass": true
+}

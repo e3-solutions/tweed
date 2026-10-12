@@ -68,6 +68,23 @@ The protocol uses the lightest safe mode:
 Most work stays with one agent. Extra reviewers are added only when the risk,
 uncertainty, or failed evidence justifies them.
 
+For complex work, optional obligation dependencies let Codex choose the next useful
+proof and preserve blockers across handoffs. `next --json` validates current
+evidence and returns the ready frontier without executing anything or writing
+telemetry. Changing a prerequisite's supporting evidence demotes passed descendants
+to partial until reverified. An empty frontier does not imply completion.
+
+Opt into `review_policy.records_required` to require attributable, scoped review
+artifacts and captured review runs, with current contract/source checks and distinct
+declared identities for Critical roles. Existing contracts retain their older
+gates. These records check consistency, not authenticated identity or the truth of
+every claim. See [complex tasks](skills/confidence-protocol/references/complex-tasks.md)
+and [harness guidance](skills/confidence-protocol/references/harnesses.md).
+
+The [October research and proof dossier](https://github.com/e3-solutions/tweed/tree/main/docs/research/2026-10-confidence)
+explains current models, Codex/Claude Code/T3 Code, borrowed project patterns,
+audited research/testing agents, implementation choices and evaluation limits.
+
 The main loop is simple:
 
 1. State the goal and limits.
@@ -163,7 +180,7 @@ python3 skills/confidence-protocol/scripts/confidence.py render
 
 ### Handing evidence to another checkout
 
-Validation checks the source locations recorded in supporting runs, not the caller’s current checkout. Success output and rendered reports list recorded working directories, source roots, binding kinds, run IDs and start/end observation status, grouped by recorded scope. Exact record versions and fingerprints remain in `runs/<id>.json`. Copying evidence does not certify another checkout; rerun verification there before claiming its current code. Multiple recorded roots are supported. Diagnostic runs and partial observations are labeled and do not certify current code; unknown or legacy binding remains explicit.
+Validation checks the source locations recorded in supporting runs, not the caller’s current checkout. Success output and rendered reports list recorded working directories, source roots, binding kinds, run IDs and start/end observation status, grouped by recorded scope. Exact record versions and fingerprints remain in `runs/<id>.json`. New captures retain the original evidence directory used for generated-file exclusion, so relocation does not change that inventory. Older captures use the validating directory and may require recapture when copied. Copying evidence does not certify another checkout; rerun verification there before claiming its current code. Multiple recorded roots are supported. Diagnostic runs and partial observations are labeled and do not certify current code; unknown or legacy binding remains explicit.
 
 Captured runs store command output, exit status, time, log hash, and source fingerprints
 before and after execution under `.confidence/runs/`. A current-code pass requires

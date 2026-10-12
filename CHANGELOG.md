@@ -2,6 +2,32 @@
 
 This file records user-visible changes to Tweed and Confidence Protocol.
 
+## [0.6.0] - 2026-10-12
+
+- Add optional obligation dependency graphs, ancestor proof checks, and atomic
+  demotion of passed descendants when prerequisite support changes.
+- Add deterministic, read-only `next --json` planning with explicit blockers,
+  completion gaps, and recorded source scope; no command execution or telemetry.
+- Add contract-pinned opt-in review records with scoped roles, declared distinct
+  identities, artifact hashes, contract digests, captured runs and current code
+  binding. Preserve historical test design and legacy report compatibility.
+- Preserve the original evidence exclusion location in new captures so copying
+  evidence retains the original source inventory, without certifying a new checkout.
+- Bind capture metadata to a separate digest, reject contradictory stopping status,
+  disable fsmonitor execution during fingerprint reads, and recover deep JSON and
+  legacy metadata without tracebacks. Keep current capture provenance in redacted
+  support bundles.
+- Route complex-task recovery, bounded repair, current capability discovery and
+  cross-harness review guidance into optional references.
+- Add dated model/harness research, auditable Opus agent receipts, public CLI
+  regressions and mutation experiments. Research artifacts are repository-only.
+
+Compatibility: contract v1/report v3 and existing captures remain readable. Legacy
+contracts keep their previous completion gates; opt into `review_policy` for
+attributable checks. Older tools ignore extension fields and cannot enforce these
+new gates. Declared identities are not authenticated; successful checks do not
+establish a general improvement in model accuracy or human effort saved.
+
 ## [0.5.0] - 2026-09-15
 
 ### Agent evidence workflow
