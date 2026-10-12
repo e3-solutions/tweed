@@ -53,6 +53,40 @@ PostToolUse cannot undo an action. Keep the CLI evidence gate usable independent
 of hooks; an optional adapter must test its real refusal semantics before claiming
 enforcement. This release adds guidance, not an installed hook or launcher.
 
+### Calling Claude from Codex
+
+Codex can remain the task owner and invoke Claude Code as a bounded subprocess.
+Use one fresh context for a specific role: proof design before implementation,
+an adversarial check afterward, or a separately owned implementation slice.
+Supply the requirements and relevant source instead of asking the peer to endorse
+the owner's conclusion. A review needs read access and narrowly confined test
+execution; an implementation slice needs explicit file ownership and write access.
+
+Return a durable artifact containing the role, question, requested and observed
+model metadata, provider/runtime version, session reference, source digest, actual
+checks, findings, gaps and usage. Codex should reconcile concrete findings, repair
+real defects, and capture fresh proof for the resulting source. A timeout,
+unsupported model, missing receipt or incomplete required review remains a gap.
+Never retry reviews merely to obtain agreement or treat a peer's prose as an
+executed check. Do not request hidden reasoning.
+
+For a staged workflow, give peers their own bounded windows outside the main
+implementation subprocess's timer while retaining an aggregate task deadline.
+For a model-triggered tool callback, account for time spent awaiting the peer
+inside that call; it can exhaust the caller's window. Test the actual callback,
+returned receipt and subsequent main response before claiming delegation works.
+Validate the effective tool inventory: disabling shell tools alone may leave a
+patch tool, resource handlers or delegation tools available. Keep credentials in
+the provider process and expose only authorized source to its execution children.
+
+Use both providers' independently available accounts to distribute authorized
+work. This does not combine or raise their quotas. Preserve missing dollar costs
+as unknown and distinguish reported list-price estimates from subscription
+billing. Model availability can differ between desktop and CLI under the same
+login; a catalog entry is not a successful request. Cross-provider review is a
+candidate route to better coverage, with accuracy established by behavioral
+checks and comparative trials rather than vendor identity or agreement.
+
 ## T3 Code and borrowed project patterns
 
 T3 Code manages provider sessions through provider-specific adapters. Discover
