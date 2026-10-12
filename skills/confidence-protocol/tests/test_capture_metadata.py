@@ -52,6 +52,23 @@ class CaptureMetadataTest(unittest.TestCase):
                     errors = confidence.validate_run_record(evidence, "proof")[1]
                     self.assertTrue(any("termination" in error for error in errors), errors)
 
+    def test_deleting_only_anchor_cannot_disable_retained_capture_binding(self):
+        with tempfile.TemporaryDirectory() as scratch:
+            evidence = Path(scratch)
+            result = run_cli("run", "--json", "--directory", str(evidence), "--id", "proof",
+                             "--", sys.executable, "-B", "-c", "pass")
+            self.assertEqual(result.returncode, 0, result.stderr)
+            path = evidence / "runs/proof.json"
+            record = json.loads(path.read_text())
+            del record["evidence_directory"]
+            path.write_text(json.dumps(record))
+            errors = confidence.validate_run_record(evidence, "proof")[1]
+            self.assertTrue(any("capture metadata hash" in error for error in errors), errors)
+            # An actual legacy capture has neither extension, not a half-deleted pair.
+            del record["capture_sha256"]
+            path.write_text(json.dumps(record))
+            self.assertEqual(confidence.validate_run_record(evidence, "proof")[1], [])
+
     def test_support_export_retains_v2_kind_and_version_without_work_content(self):
         from diagnostics import safe_run_records
         with tempfile.TemporaryDirectory() as scratch:

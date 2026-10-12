@@ -588,10 +588,10 @@ def validate_run_record(
     cwd = record.get("cwd")
     if not isinstance(cwd, str) or not Path(cwd).is_absolute():
         errors.append(f"{label}.cwd must be an absolute path")
-    if "evidence_directory" in record and (not isinstance(record["evidence_directory"], str)
-            or not Path(record["evidence_directory"]).is_absolute()):
-        errors.append(f"{label}.evidence_directory must be an absolute path")
-    if "evidence_directory" in record:
+    if "evidence_directory" in record or "capture_sha256" in record:
+        if (not isinstance(record.get("evidence_directory"), str)
+                or not Path(record["evidence_directory"]).is_absolute()):
+            errors.append(f"{label}.evidence_directory must be an absolute path")
         try:
             if record.get("capture_sha256") != capture_digest(record):
                 errors.append(f"{label} capture metadata hash does not match")
