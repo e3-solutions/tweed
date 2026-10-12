@@ -60,6 +60,28 @@ def counts(value):
     return {k:scalar(v) for k,v in value.items() if k in TOKEN_FIELDS and
             (v is None or isinstance(v,(int,float,bool)))}
 
+def source_binding_projection(value):
+    if value is None:return None
+    if not isinstance(value,dict):raise ValueError('Expected source binding object')
+    out={}
+    for key in ('at_launch','after'):
+        if key not in value:continue
+        item=value[key]
+        valid=isinstance(item,str) and re.fullmatch(r'[a-fA-F0-9]{64}',item) is not None
+        out[key]=item if valid else None
+        if item is not None and not valid:out[key+'_invalid_redacted']=True
+    return out
+
+def lifecycle_projection(value):
+    if value is None:return None
+    if not isinstance(value,dict):raise ValueError('Expected lifecycle object')
+    out={}
+    for key in ('timed_out','process_exit','detached_descendants_contained','guarded_new_session_processes',
+                'stream_changed_during_cleanup','process_cleanup_seconds'):
+        if key in value:out[key]=scalar(value[key])
+    if 'process_cleanup_scope' in value:out['process_cleanup_scope']=code(value['process_cleanup_scope'])
+    return out
+
 def qualification(value):
     if value is None:return None
     if not isinstance(value,dict):raise ValueError('Expected qualification object')
@@ -70,13 +92,17 @@ def qualification(value):
                 if v is not None and (not isinstance(v,str) or not SHA.fullmatch(v)):raise ValueError('Unsafe qualification digest')
                 out[k]=v
             else:out[k]=scalar(v)
-    for k in ('basis','provider','schema_output_tool'):
+    if 'skipped' in value:out['skipped']=scalar(value['skipped'])
+    if 'reasons' in value:out['reasons']=codes(value['reasons'])
+    for k in ('basis','provider','schema_output_tool','role'):
         if k in value:out[k]=code(value[k])
     for k in ('missing_tools','unexpected_tools','effective_tools','effective_mcp_tools','expected_mcp_tools',
               'additional_resource_handlers','observed_tool_call_names','declared_tools','expected_tools'):
         if k in value:out[k]=codes(value[k])
-    for k in ('local','declared_inventory'):
+    for k in ('local','declared_inventory','local_transport','recorded_qualification'):
         if k in value:out[k]=qualification(value[k])
+    if 'source_binding' in value:out['source_binding']=source_binding_projection(value['source_binding'])
+    if 'lifecycle' in value:out['lifecycle']=lifecycle_projection(value['lifecycle'])
     # Free-form reason, local cwd/config paths and source explanations omitted.
     return out
 
@@ -95,6 +121,10 @@ def project(row):
     # type-specific projection rather than trusting arbitrary nested text.
     out=legacy.project(row)
     if 'stage_usage' in row:out['stage_usage']=[stage_projection(s) for s in row['stage_usage']]
+    if 'stage_qualification' in row:
+        out['stage_qualification']=None if row['stage_qualification'] is None else [qualification(q) for q in row['stage_qualification']]
+    if 'source_binding' in row:out['source_binding']=source_binding_projection(row['source_binding'])
+    if 'lifecycle' in row:out['lifecycle']=lifecycle_projection(row['lifecycle'])
     for k in MODEL_FIELDS|{'status','trial_id','task_id','arm_id'}:
         if k in out:out[k]=code(out[k])
     for k in ('observed_assistant_models','usage_models','missing_required_reviews'):

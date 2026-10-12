@@ -135,6 +135,32 @@ class V2QualificationProjectionTests(unittest.TestCase):
         self.assertIsNone(value['passed']);self.assertEqual(value['local']['stdout_sha256'],digest)
         self.assertNotIn('PRIVATE',json.dumps(value));self.assertNotIn('/Users',json.dumps(value))
         self.assertFalse(value['strict_seven_tool_parity']);self.assertEqual(len(value['additional_resource_handlers']),2)
+    def test_full_normalized_qualification_source_lifecycle_known_and_unknown(self):
+        digest='b'*64
+        check={'passed':False,'skipped':False,'provider':'astra','role':'main_repair',
+            'reasons':['lifecycle_metadata_unqualified'],
+            'local_transport':{'passed':True,'readonly':False,'stdout_sha256':digest,'actor_cwd':'/Users/private'},
+            'recorded_qualification':{'passed':None,'basis':'offline_declared_codex_inventory_and_local_pipeline',
+                'live_wire_inventory_observed':False,'additional_resource_handlers':['functions.list_mcp_resources']},
+            'source_binding':{'at_launch':digest,'after':None,'private_path':'/Users/private'},
+            'lifecycle':{'timed_out':None,'process_exit':0,'process_cleanup_scope':'original_process_group',
+                'guarded_new_session_processes':1,'stream_changed_during_cleanup':None,'process_cleanup_seconds':None,
+                'error':'PRIVATE_OUTPUT'}}
+        row={'stage_qualification':[check],'stage_usage':[{'adapter_qualification':check}]}
+        value=e.project(row);q=value['stage_qualification'][0]
+        self.assertIsNone(q['recorded_qualification']['passed']);self.assertIsNone(q['lifecycle']['timed_out'])
+        self.assertIsNone(q['source_binding']['after']);self.assertEqual(q['source_binding']['at_launch'],digest)
+        self.assertEqual(q['lifecycle']['process_exit'],0);self.assertFalse(q['passed'])
+        self.assertNotIn('PRIVATE',json.dumps(value));self.assertNotIn('/Users',json.dumps(value))
+        self.assertEqual(value['stage_usage'][0]['adapter_qualification'],q)
+    def test_missing_normalized_qualification_stays_null(self):
+        value=e.project({'stage_qualification':None,'source_binding':None,'lifecycle':None})
+        self.assertIsNone(value['stage_qualification']);self.assertIsNone(value['source_binding']);self.assertIsNone(value['lifecycle'])
+    def test_invalid_source_digest_text_is_redacted_without_fake_validity(self):
+        value=e.source_binding_projection({'at_launch':'PRIVATE /Users/person','after':None})
+        self.assertIsNone(value['at_launch']);self.assertTrue(value['at_launch_invalid_redacted'])
+        self.assertIsNone(value['after']);self.assertNotIn('after_invalid_redacted',value)
+        self.assertNotIn('PRIVATE',json.dumps(value))
     def test_unclassified_error_text_cannot_be_exported_as_error_class(self):
         self.assertEqual(e.error_class('PRIVATE_REASON /Users/person'), 'unclassified_error')
     def test_malformed_qualification_hash_is_rejected(self):

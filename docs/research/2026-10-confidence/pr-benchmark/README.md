@@ -156,6 +156,14 @@ invalid first-block results are in [results/hybrid-v1](results/hybrid-v1).
 closure files preserve the full assignment roster and missing states. The private
 raw evidence remains locally available for authorized audit.
 
+Stored `.patch` evidence is exempt from whitespace cleanup and line-ending
+conversion under a narrow `.gitattributes` path rule. Unified-diff blank context
+markers are literal spaces; trimming them would change the proof bytes. All101
+original/V1 production patch hashes survived the CI repair unchanged. A temporary
+repository control rejected an ordinary source whitespace error while accepting
+the byte-exact patch fixture. Other source/document whitespace checks remain
+enabled. [Git attribute semantics](https://git-scm.com/docs/gitattributes#_checking_whitespace_errors).
+
 Run local benchmark controls on the pinned macOS runtime:
 
 ```sh

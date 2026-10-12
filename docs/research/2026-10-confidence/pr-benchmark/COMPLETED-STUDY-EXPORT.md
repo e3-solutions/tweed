@@ -33,8 +33,11 @@ configuration argv, free-form errors, model summaries, remaining-work prose,
 provider payloads, transcripts, and reasoning. Stage usage keeps recognized
 numeric token counts; other usage text is omitted. V2 qualification retains
 known/unknown qualification, tool inventories, resource-handler differences,
-local process-result hashes, and readonly flags, while removing actor cwd and
-config paths. Actual provider errors in the V1 retrospective supplement are
+local process-result hashes, readonly flags, normalized source-binding
+digests and lifecycle evidence, while removing actor cwd and config paths. Both
+raw adapter qualification and independently derived normalized qualification
+remain distinct. Null facts remain null; malformed source-digest text is redacted
+and explicitly flagged as invalid rather than published as a digest. Actual provider errors in the V1 retrospective supplement are
 reduced to recognized exception classes; the original detailed supplement stays
 private and unchanged.
 
@@ -44,7 +47,7 @@ primary harness flags or grades. Missing assignments' supplemental success
 eligibility is null in the public projection. This field concerns verified
 eligibility, not an assertion that an unstarted task failed.
 
-Eighteen synthetic publication controls cover full-schedule accounting, unknown
+Twenty-one synthetic publication controls cover full-schedule accounting, unknown
 preservation, redaction, exact closure coverage, raw/grade binding, stale
 aggregates, post-seal changes, schedule changes, production-only patches,
 private-path refusal, symlink refusal, separate retrospective supplements, and
