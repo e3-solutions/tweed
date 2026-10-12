@@ -27,6 +27,7 @@ REQUIRED = {
     "skills/confidence-protocol/scripts/diagnostics.py",
     "skills/confidence-protocol/references/complex-tasks.md",
     "skills/confidence-protocol/references/harnesses.md",
+    "skills/confidence-protocol/references/model-routing.md",
 }
 
 

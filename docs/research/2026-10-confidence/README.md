@@ -19,6 +19,9 @@ it does not establish a general increase in model accuracy on complex tasks.
 - [Targeted mutation results](mutation-results.json) and
   [reproducible mutation runner](evaluate_mutations.py): four passing controls and
   four guard-removal mutants rejected by actual regression-test assertions.
+- [Smaller models in normal use](cheap-depth/README.md): shipped routing policy,
+  actual Luna/Terra support work, Haiku5.5 triage qualification, and cost-observability
+  limits. This addition is outside the historical studies' frozen package.
 
 Repository-only research and tests are excluded from the plugin release. The
 installed skill loads a short core and routes complex tasks/harness questions into

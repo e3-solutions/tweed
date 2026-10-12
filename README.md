@@ -65,8 +65,13 @@ The protocol uses the lightest safe mode:
 | Standard | Normal bugs, features, refactors, and research | Define proof first, run focused and broader checks, review when risk calls for it |
 | Critical | Security, privacy, money, destructive changes, and large product work | Add independent test design, adversarial review, real boundary tests, and rollback proof |
 
-Most work stays with one agent. Extra reviewers are added only when the risk,
-uncertainty, or failed evidence justifies them.
+Quick work stays direct when delegation would add overhead. Substantial tasks use
+qualified lower-cost workers for bounded source discovery, code maps, test
+proposals and evidence extraction. The owner verifies promoted findings and uses
+suitable stronger reviewers for consequential decisions. Routing considers actual
+availability and cost per verified result, including checking and repair; model
+names and agent counts do not establish accuracy or savings. See
+[model routing](skills/confidence-protocol/references/model-routing.md).
 
 For complex work, optional obligation dependencies let Codex choose the next useful
 proof and preserve blockers across handoffs. `next --json` validates current
@@ -74,7 +79,8 @@ evidence and returns the ready frontier without executing anything or writing
 telemetry. Changing a prerequisite's supporting evidence demotes passed descendants
 to partial until reverified. An empty frontier does not imply completion.
 
-Opt into `review_policy.records_required` to require attributable, scoped review
+Use `review_policy.records_required` for new Critical software contracts, and opt
+in for other consequential complex work, to require attributable, scoped review
 artifacts and captured review runs, with current contract/source checks and distinct
 declared identities for Critical roles. Existing contracts retain their older
 gates. These records check consistency, not authenticated identity or the truth of

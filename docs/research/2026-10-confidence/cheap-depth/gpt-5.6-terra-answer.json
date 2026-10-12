@@ -1,0 +1,79 @@
+{
+  "cases": [
+    {
+      "case_id": "missing-source",
+      "label": "unknown",
+      "evidence_paths": [
+        "/source_sha256_at_launch",
+        "/source_sha256_after"
+      ]
+    },
+    {
+      "case_id": "timeout-terminal",
+      "label": "contradicted",
+      "evidence_paths": [
+        "/timed_out",
+        "/terminal/complete"
+      ]
+    },
+    {
+      "case_id": "peer-drift",
+      "label": "contradicted",
+      "evidence_paths": [
+        "/source_sha256_at_launch",
+        "/source_sha256_after",
+        "/readonly"
+      ]
+    },
+    {
+      "case_id": "healthy-workflow",
+      "label": "supported",
+      "evidence_paths": [
+        "/qualification_passed",
+        "/source_bound",
+        "/visible_check_exit_code",
+        "/stages/0/complete",
+        "/stages/1/complete",
+        "/stages/2/complete",
+        "/stages/3/complete"
+      ]
+    },
+    {
+      "case_id": "missing-tools",
+      "label": "contradicted",
+      "evidence_paths": [
+        "/server_status",
+        "/effective_tools",
+        "/expected_operational_tools"
+      ]
+    },
+    {
+      "case_id": "legitimate-intermediate-gap",
+      "label": "supported",
+      "evidence_paths": [
+        "/qualification_passed",
+        "/source_bound",
+        "/visible_check_exit_code",
+        "/stages/2/complete",
+        "/stages/3/complete"
+      ]
+    },
+    {
+      "case_id": "unknown-cost",
+      "label": "unknown",
+      "evidence_paths": [
+        "/total_cost_usd",
+        "/known_cost_subtotal"
+      ]
+    },
+    {
+      "case_id": "unchecked-patch",
+      "label": "unknown",
+      "evidence_paths": [
+        "/git_apply_exit_code",
+        "/allow_empty",
+        "/projection_comparison"
+      ]
+    }
+  ]
+}

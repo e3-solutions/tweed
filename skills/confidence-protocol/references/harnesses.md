@@ -5,6 +5,11 @@ Preserve cost/data authorization already granted. Do not silently substitute a
 model or change access to make a benchmark run. Keep volatile vendor details in
 dated research rather than the always-loaded skill.
 
+Apply [model routing](model-routing.md) when dividing normal task work: bounded
+discovery can use qualified lower-cost workers, while consequential decisions and
+required reviews retain suitable owners. Use native delegation first when it fits;
+use Claude Code for authorized provider diversity or additional available capacity.
+
 ## Separate four judgments
 
 1. Model/tool proposal: what action and arguments were requested?
@@ -89,8 +94,10 @@ normal-completion and forced-timeout receipts. Reap an exited direct child befor
 escalating original-group cleanup on systems where unreaped zombies affect group
 signals; still stop live group members and retain genuine cleanup failures.
 
-Use both providers' independently available accounts to distribute authorized
-work. This does not combine or raise their quotas. Preserve missing dollar costs
+When cross-provider cost and source exposure are authorized, use independently
+available accounts when scoped work benefits from additional capacity or independent
+coverage. Account availability does not grant authority. This does not combine or raise
+their quotas. Preserve missing dollar costs
 as unknown and distinguish reported list-price estimates from subscription
 billing. Model availability can differ between desktop and CLI under the same
 login; a catalog entry is not a successful request. Cross-provider review is a

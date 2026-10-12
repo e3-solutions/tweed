@@ -19,6 +19,10 @@ This file records user-visible changes to Tweed and Confidence Protocol.
   support bundles.
 - Route complex-task recovery, bounded repair, current capability discovery and
   cross-harness review guidance into optional references.
+- Use qualified lower-cost workers for bounded discovery, source maps, test
+  proposals and evidence extraction during substantial tasks; verify promoted
+  findings and escalate consequential decisions. Preserve direct Quick work,
+  explicit model requirements, unknown costs and existing proof gates.
 - Add dated model/harness research, auditable Opus agent receipts, public CLI
   regressions and mutation experiments. Research artifacts are repository-only.
 

@@ -10,7 +10,10 @@ Write a small set of obligations that can each be rejected by a concrete check.
 Include the real user interface and consequential external boundaries. Give one
 owner each edit scope and distinguish implementation, proof design, and review.
 Parallelize independent exploration or isolated components; serialize dependent
-decisions and shared writes. Author `depends_on` only where one claim logically
+decisions and shared writes. Apply [model routing](model-routing.md) to bounded
+ready work: use qualified lower-cost workers for checkable discovery and proposals,
+then have the owner verify findings before changing dependent claims. Author
+`depends_on` only where one claim logically
 requires another:
 
 ```json
@@ -64,6 +67,10 @@ to persist evidence and report an unfinished result even when the work budget en
 
 For consequential complex work opt into the stronger gate in the contract:
 
+Use this pinned policy for new Critical software contracts. Legacy contracts remain
+readable under their existing gates; a passing legacy role label does not establish
+that its review occurred. Preserve their evidence and disclose missing provenance.
+
 ```json
 "review_policy":{"records_required":true,"implementer":"main-agent",
  "required_roles":["test_designer","adversarial_reviewer"]}
@@ -101,6 +108,15 @@ unresolved record statuses, changed artifacts, changed intent, failed captures a
 stale code reviews cannot satisfy completion. For corrected findings, preserve the
 original artifact in history and supply a fresh passing review of the final state;
 do not relabel unresolved findings to force the gate.
+
+Retain the edit-ownership map when several workers implement a change. A required
+reviewer must not have implemented or repaired its reviewed scope. Use a separate
+actor and fresh context, supplying requirements, current source and raw evidence
+without the owner's endorsement or prior reasoning transcript. The same model
+family can perform a separate review, but neither a fresh context nor provider
+diversity proves statistical independence. The CLI excludes only the contract's
+single named implementer and compares declared identities; the owner must check
+all contributing implementers against the assigned review scope.
 
 Test design happens before implementation, so its capture may reference historical
 source. Its artifact integrity, successful capture and current contract digest are
