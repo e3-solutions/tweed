@@ -1,0 +1,166 @@
+{
+  "schema_version": 1,
+  "sealed_at_utc": "2026-10-12T14:44:30.815657+00:00",
+  "cohort_solver_calls_at_seal": 0,
+  "runtime": {
+    "python": "3.14.7",
+    "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+    "claude_code": "2.1.285",
+    "model": "claude-opus-5-5",
+    "effort": "medium"
+  },
+  "trials": 84,
+  "independent_tasks": 6,
+  "repeats": 2,
+  "protocol_file_sha256": "1418de5321506fd37618084666f2963e365b591604727cfb97d2dda163611fe2",
+  "private_manifest_file_sha256": "ebb5d767c7279281ac0bad3889bdcf2951175c7df09df1131c06a73d3e5fec6c",
+  "public_selection_file_sha256": "ceb102bc58b03048c9c9436891b58cfc1eb0129b94186cd47f223024c92f83a4",
+  "runner_file_sha256": "1f5e9ab2e5f0823a34c8f637ae08b4b3e7e1d1ac7bbbf5aab64ab79c95288fb8",
+  "analysis_file_sha256": "a94197c1ceeca0c6f48486111d6d667b55c246dab60b951f3e8fbec33b87f369",
+  "frozen_requests_file_sha256": "3c3e0f41ee32004eaccf2f30c730932fc05cd805c5c064452a289ff716b55394",
+  "schedule_file_sha256": "f230f71992ee5f0518d6b000e10f61378d9a96be285e9e050aed02f446fb87fd",
+  "canonical_freeze": {
+    "schema_version": 1,
+    "protocol_sha256": "89ce2dbfed5bfc23d54c0f6887168d42ad143ad44d9e1425eb7708e995186236",
+    "manifest_sha256": "6d6de9930197be89aacc3d684aa72b375148f172d687e53e52475d560708cad2",
+    "runner_sha256": "1f5e9ab2e5f0823a34c8f637ae08b4b3e7e1d1ac7bbbf5aab64ab79c95288fb8",
+    "queue_sha256": "3035f667bf321a475b390b930d27e501b176ee4a5c1682cb750b0df47b6ae77e",
+    "parallel_trials": 3
+  },
+  "controls": [
+    {
+      "task_id": "tweed-pr32",
+      "oracle_sha256": "c6a467e85d86d1a6a501c1d13c13176024baecd63f5306940b540dad9bcac143",
+      "source_sha256": "1fd87ae46bbc20f89b9c2b72bcd0f56efa24ee52e0c7c8bd1dc85b9f90d5675d",
+      "controls": {
+        "base": {
+          "exit_code": 1,
+          "log_sha256": "6aef5bf47f9a4464ac1c0656d1338afd7f79a02614217442082bb82d7c1753c9"
+        },
+        "head": {
+          "exit_code": 0,
+          "log_sha256": "0414c3c7ba41e21a2c178ced1253a4f48e2eee6bc2cb4b96bd5a1f8621451bd0"
+        }
+      }
+    },
+    {
+      "task_id": "tweed-pr31",
+      "oracle_sha256": "f222464a71f5edcf3d4fb3fe0164ec8ccefd4b1e5856967c5f2f2f25ab2d8fe6",
+      "source_sha256": "1fd87ae46bbc20f89b9c2b72bcd0f56efa24ee52e0c7c8bd1dc85b9f90d5675d",
+      "controls": {
+        "base": {
+          "exit_code": 1,
+          "log_sha256": "7b07d81598be3e1aa0ffb5fecf8ee080eb5338aa1d6e626f7eb163e4961d01d3"
+        },
+        "head": {
+          "exit_code": 0,
+          "log_sha256": "162e4563d7bfebc575541011a5d5aefebfe55ece62c6a0ec0e66dc92ef3422a5"
+        }
+      }
+    },
+    {
+      "task_id": "tweed-pr40",
+      "oracle_sha256": "9f9f6831196469ec39f063ca922b4f04b31fb98b4557198c14a394c54baa7bfe",
+      "source_sha256": "214297cc438dd04400ff45d147856cae3321a2e3306c3f2405039460d8c37d81",
+      "controls": {
+        "base": {
+          "exit_code": 1,
+          "log_sha256": "7f5d9c8faa4712199c54a35fbcb8c0f43e9bf03f6342b661a2bf1390927401bb"
+        },
+        "head": {
+          "exit_code": 0,
+          "log_sha256": "611be7e969fdccb93348e183da31b11ff13df3f78ddb95050a44a65042bae6ce"
+        }
+      }
+    },
+    {
+      "task_id": "tweed-pr34",
+      "oracle_sha256": "89d07124f55d394db9c0835d34b8947a7ca62bd0a7d5607d6dc88ca3f8f17700",
+      "source_sha256": "24e8daad647d6dcd86ff5f04eb6028f4a4cd977c901d4103738659a977aa39b5",
+      "controls": {
+        "base": {
+          "exit_code": 1,
+          "log_sha256": "7c6c5cf02b821ddce0171f7172e475f262f44b2dfe8b461f132f75019672c993"
+        },
+        "head": {
+          "exit_code": 0,
+          "log_sha256": "fbf58b7623e2fb1c51ac584211b60a2038bce54d926961828afd4a0ab2bf62aa"
+        }
+      }
+    },
+    {
+      "task_id": "tweed-pr39",
+      "oracle_sha256": "25ad608919b7b49e95a7faaa51df91fd0503022f702d763ba7e45bfbd065dac4",
+      "source_sha256": "e11e216c0e81eae365bb202523a705fb5dea162689c3494203e937406546de2b",
+      "controls": {
+        "base": {
+          "exit_code": 1,
+          "log_sha256": "ee408a2b88a43e346836c89613894fba20e112a05aee5d02eff8d846b12b8167"
+        },
+        "head": {
+          "exit_code": 0,
+          "log_sha256": "1c4ce117dabf9b588c786b2197a71c85b3d52183a14bcf14e4b258a61b863e1f"
+        }
+      }
+    },
+    {
+      "task_id": "tweed-pr35",
+      "oracle_sha256": "935ea132bcb1392c1426ac27afcb75367fcd45ae1b7c86b1246c9058bbbdd1c4",
+      "source_sha256": "bb44917db13a1dc0a3cbe9aa9a4a032309f0d4427cb1e067ce6719b1dcb194df",
+      "controls": {
+        "base": {
+          "exit_code": 1,
+          "log_sha256": "d51d01f91268b950268fafe441f0403bf9b31ab2b9f3c778245cfa157a2a7bea"
+        },
+        "head": {
+          "exit_code": 0,
+          "log_sha256": "99199667041e0b7305138ceafa8bd06117699e32d8baaf57038cfd530f99019a"
+        }
+      }
+    }
+  ],
+  "equivalent_implementation_controls": [
+    {
+      "task_id": "tweed-pr40",
+      "change": "DISABLE_SOFT_PHASE_BUDGET => UNBOUNDED_CHOICE",
+      "production_files": [
+        "bonaparte"
+      ],
+      "exit_code": 0,
+      "log_sha256": "9713b81452951e8042a309503cda40e647b9007b23846b84e8f2c43422adfb27"
+    },
+    {
+      "task_id": "tweed-pr39",
+      "change": "_started_thread_ids => _observed_children",
+      "production_files": [
+        "bonaparte",
+        "bonaparte_native.py"
+      ],
+      "exit_code": 0,
+      "log_sha256": "1c4ce117dabf9b588c786b2197a71c85b3d52183a14bcf14e4b258a61b863e1f"
+    }
+  ],
+  "grader_boundary_controls": {
+    "outside_read": true,
+    "symlink_read": true,
+    "outside_write": true,
+    "immutable_test": true,
+    "immutable_entry": true,
+    "network": true,
+    "no_auth_env": true,
+    "scratch_write": true,
+    "symlink_submission_refused": true
+  },
+  "local_tests": {
+    "runner_controls": 14,
+    "analysis_controls": 7,
+    "result": "passed"
+  },
+  "notes": [
+    "All full solver prompts and the execution queue were materialized before outcomes.",
+    "File SHA256 and sorted compact JSON digests are distinct and labeled.",
+    "The private manifest includes absolute snapshot/log locations; its file digest does not equal the portable public selection digest.",
+    "Noncohort smoke failures and successful native toy are retained locally, excluded from efficacy denominators.",
+    "PR35 and PR39 are bounded behavior slices; passing does not certify the entire original PR."
+  ]
+}

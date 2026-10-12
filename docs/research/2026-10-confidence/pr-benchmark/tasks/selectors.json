@@ -1,0 +1,42 @@
+{
+  "32": {
+    "test_phase_runtime.py": [
+      "test_child_turn_completion_does_not_terminate_coordinator_turn",
+      "test_run_phase_exception_terminates_coordinator_process_group"
+    ]
+  },
+  "31": {
+    "test_bonaparte.py": []
+  },
+  "40": {
+    "test_bonaparte.py": [
+      "test_resume_can_disable_and_persist_the_soft_budget"
+    ],
+    "test_phase_runtime.py": [
+      "test_disabled_soft_budget_waits_without_steering",
+      "test_terminal_before_deadline_does_not_steer"
+    ],
+    "test_checkpoint.py": [
+      "test_soft_phase_budget_accepts_only_positive_finite_numbers"
+    ]
+  },
+  "34": {
+    "test_handoff.py": [
+      "test_existing_publish_keeps_latest_review_for_safe_reconciliation",
+      "test_missing_or_ambiguous_input_fails_closed"
+    ]
+  },
+  "39": {
+    "test_bonaparte.py": []
+  },
+  "35": {
+    "test_installation.py": [
+      "test_status_reports_installed_latest_and_current",
+      "test_status_ignores_nonstable_tags_and_reports_offline",
+      "test_explicit_update_switches_to_a_complete_snapshot",
+      "test_moved_tag_is_rejected_and_staging_is_cleaned",
+      "test_required_symlink_is_rejected_and_current_remains_usable",
+      "test_smoke_failure_keeps_old_release_and_cleans_staging"
+    ]
+  }
+}
