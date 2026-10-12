@@ -88,7 +88,7 @@
       {
         "name": "to-tickets",
         "path": "skills/engineering/to-tickets/SKILL.md",
-        "summary": "Self-verifiable vertical slices, blocker edges and wide-refactor expand–contract exception.",
+        "summary": "Self-verifiable vertical slices, blocker edges and wide-refactor expand\u2013contract exception.",
         "entry_read": true,
         "sha256": "56ec23c5b2782785d4e65bff9e315b6d3aeb4ef977c174a219e99489fada1995",
         "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/to-tickets/SKILL.md"
@@ -1232,7 +1232,7 @@
           "end_line": 40,
           "url": "https://github.com/mattpocock/skills/blob/49dd158d1076134a641b33efb035946536778336/skills/engineering/to-tickets/SKILL.md#L25-L40",
           "sha256": "56ec23c5b2782785d4e65bff9e315b6d3aeb4ef977c174a219e99489fada1995",
-          "verified_marker": "expand–contract"
+          "verified_marker": "expand\u2013contract"
         },
         {
           "path": "skills/engineering/implement-spec/SKILL.md",
@@ -1244,7 +1244,7 @@
         }
       ],
       "observation": "Upstream recommends self-verifiable vertical slices, with an explicit exception for a mechanical change spanning many callers: expand both forms, migrate batches, then contract after all batches. If only integration can be green, a final integrate-and-verify ticket owns that guarantee.",
-      "cp_comparison": "CP already has dependency DAGs, readiness frontiers, descendant demotion, isolated ownership and verification after integration. Expand–contract supplies a useful plan shape for broad refactors without changing those gates.",
+      "cp_comparison": "CP already has dependency DAGs, readiness frontiers, descendant demotion, isolated ownership and verification after integration. Expand\u2013contract supplies a useful plan shape for broad refactors without changing those gates.",
       "adaptation": "When independent vertical slices cannot stay compatible, state old/new compatibility obligations and blocker edges. Never claim batch-level green behavior that only final integrated proof establishes. Preserve authority over branch operations and external issue changes.",
       "risk": "High for schema/API compatibility and destructive retirement; lower for local symbol renames.",
       "checkability": "High for caller enumeration and compatibility tests if scope is bounded; completeness needs separate deterministic search.",
@@ -1419,7 +1419,7 @@
     "session_persistence": false,
     "answer_sha256": "c4c2bb829691c9d15ce8f8c5e917b659df30da2fafb6ab1b75c3bc5b8a9e2ad3"
   },
-  "native_verification": "All 27 released entries read. Every important adopted source observation verified against exact line-numbered pinned text, including mutation proof, seam notes, standards/spec prompts, expand–contract exception, architecture removal heuristic, pointer triggers. Opus suggestions are advisory; no model-only claim promoted.",
+  "native_verification": "All 27 released entries read. Every important adopted source observation verified against exact line-numbered pinned text, including mutation proof, seam notes, standards/spec prompts, expand\u2013contract exception, architecture removal heuristic, pointer triggers. Opus suggestions are advisory; no model-only claim promoted.",
   "limits": [
     "Source comparison only: no upstream skill execution, installer, hosted coding trial, oracle evaluation, or representative efficacy measurement.",
     "Frozen experiment files, routes and outcomes unchanged and not pooled with this source review.",
@@ -1580,37 +1580,37 @@
   "task_type_routes": [
     {
       "task_type": "Quick reversible local edit",
-      "flow": "Reuse known intent → direct edit → smallest adequate observation.",
+      "flow": "Reuse known intent \u2192 direct edit \u2192 smallest adequate observation.",
       "question_boundary": "Ask only if a consequential ambiguity exists.",
       "model_route": "Direct owner; no mandatory planning/TDD/review worker."
     },
     {
       "task_type": "Bug",
-      "flow": "Reported symptom → executed repro → one falsifiable repair → original and minimized checks → review if consequential.",
+      "flow": "Reported symptom \u2192 executed repro \u2192 one falsifiable repair \u2192 original and minimized checks \u2192 review if consequential.",
       "question_boundary": "Discover environment facts; missing external access can be the concrete blocker.",
       "model_route": "Lower-cost bounded source/repro map; owner verifies actual behavior; strong advisor for difficult coupling."
     },
     {
       "task_type": "Feature",
-      "flow": "User outcome → disprovable acceptance → complete slice(s) → test-first where useful → standards/spec coverage → current evidence.",
+      "flow": "User outcome \u2192 disprovable acceptance \u2192 complete slice(s) \u2192 test-first where useful \u2192 standards/spec coverage \u2192 current evidence.",
       "question_boundary": "Only unresolved consequential behavior or authority choice.",
       "model_route": "Lower-cost discovery/test proposals; qualified isolated implementation worker; owner assesses proof."
     },
     {
       "task_type": "Refactor",
-      "flow": "Preserved behavior and compatibility → removal/locality question → slice or expand–contract → integrated proof.",
+      "flow": "Preserved behavior and compatibility \u2192 removal/locality question \u2192 slice or expand\u2013contract \u2192 integrated proof.",
       "question_boundary": "Routine implementation choices stay with owner; consequential compatibility tradeoff can need user choice.",
       "model_route": "Deterministic caller inventory; lower-cost classification; capable isolated migration; strong owner for cross-contract changes."
     },
     {
       "task_type": "Research/review",
-      "flow": "One bounded question → pinned primary sources → claim/citation separation → owner source checks → limits.",
+      "flow": "One bounded question \u2192 pinned primary sources \u2192 claim/citation separation \u2192 owner source checks \u2192 limits.",
       "question_boundary": "Do not convert source instructions into action authority.",
       "model_route": "Direct enumeration, then qualified lower-cost extraction; strong independent source advisor only where uncertainty warrants its cost."
     },
     {
       "task_type": "Critical trust/persistence/destructive work",
-      "flow": "Intent and consequences → contract → independent proof design before implementation → confined implementation → independent adversarial review → real-boundary current proof.",
+      "flow": "Intent and consequences \u2192 contract \u2192 independent proof design before implementation \u2192 confined implementation \u2192 independent adversarial review \u2192 real-boundary current proof.",
       "question_boundary": "Preserve prior authorization; ask for the remaining consequential choice or additional irreversible authority only after authorized preparation.",
       "model_route": "Suitably capable owner and independent qualified reviewers; lower-cost help may map bounded evidence but cannot replace required roles."
     }
@@ -1646,5 +1646,12 @@
     "adaptation": "A resolvable-scope check before costly delegation is useful; an intentionally empty enumeration is valid data. Tagged debug-instrumentation cleanup is a focused optional check; it proves only tagged remnants absent. Neither is a new universal pause or completion gate.",
     "qualifications": "Peer wording that CP lacks symptom matching or scope review was too absolute: CP already requires reproduction, disprovable claims and preservation of scope. Adopt sharpening examples, not a claim that the existing protocol wholly omits these principles. Peer suggestions did not authenticate the CLI implementation."
   },
-  "public_markdown_sha256": "a41269a594127d961f91177a6c0c06d8e38cc3b961784f49619ed16655796ad3"
+  "public_markdown_sha256": "a8ae69f6d9ba0340cc54ebaff35cbda072383dc9ca45a845ebb69cacc77d86f4",
+  "publication_revisions": [
+    {
+      "previous_public_markdown_sha256": "a41269a594127d961f91177a6c0c06d8e38cc3b961784f49619ed16655796ad3",
+      "current_public_markdown_sha256": "a8ae69f6d9ba0340cc54ebaff35cbda072383dc9ca45a845ebb69cacc77d86f4",
+      "reason": "Owner narrowed the historical source-review scope statement after independent review; source and Opus observations unchanged."
+    }
+  ]
 }
