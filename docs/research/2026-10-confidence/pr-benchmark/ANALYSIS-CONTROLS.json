@@ -1,0 +1,158 @@
+{
+  "schema_version": 1,
+  "classification": "Synthetic closed-study publication controls; no historical outcomes inspected during development",
+  "initial_review_sha256": "ed1482ae917a8ba6683c2cde96a6df8e3bdc40df9cbda8ea1f8e83d26e63cc98",
+  "correction_receipt_sha256": "846451b16c7fb2ef5464d2ffcfe10b6850c56c9762ea4dffd4bfefbad27cfa9d",
+  "analyzer_sha256": "15368e2a0be3ee1fc6c62ec5073f42d6b49372f4a5fd93cc5fcce044d0be510b",
+  "test_source_sha256": "2b348e0e042e446efc4b043c8bcfba333df7339a2972be1522b1388a4ec190fc",
+  "initial_findings": [
+    {
+      "id": "AV2-01",
+      "priority": 1,
+      "status": "blocking",
+      "title": "Permanently invalid assignments inflate acceptance bounds"
+    },
+    {
+      "id": "AV2-02",
+      "priority": 1,
+      "status": "blocking",
+      "title": "Oracle stdout/stderr can change after independent audit without rejection"
+    },
+    {
+      "id": "AV2-03",
+      "priority": 2,
+      "status": "audit_provenance_gap",
+      "title": "Two identical self-asserted audit files satisfy independence checks"
+    }
+  ],
+  "independent_correction_checks": [
+    {
+      "finding": "AV2-01",
+      "name": "All 12 ineligible treatment rows with diagnostic oracle success stay fixed-zero and outside valid-only pairs",
+      "passed": true,
+      "acceptance_bounds": [
+        0,
+        0
+      ],
+      "contrast_bounds": [
+        0,
+        0
+      ],
+      "valid_only_pairs": 0,
+      "diagnostic_values_preserved": true
+    },
+    {
+      "finding": "AV2-01",
+      "name": "One unknown-validity missing receipt plus one eligible null verdict retain two distinct unknown possibilities",
+      "passed": true,
+      "acceptance_bounds": [
+        0,
+        2
+      ],
+      "contrast_bounds": [
+        0,
+        0.16666666666666666
+      ]
+    },
+    {
+      "finding": "AV2-02",
+      "name": "grader.stdout mutate after closure rejected",
+      "passed": true
+    },
+    {
+      "finding": "AV2-02",
+      "name": "grader.stdout delete after closure rejected",
+      "passed": true
+    },
+    {
+      "finding": "AV2-02",
+      "name": "grader.stdout symlink after closure rejected",
+      "passed": true
+    },
+    {
+      "finding": "AV2-02",
+      "name": "grader.stderr mutate after closure rejected",
+      "passed": true
+    },
+    {
+      "finding": "AV2-02",
+      "name": "grader.stderr delete after closure rejected",
+      "passed": true
+    },
+    {
+      "finding": "AV2-02",
+      "name": "grader.stderr symlink after closure rejected",
+      "passed": true
+    },
+    {
+      "finding": "AV2-02",
+      "name": "Observed boolean oracle verdict without one log pin is rejected even with refreshed synthetic audit and closure",
+      "passed": true
+    },
+    {
+      "finding": "AV2-03",
+      "name": "identical merged audits rejected",
+      "passed": true
+    },
+    {
+      "finding": "AV2-03",
+      "name": "different formatting merged audits rejected",
+      "passed": true
+    },
+    {
+      "finding": "AV2-03",
+      "name": "missing stream observer source identity rejected",
+      "passed": true
+    },
+    {
+      "finding": "AV2-03",
+      "name": "changed declared observer source rejected",
+      "passed": true
+    },
+    {
+      "finding": "AV2-03",
+      "name": "mismatched metadata public commit rejected",
+      "passed": true
+    },
+    {
+      "name": "Synthetic closed baseline accepts with 96 bound grader outputs, no evidence writes, provenance limitation explicit",
+      "passed": true
+    },
+    {
+      "name": "Independent exact 46656-resample bootstrap reference remains correct",
+      "passed": true,
+      "interval": [
+        -0.4166666666666667,
+        0.75
+      ]
+    }
+  ],
+  "independent_checks_count": 16,
+  "repository_analyzer_tests_passed": 48,
+  "reviewer_origin": "Separate native actor, not analyzer author; fresh context with a targeted metric question and raw source; no authenticated identity or blind-judge claim",
+  "all_checked_sources_unchanged_during_recheck": true,
+  "limits": [
+    "Known ineligible assignments have fixed zero verified acceptance; this is not an invented observed oracle failure",
+    "Logical bounds include only missing/unknown eligible acceptance possibilities; no latent whole-software correctness estimate",
+    "Both final observer roles/source/sidecars and output bytes must bind; consistency is not authenticated independence",
+    "Actual completed study has not yet been analyzed; these fixtures are not model trials",
+    "Proof packet quality and semantic correctness beyond sealed oracles remain unassessed"
+  ],
+  "owner_benchmark_suite": {
+    "passed": 209,
+    "python": "3.14.7",
+    "platform": "macOS",
+    "wall_seconds": 17.971,
+    "command": [
+      "python3",
+      "-B",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "docs/research/2026-10-confidence/pr-benchmark",
+      "-q"
+    ],
+    "scope": "Separate local benchmark controls, not the246 core CI suite"
+  }
+}

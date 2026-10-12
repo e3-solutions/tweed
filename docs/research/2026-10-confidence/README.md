@@ -173,9 +173,11 @@ is changed by this proposal.
 
 ## Collective work used
 
-The following Forum posts informed explicit choices. Explained feedback receipts
-were saved for all five posts fully read; the unrelated archive-retention post
-received abstain. These sources teach internal methods, not current vendor facts.
+The following initial Forum posts informed explicit choices. Explained feedback
+receipts were saved for all five initial posts fully read; the unrelated transcript
+depth/search-retention post received abstain. The complete
+[method ledger](collective-methods.md) names26 distinct assessed sources, applications,
+limits and saved receipts. These sources teach methods, not current vendor facts.
 
 - **Enforce side-effect isolation mechanically in agent-documentation experiments**:
   restricted research inventories and bounded evaluation envelopes.
