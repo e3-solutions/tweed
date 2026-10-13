@@ -1,0 +1,239 @@
+{
+  "schema_version": 1,
+  "role": "adversarial_reviewer",
+  "declared_reviewer_origin": "/root/v071_final_review",
+  "harness": "Codex native collaboration subagent",
+  "model_observed": null,
+  "model_basis": "System-described Codex/GPT-6; exact runtime identifier unobserved",
+  "independent_of_reviewed_implementation": true,
+  "reviewed_implementation_edits": 0,
+  "additional_external_model_calls": 0,
+  "new_cpu_grades": 0,
+  "completed_at_utc": "2026-10-13T18:30:49.197185+00:00",
+  "git_head_at_review": "3b2efa9088ec6a0a4b4ae35a827ed73311b9139e",
+  "tracked_worktree_edits_at_final_read": [
+    "docs/research/2026-10-confidence/claude-first-evaluation/CAPTURE-RACE.md",
+    "docs/research/2026-10-confidence/claude-first-evaluation/DELIVERY.md"
+  ],
+  "contract_sha256": "ea84c2f75d29adf21ac2765ae133bf5af7e95152caabae361c693fed70d57c16",
+  "contract_file_sha256": "fc15a0acd385a65f6b4ddd3ae0fa05209caaa9c5caf50b9f3fcd6150b2eaf685",
+  "verdict": "PASS_SCOPED_MAINTENANCE_REVIEW_WITH_FINAL_CAPTURE_AND_HISTORICAL_LIMITS",
+  "review_scope": [
+    "0.7.1 bounded atomic staging retry and refusal preservation",
+    "Changed version identifiers and delivery-helper expectations",
+    "Current safe installation file/hash/mode identity and doctor result",
+    "Current closure/release capture integrity at 3b2 and explicit later freshness limits",
+    "Current CAPTURE-RACE/DELIVERY chronology and rollback edits"
+  ],
+  "unresolved_implementation_findings": [],
+  "resolved_evidence_findings": [
+    {
+      "id": "M1",
+      "finding": "Core/evaluation whole-tree captures at 7bc are stale at 3b2 after public installation metadata changed",
+      "resolution": "Owner accepted new final-source captures are required; reviewer retained stale validation errors and did not promote old captures as current",
+      "required_followup": "New core/research plus affected closure/release captures at final publication source before current P6 pass"
+    }
+  ],
+  "remaining_required_proof_gap": {
+    "obligation_id": "P7",
+    "status": "partial",
+    "reason": "Retained designer reconciliation declares partial historical provenance and cannot certify full seven-claim preimplementation coverage; this late review cannot supply missing prior design",
+    "original_scope_gaps": [
+      "D5 answer-dependent implementation",
+      "D1 callback-specific execution not established by original designer",
+      "Other original completeness/recovery/quality/final-source/custody coverage not certified by text-only reconciliation"
+    ],
+    "origin_authentication_and_original_timestamp_unobserved": true
+  },
+  "executed_checks": [
+    {
+      "name": "focused core new/refusal tests",
+      "tests": 35,
+      "exit_code": 0
+    },
+    {
+      "name": "independent budget/source/unsupported counterexamples",
+      "tests": 4,
+      "exit_code": 0
+    },
+    {
+      "name": "optimized delivery helper refusals",
+      "tests": 5,
+      "exit_code": 0
+    },
+    {
+      "name": "old-source diagnostic replay",
+      "test_methods": 8,
+      "failed_subcases": 9,
+      "exit_code": 1,
+      "expected_diagnostic": true,
+      "preimplementation": false
+    },
+    {
+      "name": "installed source/cache/repo/public manifest match",
+      "regular_files": 21,
+      "exit_code": 0
+    },
+    {
+      "name": "doctor safe receipt",
+      "exit_code": 0,
+      "status": "pass",
+      "tool_version": "0.7.1"
+    },
+    {
+      "name": "original unsupported root preserved",
+      "workspace_binding": null
+    },
+    {
+      "name": "clean original tracked-source equality at 3b2",
+      "regular_files": 416,
+      "exit_code": 0
+    },
+    {
+      "name": "CI read-only observation",
+      "run_id": 38446599178,
+      "head": "7bc8788f5c05adaba4e13aedd53386ed63dd37f0",
+      "successful_jobs": 4,
+      "scope": "No certification of later publication source"
+    }
+  ],
+  "input_hash_scope": "Explicit selected regular reviewed files, safe private contract/diagnosis/installation metadata and historical receipt. Hash inclusion is identity evidence, not semantic review of every line. Separate final-observations all-tracked manifest established original/clean equivalence at 3b2 before subsequent two-doc edits. Exact model weights, source authenticity and continuous custody unobserved.",
+  "input_manifest_sha256": "3a11274539b28bbe63da3ca496845280d2b56bdfb5ede5a076eaea451a24dae8",
+  "review_report_sha256": "ca521e0fe8a6c00df0c3febb37212fb746b6c12b37679630e215985ad7b14d9f",
+  "review_artifact_sha256": {
+    "final-observations.json": "efee366f1f4c7c8cff24f2d36275b022b5ea8416a20262eb1712288d8f2912ea",
+    "independent-red.log": "ee78b39dc1df82b8568c0953d6b4d36b5b7026d5b5723a545e4c484f2641f119",
+    "independent-red.json": "721098641cdaedaea856a10b6e46b0f2cc2cdab8736fa1c9ae9c243521136f8b",
+    "ci-observation.json": "695724f666a0f969210e383721ffcf97c27040647b6d72cb8bc3f047340f9882",
+    "checks.json": "d1ea401003b6ebd2e7c24aaf11fd20d6262a868185216fa6ef8fd8784c4d57d6",
+    "delivery-refusals.log": "4742698ca50fcfef76d9221e69c2d273cd851a57d199c8b4223e07a0758ee926",
+    "probes.py": "831442fdda8f33013ab9a978cbcb7972e72aca109885e42d6c6bfd3bbdfa7c1c",
+    "independent.log": "696b9ae9c4f8fe6fd5f493681495b5d9bfbad15fd4d0aacc0c39302bcbd112ea",
+    "review.md": "ca521e0fe8a6c00df0c3febb37212fb746b6c12b37679630e215985ad7b14d9f",
+    "focused.log": "9ec68ad1c7fc320e63604409709f8995a18a32d62984b5c7c5522c8c054cc42c"
+  },
+  "exclusions": [
+    "Authentication/settings and private provider streams",
+    "Fresh model inference or CPU grading",
+    "Reimplementation or repair of reviewed scopes",
+    "Full seven-claim historical certification",
+    "Final owner publication/report changes after this receipt",
+    "Final post-publication whole-tree captures"
+  ],
+  "prior_full_suite_observations": {
+    "core": {
+      "tests_run": 255,
+      "exit_code": 0,
+      "source_commit": "7bc8788",
+      "current_whole_tree_stale": true
+    },
+    "research": {
+      "tests_run": 111,
+      "skipped": 1,
+      "exit_code": 0,
+      "source_commit": "7bc8788",
+      "current_whole_tree_stale": true,
+      "skip": "test_followup.FollowupControls.test_real_novel_oracle_rejects_old_head_and_accepts_bounded_extension requires trusted historical fixtures and macOS sandbox; not executed coverage"
+    }
+  },
+  "original_receipt_sha256": "e9e7337cf6472217894adfc3f50ea28e7a28de1738e15e89080b6adbbbc8857e",
+  "selected_public_input_files": {
+    ".codex-plugin/plugin.json": {
+      "sha256": "e8e98c8b95a95270ac8bc2e60fdc3a3a3d05fafaf7192851e1e9a8037ef132b0",
+      "mode": 420
+    },
+    ".github/workflows/ci.yml": {
+      "sha256": "978758884c66481e14c3175351c92514b4c3c0d1c0c041c73a1b95e7c42e8bae",
+      "mode": 420
+    },
+    "CHANGELOG.md": {
+      "sha256": "9e8a0996b7bca1beb8400a9cc0eb2c7cb6d5e5f531dee124e3c3d31b2dcc2ed7",
+      "mode": 420
+    },
+    "skills/confidence-protocol/SKILL.md": {
+      "sha256": "c23476d8d3edbbd7f6f114443153dd5fa8ee61853abb2704d9b1c2f7b2dd0d46",
+      "mode": 420
+    },
+    "skills/confidence-protocol/references/evidence.md": {
+      "sha256": "bd097c352130c5199ee907199bfab369927cf8ee6f990e8133cb79a87ca01d02",
+      "mode": 420
+    },
+    "skills/confidence-protocol/references/complex-tasks.md": {
+      "sha256": "8c0396928105db561147b65b8f95b6a838ed9429efcbffc2b168030a77ae08c2",
+      "mode": 420
+    },
+    "skills/confidence-protocol/references/report-rules.md": {
+      "sha256": "cd71fbb00b82a7b0c4811a929d1ceac8338708c59788b3a6e8ae3268b94dd61f",
+      "mode": 420
+    },
+    "skills/confidence-protocol/scripts/confidence.py": {
+      "sha256": "8c898d5bf416990e520a1bb9b113f06ffd573854346ef4512ea5798e38d684be",
+      "mode": 420
+    },
+    "skills/confidence-protocol/scripts/diagnostics.py": {
+      "sha256": "e36cccac68890e6d4baa65915c324b84c0f070e839c4a97970b23dec766260ff",
+      "mode": 420
+    },
+    "skills/confidence-protocol/tests/support.py": {
+      "sha256": "2ff46f81cb02720fadc665d125d211cabeae8b771604c0888322fa00c304b5b7",
+      "mode": 420
+    },
+    "skills/confidence-protocol/tests/test_fingerprint_staging_retry.py": {
+      "sha256": "e8a13589fbb90a5f0dfae72ed62bae68cd8cb3448557a0465667c76c07d8e104",
+      "mode": 420
+    },
+    "skills/confidence-protocol/tests/test_parallel_capture.py": {
+      "sha256": "d2faa51758fec174caa59775b0b6c9199bfe11ca98256361278069832916f95d",
+      "mode": 420
+    },
+    "skills/confidence-protocol/tests/test_evidence_subtree.py": {
+      "sha256": "9f5a5dcb0d4d8e5568ecf0ebfe87513ea5b2107106e3542738aa3a6397d347eb",
+      "mode": 420
+    },
+    "skills/confidence-protocol/tests/test_evidence_root.py": {
+      "sha256": "63dfb21de5cc1949e6c1d06394dff02e1fd22595041d97f2244c57f56d551a26",
+      "mode": 420
+    },
+    "skills/confidence-protocol/tests/test_content_binding.py": {
+      "sha256": "da7b19f7742156993e6d4dc7edefd0c7f0b81dbf7c8d4d31ec57c8fd0d10ad2b",
+      "mode": 420
+    },
+    "skills/confidence-protocol/tests/test_git_availability.py": {
+      "sha256": "544ac46da0aa9130ff2cc1db467efc7df94c52a9b026fb1b9f1d1260cea67410",
+      "mode": 420
+    },
+    "skills/confidence-protocol/tests/test_dirty_submodule.py": {
+      "sha256": "1e6ffdac6d4075552ae6139f58de593cb823122d61b9150dfdf82aab019e5e3b",
+      "mode": 420
+    },
+    "docs/research/2026-10-confidence/claude-first-evaluation/verify_delivery.py": {
+      "sha256": "b087d91be7c22da93e643c7a0e1dbe150d7898bf468d6d89ccb710ddaa3de958",
+      "mode": 420
+    },
+    "docs/research/2026-10-confidence/claude-first-evaluation/test_verify_delivery.py": {
+      "sha256": "00198afb0c2c074a7f36830a3e2226cc8d64cae9e100558f03e70c9f4b5deaab",
+      "mode": 420
+    },
+    "docs/research/2026-10-confidence/claude-first-evaluation/CAPTURE-RACE.md": {
+      "sha256": "eff9195261166dda48ea85762265b3b486b9f281db41782ce6c3f9530ff0e68a",
+      "mode": 420
+    },
+    "docs/research/2026-10-confidence/claude-first-evaluation/DELIVERY.md": {
+      "sha256": "887f0cff2bd5fbe062b17c205f85ec10dfd994e5dee8db77e165e5c5404cb644",
+      "mode": 420
+    },
+    "docs/research/2026-10-confidence/claude-first-evaluation/REPORT.md": {
+      "sha256": "e6b8848b51d49f691e394032ada53c37696b9ff66af2cba288ea10577eb2392c",
+      "mode": 420
+    },
+    "docs/research/2026-10-confidence/claude-first-evaluation/installation-results.json": {
+      "sha256": "a66dbb565f7187b566e0cb9c9c812bc630fe296c0977a912e49ce882e83029d7",
+      "mode": 420
+    },
+    "docs/research/2026-10-confidence/claude-first-evaluation/test_followup.py": {
+      "sha256": "6a111d3a35775aacb06a3f925004c00b0738a88a9de4682e07d33bb8d9a21384",
+      "mode": 420
+    }
+  },
+  "private_input_projection": "Private local paths and input files omitted; original receipt hash retained."
+}
