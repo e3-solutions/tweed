@@ -5,11 +5,11 @@ Preserve cost/data authorization already granted. Do not silently substitute a
 model or change access to make a benchmark run. Keep volatile vendor details in
 dated research rather than the always-loaded skill.
 
-Apply [model routing](model-routing.md) when dividing normal task work: bounded
-discovery can use qualified lower-cost workers, while consequential decisions and
-required reviews retain suitable owners. When Codex coordinates, prefer qualified
-Claude workers as described there; use native Codex delegation for independent
-checks or a better-qualified route.
+Apply [model routing](model-routing.md) when dividing task work: Opus leads
+difficult development, Haiku is optional for bounded discovery, and Codex, when it
+coordinates, remains the interface, integrator, independent checker and fallback.
+Use native Codex delegation for independent checks or when it is the better
+qualified available route.
 
 ## Separate four judgments
 
@@ -37,8 +37,8 @@ pending side effects from prose summaries.
 
 ## Claude Code support
 
-Use noninteractive Claude Code for authorized offloaded research, proof design and
-adversarial review. Pass argv through a structured subprocess call or file, avoid
+Use noninteractive Claude Code for authorized offloaded research, implementation
+slices, proof design and adversarial review. Pass argv through a structured subprocess call or file, avoid
 shell interpolation, and preserve the exact requested model. A useful read-only
 research envelope exposes only Agent, Read, Glob, Grep, WebSearch and WebFetch and
 explicitly allows those tools; other tools remain denied. A tool list selects
@@ -55,9 +55,13 @@ errors but are not statistically independent oracles. Do not request or use hidd
 chain-of-thought as proof.
 
 Hook semantics vary by event. A nonzero hook exit is not universally blocking, and
-PostToolUse cannot undo an action. Keep the CLI evidence gate usable independently
-of hooks; an optional adapter must test its real refusal semantics before claiming
-enforcement. This release adds guidance, not an installed hook or launcher.
+PostToolUse cannot undo an action. A Stop hook can keep a turn from ending until a
+check passes, subject to a cap on consecutive blocks. Read and Edit permission
+rules cover Claude's file tools and recognized file commands, not arbitrary
+subprocesses; OS-level sandboxing is the enforcement layer for those. Keep the CLI
+evidence gate usable independently of hooks; an optional adapter must test its real
+refusal semantics before claiming enforcement. This release adds guidance, not an
+installed hook or launcher.
 
 ### Calling Claude from Codex
 

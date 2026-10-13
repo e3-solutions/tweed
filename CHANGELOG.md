@@ -2,6 +2,26 @@
 
 This file records user-visible changes to Tweed and Confidence Protocol.
 
+## [0.8.0] - 2026-10-13
+
+- Return the always-loaded skill to the 0.6 baseline body, which recorded more
+  verified successes than the frozen 0.7 candidate in a small registered sample,
+  plus two targeted rules: pair each required behavior with a current executed
+  check before declaring completion, and Opus-led routing.
+- Make Opus the development lead for difficult work, running its own
+  implement/check/repair loop; keep Haiku optional for bounded discovery and out of
+  substantial implementation; keep Codex as interface, integrator, focused
+  independent checker and fallback without redoing delegated work.
+- Intent flow now recovers accepted decisions before asking, asks only the current
+  decision frontier, and rechecks every remaining prerequisite before readiness,
+  because an answer settles only what it addresses.
+- Shorten model routing and question patterns; give worker briefs and owner
+  verification one home in model routing. Update harness notes with current Claude
+  Code hook and permission limits.
+- The 0.7.1 capture fix, CLI, evidence schema, tests and all prior study records are
+  unchanged. This revision is a design judgment and has not been shown to be more
+  accurate.
+
 ## [0.7.1] - 2026-10-13
 
 - Reobserve a complete source inventory a bounded number of times when exact

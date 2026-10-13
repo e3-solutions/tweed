@@ -65,24 +65,24 @@ The protocol uses the lightest safe mode:
 | Standard | Normal bugs, features, refactors, and research | Define proof first, run focused and broader checks, review when risk calls for it |
 | Critical | Security, privacy, money, destructive changes, and large product work | Add independent test design, adversarial review, real boundary tests, and rollback proof |
 
-Quick work stays direct when delegation would add overhead. When Codex coordinates,
-prefer qualified Claude Haiku workers for bounded discovery, test proposals and
-isolated low-risk edits, and Claude Opus for substantial implementation and
-maintainability review. Codex owns the conversation, integration, independent
-checks and final proof; Claude can perform most suitable work through Claude Code.
-The owner verifies promoted findings and retains the separate Critical review roles. Routing considers actual
-availability and cost per verified result, including checking and repair; model
-names and agent counts do not establish accuracy or savings. See
+Quick work stays direct. For substantial work, Claude Opus leads difficult
+development and runs its own implement/check/repair loop; Claude Haiku is optional
+for bounded discovery when its output is cheaper to check than to produce. When
+Codex coordinates, it keeps the conversation, authority, integration, focused
+independent checks and fallback, without redoing delegated work. Unavailable
+routes fall back to direct work. Whoever claims completion verifies promoted
+findings, and the separate Critical review roles remain. Model names, agent
+counts and majority votes do not establish accuracy or savings. See
 [model routing](skills/confidence-protocol/references/model-routing.md).
 
 New or substantial tasks start with [intent and task flows](skills/confidence-protocol/references/intent-flows.md):
-recover the desired outcome and known decisions, investigate facts, resolve the
-remaining consequential choices, then choose the relevant engineering flow.
-[Concrete question and solver patterns](skills/confidence-protocol/references/question-patterns.md)
-help expose tradeoffs, sharpen diagnostics and compare designs when needed.
-Acceptance examples guide observable slices and checks; required behavior and
-repository standards remain separate review judgments. Questions and documents
-stay proportional to the task, and new evidence can reopen an unresolved choice.
+recover accepted decisions, investigate facts, ask only the remaining
+consequential choices, write a concise contract, then carry authorized work
+through implementation, checks and repair. An answer settles only what it
+addresses, so readiness rechecks every remaining prerequisite. Before completion,
+each required behavior is paired with a current executed check.
+[Question and solver patterns](skills/confidence-protocol/references/question-patterns.md)
+load only when a choice or diagnosis needs sharpening.
 
 For complex work, optional obligation dependencies let Codex choose the next useful
 proof and preserve blockers across handoffs. `next --json` validates current
