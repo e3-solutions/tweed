@@ -1,0 +1,192 @@
+diff --git a/bonaparte b/bonaparte
+index 26a168f..274957a 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -409,6 +409,14 @@ def require_pull_request(receipt: dict, phase: str) -> None:
+         raise RuntimeError(f"completed {phase} is missing its pull request")
+ 
+ 
++class ContinuationFailure(RuntimeError):
++    """A known native session stopped at a recoverable execution boundary."""
++
++    def __init__(self, summary: str, session_id: str):
++        super().__init__(summary)
++        self.session_id = session_id
++
++
+ def run_phase(
+     repository: Path,
+     phase: str,
+@@ -544,6 +552,7 @@ def run_phase(
+         )
+     observer = EventObserver(_ACTIVE_PROGRESS)
+     driver = None
++    session_id = None
+     failed = True
+     try:
+         driver = AppServerPhaseDriver(repository, observer)
+@@ -571,10 +580,16 @@ def run_phase(
+         thread = thread_result.get("thread")
+         if not isinstance(thread, dict) or not isinstance(thread.get("id"), str):
+             raise RuntimeError("Codex app-server returned no thread identity")
+-        session_id = thread["id"]
+-        observer.observation["session_id"] = session_id
+-        if resume_session_id and session_id != resume_session_id:
++        native_session = thread["id"]
++        try:
++            if str(uuid.UUID(native_session)) != native_session:
++                raise ValueError
++        except ValueError as error:
++            raise RuntimeError("Codex returned an invalid session identity") from error
++        if resume_session_id and native_session != resume_session_id:
+             raise RuntimeError("Codex resumed a different session")
++        session_id = native_session
++        observer.observation["session_id"] = session_id
+         turn_params = {
+             "threadId": session_id,
+             "input": [{"type": "text", "text": prompt}],
+@@ -602,6 +617,11 @@ def run_phase(
+             try:
+                 message = driver.next_message(timeout)
+             except TimeoutError:
++                if steered:
++                    raise ContinuationFailure(
++                        "Soft-budget wrap-up was interrupted; unfinished proof obligations are unverified.",
++                        session_id,
++                    )
+                 try:
+                     message = driver.next_message(0)
+                 except TimeoutError:
+@@ -665,11 +685,14 @@ def run_phase(
+             steer_acknowledged = True
+         if terminal.get("status") != "completed":
+             detail = terminal.get("error")
+-            raise RuntimeError(
+-                f"{phase} coordinator failed: {detail or terminal.get('status')}"
+-            )
++            summary = f"{phase} coordinator failed: {detail or terminal.get('status')}"
++            if steered:
++                raise ContinuationFailure(summary, session_id)
++            raise RuntimeError(summary)
+         if post_steer_work:
+-            raise RuntimeError("coordinator started new work after soft-budget steer")
++            raise ContinuationFailure(
++                "coordinator started new work after soft-budget steer", session_id
++            )
+         if not driver.last_agent_message:
+             items = terminal.get("items")
+             if isinstance(items, list):
+@@ -683,6 +706,10 @@ def run_phase(
+             raise RuntimeError("Codex app-server returned no final receipt")
+         receipt = json.loads(driver.last_agent_message)
+         failed = False
++    except KeyboardInterrupt as error:
++        if session_id is not None:
++            raise ContinuationFailure("Bonaparte was interrupted.", session_id) from error
++        raise
+     finally:
+         observed = observer.finish()
+         if observation is not None:
+@@ -709,15 +736,19 @@ def run_phase(
+         raise RuntimeError("phase requested input without a question")
+     if steered:
+         if receipt["state"] != "needs-input":
+-            raise RuntimeError("soft-budget wrap-up did not request continuation")
++            raise ContinuationFailure(
++                "soft-budget wrap-up did not request continuation", session_id
++            )
+         question = receipt["question"]
+         if question != SOFT_BUDGET_CONTINUE_QUESTION and not question.startswith(
+             "Clarification required:"
+         ):
+-            raise RuntimeError("soft-budget wrap-up returned an invalid question")
++            raise ContinuationFailure(
++                "soft-budget wrap-up returned an invalid question", session_id
++            )
+         if "unverified" not in receipt["summary"].casefold():
+-            raise RuntimeError(
+-                "soft-budget wrap-up omitted unverified proof obligations"
++            raise ContinuationFailure(
++                "soft-budget wrap-up omitted unverified proof obligations", session_id
+             )
+     if receipt["state"] == "needs-input":
+         receipt["resume_session_id"] = session_id
+@@ -1058,6 +1089,16 @@ def resume_checkpoint(
+             replayed_answer,
+             checkpoint["soft_phase_budget_seconds"],
+         )
++    except ContinuationFailure as error:
++        _update_checkpoint_observation(checkpoint, observation)
++        checkpoint.update(
++            question=SOFT_BUDGET_CONTINUE_QUESTION,
++            pending_answer=None,
++        )
++        _refresh_checkpoint_git(checkpoint, update_identity=True, require_identity=True)
++        return _checkpoint_failure(
++            checkpoint, str(error).replace("\n", " ")[:800], remote_uncertain=True
++        ), 1
+     except KeyboardInterrupt:
+         _update_checkpoint_observation(checkpoint, observation)
+         return (
+@@ -1123,16 +1164,29 @@ def run_and_checkpoint(
+ ) -> dict:
+     base_git = capture_git_state(repository) if session_id is None else None
+     observation: dict = {}
+-    receipt = run_phase(
+-        repository,
+-        phase,
+-        phase_input,
+-        session_id,
+-        model,
+-        reasoning,
+-        observation=observation,
+-        soft_phase_budget_seconds=soft_phase_budget_seconds,
+-    )
++    failure_summary = None
++    try:
++        receipt = run_phase(
++            repository,
++            phase,
++            phase_input,
++            session_id,
++            model,
++            reasoning,
++            observation=observation,
++            soft_phase_budget_seconds=soft_phase_budget_seconds,
++        )
++    except ContinuationFailure as error:
++        if session_id is not None and error.session_id != session_id:
++            raise RuntimeError("Codex resumed a different session") from error
++        failure_summary = str(error).replace("\n", " ")[:800]
++        receipt = fail(failure_summary)
++        receipt.update(
++            phase=phase,
++            state="needs-input",
++            question=SOFT_BUDGET_CONTINUE_QUESTION,
++        )
++        observation["session_id"] = error.session_id
+     if receipt["state"] != "needs-input":
+         return receipt
+     coordinator_session = observation.get("session_id") or session_id
+@@ -1149,7 +1203,11 @@ def run_and_checkpoint(
+         base_git or capture_git_state(repository),
+         soft_phase_budget_seconds,
+     )
+-    return checkpoint_receipt(checkpoint)
++    return checkpoint_receipt(
++        checkpoint,
++        state="failed" if failure_summary is not None else None,
++        summary=failure_summary,
++    )
+ 
+ 
+ def parse() -> tuple[
+@@ -1340,6 +1398,8 @@ def main() -> int:
+             progress.stop_heartbeat()
+             progress.report("finalizing")
+             terminal_state = result_receipt["state"]
++            if terminal_state == "failed" and exit_code == 0:
++                exit_code = 1
+             if terminal_state not in PROGRESS_TERMINAL_STATES:
+                 raise ValueError("invalid progress state")
+             serialized_receipt = serialize_receipt(result_receipt)

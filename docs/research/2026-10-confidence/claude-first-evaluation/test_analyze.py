@@ -130,6 +130,151 @@ class ClosedAnalysisControls(unittest.TestCase):
             fixture[-1]['stage']['stream_sha256'] = r.sha(file); r.write(fixture[0] / 'receipt.json', fixture[-1])
             with self.assertRaises(ValueError): self.evaluate(fixture)
 
+    def denied_proposal(self, fixture, argv=None, tool='run_tests'):
+        """Real frozen guard, before any command-request/child execution."""
+        directory, _, _, arm, _, _, adapter, raw = fixture
+        main = directory / 'main'; arguments = {'argv': ['grep', 'needle', 'public.py'] if argv is None else argv}
+        worker = adapter.frozen.base.WorkspaceTools(r.read(main / 'server-config.json'))
+        response, denial = worker.call(tool, arguments)
+        self.assertFalse(denial['ok']); self.assertFalse(list(worker.control.glob('*.command-request.json')))
+        proposal = {'type': 'tool_use', 'id': 'denied-1', 'name': 'mcp__cp_trial__' + tool, 'input': arguments}
+        result = {'type': 'tool_result', 'tool_use_id': 'denied-1', 'is_error': True, 'content': json.dumps(response)}
+        events = [json.loads(line) for line in (main / 'stream.jsonl').read_text().splitlines()]
+        events[1:1] = [{'type': 'assistant', 'message': {'model': arm['model'], 'content': [proposal]}},
+                       {'type': 'user', 'message': {'content': [result]}}]
+        (main / 'stream.jsonl').write_text(''.join(json.dumps(e) + '\n' for e in events))
+        (main / 'tool-events.jsonl').write_text(json.dumps(denial) + '\n')
+        raw['stage']['stream_sha256'] = r.sha(main / 'stream.jsonl'); raw['tool_events_sha256'] = r.sha(main / 'tool-events.jsonl')
+        r.write(directory / 'receipt.json', raw)
+        return events, denial, proposal, result
+
+    def reseal_denial(self, fixture, events, denials):
+        main = fixture[0] / 'main'
+        (main / 'stream.jsonl').write_text(''.join(json.dumps(e) + '\n' for e in events))
+        (main / 'tool-events.jsonl').write_text(''.join(json.dumps(e) + '\n' for e in denials))
+        fixture[-1]['stage']['stream_sha256'] = r.sha(main / 'stream.jsonl')
+        fixture[-1]['tool_events_sha256'] = r.sha(main / 'tool-events.jsonl')
+        r.write(fixture[0] / 'receipt.json', fixture[-1])
+
+    def test_bound_preexecution_denial_allows_recovered_actor(self):
+        for tool, argv in [('run_tests', ['grep', 'x']), ('run_tests', []), ('run_tests', ['sh', '-l', '-c', 'true']),
+                           ('confidence', ['unsupported']), ('confidence', ['run', 3])]:
+            with self.subTest(tool=tool, argv=argv), tempfile.TemporaryDirectory() as name:
+                fixture = self.fixture(Path(name)); self.denied_proposal(fixture, argv, tool)
+                value = self.evaluate(fixture)
+                self.assertTrue(value['eligible']); self.assertTrue(value['verified_success'])
+                self.assertEqual(value['safe_rejected_command_proposals'], 1)
+
+    def test_unsupported_proposal_needs_exact_bound_denial_and_result(self):
+        for fault in ('executed', 'executed-and-denied', 'server-digest', 'server-error', 'server-kind', 'missing-server', 'result-id',
+                      'result-error', 'result-content', 'result-before', 'native-tool', 'duplicate-call', 'unbound-server', 'absent-server'):
+            with self.subTest(fault=fault), tempfile.TemporaryDirectory() as name:
+                fixture = self.fixture(Path(name)); events, denial, proposal, result = self.denied_proposal(fixture)
+                denials = [denial]
+                if fault == 'executed': denial['ok'] = True
+                elif fault == 'executed-and-denied': denials.append(dict(denial, ok=True))
+                elif fault == 'server-digest': denial['arguments_sha256'] = '0' * 64
+                elif fault == 'server-error': denial['error'] = 'ValueError: unrelated'
+                elif fault == 'server-kind': denial['error_kind'] = 'policy'
+                elif fault == 'missing-server': denials = []
+                elif fault == 'result-id': result['tool_use_id'] = 'different'
+                elif fault == 'result-error': result['is_error'] = False
+                elif fault == 'result-content': result['content'] = '{}'
+                elif fault == 'result-before': events[1], events[2] = events[2], events[1]
+                elif fault == 'native-tool': proposal['name'] = 'Bash'
+                elif fault == 'duplicate-call':
+                    events.insert(3, {'type': 'assistant', 'message': {'model': fixture[3]['model'], 'content': [dict(proposal, id='denied-2')]}})
+                    events.insert(4, {'type': 'user', 'message': {'content': [dict(result, tool_use_id='denied-2')]}})
+                self.reseal_denial(fixture, events, denials)
+                if fault in ('unbound-server', 'absent-server'):
+                    fixture[-1]['tool_events_sha256'] = None
+                    if fault == 'absent-server': (fixture[0] / 'main/tool-events.jsonl').unlink()
+                    r.write(fixture[0] / 'receipt.json', fixture[-1])
+                with self.assertRaises(ValueError): self.evaluate(fixture)
+
+    def test_repeated_guard_denials_need_distinct_server_and_provider_evidence(self):
+        with tempfile.TemporaryDirectory() as name:
+            fixture = self.fixture(Path(name)); events, denial, proposal, result = self.denied_proposal(fixture)
+            result['content'] = [{'type': 'text', 'text': result['content']}]
+            events.insert(3, {'type': 'assistant', 'message': {'model': fixture[3]['model'], 'content': [dict(proposal, id='denied-2')]}})
+            events.insert(4, {'type': 'user', 'message': {'content': [dict(result, tool_use_id='denied-2')]}})
+            self.reseal_denial(fixture, events, [denial, dict(denial)])
+            value = self.evaluate(fixture)
+            self.assertEqual(value['safe_rejected_command_proposals'], 2); self.assertTrue(value['verified_success'])
+            # Duplicate provider results cannot certify even one unique call.
+            events.insert(3, {'type': 'user', 'message': {'content': [dict(result)]}})
+            self.reseal_denial(fixture, events, [denial, dict(denial)])
+            with self.assertRaises(ValueError): self.evaluate(fixture)
+
+    def parser_rejection(self, fixture):
+        # Provider wrapper retains at most 2048 characters, while its error
+        # quotes the first 200 and reports the full malformed input length.
+        raw = '{"argv": ["python3", "-c", "' + 'x' * 250
+        marker = {'__unparsedToolInput': {'raw': raw, 'len': len(raw)}}
+        name = 'mcp__cp_trial__run_tests'
+        content = (f'<tool_use_error>InputValidationError: {name} was called with input that could not be parsed as JSON.\n'
+                   f'You sent (first 200 of {len(raw)} bytes): {raw[:200]}\n'
+                   'Common causes: unescaped backslashes in file paths (use / or \\\\), unescaped control characters, or truncated output. Retry with valid JSON.</tool_use_error>')
+        proposal = {'type': 'tool_use', 'id': 'parse-1', 'name': name, 'input': marker}
+        result = {'type': 'tool_result', 'tool_use_id': 'parse-1', 'is_error': True, 'content': content}
+        main = fixture[0] / 'main'; events = [json.loads(line) for line in (main / 'stream.jsonl').read_text().splitlines()]
+        events[1:1] = [{'type': 'assistant', 'message': {'model': fixture[3]['model'], 'content': [proposal]}},
+                       {'type': 'user', 'message': {'content': [result]}}]
+        self.reseal_denial(fixture, events, [])
+        return events, proposal, result
+
+    def test_provider_parse_rejection_is_separate_from_server_denial(self):
+        with tempfile.TemporaryDirectory() as name:
+            fixture = self.fixture(Path(name)); self.parser_rejection(fixture)
+            value = self.evaluate(fixture)
+            self.assertTrue(value['verified_success']); self.assertEqual(value['safe_rejected_command_proposals'], 0)
+            self.assertEqual(value['provider_input_validation_rejections'], 1)
+            # Real provider retention truncates a larger malformed input to
+            # 2048 characters, while the diagnostic reports its full length.
+            events, proposal, result = self.parser_rejection(fixture)
+            marker = proposal['input']['__unparsedToolInput']
+            old_raw, old_length = marker['raw'], marker['len']; marker.update(raw=old_raw + 'x' * (2048 - len(old_raw)), len=3488)
+            result['content'] = result['content'].replace(f'of {old_length} bytes', 'of 3488 bytes')
+            # Restore one unique call rather than duplicating the helper's
+            # already written prior proposal/result.
+            events = [events[0], events[1], events[2], events[-2], events[-1]]
+            self.reseal_denial(fixture, events, [])
+            self.assertEqual(self.evaluate(fixture)['provider_input_validation_rejections'], 1)
+
+    def test_provider_parse_rejection_requires_exact_wrapper_diagnostic_and_no_dispatch(self):
+        for fault in ('argv', 'extra-marker', 'extra-wrapper', 'parseable', 'length', 'prefix', 'wrong-tool', 'wrong-id',
+                      'not-error', 'generic-error', 'dispatch-success', 'dispatch-error', 'reused-id', 'native-tool'):
+            with self.subTest(fault=fault), tempfile.TemporaryDirectory() as name:
+                fixture = self.fixture(Path(name)); events, proposal, result = self.parser_rejection(fixture); denials = []
+                if fault == 'argv': proposal['input']['argv'] = ['python3', '-c', 'true']
+                elif fault == 'extra-marker': proposal['input']['__unparsedToolInput']['other'] = True
+                elif fault == 'extra-wrapper': proposal['input']['other'] = True
+                elif fault == 'parseable': proposal['input']['__unparsedToolInput']['raw'] = '{}'
+                elif fault == 'length': proposal['input']['__unparsedToolInput']['len'] += 1
+                elif fault == 'prefix': result['content'] = result['content'].replace('You sent', 'You received')
+                elif fault == 'wrong-tool': result['content'] = result['content'].replace('__run_tests', '__confidence')
+                elif fault == 'wrong-id': result['tool_use_id'] = 'wrong'
+                elif fault == 'not-error': result['is_error'] = False
+                elif fault == 'generic-error': result['content'] = '<tool_use_error>InputValidationError</tool_use_error>'
+                elif fault.startswith('dispatch-'):
+                    denials = [{'name': 'run_tests', 'arguments_sha256': r.digest(proposal['input']), 'ok': fault == 'dispatch-success'}]
+                elif fault == 'native-tool': proposal['name'] = 'Bash'
+                else: events.insert(3, {'type': 'assistant', 'message': {'model': fixture[3]['model'], 'content': [dict(proposal)]}})
+                self.reseal_denial(fixture, events, denials)
+                with self.assertRaises(ValueError): self.evaluate(fixture)
+
+    def test_generic_missing_argv_requires_real_bound_keyerror(self):
+        with tempfile.TemporaryDirectory() as name:
+            fixture = self.fixture(Path(name)); events, _, proposal, result = self.denied_proposal(fixture)
+            proposal['input'] = {}; worker = fixture[6].frozen.base.WorkspaceTools(r.read(fixture[0] / 'main/server-config.json'))
+            response, denial = worker.call('run_tests', {})
+            self.assertFalse(list(worker.control.glob('*.command-request.json')))
+            result['content'] = json.dumps(response); self.reseal_denial(fixture, events, [denial])
+            value = self.evaluate(fixture); self.assertEqual(value['safe_rejected_command_proposals'], 1)
+            self.assertEqual(value['provider_input_validation_rejections'], 0)
+            self.reseal_denial(fixture, events, [])
+            with self.assertRaises(ValueError): self.evaluate(fixture)
+
     def test_historical_grade_association_is_limited_and_fresh_source_check_is_separate(self):
         with tempfile.TemporaryDirectory() as name:
             root = Path(name); fixture = self.fixture(root); snapshot = fixture[0] / 'result_snapshot'

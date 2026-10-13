@@ -29,7 +29,8 @@ ROW_KEYS = set(IDS) | {'backend', 'model_requested', 'actual_model', 'model_attr
     'semantic_unknown', 'worker_complete_true_empty_remaining', 'declares_complete_true', 'false_completion_event', 'false_completion_conditioned_denominator',
     'terminal_known', 'missing_or_invalid_terminal', 'timed_out', 'wall_seconds', 'usage', 'cost_estimate_usd', 'cost_basis', 'observed_billed_usd',
     'qualification_failures', 'artifact_bindings', 'patch_present', 'patch_bound', 'custody', 'historical_oracle_input_digest_recorded',
-    'current_source_acceptance', 'oracle_association_status', 'current_recheck_agrees_with_recorded_grade', 'current_recheck_bindings'}
+    'current_source_acceptance', 'oracle_association_status', 'current_recheck_agrees_with_recorded_grade', 'current_recheck_bindings',
+    'safe_rejected_command_proposals', 'provider_input_validation_rejections'}
 TOP_KEYS = {'schema_version', 'assigned', 'registration_sha256', 'requests_sha256', 'controls_sha256', 'closure_sha256', 'analyzer_sha256',
             'analyzer_tests_sha256', 'rows', 'arms', 'contrasts', 'limitations', 'current_recheck_summary'}
 
@@ -77,15 +78,79 @@ def validate_roster(requests, tasks, arms):
         require(q['trial_id'] == q['task_id'] + '--' + q['arm_id'] + '--r' + str(q['repeat']), 'Noncanonical assigned trial identity')
 
 
-def provider_facts(main, stage, arm, adapter):
+def command_guard_error(name, arguments):
+    """Pure mirror of frozen pre-request ValueError guards; never run a command.
+
+    Unknown malformed shapes remain rejected rather than approximating a
+    different TypeError. Only these guards prove rejection before child setup.
+    """
+    require(isinstance(arguments, dict), 'Actual controlled command input unknown')
+    if 'argv' not in arguments: return "KeyError: 'argv'", 'tool_input'
+    argv = arguments['argv']
+    if name == 'confidence':
+        require(isinstance(argv, list), 'Actual Confidence argv shape unknown')
+        if not argv or argv[0] not in ('init', 'run', 'record', 'validate', 'render', 'next'):
+            return 'ValueError: Use confidence init/run/record/validate/render/next', 'tool_input'
+        argv = ['python3', '-B', 'workspace/.protocol/scripts/confidence.py', *argv]
+    if not isinstance(argv, list) or not argv or not all(isinstance(item, str) and '\0' not in item for item in argv):
+        return 'ValueError: argv must contain strings', 'tool_input'
+    if argv[0] not in ('python3', 'python', 'git', 'bash', 'sh', sys.executable):
+        return 'ValueError: Use python3, git, bash, or sh; confinement covers descendants', 'tool_input'
+    if argv[0] in ('bash', 'sh') and argv[1:2] != ['-c']:
+        return 'ValueError: Shell tools require -c without login/global startup files', 'policy'
+    return None
+
+
+def error_content(block):
+    if block.get('is_error') is not True: return None
+    content = block.get('content')
+    if isinstance(content, list):
+        if len(content) != 1 or not isinstance(content[0], dict) or content[0].get('type') != 'text': return None
+        content = content[0].get('text')
+    return content if isinstance(content, str) else None
+
+
+def result_error(block, error):
+    content = error_content(block)
+    if content is None: return False
+    try: return json.loads(content) == {'error': error}
+    except ValueError: return False
+
+
+def parser_error(name, arguments):
+    """Exact retained Claude Code malformed-input wrapper and diagnostic.
+
+    This is provider-side non-dispatch evidence, not a server policy denial.
+    The full rejected input is unavailable beyond the retained 2048 characters.
+    """
+    require(isinstance(arguments, dict) and set(arguments) == {'__unparsedToolInput'}, 'Parser rejection wrapper has extra/missing input keys')
+    marker = arguments['__unparsedToolInput']
+    require(isinstance(marker, dict) and set(marker) == {'raw', 'len'}, 'Parser rejection marker shape unknown')
+    raw, length = marker['raw'], marker['len']
+    require(isinstance(raw, str) and raw and type(length) is int and length > 0 and len(raw) == min(length, 2048), 'Parser rejection retained length differs')
+    try: json.loads(raw)
+    except ValueError: pass
+    else: raise ValueError('Parser rejection retained input is valid JSON')
+    return (f'<tool_use_error>InputValidationError: {name} was called with input that could not be parsed as JSON.\n'
+            f'You sent (first 200 of {length} bytes): {raw[:200]}\n'
+            'Common causes: unescaped backslashes in file paths (use / or \\\\), unescaped control characters, or truncated output. Retry with valid JSON.</tool_use_error>')
+
+
+def provider_facts(main, stage, arm, adapter, tool_events=()):
     """Re-derive provider metadata from the bound actual output, no inference."""
     events, invalid = adapter.frozen.backend.parse_events(main / 'stream.jsonl')
     require(invalid == stage.get('invalid_stream_lines'), 'Recorded invalid stream count differs')
     if arm['backend'] == 'claude':
         terminal = next((event for event in reversed(events) if event.get('type') == 'result'), None)
         models = []
-        init = None
-        for event in events:
+        init = None; denials = 0; parser_denials = 0; consumed = set(); call_ids = set()
+        results = {}
+        for index, event in enumerate(events):
+            if event.get('type') != 'user': continue
+            for block in (event.get('message') or {}).get('content', []):
+                if isinstance(block, dict) and block.get('type') == 'tool_result':
+                    results.setdefault(block.get('tool_use_id'), []).append((index, block))
+        for index, event in enumerate(events):
             if event.get('type') == 'assistant':
                 model = (event.get('message') or {}).get('model')
                 if isinstance(model, str) and model not in models: models.append(model)
@@ -93,26 +158,45 @@ def provider_facts(main, stage, arm, adapter):
                     if not isinstance(block, dict) or block.get('type') != 'tool_use': continue
                     name = block.get('name'); allowed = {'mcp__cp_trial__' + tool for tool in adapter.EXPECTED} | {'StructuredOutput'}
                     require(name in allowed, 'Actual assistant requested a tool outside the controlled inventory')
+                    arguments = block.get('input')
+                    if isinstance(arguments, dict) and '__unparsedToolInput' in arguments:
+                        require(name != 'StructuredOutput', 'Parser rejection tool is outside controlled MCP inventory')
+                        expected = parser_error(name, arguments); call_id = block.get('id')
+                        require(isinstance(call_id, str) and call_id and call_id not in call_ids, 'Parser rejection lacks a unique call identity')
+                        call_ids.add(call_id); matches = results.get(call_id, [])
+                        require(len(matches) == 1 and matches[0][0] > index and error_content(matches[0][1]) == expected, 'Parser rejection lacks its exact subsequent provider diagnostic')
+                        require(not any(item.get('name') == name.removeprefix('mcp__cp_trial__') and item.get('arguments_sha256') == r.digest(arguments) for item in tool_events), 'Provider parser rejection unexpectedly dispatched to server')
+                        parser_denials += 1
+                        continue
                     if name in ('mcp__cp_trial__run_tests', 'mcp__cp_trial__confidence'):
-                        arguments = block.get('input')
-                        require(isinstance(arguments, dict), 'Actual controlled command input unknown')
-                        argv = arguments.get('argv')
-                        require(isinstance(argv, list) and argv and all(isinstance(x, str) and '\0' not in x for x in argv), 'Actual controlled command argv malformed')
-                        if name.endswith('__confidence'):
-                            require(argv[0] in ('init', 'run', 'record', 'validate', 'render', 'next'), 'Actual unsupported Confidence command')
-                        else:
-                            require(argv[0] in ('python3', 'python', 'git', 'bash', 'sh', sys.executable), 'Actual executable outside confined command inventory')
-                            if argv[0] in ('bash', 'sh'): require(argv[1:2] == ['-c'], 'Actual shell command enables login/startup behavior')
+                        tool = name.removeprefix('mcp__cp_trial__')
+                        expected_error = command_guard_error(tool, arguments)
+                        if expected_error is not None:
+                            error, kind = expected_error; call_id = block.get('id')
+                            require(isinstance(call_id, str) and call_id and call_id not in call_ids, 'Denied command proposal lacks a unique call identity')
+                            call_ids.add(call_id)
+                            matches = results.get(call_id, [])
+                            require(len(matches) == 1 and matches[0][0] > index and result_error(matches[0][1], error), 'Unsupported command lacks its exact subsequent provider denial')
+                            candidates = [(i, item) for i, item in enumerate(tool_events) if item.get('name') == tool and item.get('arguments_sha256') == r.digest(arguments)]
+                            # A success with the same proposed invalid arguments
+                            # contradicts the pre-execution guard, even if a
+                            # separate denial could otherwise be borrowed.
+                            require(not any(item.get('ok') is True for _, item in candidates), 'Unsupported command has an executed server event')
+                            matched = next((i for i, item in candidates if i not in consumed and item.get('ok') is False and item.get('error') == error and item.get('error_kind') == kind), None)
+                            require(matched is not None, 'Unsupported command lacks its exact bound pre-execution server denial')
+                            consumed.add(matched); denials += 1
             elif event.get('type') == 'system' and event.get('subtype') == 'init':
                 init = {key: event.get(key) for key in ('model', 'tools', 'mcp_servers', 'mcp_server_errors', 'claude_code_version', 'permissionMode')}
         require(terminal == stage.get('terminal') and models == stage.get('observed_assistant_models') and init == stage.get('harness_initialization'), 'Recorded Claude facts differ from actual stream')
         for key, wanted in [('usage', (terminal or {}).get('usage')), ('total_cost_usd', (terminal or {}).get('total_cost_usd')), ('modelUsage', (terminal or {}).get('modelUsage', {}))]:
             require(stage.get(key) == wanted, 'Recorded Claude ' + key + ' differs from actual stream')
+        return denials, parser_denials
     else:
         final = (main / 'final.json').read_text() if (main / 'final.json').is_file() else None
         facts = adapter.frozen.backend.event_receipt(events, final, error=stage.get('process_exit') != 0 or stage.get('timed_out') is True)
         for key, wanted in facts.items():
             require(stage.get(key) == wanted, 'Recorded Codex ' + key + ' differs from actual events')
+        return None, None
 
 
 def expected_claude_argv(main, server, arm, config, prompt, adapter):
@@ -231,7 +315,7 @@ def row(directory, request, task, arm, payload, study, adapter):
     if patch.exists() and 'patch_sha256' not in bindings:
         bindings['unbound_current_patch_sha256'] = r.sha(patch)
     recomputed = {'eligible': False, 'failures': ['returned_stage_or_artifact_unknown'], 'model_attribution': 'unknown', 'actual_model': None}
-    terminal = None
+    terminal = None; safe_denials = None; parser_denials = None
     if isinstance(stage, dict):
         main = directory / 'main'; actual_request = r.read(main / 'request.json')
         require(r.digest(actual_request) == stage.get('request_sha256'), 'Actual provider request digest mismatch')
@@ -248,7 +332,14 @@ def row(directory, request, task, arm, payload, study, adapter):
         request_envelope(main, actual_request, arm, payload['config'], request['prompt'], adapter, payload)
         bindings['actual_request_sha256'] = r.sha(main / 'request.json')
         bindings['stream_sha256'] = bound(main / 'stream.jsonl', stage.get('stream_sha256'), 'Main stream')
-        provider_facts(main, stage, arm, adapter)
+        event_path = main / 'tool-events.jsonl'; tool_events = []
+        if raw.get('tool_events_sha256') is not None:
+            bindings['tool_events_sha256'] = bound(event_path, raw['tool_events_sha256'], 'Tool events')
+            tool_events, invalid_tools = adapter.frozen.backend.parse_events(event_path)
+            require(invalid_tools == 0 and all(isinstance(item, dict) for item in tool_events), 'Malformed bound tool events')
+        else:
+            require(not event_path.exists(), 'Unbound unexpected tool events')
+        safe_denials, parser_denials = provider_facts(main, stage, arm, adapter, tool_events)
         if (main / 'final.json').is_file(): bindings['final_output_sha256'] = r.sha(main / 'final.json')
         local = r.read(directory / 'qualification' / 'local-qualification.json')
         recomputed = r.qualification(stage, local, arm, adapter)
@@ -257,11 +348,6 @@ def row(directory, request, task, arm, payload, study, adapter):
         require(raw.get('terminal') == terminal, 'Raw terminal differs from provider success/schema facts')
         if isinstance(raw.get('qualification'), dict):
             require(raw.get('eligible') is (recomputed['eligible'] and artifact_valid), 'Raw eligibility contradicts current stage/source facts')
-        events = main / 'tool-events.jsonl'
-        if raw.get('tool_events_sha256') is not None:
-            bindings['tool_events_sha256'] = bound(events, raw['tool_events_sha256'], 'Tool events')
-        else:
-            require(not events.exists(), 'Unbound unexpected tool events')
         if (main / 'stderr.log').exists():
             bindings['current_stderr_sha256'] = r.sha(main / 'stderr.log')
     else:
@@ -300,6 +386,8 @@ def row(directory, request, task, arm, payload, study, adapter):
                   terminal_known=terminal is not None, missing_or_invalid_terminal=terminal is None, timed_out=(stage or {}).get('timed_out') if type((stage or {}).get('timed_out')) is bool else None,
                   wall_seconds=number((stage or {}).get('wall_seconds')), usage=safe_usage, cost_estimate_usd=cost, cost_basis=basis,
                   observed_billed_usd=None, qualification_failures=recomputed.get('failures', []), artifact_bindings=bindings,
+                  safe_rejected_command_proposals=safe_denials,
+                  provider_input_validation_rejections=parser_denials,
                   patch_present=patch.is_file(), patch_bound='patch_sha256' in bindings,
                   historical_oracle_input_digest_recorded=False, current_source_acceptance=None,
                   oracle_association_status='Historical grader has no candidate input digest; separate current-source recheck required',
@@ -360,6 +448,10 @@ def summarize(rows):
                           actual_model_unknown=sum(row['actual_model'] is None for row in selected), known_cost_estimates=len(costs),
                           cost_estimate_usd_total=sum(costs) if len(costs) == len(selected) else None, known_cost_estimate_subtotal=sum(costs) if costs else None,
                           cost_basis_counts=dict(Counter(row['cost_basis'] for row in selected)), observed_billed_usd=None)
+        denial_counts = [row.get('safe_rejected_command_proposals') for row in selected if type(row.get('safe_rejected_command_proposals')) is int]
+        tables[arm]['safe_rejected_command_proposals'] = {'known_rows': len(denial_counts), 'known_subtotal': sum(denial_counts) if denial_counts else None}
+        parser_counts = [row.get('provider_input_validation_rejections') for row in selected if type(row.get('provider_input_validation_rejections')) is int]
+        tables[arm]['provider_input_validation_rejections'] = {'known_rows': len(parser_counts), 'known_subtotal': sum(parser_counts) if parser_counts else None}
         tables[arm]['token_usage'] = {key: {'known_rows': sum(row['usage'][key] is not None for row in selected),
             'known_subtotal': sum(row['usage'][key] for row in selected if row['usage'][key] is not None) if any(row['usage'][key] is not None for row in selected) else None,
             'total': sum(row['usage'][key] for row in selected) if all(row['usage'][key] is not None for row in selected) else None} for key in USAGE_KEYS}
@@ -378,7 +470,7 @@ def missing_row(request, arm, closure, directory):
         declares_complete_true=False, false_completion_event=False, false_completion_conditioned_denominator=False,
         terminal_known=False, missing_or_invalid_terminal=True, timed_out=None, wall_seconds=None,
         usage={key: None for key in USAGE_KEYS}, cost_estimate_usd=None, cost_basis='unknown', observed_billed_usd=None,
-        qualification_failures=['returned_stage_or_artifact_unknown'], artifact_bindings=bindings,
+        qualification_failures=['returned_stage_or_artifact_unknown'], artifact_bindings=bindings, safe_rejected_command_proposals=None, provider_input_validation_rejections=None,
         patch_present=(directory / 'submitted.patch').is_file(), patch_bound=False,
         historical_oracle_input_digest_recorded=False, current_source_acceptance=None,
         oracle_association_status='No historical oracle admission for this unknown assignment',
@@ -470,6 +562,8 @@ def analyze(study, recheck_output=None):
                 'Separate fresh source rechecks establish current selected behavior and agreement, never rewrite primary records',
                 'Historical main registration did not separately seal the grader sibling base; current rechecks bind it and require registered-task-base equivalence',
                 'Costs are CLI estimates with missing telemetry; no billed-cost, quota-pooling or saving claim',
+                'Unsupported controlled command proposals count as safe rejection only with exact bound pre-execution server guard and matching subsequent provider denial; native tools remain forbidden',
+                'Provider JSON parser rejections are separate non-dispatch evidence with exact retained malformed-input wrapper and diagnostic; full input beyond the retained 2048 characters is unavailable',
                 'Maintainability jury, intake and eight followup probes are separate studies and not pooled',
                 'Frozen enhanced candidate1 is evaluated; later necessary-versus-sufficient guide correction is outside this intervention',
                 'Current recorded-byte custody only; original process groups are not complete descendant containment']}

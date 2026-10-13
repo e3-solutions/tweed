@@ -1,0 +1,56 @@
+diff --git a/bonaparte b/bonaparte
+index 26a168f..213305e 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -632,7 +632,11 @@ def run_phase(
+                     params = message.get("params")
+                     item = params.get("item") if isinstance(params, dict) else None
+                     item_type = item.get("type") if isinstance(item, dict) else None
+-                    if isinstance(params, dict) and params.get("threadId") == session_id:
++                    if (
++                        isinstance(params, dict)
++                        and params.get("threadId") == session_id
++                        and params.get("turnId", turn_id) == turn_id
++                    ):
+                         post_steer_work = post_steer_work or item_type in {
+                             "commandExecution",
+                             "dynamicToolCall",
+diff --git a/bonaparte_native.py b/bonaparte_native.py
+index 8ec992a..2bdf483 100644
+--- a/bonaparte_native.py
++++ b/bonaparte_native.py
+@@ -273,7 +273,11 @@ class AppServerPhaseDriver:
+             raise RuntimeError(f"unsupported app-server request: {method}")
+         if method == "thread/started":
+             thread = params.get("thread")
+-            if isinstance(thread, dict) and isinstance(thread.get("id"), str):
++            if (
++                isinstance(thread, dict)
++                and isinstance(thread.get("id"), str)
++                and thread["id"] == self._receipt_thread_id
++            ):
+                 self.observer.feed(
+                     json.dumps({"type": "thread.started", "thread_id": thread["id"]})
+                 )
+@@ -303,9 +307,21 @@ class AppServerPhaseDriver:
+                 )
+             )
+         if method == "turn/completed":
++            # The native stream also contains child and previous-turn events.
++            # A missing threadId is supported only with the active turn ID.
++            if (
++                self._receipt_turn_id is None
++                or (
++                    "threadId" in params
++                    and params["threadId"] != self._receipt_thread_id
++                )
++            ):
++                return method, None
+             turn = params.get("turn")
+             if not isinstance(turn, dict):
+                 raise RuntimeError("Codex app-server turn completion is malformed")
++            if turn.get("id") != self._receipt_turn_id:
++                return method, None
+             return method, turn
+         return method, None
+ 

@@ -1,0 +1,71 @@
+diff --git a/bonaparte b/bonaparte
+index cdc8a50..c5d4ae6 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -169,6 +169,12 @@ PHASE_HEADERS = {
+     "review": "## Bonaparte · Implementation Review",
+     "publish": "## Bonaparte · Pull Request",
+ }
++# A review is complete only when it carries the current schema's result and
++# Git handoff sections; the publish phase needs both to finalize the PR.
++COMPLETE_REVIEW_REQUIRED_LINES = (
++    "### Contract and quality result",
++    "### Git handoff",
++)
+ PHASE_INPUTS = {
+     "rca": ("intake",),
+     "scope:bug": ("rca",),
+@@ -223,7 +229,9 @@ def issue_kind(issue: dict) -> str | None:
+     return next(iter(labels)) if len(labels) == 1 else None
+ 
+ 
+-def latest_comment_record(comments: list[dict], header: str) -> dict | None:
++def latest_comment_record(
++    comments: list[dict], header: str, required_lines: tuple[str, ...] = ()
++) -> dict | None:
+     return max(
+         (
+             comment
+@@ -231,6 +239,8 @@ def latest_comment_record(comments: list[dict], header: str) -> dict | None:
+             if comment.get("parentId") is None
+             and comment.get("quotedText") is None
+             and ((comment.get("body") or "").splitlines() or [""])[0] == header
++            and set(required_lines)
++            <= {line.strip() for line in (comment.get("body") or "").splitlines()}
+         ),
+         key=lambda comment: (comment.get("createdAt") or "", comment.get("id") or ""),
+         default=None,
+@@ -255,6 +265,16 @@ def select_handoff(
+     current_record = latest_comment_record(comments, PHASE_HEADERS[phase])
+     current = current_record["body"] if current_record else None
+     context = {"existing": current} if current else {}
++    if phase == "publish" and current:
++        if isinstance(current_record.get("id"), str):
++            context["existing_comment_id"] = current_record["id"]
++        review_record = latest_comment_record(
++            comments,
++            PHASE_HEADERS["review"],
++            COMPLETE_REVIEW_REQUIRED_LINES,
++        )
++        if review_record is not None:
++            context["review"] = review_record["body"]
+     if phase == "rca" and current and issue.get("description"):
+         context["intake"] = issue["description"]
+         if isinstance(current_record.get("id"), str):
+diff --git a/workflows/publish.md b/workflows/publish.md
+index 9840ecb..a6c19ee 100644
+--- a/workflows/publish.md
++++ b/workflows/publish.md
+@@ -11,7 +11,11 @@ metadata, readiness, and final Linear comment.
+ 
+ - Existing publish result: reverify its exact ready PR and Linear delivery
+   comment, then return it without another write. If either is stale or missing,
+-  return `blocked` with that fact.
++  return `blocked` with that fact. The runner supplies the existing publish's
++  comment ID (`existing_comment_id`) and the latest complete review (`review`)
++  alongside it; use that review to reconcile the same reviewed PR and never
++  create a second publish record. Without a supplied complete review, the
++  existing publish is still reverified against its own recorded PR and comment.
+ - New publish: require a complete `## Bonaparte · Implementation Review` as the
+   publish handoff.
+ - Extract the exact reviewed branch and commit. Require a clean local worktree

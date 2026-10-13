@@ -13,6 +13,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  evaluation-tools:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Test evaluation custody and analysis with synthetic fixtures
+        run: python -B -m unittest discover -s docs/research/2026-10-confidence/claude-first-evaluation -p 'test_*.py' -v
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 5

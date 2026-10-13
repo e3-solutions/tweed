@@ -7,3 +7,4 @@ skills/confidence-protocol/tests export-ignore
 # Stored unified diffs are byte-exact evidence: blank context markers are spaces.
 # Preserve their bytes and keep normal source/document whitespace checks enabled.
 docs/research/2026-10-confidence/pr-benchmark/results/*/patches/*.patch -text -whitespace
+docs/research/2026-10-confidence/claude-first-evaluation/results/patches/*.patch -text -whitespace

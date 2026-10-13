@@ -1,0 +1,95 @@
+diff --git a/bonaparte b/bonaparte
+index 26a168f..32afc37 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -592,6 +592,19 @@ def run_phase(
+         turn_id = turn["id"]
+         driver._receipt_thread_id = session_id
+         driver._receipt_turn_id = turn_id
++
++        def coordinator_completion(message: dict, completed_turn) -> bool:
++            # Child threads share the stream; only the active coordinator
++            # thread/turn may establish the outcome. Legacy notifications
++            # without threadId are accepted by turn ID alone.
++            if terminal is not None or not isinstance(completed_turn, dict):
++                return False
++            if completed_turn.get("id") != turn_id:
++                return False
++            params = message.get("params")
++            thread_id = params.get("threadId") if isinstance(params, dict) else None
++            return thread_id is None or thread_id == session_id
++
+         deadline = time.monotonic() + soft_phase_budget_seconds
+         steered = False
+         steer_acknowledged = False
+@@ -609,11 +622,7 @@ def run_phase(
+                 if message is not None:
+                     if "method" in message:
+                         _method, completed_turn = driver.observe_notification(message)
+-                        if completed_turn is not None:
+-                            if completed_turn.get("id") != turn_id:
+-                                raise RuntimeError(
+-                                    "Codex app-server completed the wrong turn"
+-                                )
++                        if coordinator_completion(message, completed_turn):
+                             terminal = completed_turn
+                         continue
+                     raise RuntimeError("Codex app-server response correlation failed")
+@@ -648,9 +657,7 @@ def run_phase(
+                             and item.get("kind") == "started"
+                         )
+                 _method, completed_turn = driver.observe_notification(message)
+-                if completed_turn is not None:
+-                    if completed_turn.get("id") != turn_id:
+-                        raise RuntimeError("Codex app-server completed the wrong turn")
++                if coordinator_completion(message, completed_turn):
+                     terminal = completed_turn
+                 continue
+             if not steered or message.get("id") != steer_id:
+diff --git a/bonaparte_native.py b/bonaparte_native.py
+index 8ec992a..4df7008 100644
+--- a/bonaparte_native.py
++++ b/bonaparte_native.py
+@@ -97,6 +97,23 @@ def terminate_and_reap(process: subprocess.Popen) -> None:
+                     pass
+ 
+ 
++def owns_coordinator_event(driver: object, params: dict, turn_id: object) -> bool:
++    """Whether an event belongs to the driver's active coordinator thread/turn.
++
++    Native child threads share the app-server stream; their events carry a
++    different threadId and must never establish the coordinator outcome.
++    Legacy notifications without threadId are accepted by turn ID alone.
++    """
++    active_thread = getattr(driver, "_receipt_thread_id", None)
++    active_turn = getattr(driver, "_receipt_turn_id", None)
++    if not isinstance(active_turn, str) or turn_id != active_turn:
++        return False
++    thread_id = params.get("threadId")
++    if thread_id is None:
++        return True
++    return isinstance(active_thread, str) and thread_id == active_thread
++
++
+ class AppServerPhaseDriver:
+     """Drive one native app-server turn without retaining its raw event stream."""
+ 
+@@ -284,8 +301,7 @@ class AppServerPhaseDriver:
+             if (
+                 method == "item/completed"
+                 and item.get("type") == "agentMessage"
+-                and params.get("threadId") == self._receipt_thread_id
+-                and params.get("turnId") == self._receipt_turn_id
++                and owns_coordinator_event(self, params, params.get("turnId"))
+             ):
+                 text = item.get("text")
+                 if isinstance(text, str):
+@@ -306,6 +322,8 @@ class AppServerPhaseDriver:
+             turn = params.get("turn")
+             if not isinstance(turn, dict):
+                 raise RuntimeError("Codex app-server turn completion is malformed")
++            if not owns_coordinator_event(self, params, turn.get("id")):
++                return method, None
+             return method, turn
+         return method, None
+ 

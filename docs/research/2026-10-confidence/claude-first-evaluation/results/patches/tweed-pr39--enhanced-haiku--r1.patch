@@ -1,0 +1,163 @@
+diff --git a/bonaparte b/bonaparte
+index 888b766..3b727de 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -452,6 +452,7 @@ def run_phase(
+         for role, description in child_configs.items()
+     }
+     expected_branch = None
++    canonical_branch = None
+     if resume_session_id:
+         replay_policy = (
+             "This clarification may be an at-least-once replay after an ambiguous "
+@@ -481,8 +482,9 @@ def run_phase(
+                 phase,
+                 values[1] if len(values) == 2 else None,
+             )
++            canonical_branch = handoff["issue"]["git_branch_name"]
+             if phase == "implement":
+-                expected_branch = handoff["issue"]["git_branch_name"]
++                expected_branch = canonical_branch
+             phase_input = json.dumps(handoff, ensure_ascii=False)
+             context_policy = (
+                 "\n\n# Context policy\n\n"
+@@ -559,6 +561,7 @@ def run_phase(
+     failed = True
+     try:
+         driver = AppServerPhaseDriver(repository, observer)
++        driver.canonical_branch = canonical_branch
+         driver.request(
+             "initialize", {"clientInfo": {"name": "bonaparte", "version": "1"}}
+         )
+@@ -584,6 +587,7 @@ def run_phase(
+         if not isinstance(thread, dict) or not isinstance(thread.get("id"), str):
+             raise RuntimeError("Codex app-server returned no thread identity")
+         session_id = thread["id"]
++        driver.root_thread_id = session_id
+         observer.observation["session_id"] = session_id
+         if resume_session_id and session_id != resume_session_id:
+             raise RuntimeError("Codex resumed a different session")
+diff --git a/bonaparte_native.py b/bonaparte_native.py
+index e9a607c..2665acc 100644
+--- a/bonaparte_native.py
++++ b/bonaparte_native.py
+@@ -13,6 +13,7 @@ import time
+ from pathlib import Path
+ 
+ from bonaparte_progress import EventObserver, PROGRESS_FD_ENV, PROGRESS_MAX_LINE_BYTES
++from bonaparte_teardown import ThreadOwnership, teardown_terminal_session
+ 
+ PHASE_CHILD_ENV = "BONAPARTE_PHASE_CHILD"
+ COORDINATOR_TERMINATE_GRACE_SECONDS = 1.0
+@@ -121,6 +122,9 @@ class AppServerPhaseDriver:
+         self._last_agent_message: str | None = None
+         self._receipt_thread_id: str | None = None
+         self._receipt_turn_id: str | None = None
++        self.ownership = ThreadOwnership()
++        self.root_thread_id: str | None = None
++        self.canonical_branch: str | None = None
+         self._reader = threading.Thread(target=self._read, daemon=True)
+         self._reader.start()
+ 
+@@ -274,6 +278,7 @@ class AppServerPhaseDriver:
+         if method == "thread/started":
+             thread = params.get("thread")
+             if isinstance(thread, dict) and isinstance(thread.get("id"), str):
++                self.ownership.observe_started(thread["id"])
+                 self.observer.feed(
+                     json.dumps({"type": "thread.started", "thread_id": thread["id"]})
+                 )
+@@ -346,4 +351,19 @@ class AppServerPhaseDriver:
+         return self._last_agent_message
+ 
+     def close(self, *, failed: bool) -> None:
+-        terminate_and_reap(self.process)
++        """Tear down the terminal root session, then always reap its process group.
++
++        Teardown errors surface after every step is attempted and after reaping.
++        ``failed`` is left to the caller, which decides whether to re-raise.
++        """
++        root_id = getattr(self, "root_thread_id", None)
++        try:
++            if root_id is not None:
++                teardown_terminal_session(
++                    self.request,
++                    root_id,
++                    self.ownership.started_descendants(root_id),
++                    self.canonical_branch,
++                )
++        finally:
++            terminate_and_reap(self.process)
+diff --git a/bonaparte_teardown.py b/bonaparte_teardown.py
+new file mode 100644
+index 0000000..a2c78f5
+--- /dev/null
++++ b/bonaparte_teardown.py
+@@ -0,0 +1,67 @@
++"""Owner-scoped native teardown for one Bonaparte terminal root session."""
++
++from __future__ import annotations
++
++from collections.abc import Callable
++
++METADATA_UPDATE_METHOD = "thread/metadata/update"
++ARCHIVE_METHOD = "thread/archive"
++
++
++class TeardownError(RuntimeError):
++    """Raised after every teardown step was attempted and at least one failed."""
++
++    def __init__(self, failures: list[BaseException]):
++        self.failures = failures
++        detail = "; ".join(str(failure) for failure in failures)
++        super().__init__(f"terminal session teardown failed: {detail}")
++
++
++class ThreadOwnership:
++    """Record threads named by actual thread/started notifications, in order."""
++
++    def __init__(self) -> None:
++        self._started: list[str] = []
++
++    def observe_started(self, thread_id: str) -> None:
++        if thread_id not in self._started:
++            self._started.append(thread_id)
++
++    def started_descendants(self, root_id: str | None) -> list[str]:
++        return [thread_id for thread_id in self._started if thread_id != root_id]
++
++
++def teardown_terminal_session(
++    request: Callable[[str, dict], dict],
++    root_id: str,
++    descendants: list[str],
++    canonical_branch: str | None,
++) -> None:
++    """Update started descendants, then archive the root.
++
++    A descendant failure never prevents the root archive attempt. All failures
++    are raised together after every step has been attempted.
++    """
++    failures: list[BaseException] = []
++    for thread_id in descendants:
++        if not canonical_branch:
++            failures.append(
++                RuntimeError(
++                    f"descendant {thread_id} metadata skipped: "
++                    "canonical issue branch is unavailable"
++                )
++            )
++            continue
++        try:
++            request(
++                METADATA_UPDATE_METHOD,
++                {"threadId": thread_id, "gitInfo": {"branch": canonical_branch}},
++            )
++        except Exception as error:
++            failures.append(error)
++    try:
++        request(ARCHIVE_METHOD, {"threadId": root_id})
++    except Exception as error:
++        failures.append(error)
++    if failures:
++        raise TeardownError(failures)

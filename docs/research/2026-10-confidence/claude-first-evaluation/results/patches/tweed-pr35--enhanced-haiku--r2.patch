@@ -1,0 +1,90 @@
+diff --git a/bonaparte-launcher b/bonaparte-launcher
+index 67681b7..59cc33f 100755
+--- a/bonaparte-launcher
++++ b/bonaparte-launcher
+@@ -19,7 +19,7 @@ TAG_PATTERN = re.compile(r"v(\d+)\.(\d+)\.(\d+)")
+ CHECK_INTERVAL = 24 * 60 * 60
+ REQUIRED = """bonaparte bonaparte-launcher bonaparte_checkpoint.py
+ bonaparte_native.py bonaparte_progress.py
+-bonaparte_linear.py
++bonaparte_linear.py autoresearch
+ skills/use-bonaparte/SKILL.md
+ skills/use-bonaparte/agents/openai.yaml workflows/create.md workflows/bug-rca.md
+ workflows/scope.md workflows/implement.md workflows/review.md workflows/publish.md
+@@ -75,6 +75,11 @@ def tag_version(tag: str) -> tuple[int, int, int] | None:
+     return tuple(map(int, match.groups())) if match else None
+ 
+ 
++def is_current(installed: str, tag: str) -> bool:
++    version = tag_version(installed)
++    return version is not None and version >= tag_version(tag)
++
++
+ def latest_tag() -> tuple[str, str]:
+     output = subprocess.check_output(
+         ["git", "ls-remote", "--tags", "--refs", REPOSITORY],
+@@ -94,7 +99,7 @@ def latest_tag() -> tuple[str, str]:
+ 
+ 
+ def validate_release(release: Path) -> None:
+-    missing = [name for name in REQUIRED if not (release / name).exists()]
++    missing = [name for name in REQUIRED if not (release / name).is_file()]
+     if missing:
+         raise RuntimeError(f"release is missing {', '.join(missing)}")
+     for name in (
+@@ -109,6 +114,7 @@ def validate_release(release: Path) -> None:
+         compile(source.read_text(), str(source), "exec")
+     environment = updater_environment()
+     environment["BONAPARTE_AUTO_UPDATE"] = "0"
++    environment["PYTHONDONTWRITEBYTECODE"] = "1"
+     subprocess.run(
+         [sys.executable, str(release / "bonaparte"), "--help"],
+         check=True,
+@@ -163,13 +169,10 @@ def fetch_release(home: Path, tag: str, expected_oid: str) -> Path:
+ def update(home: Path) -> str | None:
+     migrate_autoresearch_link(home)
+     tag, oid = latest_tag()
+-    current = current_release(home)
+-    current_version = tag_version(current.name)
+-    if current_version and current_version >= tag_version(tag):
++    if is_current(current_release(home).name, tag):
+         return None
+     release = fetch_release(home, tag, oid)
+-    current_version = tag_version(current_release(home).name)
+-    if current_version and current_version >= tag_version(tag):
++    if is_current(current_release(home).name, tag):
+         return None
+     atomic_link(f"releases/{release.name}", home / "current")
+     migrate_autoresearch_link(home)
+@@ -189,8 +192,31 @@ def automatic_update(home: Path) -> None:
+         print(f"bonaparte: automatic update failed: {error}", file=sys.stderr)
+ 
+ 
++def status(home: Path) -> int:
++    """Report installed and latest stable versions without changing state."""
++
++    try:
++        installed = current_release(home).name
++    except Exception as error:
++        print(f"bonaparte: {error}", file=sys.stderr)
++        return 1
++    print(f"installed: {installed}")
++    try:
++        tag, _ = latest_tag()
++    except Exception as error:
++        print(f"bonaparte: latest release unavailable: {error}", file=sys.stderr)
++        print("latest: unavailable")
++        print("current: unknown")
++        return 1
++    print(f"latest: {tag}")
++    print(f"current: {'yes' if is_current(installed, tag) else 'no'}")
++    return 0
++
++
+ def main() -> int:
+     home = bonaparte_home()
++    if sys.argv[1:] == ["status"]:
++        return status(home)
+     try:
+         migrate_autoresearch_link(home)
+         if sys.argv[1:] == ["update"]:
