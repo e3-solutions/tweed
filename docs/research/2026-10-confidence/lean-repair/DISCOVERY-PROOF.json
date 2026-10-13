@@ -1,0 +1,179 @@
+{
+  "scope": "OneactualboundedHaikucall per task; commoncheckedquotes forbotharms; quotedlines verified, interpretive descriptions discarded",
+  "rows": [
+    {
+      "task_id": "tweed-pr20",
+      "qualified": true,
+      "requested_model": "claude-haiku-5-5",
+      "observed_models": [
+        "claude-haiku-5-5"
+      ],
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_seconds": 12.13936237499729,
+      "receipt_sha256": "2a6ff48cd66dec70e55b2fd0784686718b4638955a1cd8fc9b2962749da6e37c",
+      "raw_artifact_hashes": {
+        "packet.json": "74effaed800317ae021b43c5b312121a314ada2261201d849f94a8f11cf59a6d",
+        "request.json": "05cce1bf1731fa8f5066c28c2f2cb205f89811c6caf87a6b3452bb187a9cceae",
+        "stream.stdout": "20b340c515fcccaa0621d9e31443c1589bed6fd9f3fb0ccae9d8eee1c426cf23",
+        "stream.stderr": "61b1ec1babd05607d61c3c37883d25b807fc94e69c2090164e10676c0b2af903"
+      },
+      "packet_sha256": "04549c6fb3cb3d84c5f82fdceedcc2f9770225ef1ba5c7755364d2cf3553c29b",
+      "quote_normalization": "exact complete source lines; optional sole trailing LF omitted; numbered prefixes excluded",
+      "checked_quotes": [
+        {
+          "path": "bonaparte",
+          "start_line": 20,
+          "end_line": 22,
+          "quote": "MODEL = \"gpt-5.6-sol\"\nCOORDINATOR_EFFORT = \"medium\"\nSUBAGENT_EFFORT = \"medium\""
+        },
+        {
+          "path": "bonaparte",
+          "start_line": 615,
+          "end_line": 621,
+          "quote": "    child_configs = {\n        role: (\n            f'{{description=\"{description}\",model=\"{MODEL}\",'\n            f'model_reasoning_effort=\"{SUBAGENT_EFFORT}\"}}'\n        )\n        for role, description in child_configs.items()\n    }"
+        },
+        {
+          "path": "bonaparte",
+          "start_line": 681,
+          "end_line": 686,
+          "quote": "        command.extend(\n            [\n                \"-m\",\n                MODEL,\n                \"-c\",\n                f'model_reasoning_effort=\"{COORDINATOR_EFFORT}\"',"
+        },
+        {
+          "path": "bonaparte",
+          "start_line": 771,
+          "end_line": 773,
+          "quote": "    parser.add_argument(\"--repo\", default=\".\")\n    parser.add_argument(\"command\")\n    parser.add_argument(\"input\", nargs=argparse.REMAINDER)"
+        },
+        {
+          "path": "bonaparte",
+          "start_line": 589,
+          "end_line": 590,
+          "quote": "def child_environment() -> dict[str, str]:\n    return {**os.environ, PHASE_CHILD_ENV: \"1\"}"
+        }
+      ],
+      "description_promoted": false,
+      "tool_calls": 0,
+      "reported_cost_estimate_usd": 0.35777600000000004,
+      "actual_subscription_charge_usd": null
+    },
+    {
+      "task_id": "tweed-pr23",
+      "qualified": true,
+      "requested_model": "claude-haiku-5-5",
+      "observed_models": [
+        "claude-haiku-5-5"
+      ],
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_seconds": 10.039188957998704,
+      "receipt_sha256": "c381a899d2d09d84675603b4baba9209ca0da3f57fddf96960c6dbd67fd3372f",
+      "raw_artifact_hashes": {
+        "packet.json": "e76171c60967733021ee6ec93b93fed5fc35bd38f54e58f5d38afa9b2fe9abfc",
+        "request.json": "4e5379432b914cfaaea4a69763e9c5b61091199378ad2300ed6f92c81c6519f8",
+        "stream.stdout": "392ea965a41d0c2d00da299d4f44966682a0264078150c33b509135753a83c99",
+        "stream.stderr": "61b1ec1babd05607d61c3c37883d25b807fc94e69c2090164e10676c0b2af903"
+      },
+      "packet_sha256": "9eb4fc9964e23b8f325b751a1b450c98436f363dc65bc38d41e1120ebef966f3",
+      "quote_normalization": "exact complete source lines; optional sole trailing LF omitted; numbered prefixes excluded",
+      "checked_quotes": [
+        {
+          "path": "bonaparte",
+          "start_line": 20,
+          "end_line": 21,
+          "quote": "COORDINATOR_EFFORT = \"medium\"\nSUBAGENT_EFFORT = \"medium\""
+        },
+        {
+          "path": "bonaparte",
+          "start_line": 593,
+          "end_line": 601,
+          "quote": "def resolve_model(override: str | None = None) -> str | None:\n    \"\"\"Resolve a model without overriding Codex when Bonaparte is unconfigured.\"\"\"\n    selected = override if override is not None else os.environ.get(GLOBAL_MODEL_ENV)\n    if selected is None:\n        return None\n    model = selected.strip()\n    if not model:\n        raise RuntimeError(\"model setting requires a non-empty model\")\n    return model"
+        },
+        {
+          "path": "bonaparte",
+          "start_line": 604,
+          "end_line": 608,
+          "quote": "def agent_config(description: str, model: str | None) -> str:\n    values = {\n        \"description\": description,\n        \"model_reasoning_effort\": SUBAGENT_EFFORT,\n    }"
+        },
+        {
+          "path": "bonaparte",
+          "start_line": 709,
+          "end_line": 712,
+          "quote": "        command.extend(\n            [\n                \"-c\",\n                f'model_reasoning_effort=\"{COORDINATOR_EFFORT}\"',"
+        },
+        {
+          "path": "bonaparte",
+          "start_line": 798,
+          "end_line": 804,
+          "quote": "    parser.add_argument(\n        \"--model\",\n        help=(\n            \"model for this phase or resume; overrides BONAPARTE_MODEL and \"\n            \"Codex configuration\"\n        ),\n    )"
+        }
+      ],
+      "description_promoted": false,
+      "tool_calls": 0,
+      "reported_cost_estimate_usd": 0.364708,
+      "actual_subscription_charge_usd": null
+    },
+    {
+      "task_id": "tweed-pr37",
+      "qualified": true,
+      "requested_model": "claude-haiku-5-5",
+      "observed_models": [
+        "claude-haiku-5-5"
+      ],
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_seconds": 10.440623332997347,
+      "receipt_sha256": "eab15aff7082d837b6d11de3d0d659cc8a49f1e33077f0683b042a56f82d51f2",
+      "raw_artifact_hashes": {
+        "packet.json": "0b18c9207df805b459d179f96f20ddef05cdad9e6ad76d63b91c4e8dd6f8e663",
+        "request.json": "314f0adb1f802220248b607e51a6fc06bf53861d2df9ca35c138951635c28973",
+        "stream.stdout": "4227c9b3d38925587bce751ce8a4a676f2ea83cfbc503038faa74df6e53ff8f8",
+        "stream.stderr": "61b1ec1babd05607d61c3c37883d25b807fc94e69c2090164e10676c0b2af903"
+      },
+      "packet_sha256": "ec91a65190eb151e7ce4f1c9bef791b6d61dcdac3c7987da594f1c42cbffb2dd",
+      "quote_normalization": "exact complete source lines; optional sole trailing LF omitted; numbered prefixes excluded",
+      "checked_quotes": [
+        {
+          "path": "bonaparte",
+          "start_line": 644,
+          "end_line": 645,
+          "quote": "            if \"method\" in message:\n                if steer_acknowledged and message.get(\"method\") == \"item/started\":"
+        },
+        {
+          "path": "bonaparte",
+          "start_line": 689,
+          "end_line": 692,
+          "quote": "        if post_steer_work:\n            raise RuntimeError(\n                \"soft-budget guard observed root work after steer acknowledgement\"\n            )"
+        },
+        {
+          "path": "bonaparte",
+          "start_line": 676,
+          "end_line": 679,
+          "quote": "            if \"error\" in message:\n                raise RuntimeError(\n                    f\"Codex app-server rejected turn/steer: {message['error']}\"\n                )"
+        },
+        {
+          "path": "bonaparte",
+          "start_line": 730,
+          "end_line": 737,
+          "quote": "    if steered:\n        if receipt[\"state\"] != \"needs-input\":\n            raise RuntimeError(\"soft-budget wrap-up did not request continuation\")\n        question = receipt[\"question\"]\n        if question != SOFT_BUDGET_CONTINUE_QUESTION and not question.startswith(\n            \"Clarification required:\"\n        ):\n            raise RuntimeError(\"soft-budget wrap-up returned an invalid question\")"
+        },
+        {
+          "path": "bonaparte",
+          "start_line": 738,
+          "end_line": 741,
+          "quote": "        if \"unverified\" not in receipt[\"summary\"].casefold():\n            raise RuntimeError(\n                \"soft-budget wrap-up omitted unverified proof obligations\"\n            )"
+        },
+        {
+          "path": "bonaparte",
+          "start_line": 612,
+          "end_line": 612,
+          "quote": "        while terminal is None or (steered and not steer_acknowledged):"
+        }
+      ],
+      "description_promoted": false,
+      "tool_calls": 0,
+      "reported_cost_estimate_usd": 0.3756,
+      "actual_subscription_charge_usd": null
+    }
+  ]
+}
