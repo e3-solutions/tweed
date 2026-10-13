@@ -1,0 +1,1870 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-13",
+  "registration_sha256": "9686d267cf78bee4fa94e5d168fc5f8cd6ff0ba72d8fc98d148042a99deaad45",
+  "registration_payload_sha256": "d44c180a30a14a37297b2642849ae300078e3a8b8a8f8a5cd0ce090ac4723fed",
+  "preregistration_commit": "82b9f876d870b3b39b8a9d52cc7337a42f2d671e",
+  "primary_metric": "Qualified selected-original-oracle pass / all four assigned attempts per policy",
+  "assigned_implementation_attempts": 8,
+  "assigned_interviews": 4,
+  "summary": {
+    "baseline-opus": {
+      "assigned": 4,
+      "qualified": 3,
+      "verified_success": 1,
+      "verified_failure": 2,
+      "unknown": 1,
+      "false_completion": 2,
+      "complete_declarations": 3
+    },
+    "v08-opus": {
+      "assigned": 4,
+      "qualified": 3,
+      "verified_success": 2,
+      "verified_failure": 1,
+      "unknown": 1,
+      "false_completion": 1,
+      "complete_declarations": 3
+    }
+  },
+  "rows": [
+    {
+      "trial_id": "tweed-pr40--v08-opus--r2",
+      "task_id": "tweed-pr40",
+      "arm_id": "v08-opus",
+      "repeat": 2,
+      "backend": "claude",
+      "model_requested": "claude-opus-5-5",
+      "actual_model": "claude-opus-5-5",
+      "model_attribution": "assistant_event_observed",
+      "status": "completed",
+      "eligible": false,
+      "verified_success": false,
+      "oracle_passed": null,
+      "semantic_unknown": true,
+      "worker_complete_true_empty_remaining": false,
+      "declares_complete_true": false,
+      "false_completion_event": false,
+      "false_completion_conditioned_denominator": false,
+      "terminal_known": false,
+      "missing_or_invalid_terminal": true,
+      "timed_out": true,
+      "wall_seconds": 240.1287497910016,
+      "usage": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "cached_input_tokens": null,
+        "cache_read_input_tokens": null,
+        "cache_creation_input_tokens": null
+      },
+      "cost_estimate_usd": null,
+      "cost_basis": "unknown",
+      "observed_billed_usd": null,
+      "qualification_failures": [
+        "stage_did_not_finish",
+        "terminal_missing_or_invalid"
+      ],
+      "artifact_bindings": {
+        "receipt_sha256": "edea2de1f82f78ec90b1ab297d055463e8ae2df82bef6bcdfd239f9f17f5ef48",
+        "registration_sha256": "9686d267cf78bee4fa94e5d168fc5f8cd6ff0ba72d8fc98d148042a99deaad45",
+        "controls_sha256": "8b0e7d186cb0ef5403677813559e7d906cb73e058209badeba9711e7dcd015db",
+        "result_sha256": "17e7a750637c0ad6a302b3e3e68e44ce02292a266ce392d7a00991e150a56c98",
+        "patch_sha256": "82e760537f1230b5c0365f5e20aa3832bf8966f34dd2699ac200d4d69a82ff4a",
+        "actual_request_sha256": "670b2f3b53cad5386a2beaf1ad107a4fb4ead2a7612b30af385d9463a74a79cb",
+        "stream_sha256": "47963233dc562abbc47f35f5b09161a8d569efb542770204f706adae032dce42",
+        "tool_events_sha256": "c674118dae57c5124ce6fc6d53488c88bdaa18c7e95910ac326df1ac370e10f7",
+        "current_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "started_sha256": "fef01e41caa6b44e9ff3b8168670176ed9e90cd37d8464626dfc90f5c0e322aa"
+      },
+      "safe_rejected_command_proposals": 1,
+      "provider_input_validation_rejections": 0,
+      "patch_present": true,
+      "patch_bound": true,
+      "historical_oracle_input_digest_recorded": false,
+      "current_source_acceptance": null,
+      "oracle_association_status": "Historical grader has no candidate input digest; separate current-source recheck required",
+      "custody": "Current local recorded-byte bindings; no claim of continuous absolute immutability",
+      "operational_tool_calls": 41,
+      "public_patch": "patches/tweed-pr40--v08-opus--r2.patch",
+      "completion_gaps_count": null,
+      "oracle_checks": []
+    },
+    {
+      "trial_id": "tweed-pr32--baseline-opus--r2",
+      "task_id": "tweed-pr32",
+      "arm_id": "baseline-opus",
+      "repeat": 2,
+      "backend": "claude",
+      "model_requested": "claude-opus-5-5",
+      "actual_model": "claude-opus-5-5",
+      "model_attribution": "assistant_event_observed",
+      "status": "completed",
+      "eligible": true,
+      "verified_success": false,
+      "oracle_passed": false,
+      "semantic_unknown": false,
+      "worker_complete_true_empty_remaining": false,
+      "declares_complete_true": true,
+      "false_completion_event": true,
+      "false_completion_conditioned_denominator": true,
+      "terminal_known": true,
+      "missing_or_invalid_terminal": false,
+      "timed_out": false,
+      "wall_seconds": 123.82644166599857,
+      "usage": {
+        "input_tokens": 32,
+        "output_tokens": 7376,
+        "cached_input_tokens": null,
+        "cache_read_input_tokens": 383622,
+        "cache_creation_input_tokens": 49083
+      },
+      "cost_estimate_usd": 0.6170364000000002,
+      "cost_basis": "unknown",
+      "observed_billed_usd": null,
+      "qualification_failures": [],
+      "artifact_bindings": {
+        "receipt_sha256": "ce11dd915ac37a37ce026a6c6afd54b47d49e3ee9c65916b1c9f64f4f8a2d655",
+        "registration_sha256": "9686d267cf78bee4fa94e5d168fc5f8cd6ff0ba72d8fc98d148042a99deaad45",
+        "controls_sha256": "8b0e7d186cb0ef5403677813559e7d906cb73e058209badeba9711e7dcd015db",
+        "result_sha256": "d563cd81d3eeaf761832addd5db239856a04f29c4fc54f18550260fe4833281b",
+        "patch_sha256": "5f3a3fd0da35a138bd8d13dc5aff80c5037874b5091bd30fda511ca1dff7df3c",
+        "actual_request_sha256": "248d3a4c797084e64bfbcb843e72ce2afb0c548a7cb7c2d7ef079921e12948d1",
+        "stream_sha256": "4105f77adf02d65d15b534a096466210183943e20173b999cc3f5e29058860f3",
+        "tool_events_sha256": "ff1c1db23e33ada0265301c12195539011c145de9b8043191898b1167e0e736f",
+        "current_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "oracle_stdout_sha256": "6a7df79ffdd70f7bb907f3059e5145b23e9f45a21b4655786f525adacff88cd9",
+        "oracle_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "started_sha256": "1ee3afa491db4161b15d80886269c0b615401928e539cc8a866bbb5ef36a940c"
+      },
+      "safe_rejected_command_proposals": 1,
+      "provider_input_validation_rejections": 0,
+      "patch_present": true,
+      "patch_bound": true,
+      "historical_oracle_input_digest_recorded": false,
+      "current_source_acceptance": false,
+      "oracle_association_status": "Separate closure recheck of digest-bound current source agrees; original recorded grade retained",
+      "custody": "Current local recorded-byte bindings; no claim of continuous absolute immutability",
+      "operational_tool_calls": 17,
+      "current_recheck_agrees_with_recorded_grade": true,
+      "current_recheck_bindings": {
+        "source_sha256": "d563cd81d3eeaf761832addd5db239856a04f29c4fc54f18550260fe4833281b",
+        "stdout_sha256": "d12c6e38ed511832bc1fea5c6858930727e4ddf0fc0cfb4c6f9a1435e21270a1",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "public_patch": "patches/tweed-pr32--baseline-opus--r2.patch",
+      "completion_gaps_count": 4,
+      "oracle_checks": [
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_wrong_thread_same_turn_cannot_finish_phase",
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_same_thread_wrong_turn_cannot_finish_phase",
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_wrong_thread_wrong_turn_cannot_finish_phase",
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_matching_thread_turn_finishes_phase",
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_legacy_absent_thread_matching_turn_finishes_phase",
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_foreign_messages_cannot_replace_coordinator_receipt",
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_malformed_active_transport_stops_process"
+      ]
+    },
+    {
+      "trial_id": "tweed-pr32--v08-opus--r2",
+      "task_id": "tweed-pr32",
+      "arm_id": "v08-opus",
+      "repeat": 2,
+      "backend": "claude",
+      "model_requested": "claude-opus-5-5",
+      "actual_model": "claude-opus-5-5",
+      "model_attribution": "assistant_event_observed",
+      "status": "completed",
+      "eligible": true,
+      "verified_success": true,
+      "oracle_passed": true,
+      "semantic_unknown": false,
+      "worker_complete_true_empty_remaining": false,
+      "declares_complete_true": true,
+      "false_completion_event": false,
+      "false_completion_conditioned_denominator": true,
+      "terminal_known": true,
+      "missing_or_invalid_terminal": false,
+      "timed_out": false,
+      "wall_seconds": 107.88069758300117,
+      "usage": {
+        "input_tokens": 38,
+        "output_tokens": 7854,
+        "cached_input_tokens": null,
+        "cache_read_input_tokens": 492999,
+        "cache_creation_input_tokens": 49522
+      },
+      "cost_estimate_usd": 0.6520077999999999,
+      "cost_basis": "unknown",
+      "observed_billed_usd": null,
+      "qualification_failures": [],
+      "artifact_bindings": {
+        "receipt_sha256": "59b14ecf1d53c3913502c2e97204f6846a1ae8651b8103adb7c1eb17d8eeab2a",
+        "registration_sha256": "9686d267cf78bee4fa94e5d168fc5f8cd6ff0ba72d8fc98d148042a99deaad45",
+        "controls_sha256": "8b0e7d186cb0ef5403677813559e7d906cb73e058209badeba9711e7dcd015db",
+        "result_sha256": "666bff6750a2b8a12d83b8628654d5e3d35ceda0b3e3b72d17636f819aea2b35",
+        "patch_sha256": "9d3a0edb2c1aabfcf0e017ed54d6e675d03de0811dcfedf0d7c623a751aa21ff",
+        "actual_request_sha256": "45685ea7ecf1970c59cc0968e801b9f2c71c55f0a8c6701dfe81e2d8682ab1fb",
+        "stream_sha256": "d761a7476016c401a6cb50d2a7a08b13df41747673fd541adde142f0f2fec13e",
+        "tool_events_sha256": "e2e45074591c9c0e2c7adac10436bf53dce2a486b2df035e2babe5d7d1b482af",
+        "current_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "oracle_stdout_sha256": "5bbef61d57d38515bc399d1fb5890f86a75a4ac3d3ab1be2f7aae8979f8bdf16",
+        "oracle_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "started_sha256": "31ea4497b0d22915529ae009af3b8d0258a19ec427a8b82483418e6c3889453f"
+      },
+      "safe_rejected_command_proposals": 1,
+      "provider_input_validation_rejections": 0,
+      "patch_present": true,
+      "patch_bound": true,
+      "historical_oracle_input_digest_recorded": false,
+      "current_source_acceptance": true,
+      "oracle_association_status": "Separate closure recheck of digest-bound current source agrees; original recorded grade retained",
+      "custody": "Current local recorded-byte bindings; no claim of continuous absolute immutability",
+      "operational_tool_calls": 20,
+      "current_recheck_agrees_with_recorded_grade": true,
+      "current_recheck_bindings": {
+        "source_sha256": "666bff6750a2b8a12d83b8628654d5e3d35ceda0b3e3b72d17636f819aea2b35",
+        "stdout_sha256": "5bbef61d57d38515bc399d1fb5890f86a75a4ac3d3ab1be2f7aae8979f8bdf16",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "public_patch": "patches/tweed-pr32--v08-opus--r2.patch",
+      "completion_gaps_count": 3,
+      "oracle_checks": [
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_wrong_thread_same_turn_cannot_finish_phase",
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_same_thread_wrong_turn_cannot_finish_phase",
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_wrong_thread_wrong_turn_cannot_finish_phase",
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_matching_thread_turn_finishes_phase",
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_legacy_absent_thread_matching_turn_finishes_phase",
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_foreign_messages_cannot_replace_coordinator_receipt",
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_malformed_active_transport_stops_process"
+      ]
+    },
+    {
+      "trial_id": "tweed-pr40--baseline-opus--r1",
+      "task_id": "tweed-pr40",
+      "arm_id": "baseline-opus",
+      "repeat": 1,
+      "backend": "claude",
+      "model_requested": "claude-opus-5-5",
+      "actual_model": "claude-opus-5-5",
+      "model_attribution": "assistant_event_observed",
+      "status": "completed",
+      "eligible": false,
+      "verified_success": false,
+      "oracle_passed": null,
+      "semantic_unknown": true,
+      "worker_complete_true_empty_remaining": false,
+      "declares_complete_true": false,
+      "false_completion_event": false,
+      "false_completion_conditioned_denominator": false,
+      "terminal_known": false,
+      "missing_or_invalid_terminal": true,
+      "timed_out": true,
+      "wall_seconds": 240.1240682500029,
+      "usage": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "cached_input_tokens": null,
+        "cache_read_input_tokens": null,
+        "cache_creation_input_tokens": null
+      },
+      "cost_estimate_usd": null,
+      "cost_basis": "unknown",
+      "observed_billed_usd": null,
+      "qualification_failures": [
+        "stage_did_not_finish",
+        "terminal_missing_or_invalid"
+      ],
+      "artifact_bindings": {
+        "receipt_sha256": "574f2d022c58f563d1208ec029db5c8f9fd521af4eefa8e6b340ce0facd4b0f4",
+        "registration_sha256": "9686d267cf78bee4fa94e5d168fc5f8cd6ff0ba72d8fc98d148042a99deaad45",
+        "controls_sha256": "8b0e7d186cb0ef5403677813559e7d906cb73e058209badeba9711e7dcd015db",
+        "result_sha256": "5fafdd4467ce13539b389cc47c1c8f7c6cb1094f5e1c6d8ccd053f3225942bef",
+        "patch_sha256": "74c5fa315cf8049308bf8840ff9aa309be3ca8cec0143fe2c65342b0f0f2cd92",
+        "actual_request_sha256": "d32ac2b0b1e645c77ea5894382b732c49c88dfaf6c7bc90ffa264122080e6902",
+        "stream_sha256": "878005d652674cd033abb6bb116427a5beee76319c22288ad074c64d1007615b",
+        "tool_events_sha256": "e418a7c2b8285aa0a36bc29b166a91a3bc0c6d27a8e6e7f1f6a4198586465b99",
+        "current_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "started_sha256": "9dbdb494d226975db47d847c0e290a05325cbe7b0f4108916c3a09102e161a2e"
+      },
+      "safe_rejected_command_proposals": 1,
+      "provider_input_validation_rejections": 0,
+      "patch_present": true,
+      "patch_bound": true,
+      "historical_oracle_input_digest_recorded": false,
+      "current_source_acceptance": null,
+      "oracle_association_status": "Historical grader has no candidate input digest; separate current-source recheck required",
+      "custody": "Current local recorded-byte bindings; no claim of continuous absolute immutability",
+      "operational_tool_calls": 41,
+      "public_patch": "patches/tweed-pr40--baseline-opus--r1.patch",
+      "completion_gaps_count": null,
+      "oracle_checks": []
+    },
+    {
+      "trial_id": "tweed-pr32--v08-opus--r1",
+      "task_id": "tweed-pr32",
+      "arm_id": "v08-opus",
+      "repeat": 1,
+      "backend": "claude",
+      "model_requested": "claude-opus-5-5",
+      "actual_model": "claude-opus-5-5",
+      "model_attribution": "assistant_event_observed",
+      "status": "completed",
+      "eligible": true,
+      "verified_success": false,
+      "oracle_passed": false,
+      "semantic_unknown": false,
+      "worker_complete_true_empty_remaining": false,
+      "declares_complete_true": true,
+      "false_completion_event": true,
+      "false_completion_conditioned_denominator": true,
+      "terminal_known": true,
+      "missing_or_invalid_terminal": false,
+      "timed_out": false,
+      "wall_seconds": 108.12623712500135,
+      "usage": {
+        "input_tokens": 30,
+        "output_tokens": 8223,
+        "cached_input_tokens": null,
+        "cache_read_input_tokens": 302955,
+        "cache_creation_input_tokens": 43308
+      },
+      "cost_estimate_usd": 0.5716350000000001,
+      "cost_basis": "unknown",
+      "observed_billed_usd": null,
+      "qualification_failures": [],
+      "artifact_bindings": {
+        "receipt_sha256": "687044a0b5e330a3fb6dd9372d4b6dedfba9c34613f115fdfac1fc3a073ec797",
+        "registration_sha256": "9686d267cf78bee4fa94e5d168fc5f8cd6ff0ba72d8fc98d148042a99deaad45",
+        "controls_sha256": "8b0e7d186cb0ef5403677813559e7d906cb73e058209badeba9711e7dcd015db",
+        "result_sha256": "8a98eb7a9bb52813b31e6931c7605c6c3bde7e8523975822515a95b381bfed95",
+        "patch_sha256": "a55072c7010b05a6a67dced2d599399366a85ef321176fd60d4742b9b8ae0177",
+        "actual_request_sha256": "e68deb33906c0a99770b1f12c535dd659563710141d711bc7fbd414c286f660a",
+        "stream_sha256": "d51f9a4cf1d856e9bc0b5bba433386c09f41d3b6752f1be74ea137e8f867e928",
+        "tool_events_sha256": "148d6eb732e4f3316f5ada85258203c90bd26055cc879a9aca21ad279691d6c4",
+        "current_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "oracle_stdout_sha256": "246054bb601a8cc49ddde3fd833d5a255f679f202d79d94f4e8f82890cc5a9df",
+        "oracle_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "started_sha256": "d07f4dc95f59172bb5ecfc045233ef7258697fef69f93aae91d69f37b756eec7"
+      },
+      "safe_rejected_command_proposals": 2,
+      "provider_input_validation_rejections": 0,
+      "patch_present": true,
+      "patch_bound": true,
+      "historical_oracle_input_digest_recorded": false,
+      "current_source_acceptance": false,
+      "oracle_association_status": "Separate closure recheck of digest-bound current source agrees; original recorded grade retained",
+      "custody": "Current local recorded-byte bindings; no claim of continuous absolute immutability",
+      "operational_tool_calls": 20,
+      "current_recheck_agrees_with_recorded_grade": true,
+      "current_recheck_bindings": {
+        "source_sha256": "8a98eb7a9bb52813b31e6931c7605c6c3bde7e8523975822515a95b381bfed95",
+        "stdout_sha256": "2c3705347d56e9ab16be9edf75e6decf19963a8b885dbf2ef4ab7b35a40f2ff6",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "public_patch": "patches/tweed-pr32--v08-opus--r1.patch",
+      "completion_gaps_count": 4,
+      "oracle_checks": [
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_wrong_thread_same_turn_cannot_finish_phase",
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_same_thread_wrong_turn_cannot_finish_phase",
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_wrong_thread_wrong_turn_cannot_finish_phase",
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_matching_thread_turn_finishes_phase",
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_legacy_absent_thread_matching_turn_finishes_phase",
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_foreign_messages_cannot_replace_coordinator_receipt",
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_malformed_active_transport_stops_process"
+      ]
+    },
+    {
+      "trial_id": "tweed-pr40--v08-opus--r1",
+      "task_id": "tweed-pr40",
+      "arm_id": "v08-opus",
+      "repeat": 1,
+      "backend": "claude",
+      "model_requested": "claude-opus-5-5",
+      "actual_model": "claude-opus-5-5",
+      "model_attribution": "assistant_event_observed",
+      "status": "completed",
+      "eligible": true,
+      "verified_success": true,
+      "oracle_passed": true,
+      "semantic_unknown": false,
+      "worker_complete_true_empty_remaining": false,
+      "declares_complete_true": true,
+      "false_completion_event": false,
+      "false_completion_conditioned_denominator": true,
+      "terminal_known": true,
+      "missing_or_invalid_terminal": false,
+      "timed_out": false,
+      "wall_seconds": 159.4361327919978,
+      "usage": {
+        "input_tokens": 40,
+        "output_tokens": 13482,
+        "cached_input_tokens": null,
+        "cache_read_input_tokens": 634087,
+        "cache_creation_input_tokens": 59623
+      },
+      "cost_estimate_usd": 0.8736014000000002,
+      "cost_basis": "unknown",
+      "observed_billed_usd": null,
+      "qualification_failures": [],
+      "artifact_bindings": {
+        "receipt_sha256": "becf8ef9981dabce7b6bf014969fd5d71ac8b0f67ea39d22f949aced6379fb0c",
+        "registration_sha256": "9686d267cf78bee4fa94e5d168fc5f8cd6ff0ba72d8fc98d148042a99deaad45",
+        "controls_sha256": "8b0e7d186cb0ef5403677813559e7d906cb73e058209badeba9711e7dcd015db",
+        "result_sha256": "dad38a13af1381e7a5bfdde3152dc4e670dfd863d623c884d7c8a050181711e8",
+        "patch_sha256": "b5d87473743fdb4088c9eae56292ddb9ebdc1be3dcd26d786fb5a9c86a282b1c",
+        "actual_request_sha256": "3755758cdf802b10cb24a720efa1d87ba9c7aa7ea903961b66be43c9d9fb84d0",
+        "stream_sha256": "cb491b369e215be098e03069f05d3bc1679af226b72b0d1257039bc382fe21df",
+        "tool_events_sha256": "ca9749a9cb71bb11df8e0e486efa245c72c9e1c85037a2430275212c52b28c3f",
+        "current_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "oracle_stdout_sha256": "b00a029c301ca361ebd1ebda91f160fa5da292338df71574d7b56d414bbb8080",
+        "oracle_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "started_sha256": "20a9f9e2c5f3bff05d54dd8384630eec86d3026b2cb81fec0a17e17c00a3cb60"
+      },
+      "safe_rejected_command_proposals": 1,
+      "provider_input_validation_rejections": 0,
+      "patch_present": true,
+      "patch_bound": true,
+      "historical_oracle_input_digest_recorded": false,
+      "current_source_acceptance": true,
+      "oracle_association_status": "Separate closure recheck of digest-bound current source agrees; original recorded grade retained",
+      "custody": "Current local recorded-byte bindings; no claim of continuous absolute immutability",
+      "operational_tool_calls": 34,
+      "current_recheck_agrees_with_recorded_grade": true,
+      "current_recheck_bindings": {
+        "source_sha256": "dad38a13af1381e7a5bfdde3152dc4e670dfd863d623c884d7c8a050181711e8",
+        "stdout_sha256": "d0f7556cc99edbacaee06ee224b715f232790811f13fd4ec0e2b786bcd744b1e",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "public_patch": "patches/tweed-pr40--v08-opus--r1.patch",
+      "completion_gaps_count": 4,
+      "oracle_checks": [
+        "tests.test_budget_resume_audit.BudgetResumeAudit.test_explicit_resume_disable_replaces_saved_numeric_budget",
+        "tests.test_budget_resume_audit.BudgetResumeAudit.test_explicit_resume_disable_preserves_saved_disabled_budget",
+        "tests.test_budget_resume_audit.BudgetResumeAudit.test_resume_without_override_preserves_saved_disabled_budget",
+        "tests.test_budget_resume_audit.BudgetResumeAudit.test_numeric_resume_override_replaces_saved_disabled_budget",
+        "tests.test_budget_resume_audit.BudgetResumeAudit.test_resume_without_override_preserves_saved_numeric_budget",
+        "tests.test_budget_resume_audit.BudgetResumeAudit.test_invalid_numeric_resume_inputs_never_start_provider",
+        "tests.test_budget_resume_audit.BudgetResumeAudit.test_mutually_exclusive_flags_never_start_provider",
+        "tests.test_budget_resume_audit.BudgetResumeAudit.test_environment_disabled_default_runs_real_phase_and_persists_disabled",
+        "tests.test_budget_elapsed_audit.DisabledResumeElapsedAudit.test_disabled_resume_waits_beyond_prior_budget_without_steering"
+      ]
+    },
+    {
+      "trial_id": "tweed-pr40--baseline-opus--r2",
+      "task_id": "tweed-pr40",
+      "arm_id": "baseline-opus",
+      "repeat": 2,
+      "backend": "claude",
+      "model_requested": "claude-opus-5-5",
+      "actual_model": "claude-opus-5-5",
+      "model_attribution": "assistant_event_observed",
+      "status": "completed",
+      "eligible": true,
+      "verified_success": true,
+      "oracle_passed": true,
+      "semantic_unknown": false,
+      "worker_complete_true_empty_remaining": false,
+      "declares_complete_true": true,
+      "false_completion_event": false,
+      "false_completion_conditioned_denominator": true,
+      "terminal_known": true,
+      "missing_or_invalid_terminal": false,
+      "timed_out": false,
+      "wall_seconds": 239.70015833399884,
+      "usage": {
+        "input_tokens": 46,
+        "output_tokens": 18321,
+        "cached_input_tokens": null,
+        "cache_read_input_tokens": 956505,
+        "cache_creation_input_tokens": 83805
+      },
+      "cost_estimate_usd": 1.2283449999999998,
+      "cost_basis": "unknown",
+      "observed_billed_usd": null,
+      "qualification_failures": [],
+      "artifact_bindings": {
+        "receipt_sha256": "daddecee7e7647ca6f94cc6011550d1ef5169311d23ba905204357b6d1a33238",
+        "registration_sha256": "9686d267cf78bee4fa94e5d168fc5f8cd6ff0ba72d8fc98d148042a99deaad45",
+        "controls_sha256": "8b0e7d186cb0ef5403677813559e7d906cb73e058209badeba9711e7dcd015db",
+        "result_sha256": "086b159ee6de51cd70c86c51d8752877d5f5f23720073a005e1befce0325a2b5",
+        "patch_sha256": "957e328f0c04058c94c78c2a837a7be03f49946ec87d5aa621913b1cadfcea62",
+        "actual_request_sha256": "0e571f614898c462d07a010a0f3fb6614322ce8dc68d6cc2ab87f3fd9a8cd365",
+        "stream_sha256": "a42698648c57bee287115c168ba7567bbe44f1e44b7630d5eafc1bd2fc7a4058",
+        "tool_events_sha256": "28cce7e15b940c7d3a706630ad3461086ab7d020953ab994ea136e82070e14bf",
+        "current_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "oracle_stdout_sha256": "f5587774c50df684019c2b2de1a9b26c9f0c9e447b9fa1e97b6d8d60150cfd32",
+        "oracle_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "started_sha256": "34a00fc801d8bf66ba88ce7e202682e83c3c42fa85b219ca6a869886037cf53d"
+      },
+      "safe_rejected_command_proposals": 1,
+      "provider_input_validation_rejections": 0,
+      "patch_present": true,
+      "patch_bound": true,
+      "historical_oracle_input_digest_recorded": false,
+      "current_source_acceptance": true,
+      "oracle_association_status": "Separate closure recheck of digest-bound current source agrees; original recorded grade retained",
+      "custody": "Current local recorded-byte bindings; no claim of continuous absolute immutability",
+      "operational_tool_calls": 39,
+      "current_recheck_agrees_with_recorded_grade": true,
+      "current_recheck_bindings": {
+        "source_sha256": "086b159ee6de51cd70c86c51d8752877d5f5f23720073a005e1befce0325a2b5",
+        "stdout_sha256": "eb9e24c1cfc53b5fe1e144096527003970e5b178ee9820a23211767b5bbd59c4",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "public_patch": "patches/tweed-pr40--baseline-opus--r2.patch",
+      "completion_gaps_count": 4,
+      "oracle_checks": [
+        "tests.test_budget_resume_audit.BudgetResumeAudit.test_explicit_resume_disable_replaces_saved_numeric_budget",
+        "tests.test_budget_resume_audit.BudgetResumeAudit.test_explicit_resume_disable_preserves_saved_disabled_budget",
+        "tests.test_budget_resume_audit.BudgetResumeAudit.test_resume_without_override_preserves_saved_disabled_budget",
+        "tests.test_budget_resume_audit.BudgetResumeAudit.test_numeric_resume_override_replaces_saved_disabled_budget",
+        "tests.test_budget_resume_audit.BudgetResumeAudit.test_resume_without_override_preserves_saved_numeric_budget",
+        "tests.test_budget_resume_audit.BudgetResumeAudit.test_invalid_numeric_resume_inputs_never_start_provider",
+        "tests.test_budget_resume_audit.BudgetResumeAudit.test_mutually_exclusive_flags_never_start_provider",
+        "tests.test_budget_resume_audit.BudgetResumeAudit.test_environment_disabled_default_runs_real_phase_and_persists_disabled",
+        "tests.test_budget_elapsed_audit.DisabledResumeElapsedAudit.test_disabled_resume_waits_beyond_prior_budget_without_steering"
+      ]
+    },
+    {
+      "trial_id": "tweed-pr32--baseline-opus--r1",
+      "task_id": "tweed-pr32",
+      "arm_id": "baseline-opus",
+      "repeat": 1,
+      "backend": "claude",
+      "model_requested": "claude-opus-5-5",
+      "actual_model": "claude-opus-5-5",
+      "model_attribution": "assistant_event_observed",
+      "status": "completed",
+      "eligible": true,
+      "verified_success": false,
+      "oracle_passed": false,
+      "semantic_unknown": false,
+      "worker_complete_true_empty_remaining": false,
+      "declares_complete_true": true,
+      "false_completion_event": true,
+      "false_completion_conditioned_denominator": true,
+      "terminal_known": true,
+      "missing_or_invalid_terminal": false,
+      "timed_out": false,
+      "wall_seconds": 129.40850308299923,
+      "usage": {
+        "input_tokens": 32,
+        "output_tokens": 7716,
+        "cached_input_tokens": null,
+        "cache_read_input_tokens": 397166,
+        "cache_creation_input_tokens": 54393
+      },
+      "cost_estimate_usd": 0.6690252,
+      "cost_basis": "unknown",
+      "observed_billed_usd": null,
+      "qualification_failures": [],
+      "artifact_bindings": {
+        "receipt_sha256": "9e51bcea7e793c3193b74600fe12b956f6b0d71dd4bad0463847b82ded338995",
+        "registration_sha256": "9686d267cf78bee4fa94e5d168fc5f8cd6ff0ba72d8fc98d148042a99deaad45",
+        "controls_sha256": "8b0e7d186cb0ef5403677813559e7d906cb73e058209badeba9711e7dcd015db",
+        "result_sha256": "f88b7a5c53a37668b00e9ee68606336c3cdaa3ea4849d3ab724fb1e70d4ab370",
+        "patch_sha256": "4fec4078d523894a2f7ff9e468f128639000eef2dc630c7a60e929495a50492e",
+        "actual_request_sha256": "d636ba2611204ee8a91065bb6fa07fd0f863858ff773dfd27d4787c1b0d65696",
+        "stream_sha256": "50219f87db4bbd8936c38609a751ffdc4e57295c32aba51b21696602c3ff151b",
+        "tool_events_sha256": "40a4051dfbb14b74a77e373d562a43fdff98c48c638d035c35cdf8e56c208e2e",
+        "current_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "oracle_stdout_sha256": "0320298450eb6f71ebb9bd74c395ec2c2e28e20576b89f2be7a57d34a1a72b8d",
+        "oracle_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "started_sha256": "5de54589ec0828bacb43bf90b6c44033054ed6c63fd2f56a81624d7de36c636e"
+      },
+      "safe_rejected_command_proposals": 1,
+      "provider_input_validation_rejections": 0,
+      "patch_present": true,
+      "patch_bound": true,
+      "historical_oracle_input_digest_recorded": false,
+      "current_source_acceptance": false,
+      "oracle_association_status": "Separate closure recheck of digest-bound current source agrees; original recorded grade retained",
+      "custody": "Current local recorded-byte bindings; no claim of continuous absolute immutability",
+      "operational_tool_calls": 19,
+      "current_recheck_agrees_with_recorded_grade": true,
+      "current_recheck_bindings": {
+        "source_sha256": "f88b7a5c53a37668b00e9ee68606336c3cdaa3ea4849d3ab724fb1e70d4ab370",
+        "stdout_sha256": "50cf97b264fc4be00b8db6dcaee2124200d5665a63825c601cc5bdcb75f2ad41",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "public_patch": "patches/tweed-pr32--baseline-opus--r1.patch",
+      "completion_gaps_count": 4,
+      "oracle_checks": [
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_wrong_thread_same_turn_cannot_finish_phase",
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_same_thread_wrong_turn_cannot_finish_phase",
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_wrong_thread_wrong_turn_cannot_finish_phase",
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_matching_thread_turn_finishes_phase",
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_legacy_absent_thread_matching_turn_finishes_phase",
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_foreign_messages_cannot_replace_coordinator_receipt",
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_malformed_active_transport_stops_process"
+      ]
+    }
+  ],
+  "interviews": [
+    {
+      "episode_id": "resume-precedence--baseline--r1",
+      "case": "resume-precedence",
+      "policy": "baseline",
+      "repeat": 1,
+      "eligible": true,
+      "rounds": 3,
+      "question_count": 18,
+      "required_decision_count": 3,
+      "lexically_matched_decisions": [
+        "env-versus-saved",
+        "omitted-preserves"
+      ],
+      "actual_answered_decisions": [
+        "env-versus-saved",
+        "omitted-preserves"
+      ],
+      "answered_before_terminal": [
+        "env-versus-saved",
+        "omitted-preserves"
+      ],
+      "missing_decisions_before_terminal": [
+        "numeric-over-saved"
+      ],
+      "missing_decisions_after_final_scripted_reply": [
+        "numeric-over-saved"
+      ],
+      "repeat_decision_questions": 2,
+      "keyword_premature_ready": false,
+      "final_ready": false,
+      "bindings": {
+        "result_sha256": "bfe3e3a0910c168343e6ae0fcf4bd069e6e300147d7fa6e9a4a4ca3564170b82",
+        "started_sha256": "d49d9e3b8160c8bddfe6ce9065c44dabb925943d01c9d005543febe6c5db0068",
+        "history_sha256": "275409fafd354b34b937f574ab5cf38f48dba635079634df25b0846076f6d56f"
+      },
+      "lexical_question_references": {
+        "numeric-over-saved": [],
+        "omitted-preserves": [
+          "A1.Q3"
+        ],
+        "env-versus-saved": [
+          "A1.Q1",
+          "A1.Q3",
+          "A1.Q4",
+          "A1.Q6",
+          "A2.Q2",
+          "A2.Q3",
+          "A2.Q5",
+          "A2.Q6",
+          "A3.Q2",
+          "A3.Q3",
+          "A3.Q5",
+          "A3.Q6"
+        ]
+      },
+      "round_evidence": [
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "cleanup_error": null,
+          "wall_seconds": 11.370206957999471,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 994,
+            "cache_creation_input_tokens": 6121,
+            "cache_read_input_tokens": 0
+          },
+          "cost_estimate_usd": 0.068856,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "bindings": {
+            "request_json_sha256": "c4c48c9ca92743e20378acbd583aec17094fd11b5f99cef059c97029f22787b3",
+            "input_txt_sha256": "cc47ac2df51337f7836b6a8655f7488a02a1173a38132a3070345de8c6377eba",
+            "stream_jsonl_sha256": "3523a59fc5e75b4f1c01bf977105d8b4d0a5b21818235806beafa06deec56a40",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "e8e24e77b8fa9a8c4de62ac0861440786118c76e00cb923f5259c3549cb00749"
+          },
+          "answered_before_assistant": [],
+          "matched_question_decisions": [
+            "omitted-preserves",
+            "env-versus-saved"
+          ],
+          "ready": false
+        },
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "cleanup_error": null,
+          "wall_seconds": 12.341293417000998,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 1225,
+            "cache_creation_input_tokens": 6322,
+            "cache_read_input_tokens": 617
+          },
+          "cost_estimate_usd": 0.07520740000000001,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "bindings": {
+            "request_json_sha256": "e0d7e432c52e2ded30f70946c52cac9daae842a434e97b593741afdeff266d54",
+            "input_txt_sha256": "0f8e56b15e747fa10fc40d2faf8c0fecd8081998f9404143b7b38f5769f5f19f",
+            "stream_jsonl_sha256": "56230fec0bf60340e724e7766d8cf4ce7b1bf997e81a1d5d479816c83ed53086",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "e70c64dc1cf5050c046b6a7714fe089e27f46bc0dc22e0efb04b4e63b9eb441d"
+          },
+          "answered_before_assistant": [
+            "env-versus-saved",
+            "omitted-preserves"
+          ],
+          "matched_question_decisions": [
+            "env-versus-saved"
+          ],
+          "ready": false
+        },
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "cleanup_error": null,
+          "wall_seconds": 9.70868079200227,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 1024,
+            "cache_creation_input_tokens": 7205,
+            "cache_read_input_tokens": 617
+          },
+          "cost_estimate_usd": 0.0782514,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "bindings": {
+            "request_json_sha256": "6ded12a93edb920b1a0285c027e39f954e87112e0c077c2cae72ed495628f0bb",
+            "input_txt_sha256": "7e353a5ad29875d600fc533b518ba41043cdbeddbcda35feec3fc5e1254cdbe2",
+            "stream_jsonl_sha256": "fc8bd96d69b402d17728e706a007124396ec4e61fc022d0f142fbad940a4b32d",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "f90ab6975f6b18e6c35435827299f900969b4244abc5890126ba00f81dc78129"
+          },
+          "answered_before_assistant": [
+            "env-versus-saved",
+            "omitted-preserves"
+          ],
+          "matched_question_decisions": [
+            "env-versus-saved"
+          ],
+          "ready": false
+        }
+      ]
+    },
+    {
+      "episode_id": "notification-ownership--baseline--r1",
+      "case": "notification-ownership",
+      "policy": "baseline",
+      "repeat": 1,
+      "eligible": true,
+      "rounds": 3,
+      "question_count": 9,
+      "required_decision_count": 3,
+      "lexically_matched_decisions": [
+        "active-owner",
+        "legacy",
+        "progress"
+      ],
+      "actual_answered_decisions": [
+        "active-owner",
+        "legacy",
+        "progress"
+      ],
+      "answered_before_terminal": [
+        "active-owner",
+        "legacy",
+        "progress"
+      ],
+      "missing_decisions_before_terminal": [],
+      "missing_decisions_after_final_scripted_reply": [],
+      "repeat_decision_questions": 1,
+      "keyword_premature_ready": false,
+      "final_ready": false,
+      "bindings": {
+        "result_sha256": "c84c7b96c738fe50dbf8ccef7e6954f2957909af86cb2155e70a39b966d94738",
+        "started_sha256": "a7dd6d920b6382100a37cb71593f4162081862012a6a7e54c980faf7d1fde9ee",
+        "history_sha256": "b07846f90715254a28742ec23e64380e5fa01fa544549e83abd26ea65ec8b10a"
+      },
+      "lexical_question_references": {
+        "legacy": [
+          "A1.Q2"
+        ],
+        "progress": [
+          "A1.Q3"
+        ],
+        "active-owner": [
+          "A1.Q1",
+          "A1.Q2",
+          "A1.Q5",
+          "A2.Q2"
+        ]
+      },
+      "round_evidence": [
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "cleanup_error": null,
+          "wall_seconds": 10.12029504200109,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 877,
+            "cache_creation_input_tokens": 6114,
+            "cache_read_input_tokens": 0
+          },
+          "cost_estimate_usd": 0.06645999999999999,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "bindings": {
+            "request_json_sha256": "eccb8f8a3527760455e40f176ee56b05944c261a15164fe17f8cd62413e87cac",
+            "input_txt_sha256": "c63296d7af3435d9561bc351b27842a2898e2d1e1a9a4630301319f913421713",
+            "stream_jsonl_sha256": "5f871e5fc217a3153a6c9b465787527c52695c4bcf73f46ad1cb46b505096c3b",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "9b85da50b97f6eb9588c14b85655782fd5a6cb4e0328e95ed919c8556dd715ce"
+          },
+          "answered_before_assistant": [],
+          "matched_question_decisions": [
+            "legacy",
+            "progress",
+            "active-owner"
+          ],
+          "ready": false
+        },
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "cleanup_error": null,
+          "wall_seconds": 29.055378042001394,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 826,
+            "cache_creation_input_tokens": 6116,
+            "cache_read_input_tokens": 617
+          },
+          "cost_estimate_usd": 0.0655794,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "bindings": {
+            "request_json_sha256": "7a7b553671d9bd373ed5e866eae91514dd0b921a7b286e3ac43cf4429d117ccb",
+            "input_txt_sha256": "a5f175c18231e84fe8019aea41586e0bf5fb6507ea3149e1190e6a336c731878",
+            "stream_jsonl_sha256": "e6518b8d86d8cb3d2a5dcb7c727e4c78c84c29dd584a6f46fddb612f2886cdba",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "0036a215fe37f107b3281c86e7adbec8a2974a499006bb319e0471dda2e2b49b"
+          },
+          "answered_before_assistant": [
+            "active-owner",
+            "legacy",
+            "progress"
+          ],
+          "matched_question_decisions": [
+            "active-owner"
+          ],
+          "ready": false
+        },
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "cleanup_error": null,
+          "wall_seconds": 8.119236333001027,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 816,
+            "cache_creation_input_tokens": 6559,
+            "cache_read_input_tokens": 617
+          },
+          "cost_estimate_usd": 0.0689234,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "bindings": {
+            "request_json_sha256": "5c2552467dbd3d1280446ee76a5adf0d99b5b932324e974975fd2386912f5ca7",
+            "input_txt_sha256": "0a8847eef10c38f170a7623f5205fb99f0317d4b1c638b71aa906bc7495f4bcf",
+            "stream_jsonl_sha256": "117591e36a629fb3ddbed81e52d0459ebbffc76e8b7e37d9ab6da639063f4c53",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "095ca536420aefbecd2d681ed2b79d6950ac75179ba4c089105f22dfd6715a9d"
+          },
+          "answered_before_assistant": [
+            "active-owner",
+            "legacy",
+            "progress"
+          ],
+          "matched_question_decisions": [],
+          "ready": false
+        }
+      ]
+    },
+    {
+      "episode_id": "resume-precedence--v08--r1",
+      "case": "resume-precedence",
+      "policy": "v08",
+      "repeat": 1,
+      "eligible": true,
+      "rounds": 3,
+      "question_count": 23,
+      "required_decision_count": 3,
+      "lexically_matched_decisions": [
+        "env-versus-saved",
+        "omitted-preserves"
+      ],
+      "actual_answered_decisions": [
+        "env-versus-saved",
+        "omitted-preserves"
+      ],
+      "answered_before_terminal": [
+        "env-versus-saved",
+        "omitted-preserves"
+      ],
+      "missing_decisions_before_terminal": [
+        "numeric-over-saved"
+      ],
+      "missing_decisions_after_final_scripted_reply": [
+        "numeric-over-saved"
+      ],
+      "repeat_decision_questions": 3,
+      "keyword_premature_ready": false,
+      "final_ready": false,
+      "bindings": {
+        "result_sha256": "acfb859107cb2f28e1f43c003034fc9dc07533ddbbf5009326da4199b59422b4",
+        "started_sha256": "4d21239e3ffb8cd16cb73371b83c657bad0ac642eeea280750b10405ee3ea7e1",
+        "history_sha256": "1b5749f613e56ebebbe14f4e053ef05c6054ae636fccd01155c51d9b5748d28c"
+      },
+      "lexical_question_references": {
+        "numeric-over-saved": [],
+        "omitted-preserves": [
+          "A2.Q5",
+          "A2.Q7",
+          "A3.Q5"
+        ],
+        "env-versus-saved": [
+          "A1.Q2",
+          "A1.Q3",
+          "A1.Q4",
+          "A1.Q6",
+          "A2.Q2",
+          "A2.Q4",
+          "A2.Q5",
+          "A2.Q6",
+          "A3.Q3",
+          "A3.Q4",
+          "A3.Q5",
+          "A3.Q6"
+        ]
+      },
+      "round_evidence": [
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "cleanup_error": null,
+          "wall_seconds": 12.015741416998935,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 1028,
+            "cache_creation_input_tokens": 6987,
+            "cache_read_input_tokens": 617
+          },
+          "cost_estimate_usd": 0.0765874,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "bindings": {
+            "request_json_sha256": "f1c39bc0017876b90547f821fe4d7420a90206200515c1d291ae55e7d0b067f8",
+            "input_txt_sha256": "5fe38432564adedb9448cd733ebca6aa96e19c6af14e7eca4ac01e629293e890",
+            "stream_jsonl_sha256": "38a4fe814089cab4ee516917416427c1f2a3954e6fa3f92186340e0d3eed9e85",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "90146758789a6b06ff14588c1dbf549ce41a49c63d6408f413fc2840759883aa"
+          },
+          "answered_before_assistant": [],
+          "matched_question_decisions": [
+            "env-versus-saved"
+          ],
+          "ready": false
+        },
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "cleanup_error": null,
+          "wall_seconds": 15.467274583999824,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 1604,
+            "cache_creation_input_tokens": 7807,
+            "cache_read_input_tokens": 617
+          },
+          "cost_estimate_usd": 0.0946674,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "bindings": {
+            "request_json_sha256": "aba6c88ccb6d59934cd4d520e692220a653abd7e9f9bbd0fdb72679115eda960",
+            "input_txt_sha256": "8d4e7d21d8fa9e507efafa8add0704859820fcec3b29eb3d7ba96a75508ac6ee",
+            "stream_jsonl_sha256": "b3d301930e1a2875f20840712206165b4e4dc3597e5c97b3c86cc394023e4f6e",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "9622be37672fb680b5967e34417990455af3465314b643afce31b4aa9233d74a"
+          },
+          "answered_before_assistant": [
+            "env-versus-saved"
+          ],
+          "matched_question_decisions": [
+            "omitted-preserves",
+            "env-versus-saved"
+          ],
+          "ready": false
+        },
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "cleanup_error": null,
+          "wall_seconds": 14.010147832999792,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 1424,
+            "cache_creation_input_tokens": 8928,
+            "cache_read_input_tokens": 617
+          },
+          "cost_estimate_usd": 0.1000354,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "bindings": {
+            "request_json_sha256": "2f1bf4088c743602ba95f80f56065ae8ed0fd4c205b36340ded6412e9af4e0ca",
+            "input_txt_sha256": "3ef74e3d421cc26b38808ffb69e7f8a825a34e2f4b4c069661f2c231a1035564",
+            "stream_jsonl_sha256": "7345ce2dc4cb273c3bd9998f3b1f7df9f8e1ebf21069051697fc1a1818cf520c",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "309b9cefb6f728caefc50842e2502d553d55cfb7a00e187ddf79f060136829f5"
+          },
+          "answered_before_assistant": [
+            "env-versus-saved",
+            "omitted-preserves"
+          ],
+          "matched_question_decisions": [
+            "omitted-preserves",
+            "env-versus-saved"
+          ],
+          "ready": false
+        }
+      ]
+    },
+    {
+      "episode_id": "notification-ownership--v08--r1",
+      "case": "notification-ownership",
+      "policy": "v08",
+      "repeat": 1,
+      "eligible": true,
+      "rounds": 3,
+      "question_count": 6,
+      "required_decision_count": 3,
+      "lexically_matched_decisions": [
+        "active-owner",
+        "legacy",
+        "progress"
+      ],
+      "actual_answered_decisions": [
+        "active-owner",
+        "legacy",
+        "progress"
+      ],
+      "answered_before_terminal": [
+        "active-owner",
+        "legacy",
+        "progress"
+      ],
+      "missing_decisions_before_terminal": [],
+      "missing_decisions_after_final_scripted_reply": [],
+      "repeat_decision_questions": 4,
+      "keyword_premature_ready": false,
+      "final_ready": false,
+      "bindings": {
+        "result_sha256": "e8c1c2dd67ec2c1ec205c4a9190ba9b76bafbc93ccd085815da35f6f29ab3b92",
+        "started_sha256": "b41269cb9d4a039691353b38c8cbf085f9e0f577f8e11d80c42300304f73965b",
+        "history_sha256": "468b54cc5cea48bde91ceb8da80d1411fee18f62b66fe587d5cbbb551169badf"
+      },
+      "lexical_question_references": {
+        "legacy": [
+          "A1.Q2",
+          "A1.Q4"
+        ],
+        "progress": [
+          "A1.Q3",
+          "A2.Q1",
+          "A3.Q1"
+        ],
+        "active-owner": [
+          "A1.Q1",
+          "A1.Q2",
+          "A1.Q4",
+          "A2.Q1",
+          "A3.Q1"
+        ]
+      },
+      "round_evidence": [
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "cleanup_error": null,
+          "wall_seconds": 10.86406829200132,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 923,
+            "cache_creation_input_tokens": 6980,
+            "cache_read_input_tokens": 617
+          },
+          "cost_estimate_usd": 0.07443140000000001,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "bindings": {
+            "request_json_sha256": "b20ba4a198008a9ca8609217b66504c0b59b75aa58195dc25357bba1e852e424",
+            "input_txt_sha256": "b54b3967173e87ed81cb09069520aa5ea55244d2e147135e3d465def5abb93c0",
+            "stream_jsonl_sha256": "875096afecf87a9bf007b22e1392a5e4f14b2d2bedc8cf75ea6f715242718cfe",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "530370798ddfd3cf2c316e3e02962d6465ebff1bba5ff4e56e61639711eeb17a"
+          },
+          "answered_before_assistant": [],
+          "matched_question_decisions": [
+            "legacy",
+            "progress",
+            "active-owner"
+          ],
+          "ready": false
+        },
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "cleanup_error": null,
+          "wall_seconds": 8.290442749999784,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 775,
+            "cache_creation_input_tokens": 7606,
+            "cache_read_input_tokens": 617
+          },
+          "cost_estimate_usd": 0.0764794,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "bindings": {
+            "request_json_sha256": "7fa06b994340dea76b3cf0ac98a48c975bf188004731dd8f638a7d5f9357009e",
+            "input_txt_sha256": "e169297ba86a80cd1bcee771f1e112432219ce897f121ffc1fd358e527f487cc",
+            "stream_jsonl_sha256": "aa7aed4660111b2028d84b785bfaf59c1fc1a57185be7b401e022ceeebbdc657",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "8d7ef885f0da77f323a7c4db128ef5dafde9867a5682749816f4f102c660b265"
+          },
+          "answered_before_assistant": [
+            "active-owner",
+            "legacy",
+            "progress"
+          ],
+          "matched_question_decisions": [
+            "progress",
+            "active-owner"
+          ],
+          "ready": false
+        },
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "cleanup_error": null,
+          "wall_seconds": 6.707917499999894,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 663,
+            "cache_creation_input_tokens": 8058,
+            "cache_read_input_tokens": 617
+          },
+          "cost_estimate_usd": 0.07785539999999999,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "bindings": {
+            "request_json_sha256": "11703ed2b93d2984ee757aff9dcb9195cc8e812cfa0d0ca7554b9f36940b95f9",
+            "input_txt_sha256": "87a7dd8699b5215685caad0d0d2a5c81df58ee23e8c0bda021f01c71b4c763cf",
+            "stream_jsonl_sha256": "903c7f6ad911e5f309fba57bee688e4f406076d5c891662c2e33a8b540dcf8e2",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "6c7c5bc5dbc85476ee7afca2cde936c12d8a4ea09b2568765aed81bf235a7942"
+          },
+          "answered_before_assistant": [
+            "active-owner",
+            "legacy",
+            "progress"
+          ],
+          "matched_question_decisions": [
+            "progress",
+            "active-owner"
+          ],
+          "ready": false
+        }
+      ]
+    }
+  ],
+  "routing_diagnostic": [
+    {
+      "identity": "control-base",
+      "event_turn": "old-turn",
+      "observation": {
+        "accepted_active_receipt": false,
+        "case": "same_thread_work_after_steer",
+        "error": "coordinator started new work after soft-budget steer",
+        "error_type": "RuntimeError",
+        "event_turn": "old-turn",
+        "primary_grade_unchanged": true,
+        "process_closed": true,
+        "source_files": {
+          "bonaparte": "76f2b5fe9885de86e697729431e4a582f9cb8ee06d339d6ce5b6f9be72822681",
+          "bonaparte_native.py": "c54429978edfb982644463623d2ae5de081d21fe3506b775e73d01009fd08355"
+        },
+        "steer_exercised": true
+      },
+      "expected_acceptance": true,
+      "behavior_matches": false,
+      "source_before_after_equal": true,
+      "helper_sha256": "386cc3a06a50fa6fdb892974f99535de9e3aa7a9064532a86a1e1e664086ab9b",
+      "execution": {
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 0.13267804100178182,
+        "stdout_sha256": "c64914bfe445f06e6c6fcd2b6bc2317b8b213ecec48948b3b1f49b42f6a8c2a5",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "process_cleanup_scope": "original_process_group",
+        "detached_descendants_contained": false
+      }
+    },
+    {
+      "identity": "control-base",
+      "event_turn": "turn-1",
+      "observation": {
+        "accepted_active_receipt": false,
+        "case": "same_thread_work_after_steer",
+        "error": "coordinator started new work after soft-budget steer",
+        "error_type": "RuntimeError",
+        "event_turn": "turn-1",
+        "primary_grade_unchanged": true,
+        "process_closed": true,
+        "source_files": {
+          "bonaparte": "76f2b5fe9885de86e697729431e4a582f9cb8ee06d339d6ce5b6f9be72822681",
+          "bonaparte_native.py": "c54429978edfb982644463623d2ae5de081d21fe3506b775e73d01009fd08355"
+        },
+        "steer_exercised": true
+      },
+      "expected_acceptance": false,
+      "behavior_matches": true,
+      "source_before_after_equal": true,
+      "helper_sha256": "386cc3a06a50fa6fdb892974f99535de9e3aa7a9064532a86a1e1e664086ab9b",
+      "execution": {
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 0.13259862499762676,
+        "stdout_sha256": "3022667afee5097dc36b34ddcb1b4ab45b650635d12bae1a686bb5617271a687",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "process_cleanup_scope": "original_process_group",
+        "detached_descendants_contained": false
+      }
+    },
+    {
+      "identity": "control-head",
+      "event_turn": "old-turn",
+      "observation": {
+        "accepted_active_receipt": false,
+        "case": "same_thread_work_after_steer",
+        "error": "coordinator started new work after soft-budget steer",
+        "error_type": "RuntimeError",
+        "event_turn": "old-turn",
+        "primary_grade_unchanged": true,
+        "process_closed": true,
+        "source_files": {
+          "bonaparte": "68f0dc2b2f5ddff6aeeff3c1628ebbf0977b7cc4e6cc05a15e15dbaa78d06d1a",
+          "bonaparte_native.py": "a025039aceeddddccdfb21cc32c56a1cf338b97a45036c5b6e3b218843eda3d9"
+        },
+        "steer_exercised": true
+      },
+      "expected_acceptance": true,
+      "behavior_matches": false,
+      "source_before_after_equal": true,
+      "helper_sha256": "386cc3a06a50fa6fdb892974f99535de9e3aa7a9064532a86a1e1e664086ab9b",
+      "execution": {
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 0.1320682499972463,
+        "stdout_sha256": "88de2e39e9b2b68598272b6761af0d88e60e532a9e45343c27963bf8b8981b20",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "process_cleanup_scope": "original_process_group",
+        "detached_descendants_contained": false
+      }
+    },
+    {
+      "identity": "control-head",
+      "event_turn": "turn-1",
+      "observation": {
+        "accepted_active_receipt": false,
+        "case": "same_thread_work_after_steer",
+        "error": "coordinator started new work after soft-budget steer",
+        "error_type": "RuntimeError",
+        "event_turn": "turn-1",
+        "primary_grade_unchanged": true,
+        "process_closed": true,
+        "source_files": {
+          "bonaparte": "68f0dc2b2f5ddff6aeeff3c1628ebbf0977b7cc4e6cc05a15e15dbaa78d06d1a",
+          "bonaparte_native.py": "a025039aceeddddccdfb21cc32c56a1cf338b97a45036c5b6e3b218843eda3d9"
+        },
+        "steer_exercised": true
+      },
+      "expected_acceptance": false,
+      "behavior_matches": true,
+      "source_before_after_equal": true,
+      "helper_sha256": "386cc3a06a50fa6fdb892974f99535de9e3aa7a9064532a86a1e1e664086ab9b",
+      "execution": {
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 0.1252628750007716,
+        "stdout_sha256": "355ce83daa06d1f02f3f11c87c3745a460b0ea95f6c4c6b73441cfcf59b211d1",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "process_cleanup_scope": "original_process_group",
+        "detached_descendants_contained": false
+      }
+    },
+    {
+      "identity": "tweed-pr32--baseline-opus--r2",
+      "event_turn": "old-turn",
+      "observation": {
+        "accepted_active_receipt": false,
+        "case": "same_thread_work_after_steer",
+        "error": "coordinator started new work after soft-budget steer",
+        "error_type": "RuntimeError",
+        "event_turn": "old-turn",
+        "primary_grade_unchanged": true,
+        "process_closed": true,
+        "source_files": {
+          "bonaparte": "781a89c328697382bc600e66bbc74a9a0be86f1bc1f703e5599c93f4b201cc11",
+          "bonaparte_native.py": "c54429978edfb982644463623d2ae5de081d21fe3506b775e73d01009fd08355"
+        },
+        "steer_exercised": true
+      },
+      "expected_acceptance": true,
+      "behavior_matches": false,
+      "source_before_after_equal": true,
+      "helper_sha256": "386cc3a06a50fa6fdb892974f99535de9e3aa7a9064532a86a1e1e664086ab9b",
+      "execution": {
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 0.12901654099914595,
+        "stdout_sha256": "198404be5110ed7bbfd7d1f9a9f4df21bc381ec63e6197c948a8641572bf7ebe",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "process_cleanup_scope": "original_process_group",
+        "detached_descendants_contained": false
+      }
+    },
+    {
+      "identity": "tweed-pr32--baseline-opus--r2",
+      "event_turn": "turn-1",
+      "observation": {
+        "accepted_active_receipt": false,
+        "case": "same_thread_work_after_steer",
+        "error": "coordinator started new work after soft-budget steer",
+        "error_type": "RuntimeError",
+        "event_turn": "turn-1",
+        "primary_grade_unchanged": true,
+        "process_closed": true,
+        "source_files": {
+          "bonaparte": "781a89c328697382bc600e66bbc74a9a0be86f1bc1f703e5599c93f4b201cc11",
+          "bonaparte_native.py": "c54429978edfb982644463623d2ae5de081d21fe3506b775e73d01009fd08355"
+        },
+        "steer_exercised": true
+      },
+      "expected_acceptance": false,
+      "behavior_matches": true,
+      "source_before_after_equal": true,
+      "helper_sha256": "386cc3a06a50fa6fdb892974f99535de9e3aa7a9064532a86a1e1e664086ab9b",
+      "execution": {
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 0.13278499999796622,
+        "stdout_sha256": "ce1899712e38895fc26b62d486f79c44872ff54c2466acc3a0622b778c5e7aa9",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "process_cleanup_scope": "original_process_group",
+        "detached_descendants_contained": false
+      }
+    },
+    {
+      "identity": "tweed-pr32--v08-opus--r2",
+      "event_turn": "old-turn",
+      "observation": {
+        "accepted_active_receipt": false,
+        "case": "same_thread_work_after_steer",
+        "error": "coordinator started new work after soft-budget steer",
+        "error_type": "RuntimeError",
+        "event_turn": "old-turn",
+        "primary_grade_unchanged": true,
+        "process_closed": true,
+        "source_files": {
+          "bonaparte": "ee2af0bb6ba113249fea74a2939d3ffa32227228fa2b02cfe14545f9c6afec57",
+          "bonaparte_native.py": "c54429978edfb982644463623d2ae5de081d21fe3506b775e73d01009fd08355"
+        },
+        "steer_exercised": true
+      },
+      "expected_acceptance": true,
+      "behavior_matches": false,
+      "source_before_after_equal": true,
+      "helper_sha256": "386cc3a06a50fa6fdb892974f99535de9e3aa7a9064532a86a1e1e664086ab9b",
+      "execution": {
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 0.12975512499906472,
+        "stdout_sha256": "5932d4a253dc89b59e3875adef71041f4252833db8a19b50f67d4d4af7e10c0c",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "process_cleanup_scope": "original_process_group",
+        "detached_descendants_contained": false
+      }
+    },
+    {
+      "identity": "tweed-pr32--v08-opus--r2",
+      "event_turn": "turn-1",
+      "observation": {
+        "accepted_active_receipt": false,
+        "case": "same_thread_work_after_steer",
+        "error": "coordinator started new work after soft-budget steer",
+        "error_type": "RuntimeError",
+        "event_turn": "turn-1",
+        "primary_grade_unchanged": true,
+        "process_closed": true,
+        "source_files": {
+          "bonaparte": "ee2af0bb6ba113249fea74a2939d3ffa32227228fa2b02cfe14545f9c6afec57",
+          "bonaparte_native.py": "c54429978edfb982644463623d2ae5de081d21fe3506b775e73d01009fd08355"
+        },
+        "steer_exercised": true
+      },
+      "expected_acceptance": false,
+      "behavior_matches": true,
+      "source_before_after_equal": true,
+      "helper_sha256": "386cc3a06a50fa6fdb892974f99535de9e3aa7a9064532a86a1e1e664086ab9b",
+      "execution": {
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 0.13130091700077173,
+        "stdout_sha256": "930ce97bbfb98e8e11b7ddb50a78b6ecfdb02c8ed49ed5fbb9007f3bb56bf939",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "process_cleanup_scope": "original_process_group",
+        "detached_descendants_contained": false
+      }
+    },
+    {
+      "identity": "tweed-pr32--v08-opus--r1",
+      "event_turn": "old-turn",
+      "observation": {
+        "accepted_active_receipt": false,
+        "case": "same_thread_work_after_steer",
+        "error": "coordinator started new work after soft-budget steer",
+        "error_type": "RuntimeError",
+        "event_turn": "old-turn",
+        "primary_grade_unchanged": true,
+        "process_closed": true,
+        "source_files": {
+          "bonaparte": "76f2b5fe9885de86e697729431e4a582f9cb8ee06d339d6ce5b6f9be72822681",
+          "bonaparte_native.py": "9aa463459dd8198143941013d5cfcb53ee52b2df7bf22323184379a580b1937c"
+        },
+        "steer_exercised": true
+      },
+      "expected_acceptance": true,
+      "behavior_matches": false,
+      "source_before_after_equal": true,
+      "helper_sha256": "386cc3a06a50fa6fdb892974f99535de9e3aa7a9064532a86a1e1e664086ab9b",
+      "execution": {
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 0.12776975000087987,
+        "stdout_sha256": "7412e13fdea2fbf94b01337b1af0abbdb62daf42bba0336b82ccfb0acaaa5372",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "process_cleanup_scope": "original_process_group",
+        "detached_descendants_contained": false
+      }
+    },
+    {
+      "identity": "tweed-pr32--v08-opus--r1",
+      "event_turn": "turn-1",
+      "observation": {
+        "accepted_active_receipt": false,
+        "case": "same_thread_work_after_steer",
+        "error": "coordinator started new work after soft-budget steer",
+        "error_type": "RuntimeError",
+        "event_turn": "turn-1",
+        "primary_grade_unchanged": true,
+        "process_closed": true,
+        "source_files": {
+          "bonaparte": "76f2b5fe9885de86e697729431e4a582f9cb8ee06d339d6ce5b6f9be72822681",
+          "bonaparte_native.py": "9aa463459dd8198143941013d5cfcb53ee52b2df7bf22323184379a580b1937c"
+        },
+        "steer_exercised": true
+      },
+      "expected_acceptance": false,
+      "behavior_matches": true,
+      "source_before_after_equal": true,
+      "helper_sha256": "386cc3a06a50fa6fdb892974f99535de9e3aa7a9064532a86a1e1e664086ab9b",
+      "execution": {
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 0.12987150000117254,
+        "stdout_sha256": "b762a3709b782a514ff1f9c5e5cfe96975f071507b0f486a06107726346c9b66",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "process_cleanup_scope": "original_process_group",
+        "detached_descendants_contained": false
+      }
+    },
+    {
+      "identity": "tweed-pr32--baseline-opus--r1",
+      "event_turn": "old-turn",
+      "observation": {
+        "accepted_active_receipt": false,
+        "case": "same_thread_work_after_steer",
+        "error": "coordinator started new work after soft-budget steer",
+        "error_type": "RuntimeError",
+        "event_turn": "old-turn",
+        "primary_grade_unchanged": true,
+        "process_closed": true,
+        "source_files": {
+          "bonaparte": "f3442ec95f99a2538c7816612ec9c0b870b23b7bea2543a473d8e3778c959fcb",
+          "bonaparte_native.py": "c54429978edfb982644463623d2ae5de081d21fe3506b775e73d01009fd08355"
+        },
+        "steer_exercised": true
+      },
+      "expected_acceptance": true,
+      "behavior_matches": false,
+      "source_before_after_equal": true,
+      "helper_sha256": "386cc3a06a50fa6fdb892974f99535de9e3aa7a9064532a86a1e1e664086ab9b",
+      "execution": {
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 0.12905550000141375,
+        "stdout_sha256": "abaa83d4bb955c803e23410fa0d79cba5448b4216703688b9bbe0112b19e1d3b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "process_cleanup_scope": "original_process_group",
+        "detached_descendants_contained": false
+      }
+    },
+    {
+      "identity": "tweed-pr32--baseline-opus--r1",
+      "event_turn": "turn-1",
+      "observation": {
+        "accepted_active_receipt": false,
+        "case": "same_thread_work_after_steer",
+        "error": "coordinator started new work after soft-budget steer",
+        "error_type": "RuntimeError",
+        "event_turn": "turn-1",
+        "primary_grade_unchanged": true,
+        "process_closed": true,
+        "source_files": {
+          "bonaparte": "f3442ec95f99a2538c7816612ec9c0b870b23b7bea2543a473d8e3778c959fcb",
+          "bonaparte_native.py": "c54429978edfb982644463623d2ae5de081d21fe3506b775e73d01009fd08355"
+        },
+        "steer_exercised": true
+      },
+      "expected_acceptance": false,
+      "behavior_matches": true,
+      "source_before_after_equal": true,
+      "helper_sha256": "386cc3a06a50fa6fdb892974f99535de9e3aa7a9064532a86a1e1e664086ab9b",
+      "execution": {
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 0.12981625000247732,
+        "stdout_sha256": "e83af90fa2101ea3142ab1b2ae0eaa652cd448f6b2627f15351d7b83b6196098",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "process_cleanup_scope": "original_process_group",
+        "detached_descendants_contained": false
+      }
+    }
+  ],
+  "unqualified_timeout_source_diagnostics": [
+    {
+      "trial_id": "tweed-pr40--v08-opus--r2",
+      "available": true,
+      "diagnostic_grade": {
+        "oracle_passed": true,
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 0.7736958749992482,
+        "header": {
+          "task_id": "tweed-pr40",
+          "exit_code": 0,
+          "passed": true,
+          "tests": [
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_explicit_resume_disable_replaces_saved_numeric_budget",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_explicit_resume_disable_preserves_saved_disabled_budget",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_resume_without_override_preserves_saved_disabled_budget",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_numeric_resume_override_replaces_saved_disabled_budget",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_resume_without_override_preserves_saved_numeric_budget",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_invalid_numeric_resume_inputs_never_start_provider",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_mutually_exclusive_flags_never_start_provider",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_environment_disabled_default_runs_real_phase_and_persists_disabled",
+            "tests.test_budget_elapsed_audit.DisabledResumeElapsedAudit.test_disabled_resume_waits_beyond_prior_budget_without_steering"
+          ],
+          "production_scope": [
+            "bonaparte",
+            "bonaparte_checkpoint.py"
+          ],
+          "output_sha256": "a96fd264edeb13ba973938d08cddd35e07203acde5f4b6ed55608f44709705a2"
+        },
+        "stdout_sha256": "f5587774c50df684019c2b2de1a9b26c9f0c9e447b9fa1e97b6d8d60150cfd32",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "process_cleanup_scope": "original_process_group",
+        "detached_descendants_contained": false,
+        "output_changed_during_cleanup": false
+      },
+      "primary_grade_unchanged": true
+    },
+    {
+      "trial_id": "tweed-pr40--baseline-opus--r1",
+      "available": true,
+      "diagnostic_grade": {
+        "oracle_passed": true,
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 0.8315382920009142,
+        "header": {
+          "task_id": "tweed-pr40",
+          "exit_code": 0,
+          "passed": true,
+          "tests": [
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_explicit_resume_disable_replaces_saved_numeric_budget",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_explicit_resume_disable_preserves_saved_disabled_budget",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_resume_without_override_preserves_saved_disabled_budget",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_numeric_resume_override_replaces_saved_disabled_budget",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_resume_without_override_preserves_saved_numeric_budget",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_invalid_numeric_resume_inputs_never_start_provider",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_mutually_exclusive_flags_never_start_provider",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_environment_disabled_default_runs_real_phase_and_persists_disabled",
+            "tests.test_budget_elapsed_audit.DisabledResumeElapsedAudit.test_disabled_resume_waits_beyond_prior_budget_without_steering"
+          ],
+          "production_scope": [
+            "bonaparte",
+            "bonaparte_checkpoint.py"
+          ],
+          "output_sha256": "91acd76e37730a6fbc23f1c606a3d734a36b34d3e01d022a36f67e709f21b5c0"
+        },
+        "stdout_sha256": "81f8b4953b688afd3b64b01b459ca88acecd26a8564b877f7e9e2f740c70eac9",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "process_cleanup_scope": "original_process_group",
+        "detached_descendants_contained": false,
+        "output_changed_during_cleanup": false
+      },
+      "primary_grade_unchanged": true
+    }
+  ],
+  "review_mapping_released_after_review": [
+    {
+      "candidate": "C01",
+      "kind": "implementation",
+      "trial_id": "tweed-pr40--v08-opus--r2",
+      "arm_id": "v08-opus",
+      "task_id": "tweed-pr40",
+      "repeat": 2
+    },
+    {
+      "candidate": "C02",
+      "kind": "implementation",
+      "trial_id": "tweed-pr32--v08-opus--r1",
+      "arm_id": "v08-opus",
+      "task_id": "tweed-pr32",
+      "repeat": 1
+    },
+    {
+      "candidate": "C03",
+      "kind": "implementation",
+      "trial_id": "tweed-pr32--v08-opus--r2",
+      "arm_id": "v08-opus",
+      "task_id": "tweed-pr32",
+      "repeat": 2
+    },
+    {
+      "candidate": "C04",
+      "kind": "implementation",
+      "trial_id": "tweed-pr32--baseline-opus--r2",
+      "arm_id": "baseline-opus",
+      "task_id": "tweed-pr32",
+      "repeat": 2
+    },
+    {
+      "candidate": "C05",
+      "kind": "implementation",
+      "trial_id": "tweed-pr40--v08-opus--r1",
+      "arm_id": "v08-opus",
+      "task_id": "tweed-pr40",
+      "repeat": 1
+    },
+    {
+      "candidate": "C06",
+      "kind": "implementation",
+      "trial_id": "tweed-pr40--baseline-opus--r1",
+      "arm_id": "baseline-opus",
+      "task_id": "tweed-pr40",
+      "repeat": 1
+    },
+    {
+      "candidate": "C07",
+      "kind": "implementation",
+      "trial_id": "tweed-pr32--baseline-opus--r1",
+      "arm_id": "baseline-opus",
+      "task_id": "tweed-pr32",
+      "repeat": 1
+    },
+    {
+      "candidate": "C08",
+      "kind": "implementation",
+      "trial_id": "tweed-pr40--baseline-opus--r2",
+      "arm_id": "baseline-opus",
+      "task_id": "tweed-pr40",
+      "repeat": 2
+    },
+    {
+      "candidate": "I01",
+      "kind": "intake",
+      "case": "notification-ownership",
+      "policy": "baseline",
+      "repeat": 1
+    },
+    {
+      "candidate": "I02",
+      "kind": "intake",
+      "case": "resume-precedence",
+      "policy": "baseline",
+      "repeat": 1
+    },
+    {
+      "candidate": "I03",
+      "kind": "intake",
+      "case": "notification-ownership",
+      "policy": "v08",
+      "repeat": 1
+    },
+    {
+      "candidate": "I04",
+      "kind": "intake",
+      "case": "resume-precedence",
+      "policy": "v08",
+      "repeat": 1
+    }
+  ],
+  "limits": [
+    "Two prior weakness tasks chosen purposively, familiar historical snapshots, two repeats; no population ranking",
+    "Same current0.8 runtime/asset bytes across arms; full guidance package is intervention, not exact old whole runtime",
+    "Peer delegation and external component execution absent; not full multi-provider autonomy",
+    "Keyword scripted-user interviews with supplied facts; no live-user satisfaction or answer-dependent implementation",
+    "CLI budget/usage are guards and estimates, not actual subscription charges",
+    "No retries of started identities; unknowns retained; no post-result changes to policy/oracle"
+  ]
+}
