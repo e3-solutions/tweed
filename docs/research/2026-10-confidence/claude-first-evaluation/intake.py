@@ -60,7 +60,7 @@ def call(prompt,out):
  models=sorted({e['message']['model'] for e in events if e.get('type')=='assistant' and isinstance(e.get('message'),dict) and isinstance(e['message'].get('model'),str)})
  tool_calls=[b for e in events if e.get('type')=='assistant' for b in e.get('message',{}).get('content',[]) if b.get('type')=='tool_use' and b.get('name')!='StructuredOutput']
  value=(terminal or {}).get('structured_output');valid=isinstance(value,dict) and set(value)==set(SCHEMA['required']) and type(value.get('ready')) is bool and all(isinstance(value.get(k),list) and all(isinstance(x,str) for x in value[k]) for k in ['questions','settled','missing'])
- eligible=not timedout and proc.returncode==0 and not error and not (terminal or {}).get('is_error',True) and models==['claude-opus-5-5'] and not tool_calls and valid
+ eligible=not timedout and proc.returncode==0 and not error and (terminal or {}).get('is_error') is False and (terminal or {}).get('subtype')=='success' and models==['claude-opus-5-5'] and not tool_calls and valid
  result={'eligible':eligible,'value':value,'requested_model':'claude-opus-5-5','observed_models':models,'timeout':timedout,'exit_code':proc.returncode,'cleanup_error':error,'wall_seconds':time.monotonic()-start,'terminal':terminal,'stream_sha256':runner.sha(out/'stream.jsonl'),'request_sha256':runner.sha(out/'request.json'),'tools_used':tool_calls}
  runner.write(out/'receipt.json',result);return result
 
