@@ -7,8 +7,9 @@ dated research rather than the always-loaded skill.
 
 Apply [model routing](model-routing.md) when dividing normal task work: bounded
 discovery can use qualified lower-cost workers, while consequential decisions and
-required reviews retain suitable owners. Use native delegation first when it fits;
-use Claude Code for authorized provider diversity or additional available capacity.
+required reviews retain suitable owners. When Codex coordinates, prefer qualified
+Claude workers as described there; use native Codex delegation for independent
+checks or a better-qualified route.
 
 ## Separate four judgments
 
@@ -133,6 +134,8 @@ slice, needs a qualified actual tool boundary:
 
 - an isolated worktree or snapshot;
 - an effective tool inventory read from the runtime;
+- an authorized source-read scope enforced by the actual boundary and checked
+  with denied-read probes;
 - a write scope enforced by sandbox or filesystem permissions, not by the prompt;
 - confined test execution;
 - no production credentials.

@@ -54,7 +54,12 @@ Illustrative example (the file reference is hypothetical):
 > Which option do you want, or would you prefer another?
 
 After each answer or new discovery, recompute which questions can now be answered.
-New evidence can open new questions.
+New evidence can open new questions. Distinguish a necessary condition from a
+complete decision: who may perform an action does not settle all prerequisites for
+performing it. For example, "only the coordinator can complete" does not establish
+whether it must wait for children or required reviews. Discover existing behavior
+first; ask only if a consequential gating choice remains. Do not infer that
+satisfying one condition authorizes the whole action.
 
 ## Solver patterns
 
