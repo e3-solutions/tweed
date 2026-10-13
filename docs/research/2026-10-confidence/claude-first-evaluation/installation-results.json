@@ -1,13 +1,13 @@
 {
-  "version": "0.7.0",
+  "version": "0.7.1",
   "enabled": true,
-  "archive_source_commit": "4e1c74da0da7c0c720b15ed148134b4962779056",
+  "archive_source_commit": "7bc8788f5c05adaba4e13aedd53386ed63dd37f0",
   "regular_files": 21,
   "archive_entries": 28,
-  "file_manifest_sha256": "4bfb504c7fe7de7307d4927939adf82a78da5e4b9b5ac9e96d770505b71e1ec4",
+  "file_manifest_sha256": "c72106872fec25fd6f7bbf0f1d8e1cf61372b70a31cba14ad78f052cd4d51fb0",
   "file_manifest": {
     "CHANGELOG.md": {
-      "sha256": "31a6f686d7c12512b3178c1edd884b003c2ff02767a0358f3af7ae61bcf40504",
+      "sha256": "9e8a0996b7bca1beb8400a9cc0eb2c7cb6d5e5f531dee124e3c3d31b2dcc2ed7",
       "mode": 420
     },
     "README.md": {
@@ -15,7 +15,7 @@
       "mode": 420
     },
     ".codex-plugin/plugin.json": {
-      "sha256": "372e17c7ae4427440dab7a4c022698f84b6c2492a2cce342b1ecfd95b808f1c5",
+      "sha256": "e8e98c8b95a95270ac8bc2e60fdc3a3a3d05fafaf7192851e1e9a8037ef132b0",
       "mode": 420
     },
     "skills/confidence-protocol/SKILL.md": {
@@ -59,11 +59,11 @@
       "mode": 420
     },
     "skills/confidence-protocol/scripts/confidence.py": {
-      "sha256": "788857f238b187bd3d491d67ac84eedd3dd65fcab940e5031cc156a04c411213",
+      "sha256": "8c898d5bf416990e520a1bb9b113f06ffd573854346ef4512ea5798e38d684be",
       "mode": 420
     },
     "skills/confidence-protocol/scripts/diagnostics.py": {
-      "sha256": "92f8ca010bb17e11acef08044415e5116d490ae3b0ac712a2de759ff19120bf2",
+      "sha256": "e36cccac68890e6d4baa65915c324b84c0f070e839c4a97970b23dec766260ff",
       "mode": 420
     },
     "skills/confidence-protocol/assets/contract.example.json": {
@@ -92,7 +92,7 @@
     }
   },
   "source_and_cache_match": true,
-  "prior_version_backup_retained": "0.6.0",
+  "prior_version_backup_retained": "0.7.0 and inherited 0.6.0",
   "doctor_exit_code": 0,
   "doctor_status": "pass",
   "doctor_checks": [
