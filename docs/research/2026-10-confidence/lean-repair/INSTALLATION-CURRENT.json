@@ -5,5 +5,7 @@
     true,
     true
   ],
-  "claim": "Current bytes/modes match historical installation; no new installation or enablement mutation performed."
+  "claim": "Current bytes/modes match historical installation; no new installation or enablement mutation performed.",
+  "plugin_enabled_current": true,
+  "enabled_basis": "Current configuration plugin entry confidence-protocol@personal enabled=true; no config mutation"
 }

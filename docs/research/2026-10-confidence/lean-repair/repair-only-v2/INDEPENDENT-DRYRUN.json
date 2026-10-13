@@ -1,0 +1,45 @@
+{
+  "reviewer": "/root/lean_repair_adversary",
+  "kind": "actual_composed_v2_setup_prefix_and_provider_request_dryrun",
+  "registration_sha256": "730118d45f7fcfa0055e844ae0dbe8eb360b56c0eb4855e2a0e8737c0834c270",
+  "helper_sha256": "fb1518aa7fa17c2603c092b30ff7ae1af12f258590e8f05eae7d596b9d130055",
+  "passed": true,
+  "rows": [
+    {
+      "arm": "original",
+      "attempt_id": "pr20-observed-scope-v2-original-r1",
+      "actual_authentic_copy_mount_gitinit_beforecapture_local_mcp_passed": true,
+      "authentic_pre_mount_source_sha256": "6d1fb324622cea73a8ee315be8ca9127ab7a39ab35ead33e4e8bf89934323a26",
+      "actual_before_source_sha256": "7936cbb0187efb24ed3e6ceef11331c8c6520603b1f9bf73ccf1b542dd5cefed",
+      "readonly_launch_reconstruction_equal": true,
+      "local_qualification_sha256": "23d2dcc410ae8dd1637dec33f9859c0a0d105044b95e201b325db2142a15c880",
+      "constructed_request_sha256": "98feb2ae08124b89eba564654b12a3379bfada1fc2d3826d84d0c427633139f9",
+      "full_argv_mcp_prompt_cap_reconstruction_passed": true,
+      "provider_process_started": false,
+      "planned_model_requested": "claude-opus-5-5",
+      "observed_model": null
+    },
+    {
+      "arm": "revised",
+      "attempt_id": "pr20-observed-scope-v2-revised-r1",
+      "actual_authentic_copy_mount_gitinit_beforecapture_local_mcp_passed": true,
+      "authentic_pre_mount_source_sha256": "6d1fb324622cea73a8ee315be8ca9127ab7a39ab35ead33e4e8bf89934323a26",
+      "actual_before_source_sha256": "6d1fb324622cea73a8ee315be8ca9127ab7a39ab35ead33e4e8bf89934323a26",
+      "readonly_launch_reconstruction_equal": true,
+      "local_qualification_sha256": "bbd00c32e71dacd0f2956a9510f6336cee4a6fbc0b8a37d141781ce4081dce3a",
+      "constructed_request_sha256": "9fb6dba9e31d5ebd0b744f4e72559dbf0527df8fa030cd7dbc014145b5e9da90",
+      "full_argv_mcp_prompt_cap_reconstruction_passed": true,
+      "provider_process_started": false,
+      "planned_model_requested": "claude-opus-5-5",
+      "observed_model": null
+    }
+  ],
+  "hosted_inference_calls": 0,
+  "real_provider_processes_started": 0,
+  "method": "Executed actual run_attempt with unchanged legacy request-builder leaf cloned and Popen replaced by a mandatory stop; actual Git/MCP subprocesses ran. No model process or fake model terminal was produced.",
+  "limits": [
+    "Checks runnable setup/source and request-envelope delivery only; actual model availability, terminal and post-correction owner proof remain required.",
+    "Two original infrastructure failures retained; dry-run records are independent preflight controls, not assigned attempts or correction successes.",
+    "Authentic snapshots, old/new registered studies and primary scores remain unchanged."
+  ]
+}

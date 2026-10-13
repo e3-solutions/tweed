@@ -1,5 +1,11 @@
 # Confidence Protocol: current models, harnesses, and autonomous proof
 
+Latest scoped evidence (2026-10-13): [lean 0.8.1 repair-loop pilot](lean-repair/REPORT.md).
+Three fresh historical task identities, actual Opus/Haiku/Codex stages, preserved
+delivery/custody failures and a separate scope-correction diagnostic establish no
+improvement over original guidance. Candidate 0.8.1 remains source-only; installation
+stays 0.8.0. The historical dossier below retains its original scope and findings.
+
 Research date: 2026-10-12. This dossier accompanies the 0.6.0 proposal. It separates
 documented capabilities, inspected implementation, actual executed probes, design
 inference, and work not completed. The result improves evidence gates and recovery;

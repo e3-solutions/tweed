@@ -1,0 +1,288 @@
+{
+  "supplement": "prospectively sealed sole observed README scope-correction pair",
+  "assigned_correction_attempts": 2,
+  "task_id": "tweed-pr20",
+  "primary_six_cell_metrics_changed": false,
+  "registration_sha256": "730118d45f7fcfa0055e844ae0dbe8eb360b56c0eb4855e2a0e8737c0834c270",
+  "origin_primary_registration_sha256": "e2fddcd40281f75c1863bc2a2301d02eb36946cb1ff4fdf392f503394be74948",
+  "rows": [
+    {
+      "attempt_id": "pr20-observed-scope-v2-original-r1",
+      "task_id": "tweed-pr20",
+      "arm_id": "original",
+      "repeat": 1,
+      "status": "completed",
+      "scope_correction_observed": true,
+      "qualified_scope_correction": true,
+      "full_snapshot_changed": true,
+      "README_restored": true,
+      "README_changed": true,
+      "scope_before": [
+        "README.md"
+      ],
+      "scope_after": [],
+      "production_bytes_preserved": true,
+      "production_patch_changed": false,
+      "production_patch_sha256": "852ed393133fcfc218230ffb23af6eec6599c565c53846678f5816107a1c2ea0",
+      "before_source_sha256": "7936cbb0187efb24ed3e6ceef11331c8c6520603b1f9bf73ccf1b542dd5cefed",
+      "final_source_sha256": "b8a33415b46fbe5da9036e77a24c916b2c0c2b08f61510265dc2e1c2e20b4f93",
+      "source_changed_paths": [
+        "README.md"
+      ],
+      "candidate_content_changed_paths": [
+        "README.md"
+      ],
+      "owner_deadline_met": true,
+      "repair_stage": {
+        "process_exit": 0,
+        "timed_out": false,
+        "wall_seconds": 51.946896334000485,
+        "observed_assistant_models": [
+          "claude-opus-5-5"
+        ],
+        "requested_effort": "high",
+        "total_cost_usd": 0.3121956,
+        "usage": {
+          "input_tokens": 14,
+          "cache_creation_input_tokens": 29723,
+          "cache_read_input_tokens": 93578,
+          "output_tokens": 2782,
+          "output_tokens_details": {
+            "thinking_tokens": 469
+          },
+          "server_tool_use": {
+            "web_search_requests": 0,
+            "web_fetch_requests": 0
+          },
+          "service_tier": "standard",
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 29723,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "inference_geo": "global",
+          "iterations": [
+            {
+              "input_tokens": 2,
+              "output_tokens": 1104,
+              "cache_read_input_tokens": 28144,
+              "cache_creation_input_tokens": 2947,
+              "cache_creation": {
+                "ephemeral_5m_input_tokens": 0,
+                "ephemeral_1h_input_tokens": 2947
+              },
+              "type": "message"
+            }
+          ],
+          "speed": "standard",
+          "fallback_credit": null
+        },
+        "stream_sha256": "e22af6778217be53f69fbbc1f34e0ec4a979759d73318255240eea1d45ed6e65",
+        "request_sha256": "e1a234b963114b642931c365affb875c6f40840e8e6b9232537a7c5647cafc58",
+        "process_cleanup_scope": "original_process_group",
+        "detached_descendants_contained": false,
+        "guarded_new_session_processes": 1,
+        "stream_changed_during_cleanup": false,
+        "model_requested": "claude-opus-5-5",
+        "qualification": {
+          "eligible": true,
+          "failures": [],
+          "actual_model": "claude-opus-5-5",
+          "model_attribution": "assistant_event_observed"
+        }
+      },
+      "completion_declaration": {
+        "complete": true,
+        "summary": "I fixed the failed scope gate: README.md now matches the supplied baseline byte for byte, and no other file differs from the candidate commit. One test in the wider suite errored, almost certainly because of the sandbox rather than the code, though I couldn't confirm that here.\n\nWhat I did: I swapped the five added README lines back to the original two lines saying the model is pinned to `gpt-5.6-sol` with medium reasoning. I made no other edits.\n\nChecks I ran:\n- README.md's SHA-256 is 5a8bbcd1546d8c6c6279037dc4cfbf9b884bc8af871ea54749ce968279921b7e, which matches the baseline hash you supplied.\n- `git status --porcelain` and `git diff --stat HEAD` show README.md as the only change against HEAD (8600f16 \"Authentic candidate\"), and it is just the 2-line restoration. So `bonaparte` and every other file are unchanged from the candidate commit. `bonaparte` currently hashes to 2c2e9edf\u2026f88. That doesn't equal the packet's `authentic_candidate_source_sha256` (6d1fb324\u2026), which probably covers the whole candidate rather than this one file; I couldn't check that.\n- The required command (`test_non_review_run_phase_retains_baseline_key_only_validation` and `test_nested_invocation_is_blocked`) passed: 2 tests OK.\n- I also ran the full offline suites (`tests.test_bonaparte`, `tests.test_handoff`, `tests.test_installation`). 42 of 43 passed. The one error is `test_progress_fd_is_scrubbed_and_never_sent_to_children`: its own setup call `os.fstat(2)` failed with \"Operation not permitted\" under this workspace's sandbox. This change touched no code, but I couldn't run that test without the sandbox to confirm it's environmental.\n\nNot re-run: the three graded model-option tests aren't in this workspace. Their earlier passing result was for the same `bonaparte` file, which is still unchanged.\n\nLimits of this exercise: no review or discovery stage was available, so nothing here was independently reviewed. The task's offline rules mean no live Bonaparte or Codex runs. This exercise also can't certify the full Confidence Protocol release gates.",
+        "remaining": [
+          "Not done, and it's from this task's own checks: `test_progress_fd_is_scrubbed_and_never_sent_to_children` errored because `os.fstat(2)` is blocked in this sandbox. It needs re-running outside the sandbox to confirm the error is environmental.",
+          "Not run because the task excludes it: live Bonaparte or Codex provider runs, by the offline rules.",
+          "Not possible in this exercise: independent review (no reviewer stage was available) and full Confidence Protocol release-gate certification."
+        ]
+      },
+      "owner_checks": [
+        {
+          "id": "focused-baseline",
+          "requested_argv": [
+            "python3",
+            "-B",
+            "-m",
+            "unittest",
+            "tests.test_bonaparte.BonaparteRunnerTests.test_non_review_run_phase_retains_baseline_key_only_validation",
+            "tests.test_bonaparte.BonaparteRunnerTests.test_nested_invocation_is_blocked"
+          ],
+          "exit_code": 0,
+          "timed_out": false,
+          "source_sha256": "c25c51f5e5fbcff733847bd33ef1d5ea2d6dc5cb47a2c4fb38ee7fb888ff6eac",
+          "source_unchanged": true,
+          "passed": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "432b260bac8d71dcf3b80470bea22669dda24ddc4c13a8cde1dcdfc935b3cfc9"
+        }
+      ],
+      "final_grade": {
+        "oracle_passed": true,
+        "exit_code": 0,
+        "timed_out": false,
+        "source_sha256": "b8a33415b46fbe5da9036e77a24c916b2c0c2b08f61510265dc2e1c2e20b4f93",
+        "stdout_sha256": "18a850a47ee24a95df529e1671d3a064c985c2dd85f55b0a82c364e608bbcb34",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "output_changed_during_cleanup": false
+      },
+      "private_receipt_sha256": "0372fa7f9a69da63e0a92b4d2c039eb486bed779a38bf985505344aaa1a4f0ef",
+      "patches": {
+        "production": {
+          "path": "patches/pr20-observed-scope-v2-original-r1.production.patch",
+          "sha256": "852ed393133fcfc218230ffb23af6eec6599c565c53846678f5816107a1c2ea0"
+        },
+        "README_scope_correction": {
+          "path": "patches/pr20-observed-scope-v2-original-r1.README-correction.patch",
+          "sha256": "b93e462e312e18e6f023c73c9bc812dfb6f391a54bcd539b4a5c7d7a4b3a915e"
+        }
+      }
+    },
+    {
+      "attempt_id": "pr20-observed-scope-v2-revised-r1",
+      "task_id": "tweed-pr20",
+      "arm_id": "revised",
+      "repeat": 1,
+      "status": "completed",
+      "scope_correction_observed": true,
+      "qualified_scope_correction": true,
+      "full_snapshot_changed": true,
+      "README_restored": true,
+      "README_changed": true,
+      "scope_before": [
+        "README.md"
+      ],
+      "scope_after": [],
+      "production_bytes_preserved": true,
+      "production_patch_changed": false,
+      "production_patch_sha256": "852ed393133fcfc218230ffb23af6eec6599c565c53846678f5816107a1c2ea0",
+      "before_source_sha256": "6d1fb324622cea73a8ee315be8ca9127ab7a39ab35ead33e4e8bf89934323a26",
+      "final_source_sha256": "c09fe5c4c7743699df946eaf710d052f4467bb9373ec02b4f5e3b64e5aff10cf",
+      "source_changed_paths": [
+        "README.md"
+      ],
+      "candidate_content_changed_paths": [
+        "README.md"
+      ],
+      "owner_deadline_met": true,
+      "repair_stage": {
+        "process_exit": 0,
+        "timed_out": false,
+        "wall_seconds": 82.98952604200167,
+        "observed_assistant_models": [
+          "claude-opus-5-5"
+        ],
+        "requested_effort": "high",
+        "total_cost_usd": 0.3412446,
+        "usage": {
+          "input_tokens": 20,
+          "cache_creation_input_tokens": 27837,
+          "cache_read_input_tokens": 181543,
+          "output_tokens": 4108,
+          "output_tokens_details": {
+            "thinking_tokens": 810
+          },
+          "server_tool_use": {
+            "web_search_requests": 0,
+            "web_fetch_requests": 0
+          },
+          "service_tier": "standard",
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 27837,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "inference_geo": "global",
+          "iterations": [
+            {
+              "input_tokens": 2,
+              "output_tokens": 1145,
+              "cache_read_input_tokens": 31676,
+              "cache_creation_input_tokens": 2867,
+              "cache_creation": {
+                "ephemeral_5m_input_tokens": 0,
+                "ephemeral_1h_input_tokens": 2867
+              },
+              "type": "message"
+            }
+          ],
+          "speed": "standard",
+          "fallback_credit": null
+        },
+        "stream_sha256": "ee3aa64800e7cba924e91b5d69cae9e92279c999cf3c84d8160bd3837e9cedac",
+        "request_sha256": "677d4a3effb502858bdcade42f7d8794484b08c8c499af101d4b96484161fb24",
+        "process_cleanup_scope": "original_process_group",
+        "detached_descendants_contained": false,
+        "guarded_new_session_processes": 1,
+        "stream_changed_during_cleanup": false,
+        "model_requested": "claude-opus-5-5",
+        "qualification": {
+          "eligible": true,
+          "failures": [],
+          "actual_model": "claude-opus-5-5",
+          "model_attribution": "assistant_event_observed"
+        }
+      },
+      "completion_declaration": {
+        "complete": true,
+        "summary": "The README.md scope breach is fixed: README.md is back to the exact pinned baseline. Its SHA-256 is now 5a8bbcd1546d8c6c6279037dc4cfbf9b884bc8af871ea54749ce968279921b7e, matching the supplied baseline hash, and it ends with a newline.\n\n**What changed:** I removed the five candidate lines describing `--model` / `BONAPARTE_MODEL` and put back the two original \"pinned to `gpt-5.6-sol`\" lines. That is exactly the reverse of the failed-scope diff. I didn't change any other file. `git status` shows only README.md differing from the candidate HEAD (2 lines added, 5 removed), and `bonaparte` is unchanged byte-for-byte from the candidate.\n\n**Checks run:**\n- **Visible command:** the two baseline tests (`test_non_review_run_phase_retains_baseline_key_only_validation` and `test_nested_invocation_is_blocked`) pass.\n- **Full existing suite:** `tests.test_bonaparte`, `tests.test_handoff` and `tests.test_installation` pass, 43 of 43. On the first run, one test (`test_progress_fd_is_scrubbed_and_never_sent_to_children`) errored at line 523, where the test calls `os.fstat(2)`. That error came from the sandbox, not the code: the test harness sends stderr to a file the sandbox won't let the process inspect. I reran the same suite with output going to the allowed scratch folder, and all 43 passed with no code changes.\n- `unittest discover` doesn't work because `tests/` isn't a package, so I ran the three modules by name.\n\n**Not re-run in this pass:** I didn't re-run the earlier frozen grade (3 held-out model-selection tests, all passed). It graded only `bonaparte`, which is unchanged, so it still applies, but it wasn't run again here.\n\n**Remaining gaps:**\n- Nothing required is unfinished.\n- These limits come from the offline setup, not from missing work: no live Bonaparte or Codex provider runs, the held-out grader wasn't available to me, and no reviewer stage was available.\n- As a result, README.md no longer documents `--model` / `BONAPARTE_MODEL` and still says models are pinned to `gpt-5.6-sol`. That's what the scope gate requires, but it doesn't match the new behavior.\n- This exercise can't certify the full Confidence Protocol release gates.",
+        "remaining": [
+          "No required work is left for this scope fix.",
+          "Limits set by the offline task: no live Bonaparte or Codex provider runs, no held-out grader in this pass (the earlier frozen grade covered the unchanged bonaparte file and passed), and no reviewer stage.",
+          "README.md is back at baseline, so it doesn't document --model / BONAPARTE_MODEL and still says models are pinned to gpt-5.6-sol. The scope gate requires this, but it doesn't match the new behavior.",
+          "This exercise can't certify the full Confidence Protocol release gates."
+        ]
+      },
+      "owner_checks": [
+        {
+          "id": "focused-baseline",
+          "requested_argv": [
+            "python3",
+            "-B",
+            "-m",
+            "unittest",
+            "tests.test_bonaparte.BonaparteRunnerTests.test_non_review_run_phase_retains_baseline_key_only_validation",
+            "tests.test_bonaparte.BonaparteRunnerTests.test_nested_invocation_is_blocked"
+          ],
+          "exit_code": 0,
+          "timed_out": false,
+          "source_sha256": "c25c51f5e5fbcff733847bd33ef1d5ea2d6dc5cb47a2c4fb38ee7fb888ff6eac",
+          "source_unchanged": true,
+          "passed": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4fe577fc867216080f2e25063780b372c0e5cd5f5638817a69cc6b3a3fd540c0"
+        }
+      ],
+      "final_grade": {
+        "oracle_passed": true,
+        "exit_code": 0,
+        "timed_out": false,
+        "source_sha256": "c09fe5c4c7743699df946eaf710d052f4467bb9373ec02b4f5e3b64e5aff10cf",
+        "stdout_sha256": "18a850a47ee24a95df529e1671d3a064c985c2dd85f55b0a82c364e608bbcb34",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "output_changed_during_cleanup": false
+      },
+      "private_receipt_sha256": "02f90df0baea2d48895b14ce3ed7fab3e02b921119f79dbcbcbe92e02cef2490",
+      "patches": {
+        "production": {
+          "path": "patches/pr20-observed-scope-v2-revised-r1.production.patch",
+          "sha256": "852ed393133fcfc218230ffb23af6eec6599c565c53846678f5816107a1c2ea0"
+        },
+        "README_scope_correction": {
+          "path": "patches/pr20-observed-scope-v2-revised-r1.README-correction.patch",
+          "sha256": "b93e462e312e18e6f023c73c9bc812dfb6f391a54bcd539b4a5c7d7a4b3a915e"
+        }
+      }
+    }
+  ],
+  "custody_failures": [],
+  "limitations": [
+    "Two separate correction attempts of one outcome-selected revised-origin README scope breach; not new development tasks or production bug repairs.",
+    "Common supplemental feedback explicitly discloses the scope verdict/nonproduction diff absent from primary closure packets; no causal policy-improvement claim.",
+    "Original primary strict acceptance and six-cell scores remain untouched. Full source corrections and production patch changes are distinct.",
+    "Stage policy context is the sole assigned instruction difference; the complete authentic candidate is copied and digest-verified, then only its copied .protocol directory is removed before mounting each frozen policy.",
+    "New prospectively registered setup correction after the original sealed scope pair retained two pre-inference FileExistsError infrastructure failures; those failures and six primary outcomes stay unchanged. Not a hidden retry or added primary success.",
+    "Qualified scope correction is based on independently executed source/preservation/behavior checks; completion/remaining declarations are separate and do not certify full protocol release gates."
+  ]
+}

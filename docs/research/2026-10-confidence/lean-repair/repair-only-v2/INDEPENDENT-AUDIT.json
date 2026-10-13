@@ -1,0 +1,155 @@
+{
+  "reviewer": "independent native Codex /root/lean_repair_adversary",
+  "kind": "separate_v2_scope_correction_final_current_byte_audit",
+  "passed": true,
+  "registration_sha256": "730118d45f7fcfa0055e844ae0dbe8eb360b56c0eb4855e2a0e8737c0834c270",
+  "helper_sha256": "fb1518aa7fa17c2603c092b30ff7ae1af12f258590e8f05eae7d596b9d130055",
+  "closure_sha256": "8b3cd6d7c4525796ea177f9210f2386aafed1450ef1eaa3ce500d18acb29585a",
+  "rows": [
+    {
+      "attempt_id": "pr20-observed-scope-v2-original-r1",
+      "arm": "original",
+      "current_postcall_custody_passed": true,
+      "qualified_scope_correction": true,
+      "README_restored_to_pinned_baseline": true,
+      "candidate_content_changed_paths": [
+        "README.md"
+      ],
+      "scope_before": [
+        "README.md"
+      ],
+      "scope_after": [],
+      "full_source_changed": true,
+      "before_source_sha256": "7936cbb0187efb24ed3e6ceef11331c8c6520603b1f9bf73ccf1b542dd5cefed",
+      "final_source_sha256": "b8a33415b46fbe5da9036e77a24c916b2c0c2b08f61510265dc2e1c2e20b4f93",
+      "production_bytes_preserved": true,
+      "production_patch_changed": false,
+      "production_patch_sha256": "852ed393133fcfc218230ffb23af6eec6599c565c53846678f5816107a1c2ea0",
+      "immutable_focused_checks_passed": true,
+      "unchanged_behavioral_grader_passed": true,
+      "owner_deadline_met": true,
+      "observed_actor_models": [
+        "claude-opus-5-5"
+      ],
+      "requested_effort": "high",
+      "stage_qualified": true,
+      "process_exit": 0,
+      "timed_out": false,
+      "process_cleanup_scope": "original_process_group",
+      "stream_changed_during_cleanup": false,
+      "raw_stream_sha256": "e22af6778217be53f69fbbc1f34e0ec4a979759d73318255240eea1d45ed6e65",
+      "request_bytes_sha256": "a17b85ac0a138344bdb0ebe94f7f182e1ed754c1c34dfe437d318128a35149fb",
+      "private_attempt_receipt_sha256": "0372fa7f9a69da63e0a92b4d2c039eb486bed779a38bf985505344aaa1a4f0ef",
+      "full_launch_before_final_and_argv_mcp_prompt_reconstruction_passed": true,
+      "completion_declaration": {
+        "complete": true,
+        "summary_snippet": "I fixed the failed scope gate: README.md now matches the supplied baseline byte for byte, and no other file differs from the candidate commit. One test in the wider suite errored, almost certainly because of the sandbox rather than the code, though I couldn't confirm that here.\n\nWhat I did: I swapped the five added README lines back to the original two lines saying the model is pinned to `gpt-5.6-sol` with medium reasoning. I made no other edits.\n\nChecks I ran:\n- README.md's SHA-256 is 5a8bbcd15",
+        "remaining": [
+          "Not done, and it's from this task's own checks: `test_progress_fd_is_scrubbed_and_never_sent_to_children` errored because `os.fstat(2)` is blocked in this sandbox. It needs re-running outside the sandbox to confirm the error is environmental.",
+          "Not run because the task excludes it: live Bonaparte or Codex provider runs, by the offline rules.",
+          "Not possible in this exercise: independent review (no reviewer stage was available) and full Confidence Protocol release-gate certification."
+        ]
+      },
+      "CLI_reported_cost_usd": 0.3121956,
+      "cost_is_invoice": false,
+      "wall_seconds": 51.946896334000485
+    },
+    {
+      "attempt_id": "pr20-observed-scope-v2-revised-r1",
+      "arm": "revised",
+      "current_postcall_custody_passed": true,
+      "qualified_scope_correction": true,
+      "README_restored_to_pinned_baseline": true,
+      "candidate_content_changed_paths": [
+        "README.md"
+      ],
+      "scope_before": [
+        "README.md"
+      ],
+      "scope_after": [],
+      "full_source_changed": true,
+      "before_source_sha256": "6d1fb324622cea73a8ee315be8ca9127ab7a39ab35ead33e4e8bf89934323a26",
+      "final_source_sha256": "c09fe5c4c7743699df946eaf710d052f4467bb9373ec02b4f5e3b64e5aff10cf",
+      "production_bytes_preserved": true,
+      "production_patch_changed": false,
+      "production_patch_sha256": "852ed393133fcfc218230ffb23af6eec6599c565c53846678f5816107a1c2ea0",
+      "immutable_focused_checks_passed": true,
+      "unchanged_behavioral_grader_passed": true,
+      "owner_deadline_met": true,
+      "observed_actor_models": [
+        "claude-opus-5-5"
+      ],
+      "requested_effort": "high",
+      "stage_qualified": true,
+      "process_exit": 0,
+      "timed_out": false,
+      "process_cleanup_scope": "original_process_group",
+      "stream_changed_during_cleanup": false,
+      "raw_stream_sha256": "ee3aa64800e7cba924e91b5d69cae9e92279c999cf3c84d8160bd3837e9cedac",
+      "request_bytes_sha256": "01a82714117cf62f18fdf9e3c360819a5d6061e852d54e2fac309e209ed29505",
+      "private_attempt_receipt_sha256": "02f90df0baea2d48895b14ce3ed7fab3e02b921119f79dbcbcbe92e02cef2490",
+      "full_launch_before_final_and_argv_mcp_prompt_reconstruction_passed": true,
+      "completion_declaration": {
+        "complete": true,
+        "summary_snippet": "The README.md scope breach is fixed: README.md is back to the exact pinned baseline. Its SHA-256 is now 5a8bbcd1546d8c6c6279037dc4cfbf9b884bc8af871ea54749ce968279921b7e, matching the supplied baseline hash, and it ends with a newline.\n\n**What changed:** I removed the five candidate lines describing `--model` / `BONAPARTE_MODEL` and put back the two original \"pinned to `gpt-5.6-sol`\" lines. That is exactly the reverse of the failed-scope diff. I didn't change any other file. `git status` shows on",
+        "remaining": [
+          "No required work is left for this scope fix.",
+          "Limits set by the offline task: no live Bonaparte or Codex provider runs, no held-out grader in this pass (the earlier frozen grade covered the unchanged bonaparte file and passed), and no reviewer stage.",
+          "README.md is back at baseline, so it doesn't document --model / BONAPARTE_MODEL and still says models are pinned to gpt-5.6-sol. The scope gate requires this, but it doesn't match the new behavior.",
+          "This exercise can't certify the full Confidence Protocol release gates."
+        ]
+      },
+      "CLI_reported_cost_usd": 0.3412446,
+      "cost_is_invoice": false,
+      "wall_seconds": 82.98952604200167
+    }
+  ],
+  "history": {
+    "retained_original_infrastructure_failures": 2,
+    "original_actual_provider_requests": 0,
+    "new_v2_attempt_records": 2,
+    "actual_v2_model_calls": 2,
+    "total_supplemental_infrastructure_records": 4,
+    "further_pairs_permitted": false
+  },
+  "actual_export_inspection": [
+    {
+      "path": "RESULTS.public.json",
+      "sha256": "7ed586086e3716d19d26b43c9eff504a8818463bf91153197792034dfa82cc8f"
+    },
+    {
+      "path": "patches/pr20-observed-scope-v2-original-r1.README-correction.patch",
+      "sha256": "b93e462e312e18e6f023c73c9bc812dfb6f391a54bcd539b4a5c7d7a4b3a915e"
+    },
+    {
+      "path": "patches/pr20-observed-scope-v2-original-r1.production.patch",
+      "sha256": "852ed393133fcfc218230ffb23af6eec6599c565c53846678f5816107a1c2ea0"
+    },
+    {
+      "path": "patches/pr20-observed-scope-v2-revised-r1.README-correction.patch",
+      "sha256": "b93e462e312e18e6f023c73c9bc812dfb6f391a54bcd539b4a5c7d7a4b3a915e"
+    },
+    {
+      "path": "patches/pr20-observed-scope-v2-revised-r1.production.patch",
+      "sha256": "852ed393133fcfc218230ffb23af6eec6599c565c53846678f5816107a1c2ea0"
+    }
+  ],
+  "published_export_exact_copies": [
+    "RESULTS.public.json",
+    "patches/pr20-observed-scope-v2-original-r1.README-correction.patch",
+    "patches/pr20-observed-scope-v2-original-r1.production.patch",
+    "patches/pr20-observed-scope-v2-revised-r1.README-correction.patch",
+    "patches/pr20-observed-scope-v2-revised-r1.production.patch"
+  ],
+  "primary_six_cell_metrics_changed": false,
+  "production_bug_repairs_demonstrated": false,
+  "policy_improvement_demonstrated": false,
+  "raw_completion_remaining_separate_from_scope_metric": true,
+  "hosted_calls_grader_runs_or_source_edits_by_reviewer": 0,
+  "limits": [
+    "Both attempts restore the same outcome-selected README with newly explicit feedback and supplied baseline bytes; this establishes only those scope corrections.",
+    "Primary strict remaining rejections and two PR37 custody errors remain unchanged; no added primary acceptance or erased infrastructure failure.",
+    "No full Confidence Protocol certificate, broad repair ability, cost superiority or statistical ranking follows from this pair.",
+    "Privacy inspection checks actual allowlisted outputs for known path/credential patterns, not a universal privacy guarantee."
+  ]
+}
