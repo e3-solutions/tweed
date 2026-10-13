@@ -1,0 +1,11 @@
+{
+  "task_id": "tweed-pr20",
+  "production_paths": [
+    "bonaparte"
+  ],
+  "test_ids": [
+    "tests.test_owner_options.PublicOptions.test_model_omitted_preserves_provider_defaults",
+    "tests.test_owner_options.PublicOptions.test_model_environment_and_explicit_override_are_semantic_values",
+    "tests.test_owner_options.PublicOptions.test_model_empty_inputs_fail_before_provider"
+  ]
+}

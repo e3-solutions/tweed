@@ -1,0 +1,142 @@
+diff --git a/bonaparte b/bonaparte
+index dc81556..9ec4034 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -601,10 +601,33 @@ def resolve_model(override: str | None = None) -> str | None:
+     return model
+ 
+ 
+-def agent_config(description: str, model: str | None) -> str:
++def resolve_reasoning(override: str | None = None) -> str:
++    """Resolve the phase reasoning effort, preserving medium when unselected."""
++    if override is None:
++        return COORDINATOR_EFFORT
++    reasoning = override.strip()
++    if not reasoning:
++        raise RuntimeError("reasoning setting requires a non-empty reasoning effort")
++    return reasoning
++
++
++class ParsedCommand(tuple):
++    """Baseline five-value parse result that also carries the reasoning effort."""
++
++    reasoning: str = COORDINATOR_EFFORT
++
++    def __new__(cls, values: tuple, reasoning: str):
++        parsed = super().__new__(cls, values)
++        parsed.reasoning = reasoning
++        return parsed
++
++
++def agent_config(
++    description: str, model: str | None, reasoning: str = SUBAGENT_EFFORT
++) -> str:
+     values = {
+         "description": description,
+-        "model_reasoning_effort": SUBAGENT_EFFORT,
++        "model_reasoning_effort": reasoning,
+     }
+     if model:
+         values["model"] = model
+@@ -633,7 +656,9 @@ def run_phase(
+     phase_input: str,
+     resume_session_id: str | None = None,
+     model: str | None = None,
++    reasoning: str | None = None,
+ ) -> dict:
++    reasoning = resolve_reasoning(reasoning)
+     workflow_name, assignment = WORKFLOWS[phase]
+     workflow = (Path(__file__).resolve().parent / "workflows" / workflow_name).read_text()
+     child_configs = {
+@@ -642,7 +667,7 @@ def run_phase(
+         "explorer": "Read-only Bonaparte repository investigator",
+     }
+     child_configs = {
+-        role: agent_config(description, model)
++        role: agent_config(description, model, reasoning)
+         for role, description in child_configs.items()
+     }
+     expected_branch = None
+@@ -691,7 +716,7 @@ def run_phase(
+             "directly; do not invoke Bonaparte or delegate back to its skill.\n\n"
+             "# Model policy\n\n"
+             "Model selection is controlled by the runner. The coordinator uses "
+-            f"{COORDINATOR_EFFORT} reasoning and every child uses {SUBAGENT_EFFORT} "
++            f"{reasoning} reasoning and every child uses {reasoning} "
+             "reasoning. Spawn children using only the built-in default, worker, or "
+             "explorer roles. Do not select or request a different child model, role, "
+             "or reasoning effort.\n\n"
+@@ -709,7 +734,7 @@ def run_phase(
+         command.extend(
+             [
+                 "-c",
+-                f'model_reasoning_effort="{COORDINATOR_EFFORT}"',
++                f"model_reasoning_effort={json.dumps(reasoning, ensure_ascii=False)}",
+                 "-c",
+                 f"agents.default={child_configs['default']}",
+                 "-c",
+@@ -802,9 +827,17 @@ def parse() -> tuple[Path, str, str, str | None, str | None]:
+             "Codex configuration"
+         ),
+     )
++    parser.add_argument(
++        "--reasoning",
++        help=(
++            "reasoning effort for this phase or resume, applied to the "
++            f"coordinator and every child; defaults to {COORDINATOR_EFFORT}"
++        ),
++    )
+     parser.add_argument("command")
+     parser.add_argument("input", nargs=argparse.REMAINDER)
+     args = parser.parse_args()
++    reasoning = resolve_reasoning(args.reasoning)
+     command = args.command.casefold()
+     values = args.input
+     request_kind = None
+@@ -841,12 +874,15 @@ def parse() -> tuple[Path, str, str, str | None, str | None]:
+     repository = Path(args.repo).resolve()
+     if not repository.is_dir() or not phase_input:
+         raise RuntimeError("phase requires a repository and input")
+-    return (
+-        repository,
+-        phase,
+-        phase_input,
+-        resume_session_id,
+-        resolve_model(args.model),
++    return ParsedCommand(
++        (
++            repository,
++            phase,
++            phase_input,
++            resume_session_id,
++            resolve_model(args.model),
++        ),
++        reasoning,
+     )
+ 
+ 
+@@ -875,13 +911,15 @@ def main() -> int:
+         try:
+             if os.environ.get(PHASE_CHILD_ENV) == "1":
+                 raise RuntimeError("nested Bonaparte invocation blocked")
++            parsed = parse()
+             (
+                 repo,
+                 selected_phase,
+                 supplied_input,
+                 session_id,
+                 selected_model,
+-            ) = parse()
++            ) = parsed
++            selected_reasoning = getattr(parsed, "reasoning", None)
+             progress = acquire_progress_reporter(selected_phase == "review")
+             progress.start()
+             result_receipt = run_phase(
+@@ -890,6 +928,7 @@ def main() -> int:
+                 supplied_input,
+                 session_id,
+                 selected_model,
++                selected_reasoning,
+             )
+             progress.stop_heartbeat()
+             progress.report("finalizing")

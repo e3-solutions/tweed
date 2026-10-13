@@ -1,0 +1,164 @@
+diff --git a/bonaparte b/bonaparte
+index fa12d92..28f1360 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -17,7 +17,7 @@ import time
+ import uuid
+ from pathlib import Path
+ 
+-MODEL = "gpt-5.6-sol"
++MODEL_ENV = "BONAPARTE_MODEL"
+ COORDINATOR_EFFORT = "medium"
+ SUBAGENT_EFFORT = "medium"
+ PHASE_CHILD_ENV = "BONAPARTE_PHASE_CHILD"
+@@ -586,6 +586,46 @@ def extract_session_id(events) -> str | None:
+     return None
+ 
+ 
++def select_model(option: str | None = None) -> str | None:
++    """Return the trimmed --model or BONAPARTE_MODEL value, or None for defaults."""
++    source, selected = "--model", option
++    if selected is None:
++        source, selected = MODEL_ENV, os.environ.get(MODEL_ENV)
++    if selected is None:
++        return None
++    selected = selected.strip()
++    if not selected:
++        raise RuntimeError(f"{source} must not be blank")
++    if any(0xD800 <= ord(character) <= 0xDFFF for character in selected):
++        raise RuntimeError(f"{source} must be valid Unicode text")
++    return selected
++
++
++def toml_string(value: str) -> str:
++    """Encode text as a TOML basic string for a Codex -c override."""
++    encoded = []
++    for character in value:
++        code = ord(character)
++        if character in {'"', "\\"}:
++            encoded.append("\\" + character)
++        elif code < 0x20 or code == 0x7F:
++            encoded.append(f"\\u{code:04X}")
++        else:
++            encoded.append(character)
++    return '"' + "".join(encoded) + '"'
++
++
++class ParsedArguments(tuple):
++    """The four positional parse results, plus the selected model attribute."""
++
++    model: str | None
++
++    def __new__(cls, values: tuple, model: str | None):
++        parsed = super().__new__(cls, values)
++        parsed.model = model
++        return parsed
++
++
+ def child_environment() -> dict[str, str]:
+     return {**os.environ, PHASE_CHILD_ENV: "1"}
+ 
+@@ -604,7 +644,9 @@ def run_phase(
+     phase: str,
+     phase_input: str,
+     resume_session_id: str | None = None,
++    model: str | None = None,
+ ) -> dict:
++    model = select_model(model)
+     workflow_name, assignment = WORKFLOWS[phase]
+     workflow = (Path(__file__).resolve().parent / "workflows" / workflow_name).read_text()
+     child_configs = {
+@@ -612,13 +654,26 @@ def run_phase(
+         "worker": "Bonaparte implementation and correction worker",
+         "explorer": "Read-only Bonaparte repository investigator",
+     }
++    model_field = f",model={toml_string(model)}" if model is not None else ""
+     child_configs = {
+         role: (
+-            f'{{description="{description}",model="{MODEL}",'
+-            f'model_reasoning_effort="{SUBAGENT_EFFORT}"}}'
++            f"{{description={toml_string(description)}{model_field},"
++            f"model_reasoning_effort={toml_string(SUBAGENT_EFFORT)}}}"
+         )
+         for role, description in child_configs.items()
+     }
++    if model is None:
++        model_policy = (
++            f"This coordinator uses the Codex default model at {COORDINATOR_EFFORT} "
++            f"reasoning. Spawn every child on the Codex default model at "
++            f"{SUBAGENT_EFFORT} reasoning"
++        )
++    else:
++        model_policy = (
++            f"This coordinator is pinned to the model {json.dumps(model)} at "
++            f"{COORDINATOR_EFFORT} reasoning. Spawn every child on that same model "
++            f"at {SUBAGENT_EFFORT} reasoning"
++        )
+     expected_branch = None
+     if resume_session_id:
+         prompt = (
+@@ -664,9 +719,7 @@ def run_phase(
+             "You are already the Bonaparte phase coordinator. Execute this workflow "
+             "directly; do not invoke Bonaparte or delegate back to its skill.\n\n"
+             "# Model policy\n\n"
+-            f"This coordinator is pinned to {MODEL} at {COORDINATOR_EFFORT} "
+-            f"reasoning. Spawn every child on {MODEL} at {SUBAGENT_EFFORT} "
+-            "reasoning using only the built-in default, worker, or explorer roles. "
++            f"{model_policy} using only the built-in default, worker, or explorer roles. "
+             "Do not select or request a different child model, role, or reasoning "
+             "effort.\n\n"
+             f"Repository: {repository}\n\n{input_label}:\n{phase_input}{context_end}"
+@@ -678,10 +731,10 @@ def run_phase(
+         schema_path.write_text(json.dumps(RECEIPT_SCHEMA))
+         command = [find_codex(), "exec"]
+         command.extend(["resume"] if resume_session_id else ["-C", str(repository)])
++        if model is not None:
++            command.extend(["-m", model])
+         command.extend(
+             [
+-                "-m",
+-                MODEL,
+                 "-c",
+                 f'model_reasoning_effort="{COORDINATOR_EFFORT}"',
+                 "-c",
+@@ -769,9 +822,14 @@ def parse() -> tuple[Path, str, str, str | None]:
+         epilog="phases: create bug|feature, RCA, scope, implement, review, publish; resume",
+     )
+     parser.add_argument("--repo", default=".")
++    parser.add_argument(
++        "--model",
++        help=f"Codex model for the coordinator and children (overrides {MODEL_ENV})",
++    )
+     parser.add_argument("command")
+     parser.add_argument("input", nargs=argparse.REMAINDER)
+     args = parser.parse_args()
++    model = select_model(args.model)
+     command = args.command.casefold()
+     values = args.input
+     request_kind = None
+@@ -808,7 +866,7 @@ def parse() -> tuple[Path, str, str, str | None]:
+     repository = Path(args.repo).resolve()
+     if not repository.is_dir() or not phase_input:
+         raise RuntimeError("phase requires a repository and input")
+-    return repository, phase, phase_input, resume_session_id
++    return ParsedArguments((repository, phase, phase_input, resume_session_id), model)
+ 
+ 
+ def fail(summary: str) -> dict:
+@@ -836,10 +894,14 @@ def main() -> int:
+         try:
+             if os.environ.get(PHASE_CHILD_ENV) == "1":
+                 raise RuntimeError("nested Bonaparte invocation blocked")
+-            repo, selected_phase, supplied_input, session_id = parse()
++            parsed = parse()
++            repo, selected_phase, supplied_input, session_id = parsed
++            model = getattr(parsed, "model", None)
+             progress = acquire_progress_reporter(selected_phase == "review")
+             progress.start()
+-            result_receipt = run_phase(repo, selected_phase, supplied_input, session_id)
++            result_receipt = run_phase(
++                repo, selected_phase, supplied_input, session_id, model
++            )
+             progress.stop_heartbeat()
+             progress.report("finalizing")
+             terminal_state = result_receipt["state"]

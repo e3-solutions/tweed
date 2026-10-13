@@ -9,3 +9,4 @@ skills/confidence-protocol/tests export-ignore
 docs/research/2026-10-confidence/pr-benchmark/results/*/patches/*.patch -text -whitespace
 docs/research/2026-10-confidence/claude-first-evaluation/results/patches/*.patch -text -whitespace
 docs/research/2026-10-confidence/v08-spotcheck/patches/*.patch -text -whitespace
+docs/research/2026-10-confidence/lean-repair/patches/*/*.patch -text -whitespace
