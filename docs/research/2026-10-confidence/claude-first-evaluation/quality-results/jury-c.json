@@ -1,0 +1,1581 @@
+{
+  "reviewer": "c",
+  "scope": [
+    "T05",
+    "T06"
+  ],
+  "metadata_blinding": "Read only visible packet inputs; no private owner map, result files, other study metadata, provider inference, provider calls, or publication. Output files are the two assigned jury files.",
+  "coverage": {
+    "expected_candidates": 16,
+    "reviewed_candidates": 16,
+    "ids": [
+      "T05/C004",
+      "T05/C008",
+      "T05/C019",
+      "T05/C027",
+      "T05/C029",
+      "T05/C030",
+      "T05/C032",
+      "T05/C035",
+      "T06/C007",
+      "T06/C011",
+      "T06/C021",
+      "T06/C024",
+      "T06/C028",
+      "T06/C040",
+      "T06/C041",
+      "T06/C045"
+    ],
+    "empty_or_incomplete_candidates": [],
+    "all_visible_candidate_statuses": "available; nonempty production and patch supplied"
+  },
+  "evidence_policy": "Every finding separates static properties from derived unexecuted consequences. No runtime acceptance is asserted. Static parse and exact patch reconstruction were performed, not tests. Initial difflib substring correspondence approach failed because git hunk headers carry function context; exact unified-hunk reconstruction then passed all files.",
+  "input_sha256": {
+    "REVIEW.md": "d0491b185e66e4def18f387053c5167a03381f39f9bcfd930f6f94f5c03a1fb5",
+    "T05/requirements.md": "4ddadbbc409a0ed94e423a72802482666d4607d3317206bbf962df7146abb633",
+    "T06/requirements.md": "7681e893e947e428899c7b8c42bbe01a2635bb0553eb91880e202d2e0758e371"
+  },
+  "baseline_source_sha256": {
+    "T05": {
+      ".github/workflows/ci.yml": "4b95313743b190cc89984f0476abfb74340516d2995da65c2fdebc6afba926cb",
+      ".gitignore": "1180e510a75b49e24ec888196d6a405e447ab7f9679270f03deffa7bee54a95c",
+      "README.md": "3b0ffa59ac0ab5fb30a95fdff6aab958a41a8d79445649c942ffd3b2a8956ca2",
+      "autoresearch": "dc06f5031bd74b685dd68ef3f2066cc899461a0fed7d882865f2f97122502453",
+      "bonaparte": "4e921724a332fee21682c8e667b03f6d9639aeb076b87eb5b0f9c5baace5a8fe",
+      "bonaparte-launcher": "345bc0e770f8725752ee7d0e9f5ce4f959a28039ff0b82023ba21ff20e07ce0f",
+      "bonaparte_checkpoint.py": "ae9025ccbb2f6bddf8eeecaa3fd146c84f851de615d2c612fc8a0622946374ae",
+      "bonaparte_linear.py": "68a48f2a62b7fb54d4bdb2386851e4045c0e0c070ce06dd533576fdc3f414379",
+      "bonaparte_native.py": "da33a9d017bfb40d967c5de398f41cef2b0395b59b7f00a85794e9d04e36efde",
+      "bonaparte_progress.py": "df718ee1143d09e4fcbc1662c3111476ebecded3465c9bfb124a64c45635b797",
+      "install": "700a37280bf155240111d2eaaea12cbab21e1ea6411dfa2da2bdb4a18a3353a8",
+      "skills/use-bonaparte/SKILL.md": "05f992b8b6894d130965db8e28d2bc0c0ef09c68f3e81f6c062159318298e341",
+      "skills/use-bonaparte/agents/openai.yaml": "defa44077cc3cf53c9e2d313980b9b5f40e8b3ec580bdcfaf0a2290a9a0c31a7",
+      "tests/fixtures/codex_app_server_v2.jsonl": "809736775f911b8786fdcf209d122226433dfaf6f30d3e6c3a2dffca58fab632",
+      "tests/test_autoresearch.py": "a8a82a3c413917d7cff6771ff44f37b71ce311d4de6e9c601a03082d673f8e08",
+      "tests/test_bonaparte.py": "f5d06dd8f93cdcb22676269546ac5ac27d78f8d444bcea26b0d43a0970351b23",
+      "tests/test_checkpoint.py": "e4d7a63cee1497127b21397e18cdbe7eba132a46363e0ff074adfae64cea9a98",
+      "tests/test_handoff.py": "979418df0b77612faeab4a5f0133d38d6080b4077c178be566f292f4c06a0aa0",
+      "tests/test_installation.py": "04f571d1961c6c27e8dd9df485fe09a08360d11a8a9e2fa619169fedf879021e",
+      "tests/test_linear.py": "50e15842bc23026edaaceb05b28015ae075393214c9396758ce33dee4fb2f219",
+      "tests/test_phase_runtime.py": "9af0952eed0a93da84fd840ae3ecb35e05f6913686f2382e631b9cf712397ddf",
+      "tests/test_progress.py": "a3e0f44bb6d7ee5510a3a9d7d3f2abc644886a34fd4652c7c7c129adb97cab27",
+      "workflows/autoresearch-critic.md": "1803611a8fb76ddf17cc300f67897c2e3febe39bcc2526e0adad09a1d08b3afd",
+      "workflows/autoresearch-setup.md": "5fe5a70a9fc775c8a9681144df4c65f82275db96b1409abaf2aa3684b67a1ff5",
+      "workflows/autoresearch-worker.md": "60a82964d53f29b8682f03483edf9b3e1cd4fe1b0f0f4a8d6cfd656ea42fea38",
+      "workflows/bug-rca.md": "439226b0b7fec0e999a2ff37ea1a194c4e2ce8ba5e261fa364f3097e95ee86ad",
+      "workflows/create.md": "fb6bb1cf96acf0d0be73fac342171250dc3aa1f9bbbeb1f19fe8518e1d61bd42",
+      "workflows/implement.md": "cfea3d93ed78002a56f9253c22212016487fbc30ff701deae435a9dc2cb4b03f",
+      "workflows/publish.md": "912c274c5a6b3ab58ee80958cd3965b0a3b830021b8db33ac788ba831b9bc192",
+      "workflows/review.md": "b62fad6848a1959e10705c6f087ceb3926c277525417e623df31a039e56ad092",
+      "workflows/scope.md": "8a0d614bae1b5f1756d3d2714b4a5d7143e747234dd03704bb0a29a2a99dffc2"
+    },
+    "T06": {
+      ".github/workflows/ci.yml": "560aa2e8746b8e525ce76b75b97348b881b5415cdd2ccb68725677cf8eec477b",
+      ".gitignore": "1180e510a75b49e24ec888196d6a405e447ab7f9679270f03deffa7bee54a95c",
+      "README.md": "95ec7ea179bde06f582e25586c961feced0d781a4e6bf8dfe316116c9d8fc133",
+      "bonaparte": "76f2b5fe9885de86e697729431e4a582f9cb8ee06d339d6ce5b6f9be72822681",
+      "bonaparte-launcher": "88c62326eabd1fec1415816bf4df54e92830f150d1abca2490baedd6f8cacf33",
+      "bonaparte_checkpoint.py": "ae9025ccbb2f6bddf8eeecaa3fd146c84f851de615d2c612fc8a0622946374ae",
+      "bonaparte_linear.py": "62b3cd13eec171b91845f1534d692a449579e27aa70d7272d37cff7284070df3",
+      "bonaparte_native.py": "c54429978edfb982644463623d2ae5de081d21fe3506b775e73d01009fd08355",
+      "bonaparte_progress.py": "df718ee1143d09e4fcbc1662c3111476ebecded3465c9bfb124a64c45635b797",
+      "install": "5ab14d0a2580810abd668d50df2a590e3895dd5faaa683f050e15c10b64638a3",
+      "skills/use-bonaparte/SKILL.md": "05f992b8b6894d130965db8e28d2bc0c0ef09c68f3e81f6c062159318298e341",
+      "skills/use-bonaparte/agents/openai.yaml": "defa44077cc3cf53c9e2d313980b9b5f40e8b3ec580bdcfaf0a2290a9a0c31a7",
+      "tests/fixtures/codex_app_server_v2.jsonl": "809736775f911b8786fdcf209d122226433dfaf6f30d3e6c3a2dffca58fab632",
+      "tests/test_bonaparte.py": "d46953af1fb613907ed9043a53d260a8ac86b3f3ee5d0a463993d55a02b89154",
+      "tests/test_checkpoint.py": "e4d7a63cee1497127b21397e18cdbe7eba132a46363e0ff074adfae64cea9a98",
+      "tests/test_handoff.py": "e0d5d3bbb55d42210bcaed815d4542748425f0fa043c61fd2622d6c78c989d28",
+      "tests/test_installation.py": "f15e5512549a6d8ba28b03cbcb078e107c4eff4cf0793a4acd58dde4e2ca1954",
+      "tests/test_linear.py": "abc0754553b4f20bae3f8a8eeb6364559284c316b24f902eb4f20dc8443e846c",
+      "tests/test_phase_runtime.py": "f9c1dd1fbbcea1a882707239357ee4c493d3290d7bd9c49c11b59114fc421678",
+      "tests/test_progress.py": "a3e0f44bb6d7ee5510a3a9d7d3f2abc644886a34fd4652c7c7c129adb97cab27",
+      "workflows/bug-rca.md": "06101cd20985c590a995578ca9136e8e66e8a86a62eaf7698ddd5e0d5c8fa8f3",
+      "workflows/create.md": "fb6bb1cf96acf0d0be73fac342171250dc3aa1f9bbbeb1f19fe8518e1d61bd42",
+      "workflows/implement.md": "abf41efbd5c482392942d08ae6bb056c5634f2402ae9eada12608cd777d19b2c",
+      "workflows/publish.md": "fbbc900a1c2dba946d0e575c5e3dce4cda2c02282d3ffb537f88e2037ebb21c7",
+      "workflows/review.md": "8c70376086ff541e019a1f12e502f7215657997b6a94b0e16331b77de0bb8ed0",
+      "workflows/scope.md": "f5094ea6530190d9ac48d3ef5c638a391681844527c460b330d5e5377567c43a"
+    }
+  },
+  "counterexample_harness": "Owner should copy each task baseline to a temporary directory and overlay its candidate production files, use isolated BONAPARTE_HOME, a temporary initialized Git repo, and monkeypatched AppServerPhaseDriver. The visible tests/test_phase_runtime.py fake drivers show request/message plumbing and receipt construction. Do not invoke a real provider. The described sequences and assertions are proposed checks, not executed outcomes.",
+  "candidates": [
+    {
+      "task": "T05",
+      "candidate": "C004",
+      "status": "available",
+      "reviewed": true,
+      "inspection": "All supplied production files, full baseline bonaparte and checkpoint module, supplied patch, and relevant native/progress/test contracts. Changed source was statically parsed and reconstructed from baseline plus every patch hunk. No candidate was executed.",
+      "source_sha256": {
+        "bonaparte": "59c6f6e2699863045c9ae4eb7c11a4de56e09af93788b33ba1e72105c0603a44",
+        "bonaparte_checkpoint.py": "92e664529de1da31698c78336ca784821a7651e267e76c245c0139e3c345fbc8"
+      },
+      "patch_sha256": "8098deec49abaa30ddfe6562f0abf2bcc06aa4c6b9893e04a8452633e99197ff",
+      "full_source_lines": 2283,
+      "static_parse": "passed for supplied production Python source",
+      "patch_full_source_correspondence": "passed after exact hunk reconstruction",
+      "findings": [
+        {
+          "id": "T05-C004-bool",
+          "title": "Boolean direct-call budget is treated as one second",
+          "category": "requirements",
+          "severity": "medium",
+          "origin": "retained baseline behavior affecting the required public direct-call validation",
+          "location": {
+            "file": "bonaparte",
+            "packet_relative_path": "T05/candidates/C004/production/bonaparte",
+            "line": 779,
+            "end_line": 779,
+            "exact_code": "        budget = float(value)"
+          },
+          "basis": "Reject invalid budgets before invoking a provider; persisted budget validation already rejects bool.",
+          "demonstrated_source_property": "The resolver passes True through float(), yielding 1.0; no boolean rejection precedes the provider path.",
+          "behavioral_consequence_unexecuted": "run_phase(..., soft_phase_budget_seconds=True) invokes a native provider with a one-second budget, while a checkpoint carrying True would be invalid.",
+          "minimal_repair": "Reject isinstance(value, bool) before float conversion.",
+          "counterexample": {
+            "status": "proposed, not executed",
+            "steps": [
+              "In the merged candidate, call resolve_soft_phase_budget(True).",
+              "Use the visible fake-driver pattern with run_phase(temp_repo, \"create\", \"Kind: Feature\\nRequest: x\", soft_phase_budget_seconds=True), counting AppServerPhaseDriver construction."
+            ],
+            "expected_after_repair": "Both calls reject the budget and provider construction count remains zero."
+          },
+          "evidence_kind": "static source inspection; behavior derived, not executed"
+        },
+        {
+          "id": "T05-C004-validation-order",
+          "title": "Pending finalizers invoke the provider before budget validation",
+          "category": "requirements",
+          "severity": "medium",
+          "origin": "retained baseline ordering now part of the invalid-input obligation",
+          "location": {
+            "file": "bonaparte",
+            "packet_relative_path": "T05/candidates/C004/production/bonaparte",
+            "line": 829,
+            "end_line": 832,
+            "exact_code": "    retry_pending_finalizations(repository)\n    if soft_phase_budget_seconds is not None:\n        soft_phase_budget_seconds = resolve_soft_phase_budget(\n            soft_phase_budget_seconds"
+          },
+          "basis": "Invalid inputs must be rejected before invoking a provider.",
+          "demonstrated_source_property": "run_phase calls retry_pending_finalizations before resolving the budget. The full baseline finalizer constructs AppServerPhaseDriver and initializes/archives native threads.",
+          "behavioral_consequence_unexecuted": "An invalid direct-call budget can archive pending native threads and invoke the provider before the call rejects its budget.",
+          "minimal_repair": "Resolve the optional budget before retry_pending_finalizations.",
+          "counterexample": {
+            "status": "proposed, not executed",
+            "steps": [
+              "Stub retry_pending_finalizations with a spy (or install one valid pending finalization record in a temporary BONAPARTE_HOME and fake the provider).",
+              "Call run_phase(temp_repo, \"create\", \"x\", soft_phase_budget_seconds=0)."
+            ],
+            "expected_after_repair": "The invalid budget is rejected before the finalizer spy is called."
+          },
+          "evidence_kind": "static source inspection; behavior derived, not executed"
+        },
+        {
+          "id": "T05-C004-env-precedence",
+          "title": "Unused environment default can reject an explicit CLI selection",
+          "category": "engineering",
+          "severity": "medium",
+          "origin": "candidate change",
+          "location": {
+            "file": "bonaparte",
+            "packet_relative_path": "T05/candidates/C004/production/bonaparte",
+            "line": 1728,
+            "end_line": 1728,
+            "exact_code": "    environment_budget = default_soft_phase_budget()"
+          },
+          "basis": "An explicit CLI selection should not depend on an unused lower-priority default.",
+          "demonstrated_source_property": "parse resolves the environment before deciding whether either budget flag was supplied.",
+          "behavioral_consequence_unexecuted": "A malformed BONAPARTE_SOFT_PHASE_BUDGET rejects even --no-soft-phase-budget or a valid numeric override; an unrelated environment default can also prevent resuming a valid persisted choice.",
+          "minimal_repair": "Resolve the environment only in the new-run no-budget-flags branch.",
+          "counterexample": {
+            "status": "proposed, not executed",
+            "steps": [
+              "Set BONAPARTE_SOFT_PHASE_BUDGET=garbage and argv=[\"bonaparte\", \"--soft-phase-budget-seconds\", \"10\", \"create\", \"feature\", \"x\"].",
+              "Call parse() with stdin mocked as interactive; also repeat with --no-soft-phase-budget."
+            ],
+            "expected_after_repair": "The returned selected budget is 10.0 or disabled; an unused environment value is not parsed."
+          },
+          "evidence_kind": "static source inspection; behavior derived, not executed"
+        }
+      ],
+      "complexity_findings": [],
+      "requirements_assessment": {
+        "result": "supported missed requirements",
+        "finding_ids": [
+          "T05-C004-bool",
+          "T05-C004-validation-order"
+        ],
+        "scope_note": "T05 default/positive/None/persistence/CLI mutual exclusion/environment/legacy and checkpoint resume paths inspected."
+      },
+      "engineering_assessment": {
+        "result": "supported engineering findings",
+        "finding_ids": [
+          "T05-C004-env-precedence"
+        ],
+        "complexity": "No removable abstraction defect supported. Explicit selection markers and typed recovery exceptions solve real ambiguity/classification needs; class versus object or receipt helper shape alone is not a defect."
+      },
+      "inspection_limits": "Static review only. No test suite, candidate runtime, real provider, filesystem recovery execution, or external publication was run. Proposed counterexamples require an isolated merged baseline/candidate runtime and fake provider; temporal notification counterexamples demonstrate the unguarded interface case, not an observed real-provider occurrence.",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr40--enhanced-haiku--r2",
+        "task_id": "tweed-pr40",
+        "arm_id": "enhanced-haiku",
+        "repeat": 2
+      },
+      "published_patch": "../results/patches/tweed-pr40--enhanced-haiku--r2.patch"
+    },
+    {
+      "task": "T05",
+      "candidate": "C008",
+      "status": "available",
+      "reviewed": true,
+      "inspection": "All supplied production files, full baseline bonaparte and checkpoint module, supplied patch, and relevant native/progress/test contracts. Changed source was statically parsed and reconstructed from baseline plus every patch hunk. No candidate was executed.",
+      "source_sha256": {
+        "bonaparte": "b704b2b23f1e3f4b57db7e3152af27fbf906cbb429cbc930764d61f380afcf86",
+        "bonaparte_checkpoint.py": "df1bb60552e99fa1007da90d0893aa32774cdce9f694b5cda838c7c3a25c7a11"
+      },
+      "patch_sha256": "1c81fa92d423509424b6564cfb410b14fae3d2e4dba2bdc1497ed88c4b00f525",
+      "full_source_lines": 2264,
+      "static_parse": "passed for supplied production Python source",
+      "patch_full_source_correspondence": "passed after exact hunk reconstruction",
+      "findings": [],
+      "complexity_findings": [],
+      "requirements_assessment": {
+        "result": "no supported missed requirement found",
+        "finding_ids": [],
+        "scope_note": "T05 default/positive/None/persistence/CLI mutual exclusion/environment/legacy and checkpoint resume paths inspected."
+      },
+      "engineering_assessment": {
+        "result": "no supported engineering finding found",
+        "finding_ids": [],
+        "complexity": "No removable abstraction defect supported. Explicit selection markers and typed recovery exceptions solve real ambiguity/classification needs; class versus object or receipt helper shape alone is not a defect."
+      },
+      "inspection_limits": "Static review only. No test suite, candidate runtime, real provider, filesystem recovery execution, or external publication was run. Proposed counterexamples require an isolated merged baseline/candidate runtime and fake provider; temporal notification counterexamples demonstrate the unguarded interface case, not an observed real-provider occurrence.",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr40--enhanced-codex--r2",
+        "task_id": "tweed-pr40",
+        "arm_id": "enhanced-codex",
+        "repeat": 2
+      },
+      "published_patch": "../results/patches/tweed-pr40--enhanced-codex--r2.patch"
+    },
+    {
+      "task": "T05",
+      "candidate": "C019",
+      "status": "available",
+      "reviewed": true,
+      "inspection": "All supplied production files, full baseline bonaparte and checkpoint module, supplied patch, and relevant native/progress/test contracts. Changed source was statically parsed and reconstructed from baseline plus every patch hunk. No candidate was executed.",
+      "source_sha256": {
+        "bonaparte": "97ed89ace6d6e9f3e4ac264c8566e7b22a395202280ec409f7f12020b3410c30",
+        "bonaparte_checkpoint.py": "112bfc28ef4fa7d4537d14290ce9013dd60b17615f18cdea4cf2aee5281dd1df"
+      },
+      "patch_sha256": "75f189c524fcaaa7281a56f2fc237f799ac75a725a2d0a5fc72b6119d35300fd",
+      "full_source_lines": 2324,
+      "static_parse": "passed for supplied production Python source",
+      "patch_full_source_correspondence": "passed after exact hunk reconstruction",
+      "findings": [
+        {
+          "id": "T05-C019-env-resume",
+          "title": "Checkpoint resumes parse an environment budget they later discard",
+          "category": "engineering",
+          "severity": "medium",
+          "origin": "candidate change",
+          "location": {
+            "file": "bonaparte",
+            "packet_relative_path": "T05/candidates/C019/production/bonaparte",
+            "line": 1764,
+            "end_line": 1764,
+            "exact_code": "        soft_phase_budget = default_soft_phase_budget()"
+          },
+          "basis": "Checkpoint resumes without budget flags inherit the persisted selection.",
+          "demonstrated_source_property": "parse calls default_soft_phase_budget before examining command; its return expression discards that value for resume with no flags.",
+          "behavioral_consequence_unexecuted": "A valid disabled checkpoint cannot be resumed when an unrelated malformed environment budget is present, although that budget is never used.",
+          "minimal_repair": "Determine command first; skip environment resolution for checkpoint resume without override.",
+          "counterexample": {
+            "status": "proposed, not executed",
+            "steps": [
+              "Set BONAPARTE_SOFT_PHASE_BUDGET=garbage and argv=[\"bonaparte\", \"resume\", canonical_token, \"Continue\"].",
+              "Call parse() with stdin mocked as interactive."
+            ],
+            "expected_after_repair": "parse returns the no-override marker None so resume_checkpoint inherits the saved budget."
+          },
+          "evidence_kind": "static source inspection; behavior derived, not executed"
+        }
+      ],
+      "complexity_findings": [],
+      "requirements_assessment": {
+        "result": "no supported missed requirement found",
+        "finding_ids": [],
+        "scope_note": "T05 default/positive/None/persistence/CLI mutual exclusion/environment/legacy and checkpoint resume paths inspected."
+      },
+      "engineering_assessment": {
+        "result": "supported engineering findings",
+        "finding_ids": [
+          "T05-C019-env-resume"
+        ],
+        "complexity": "No removable abstraction defect supported. Explicit selection markers and typed recovery exceptions solve real ambiguity/classification needs; class versus object or receipt helper shape alone is not a defect."
+      },
+      "inspection_limits": "Static review only. No test suite, candidate runtime, real provider, filesystem recovery execution, or external publication was run. Proposed counterexamples require an isolated merged baseline/candidate runtime and fake provider; temporal notification counterexamples demonstrate the unguarded interface case, not an observed real-provider occurrence.",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr40--baseline-opus--r2",
+        "task_id": "tweed-pr40",
+        "arm_id": "baseline-opus",
+        "repeat": 2
+      },
+      "published_patch": "../results/patches/tweed-pr40--baseline-opus--r2.patch"
+    },
+    {
+      "task": "T05",
+      "candidate": "C027",
+      "status": "available",
+      "reviewed": true,
+      "inspection": "All supplied production files, full baseline bonaparte and checkpoint module, supplied patch, and relevant native/progress/test contracts. Changed source was statically parsed and reconstructed from baseline plus every patch hunk. No candidate was executed.",
+      "source_sha256": {
+        "bonaparte": "72610ae1c90c81a738781f1d4b61a40a2c554d4fd0b0741e0b6de8c6053191f1",
+        "bonaparte_checkpoint.py": "83367266843bc9ca98529a6aec838351f001fe5c7e98e8dff7f26a6a7384c597"
+      },
+      "patch_sha256": "dde2529a18bcf2bb61b443aa689efae37d36ed79c90b4a4025a70a39635c7847",
+      "full_source_lines": 2306,
+      "static_parse": "passed for supplied production Python source",
+      "patch_full_source_correspondence": "passed after exact hunk reconstruction",
+      "findings": [],
+      "complexity_findings": [],
+      "requirements_assessment": {
+        "result": "no supported missed requirement found",
+        "finding_ids": [],
+        "scope_note": "T05 default/positive/None/persistence/CLI mutual exclusion/environment/legacy and checkpoint resume paths inspected."
+      },
+      "engineering_assessment": {
+        "result": "no supported engineering finding found",
+        "finding_ids": [],
+        "complexity": "No removable abstraction defect supported. Explicit selection markers and typed recovery exceptions solve real ambiguity/classification needs; class versus object or receipt helper shape alone is not a defect."
+      },
+      "inspection_limits": "Static review only. No test suite, candidate runtime, real provider, filesystem recovery execution, or external publication was run. Proposed counterexamples require an isolated merged baseline/candidate runtime and fake provider; temporal notification counterexamples demonstrate the unguarded interface case, not an observed real-provider occurrence.",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr40--enhanced-opus--r2",
+        "task_id": "tweed-pr40",
+        "arm_id": "enhanced-opus",
+        "repeat": 2
+      },
+      "published_patch": "../results/patches/tweed-pr40--enhanced-opus--r2.patch"
+    },
+    {
+      "task": "T05",
+      "candidate": "C029",
+      "status": "available",
+      "reviewed": true,
+      "inspection": "All supplied production files, full baseline bonaparte and checkpoint module, supplied patch, and relevant native/progress/test contracts. Changed source was statically parsed and reconstructed from baseline plus every patch hunk. No candidate was executed.",
+      "source_sha256": {
+        "bonaparte": "ce73d492e64b74819622d26f9776ebbc4d57b8e63df0f8c67acb007930ba9601",
+        "bonaparte_checkpoint.py": "df1bb60552e99fa1007da90d0893aa32774cdce9f694b5cda838c7c3a25c7a11"
+      },
+      "patch_sha256": "cb338434b72906b701f1f11f99f499abe6cf59624e5dfe31b409804001a36db9",
+      "full_source_lines": 2266,
+      "static_parse": "passed for supplied production Python source",
+      "patch_full_source_correspondence": "passed after exact hunk reconstruction",
+      "findings": [],
+      "complexity_findings": [],
+      "requirements_assessment": {
+        "result": "no supported missed requirement found",
+        "finding_ids": [],
+        "scope_note": "T05 default/positive/None/persistence/CLI mutual exclusion/environment/legacy and checkpoint resume paths inspected."
+      },
+      "engineering_assessment": {
+        "result": "no supported engineering finding found",
+        "finding_ids": [],
+        "complexity": "No removable abstraction defect supported. Explicit selection markers and typed recovery exceptions solve real ambiguity/classification needs; class versus object or receipt helper shape alone is not a defect."
+      },
+      "inspection_limits": "Static review only. No test suite, candidate runtime, real provider, filesystem recovery execution, or external publication was run. Proposed counterexamples require an isolated merged baseline/candidate runtime and fake provider; temporal notification counterexamples demonstrate the unguarded interface case, not an observed real-provider occurrence.",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr40--enhanced-codex--r1",
+        "task_id": "tweed-pr40",
+        "arm_id": "enhanced-codex",
+        "repeat": 1
+      },
+      "published_patch": "../results/patches/tweed-pr40--enhanced-codex--r1.patch"
+    },
+    {
+      "task": "T05",
+      "candidate": "C030",
+      "status": "available",
+      "reviewed": true,
+      "inspection": "All supplied production files, full baseline bonaparte and checkpoint module, supplied patch, and relevant native/progress/test contracts. Changed source was statically parsed and reconstructed from baseline plus every patch hunk. No candidate was executed.",
+      "source_sha256": {
+        "bonaparte": "b2818c7e12b4a1bc349a6dfffe7e71bec90b0b874fbb9210f4c0d8641da7946d",
+        "bonaparte_checkpoint.py": "df1bb60552e99fa1007da90d0893aa32774cdce9f694b5cda838c7c3a25c7a11"
+      },
+      "patch_sha256": "450486097d489664bde0ab341c0b431cefb0876b06d50794b3d40a1659e47634",
+      "full_source_lines": 2288,
+      "static_parse": "passed for supplied production Python source",
+      "patch_full_source_correspondence": "passed after exact hunk reconstruction",
+      "findings": [
+        {
+          "id": "T05-C030-validation-order",
+          "title": "Pending finalizers invoke the provider before budget validation",
+          "category": "requirements",
+          "severity": "medium",
+          "origin": "retained baseline ordering now part of the invalid-input obligation",
+          "location": {
+            "file": "bonaparte",
+            "packet_relative_path": "T05/candidates/C030/production/bonaparte",
+            "line": 818,
+            "end_line": 821,
+            "exact_code": "    retry_pending_finalizations(repository)\n    soft_phase_budget_seconds = resolve_soft_phase_budget(soft_phase_budget_seconds)\n    workflow_name, assignment = WORKFLOWS[phase]\n    workflow = (Path(__file__).resolve().parent / \"workflows\" / workflow_name).read_text()"
+          },
+          "basis": "Invalid inputs must be rejected before invoking a provider.",
+          "demonstrated_source_property": "run_phase calls retry_pending_finalizations before resolving the budget. The full baseline finalizer constructs AppServerPhaseDriver and initializes/archives native threads.",
+          "behavioral_consequence_unexecuted": "An invalid direct-call budget can archive pending native threads and invoke the provider before the call rejects its budget.",
+          "minimal_repair": "Resolve the optional budget before retry_pending_finalizations.",
+          "counterexample": {
+            "status": "proposed, not executed",
+            "steps": [
+              "Stub retry_pending_finalizations with a spy (or install one valid pending finalization record in a temporary BONAPARTE_HOME and fake the provider).",
+              "Call run_phase(temp_repo, \"create\", \"x\", soft_phase_budget_seconds=0)."
+            ],
+            "expected_after_repair": "The invalid budget is rejected before the finalizer spy is called."
+          },
+          "evidence_kind": "static source inspection; behavior derived, not executed"
+        },
+        {
+          "id": "T05-C030-env-legacy",
+          "title": "Legacy resume ignores the disabled environment default",
+          "category": "requirements",
+          "severity": "medium",
+          "origin": "candidate change",
+          "location": {
+            "file": "bonaparte",
+            "packet_relative_path": "T05/candidates/C030/production/bonaparte",
+            "line": 1783,
+            "end_line": 1785,
+            "exact_code": "    if command == \"resume\":\n        return None\n    environment = os.environ.get(SOFT_PHASE_BUDGET_ENV)"
+          },
+          "basis": "BONAPARTE_SOFT_PHASE_BUDGET=off disables the default, including execution through the supported resume path.",
+          "demonstrated_source_property": "_cli_soft_phase_budget returns None for resume before inspecting the environment; _run_soft_phase_budget turns that None into 300.0.",
+          "behavioral_consequence_unexecuted": "A legacy resume with no existing checkpoint and environment off runs with a 300-second soft budget and may steer.",
+          "minimal_repair": "Resolve the environment default when mapping an unspecified legacy resume to a run budget; keep checkpoint resume inheritance unchanged.",
+          "counterexample": {
+            "status": "proposed, not executed",
+            "steps": [
+              "Set BONAPARTE_SOFT_PHASE_BUDGET=off; select resume <phase> <canonical-native-token> Continue with no local checkpoint.",
+              "Use main with run_and_checkpoint mocked to capture its budget, or call _run_soft_phase_budget(_cli_soft_phase_budget(no_flag_namespace, \"resume\"))."
+            ],
+            "expected_after_repair": "The run budget is None; normal provider completion is awaited without budget steering."
+          },
+          "evidence_kind": "static source inspection; behavior derived, not executed"
+        }
+      ],
+      "complexity_findings": [],
+      "requirements_assessment": {
+        "result": "supported missed requirements",
+        "finding_ids": [
+          "T05-C030-validation-order",
+          "T05-C030-env-legacy"
+        ],
+        "scope_note": "T05 default/positive/None/persistence/CLI mutual exclusion/environment/legacy and checkpoint resume paths inspected."
+      },
+      "engineering_assessment": {
+        "result": "no supported engineering finding found",
+        "finding_ids": [],
+        "complexity": "No removable abstraction defect supported. Explicit selection markers and typed recovery exceptions solve real ambiguity/classification needs; class versus object or receipt helper shape alone is not a defect."
+      },
+      "inspection_limits": "Static review only. No test suite, candidate runtime, real provider, filesystem recovery execution, or external publication was run. Proposed counterexamples require an isolated merged baseline/candidate runtime and fake provider; temporal notification counterexamples demonstrate the unguarded interface case, not an observed real-provider occurrence.",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr40--enhanced-haiku--r1",
+        "task_id": "tweed-pr40",
+        "arm_id": "enhanced-haiku",
+        "repeat": 1
+      },
+      "published_patch": "../results/patches/tweed-pr40--enhanced-haiku--r1.patch"
+    },
+    {
+      "task": "T05",
+      "candidate": "C032",
+      "status": "available",
+      "reviewed": true,
+      "inspection": "All supplied production files, full baseline bonaparte and checkpoint module, supplied patch, and relevant native/progress/test contracts. Changed source was statically parsed and reconstructed from baseline plus every patch hunk. No candidate was executed.",
+      "source_sha256": {
+        "bonaparte": "aa36686563b545888708697d170b9e4b956953d8790e08101f81d2cffbe3133a",
+        "bonaparte_checkpoint.py": "1f4125cda22472718ec3628541c41ee7b25dc706b14df83325580346082253e8"
+      },
+      "patch_sha256": "9ef547795d455a848ac741edb6b3fba07d790cb69f2235c0fc8cae8a385d67ad",
+      "full_source_lines": 2304,
+      "static_parse": "passed for supplied production Python source",
+      "patch_full_source_correspondence": "passed after exact hunk reconstruction",
+      "findings": [
+        {
+          "id": "T05-C032-invalid-env",
+          "title": "Internal string marker makes an invalid environment value disable the budget",
+          "category": "requirements",
+          "severity": "medium",
+          "origin": "candidate change",
+          "location": {
+            "file": "bonaparte",
+            "packet_relative_path": "T05/candidates/C032/production/bonaparte",
+            "line": 779,
+            "end_line": 780,
+            "exact_code": "    if value is None or value == SOFT_PHASE_BUDGET_DISABLED:\n        return None"
+          },
+          "basis": "The environment disables through off, while other supplied budget inputs must be positive finite numbers or rejected.",
+          "demonstrated_source_property": "SOFT_PHASE_BUDGET_DISABLED is the string \"disabled\". default_soft_phase_budget forwards non-off environment strings into this resolver, which accepts \"disabled\" as None.",
+          "behavioral_consequence_unexecuted": "BONAPARTE_SOFT_PHASE_BUDGET=disabled silently disables the budget instead of reporting an invalid value. The numeric CLI separately rejects this spelling, so entrypoints disagree.",
+          "minimal_repair": "Keep the resume marker distinct from user text (e.g. object identity), or have the environment path call a strict numeric resolver.",
+          "counterexample": {
+            "status": "proposed, not executed",
+            "steps": [
+              "Set BONAPARTE_SOFT_PHASE_BUDGET=disabled and call default_soft_phase_budget().",
+              "Compare parse for --soft-phase-budget-seconds disabled, which rejects the same spelling."
+            ],
+            "expected_after_repair": "Both unrecognized external spellings reject; only off, None persistence, or explicit disable flag disables."
+          },
+          "evidence_kind": "static source inspection; behavior derived, not executed"
+        }
+      ],
+      "complexity_findings": [],
+      "requirements_assessment": {
+        "result": "supported missed requirements",
+        "finding_ids": [
+          "T05-C032-invalid-env"
+        ],
+        "scope_note": "T05 default/positive/None/persistence/CLI mutual exclusion/environment/legacy and checkpoint resume paths inspected."
+      },
+      "engineering_assessment": {
+        "result": "no supported engineering finding found",
+        "finding_ids": [],
+        "complexity": "No removable abstraction defect supported. Explicit selection markers and typed recovery exceptions solve real ambiguity/classification needs; class versus object or receipt helper shape alone is not a defect."
+      },
+      "inspection_limits": "Static review only. No test suite, candidate runtime, real provider, filesystem recovery execution, or external publication was run. Proposed counterexamples require an isolated merged baseline/candidate runtime and fake provider; temporal notification counterexamples demonstrate the unguarded interface case, not an observed real-provider occurrence.",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr40--baseline-opus--r1",
+        "task_id": "tweed-pr40",
+        "arm_id": "baseline-opus",
+        "repeat": 1
+      },
+      "published_patch": "../results/patches/tweed-pr40--baseline-opus--r1.patch"
+    },
+    {
+      "task": "T05",
+      "candidate": "C035",
+      "status": "available",
+      "reviewed": true,
+      "inspection": "All supplied production files, full baseline bonaparte and checkpoint module, supplied patch, and relevant native/progress/test contracts. Changed source was statically parsed and reconstructed from baseline plus every patch hunk. No candidate was executed.",
+      "source_sha256": {
+        "bonaparte": "55a6125bd08cfb62812cdb11faa8ce42e84a01cef932ac1fd063897e09d86ea3",
+        "bonaparte_checkpoint.py": "872c2aca160706cd287add1df00e7b1c5e38332a4bad7ae735cd67391d4d0f74"
+      },
+      "patch_sha256": "0ff0a17601650ebafe26775c1f6f96a9959bcd38d1eea8e8120c23fbe393760a",
+      "full_source_lines": 2311,
+      "static_parse": "passed for supplied production Python source",
+      "patch_full_source_correspondence": "passed after exact hunk reconstruction",
+      "findings": [],
+      "complexity_findings": [],
+      "requirements_assessment": {
+        "result": "no supported missed requirement found",
+        "finding_ids": [],
+        "scope_note": "T05 default/positive/None/persistence/CLI mutual exclusion/environment/legacy and checkpoint resume paths inspected."
+      },
+      "engineering_assessment": {
+        "result": "no supported engineering finding found",
+        "finding_ids": [],
+        "complexity": "No removable abstraction defect supported. Explicit selection markers and typed recovery exceptions solve real ambiguity/classification needs; class versus object or receipt helper shape alone is not a defect."
+      },
+      "inspection_limits": "Static review only. No test suite, candidate runtime, real provider, filesystem recovery execution, or external publication was run. Proposed counterexamples require an isolated merged baseline/candidate runtime and fake provider; temporal notification counterexamples demonstrate the unguarded interface case, not an observed real-provider occurrence.",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr40--enhanced-opus--r1",
+        "task_id": "tweed-pr40",
+        "arm_id": "enhanced-opus",
+        "repeat": 1
+      },
+      "published_patch": "../results/patches/tweed-pr40--enhanced-opus--r1.patch"
+    },
+    {
+      "task": "T06",
+      "candidate": "C007",
+      "status": "available",
+      "reviewed": true,
+      "inspection": "All supplied production files, full baseline bonaparte and checkpoint module, supplied patch, and relevant native/progress/test contracts. Changed source was statically parsed and reconstructed from baseline plus every patch hunk. No candidate was executed.",
+      "source_sha256": {
+        "bonaparte": "2569d1eabe0a366af90a73df32e247d4bd81f4de711e9b9424c99ce1f88ab15f"
+      },
+      "patch_sha256": "217f61f656a3fdafa0141ea6454ec005c161f225b01f24fd8f33b43a52058af4",
+      "full_source_lines": 1435,
+      "static_parse": "passed for supplied production Python source",
+      "patch_full_source_correspondence": "passed after exact hunk reconstruction",
+      "findings": [
+        {
+          "id": "T06-C007-question-guard",
+          "title": "Empty post-steer question bypasses continuation recovery",
+          "category": "requirements",
+          "severity": "medium",
+          "origin": "candidate change",
+          "location": {
+            "file": "bonaparte",
+            "packet_relative_path": "T06/candidates/C007/production/bonaparte",
+            "line": 713,
+            "end_line": 713,
+            "exact_code": "        raise RuntimeError(\"phase requested input without a question\")"
+          },
+          "basis": "A post-steer guard failure with a native session must produce a durable usable continuation token and saved question.",
+          "demonstrated_source_property": "The needs-input question guard raises ordinary RuntimeError before the steered-specific guards; run_and_checkpoint catches only the special continuation exception.",
+          "behavioral_consequence_unexecuted": "A schema-valid needs-input receipt with question=null (or empty string) after an acknowledged budget steer becomes a generic failure receipt with no continuation checkpoint on a fresh run.",
+          "minimal_repair": "When steered, classify this semantic question guard as the candidate continuation exception; retain ordinary errors when unsteered.",
+          "counterexample": {
+            "status": "proposed, not executed",
+            "steps": [
+              "Build a fake native driver with canonical root identity and valid turn identity. Return TimeoutError twice, the valid steer acknowledgment, then turn/completed for that turn.",
+              "Its final JSON contains every schema field, matching phase, state=\"needs-input\", summary=\"Obligations remain unverified.\", question=None, and null unused fields.",
+              "Call run_and_checkpoint against a temporary Git repo with isolated BONAPARTE_HOME."
+            ],
+            "expected_after_repair": "A failed receipt <=4096 bytes carries a token; reading its checkpoint finds the continuation question; resume invokes thread/resume with the same root identity."
+          },
+          "evidence_kind": "static source inspection; behavior derived, not executed"
+        },
+        {
+          "id": "T06-C007-interrupted",
+          "title": "Interrupted terminal is never made resumable",
+          "category": "requirements",
+          "severity": "high",
+          "origin": "candidate change",
+          "location": {
+            "file": "bonaparte",
+            "packet_relative_path": "T06/candidates/C007/production/bonaparte",
+            "line": 670,
+            "end_line": 674,
+            "exact_code": "        if terminal.get(\"status\") != \"completed\":\n            detail = terminal.get(\"error\")\n            raise RuntimeError(\n                f\"{phase} coordinator failed: {detail or terminal.get('status')}\"\n            )"
+          },
+          "basis": "A soft time-budget interruption after a native session exists must return a usable continuation token.",
+          "demonstrated_source_property": "Every non-completed terminal status still raises RuntimeError; the wrapper catches only SoftBudgetInterruption.",
+          "behavioral_consequence_unexecuted": "The ordinary budget-expiry -> acknowledged steer -> interrupted terminal sequence loses its native-session continuation receipt.",
+          "minimal_repair": "For an interrupted terminal after steering, raise SoftBudgetInterruption; preserve non-budget ordinary errors.",
+          "counterexample": {
+            "status": "proposed, not executed",
+            "steps": [
+              "Use the visible fake-driver pattern with TimeoutError twice, a correlated successful steer result, and turn/completed {id: current_turn, status: \"interrupted\"}.",
+              "Call run_and_checkpoint on a temporary Git repo; then run main with that fake if checking the public failure receipt."
+            ],
+            "expected_after_repair": "The receipt is failed with a durable root-session token and continuation question; the next resume uses thread/resume for that session."
+          },
+          "evidence_kind": "static source inspection; behavior derived, not executed"
+        },
+        {
+          "id": "T06-C007-protocol",
+          "title": "Wrong steer turn identity is converted to a continuation checkpoint",
+          "category": "requirements",
+          "severity": "medium",
+          "origin": "candidate change",
+          "location": {
+            "file": "bonaparte",
+            "packet_relative_path": "T06/candidates/C007/production/bonaparte",
+            "line": 668,
+            "end_line": 668,
+            "exact_code": "                raise SoftBudgetInterruption(\"Codex app-server returned an invalid steer result\")"
+          },
+          "basis": "Ordinary protocol errors must not create misleading continuation checkpoints.",
+          "demonstrated_source_property": "A steer response with result.turnId different from the active turn raises the recovery exception, which run_and_checkpoint unconditionally handles as resumable.",
+          "behavioral_consequence_unexecuted": "The implementation publishes a continuation checkpoint for a response-correlation/protocol failure even though it cannot establish that the budget steering targeted the active turn.",
+          "minimal_repair": "Keep invalid/corrupt steer results as RuntimeError; reserve the recovery exception for an identified interruption or post-steer semantic guard.",
+          "counterexample": {
+            "status": "proposed, not executed",
+            "steps": [
+              "After the fake driver expires the budget, return {id: steer_request_id, result: {turnId: \"different-turn\"}}.",
+              "Call run_and_checkpoint with canonical root identity and inspect the isolated checkpoint directory."
+            ],
+            "expected_after_repair": "A protocol failure has no newly created checkpoint or resume_token."
+          },
+          "evidence_kind": "static source inspection; behavior derived, not executed"
+        },
+        {
+          "id": "T06-C007-wrong-session",
+          "title": "Observer events can replace the root session used for recovery",
+          "category": "requirements",
+          "severity": "high",
+          "origin": "candidate change",
+          "location": {
+            "file": "bonaparte",
+            "packet_relative_path": "T06/candidates/C007/production/bonaparte",
+            "line": 1137,
+            "end_line": 1139,
+            "exact_code": "    coordinator_session = observation.get(\"session_id\")\n    if not coordinator_session or (session_id and coordinator_session != session_id):\n        raise error"
+          },
+          "basis": "Resuming the token must reuse the same native coordinator session.",
+          "demonstrated_source_property": "The continuation helper derives identity solely from observer.session_id. EventObserver.feed overwrites this field for every thread.started event, including native child threads; the exception stores no trusted root identity.",
+          "behavioral_consequence_unexecuted": "On a fresh run, an in-flight child thread.started notification can replace root R with child C. A later post-steer root guard failure saves token C, so resume continues the child rather than R.",
+          "minimal_repair": "Carry the validated root session in the special exception or restore observation.session_id from the validated thread/start identity before recovery (as C028 does).",
+          "counterexample": {
+            "status": "proposed, not executed",
+            "steps": [
+              "Fake thread/start returns canonical R and turn/start returns T.",
+              "Deliver thread/started for canonical child C while the phase is active, then budget expiry and valid steer acknowledgment, then a guarded root item/started for R followed by completion.",
+              "Inspect the failure receipt token and the threadId on a subsequent resume."
+            ],
+            "expected_after_repair": "The token and resume threadId equal R, never child C."
+          },
+          "evidence_kind": "static source inspection; behavior derived, not executed"
+        },
+        {
+          "id": "T06-C007-identity",
+          "title": "Resumed guard failures retain stale Git identity",
+          "category": "requirements",
+          "severity": "high",
+          "origin": "candidate change",
+          "location": {
+            "file": "bonaparte",
+            "packet_relative_path": "T06/candidates/C007/production/bonaparte",
+            "line": 1075,
+            "end_line": 1082,
+            "exact_code": "        if isinstance(error, SoftBudgetInterruption):\n            # The accepted answer already started the native turn; ask to continue.\n            checkpoint.update(\n                question=SOFT_BUDGET_CONTINUE_QUESTION,\n                pending_answer=None,\n            )\n        return _checkpoint_failure(\n            checkpoint,"
+          },
+          "basis": "The continuation token returned after a post-steer guard failure must remain usable.",
+          "demonstrated_source_property": "The resume recovery branch delegates to _checkpoint_failure, whose _refresh_checkpoint_git(checkpoint) updates file inventories but defaults update_identity=False. Unlike the normal needs-input path, it does not refresh branch/identity_head.",
+          "behavioral_consequence_unexecuted": "If a resumed turn checks out its authorized branch or changes a detached commit before interruption, the saved branch/head remains stale; the next resume rejects the same worktree before sending thread/resume.",
+          "minimal_repair": "After the trusted same-session guard failure, refresh current Git identity with update_identity=True, require_identity=True, then persist the continuation question; handle refresh failures durably.",
+          "counterexample": {
+            "status": "proposed, not executed",
+            "steps": [
+              "Save a waiting-input checkpoint in a temporary Git repo on branch a.",
+              "Fake the resumed native turn to switch to branch b (or detach to another existing commit), then emit a budget interruption/post-steer guard failure.",
+              "Read the persisted checkpoint and call resume_checkpoint with Continue again, counting driver requests."
+            ],
+            "expected_after_repair": "The saved identity reflects the changed worktree; thread/resume uses the original checkpoint token instead of failing \"different branch\" or \"different detached commit\"."
+          },
+          "evidence_kind": "static source inspection; behavior derived, not executed"
+        },
+        {
+          "id": "T06-C007-turn-correlation",
+          "title": "Post-steer work guard does not correlate the item to the active turn",
+          "category": "engineering",
+          "severity": "medium",
+          "origin": "inherited baseline guard; newly material to candidate recovery behavior",
+          "location": {
+            "file": "bonaparte",
+            "packet_relative_path": "T06/candidates/C007/production/bonaparte",
+            "line": 639,
+            "end_line": 639,
+            "exact_code": "                    if isinstance(params, dict) and params.get(\"threadId\") == session_id:"
+          },
+          "basis": "Guard decisions must identify the current turn; old-turn notifications should not fail a different turn or create a spurious recovery checkpoint.",
+          "demonstrated_source_property": "The detector checks only threadId before marking command/tool/file work after acknowledgment; turnId is not checked, although turn/start established a specific turn_id.",
+          "behavioral_consequence_unexecuted": "A queued item/started from an earlier turn on the same resumed thread is treated as forbidden current-turn work, causing a false failed receipt and continuation checkpoint.",
+          "minimal_repair": "Require params.get(\"turnId\") == turn_id alongside threadId before setting post_steer_work.",
+          "counterexample": {
+            "status": "proposed, not executed",
+            "steps": [
+              "After a correlated successful budget steer acknowledgment for active turn T, feed item/started with threadId=R, turnId=\"old-turn\", type=\"commandExecution\".",
+              "Then complete T with a schema-valid needs-input wrap-up receipt containing the exact continuation question and an unverified summary.",
+              "Repeat with item turnId=T as the positive control."
+            ],
+            "expected_after_repair": "The old-turn event does not fail the phase; the current-turn event still triggers a continuation failure."
+          },
+          "evidence_kind": "static source inspection; behavior derived, not executed"
+        }
+      ],
+      "complexity_findings": [],
+      "requirements_assessment": {
+        "result": "supported missed requirements",
+        "finding_ids": [
+          "T06-C007-question-guard",
+          "T06-C007-interrupted",
+          "T06-C007-protocol",
+          "T06-C007-wrong-session",
+          "T06-C007-identity"
+        ],
+        "scope_note": "T06 native bootstrap, ordinary protocol errors, root identity, steered terminal/semantic guards, bounded receipt, durable storage, and checkpoint resume paths inspected."
+      },
+      "engineering_assessment": {
+        "result": "supported engineering findings",
+        "finding_ids": [
+          "T06-C007-turn-correlation"
+        ],
+        "complexity": "No removable abstraction defect supported. Explicit selection markers and typed recovery exceptions solve real ambiguity/classification needs; class versus object or receipt helper shape alone is not a defect."
+      },
+      "inspection_limits": "Static review only. No test suite, candidate runtime, real provider, filesystem recovery execution, or external publication was run. Proposed counterexamples require an isolated merged baseline/candidate runtime and fake provider; temporal notification counterexamples demonstrate the unguarded interface case, not an observed real-provider occurrence.",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr31--enhanced-haiku--r2",
+        "task_id": "tweed-pr31",
+        "arm_id": "enhanced-haiku",
+        "repeat": 2
+      },
+      "published_patch": "../results/patches/tweed-pr31--enhanced-haiku--r2.patch"
+    },
+    {
+      "task": "T06",
+      "candidate": "C011",
+      "status": "available",
+      "reviewed": true,
+      "inspection": "All supplied production files, full baseline bonaparte and checkpoint module, supplied patch, and relevant native/progress/test contracts. Changed source was statically parsed and reconstructed from baseline plus every patch hunk. No candidate was executed.",
+      "source_sha256": {
+        "bonaparte": "142ede0b11495de926c9d0c5ea0a74e184a3d90b0c59e0fdb072d4169d9773aa"
+      },
+      "patch_sha256": "5c87d29a697c25c8ba7bd4e25df7f5616605ef808b12f37b579e577832383c27",
+      "full_source_lines": 1447,
+      "static_parse": "passed for supplied production Python source",
+      "patch_full_source_correspondence": "passed after exact hunk reconstruction",
+      "findings": [
+        {
+          "id": "T06-C011-question-guard",
+          "title": "Empty post-steer question bypasses continuation recovery",
+          "category": "requirements",
+          "severity": "medium",
+          "origin": "candidate change",
+          "location": {
+            "file": "bonaparte",
+            "packet_relative_path": "T06/candidates/C011/production/bonaparte",
+            "line": 735,
+            "end_line": 735,
+            "exact_code": "        raise RuntimeError(\"phase requested input without a question\")"
+          },
+          "basis": "A post-steer guard failure with a native session must produce a durable usable continuation token and saved question.",
+          "demonstrated_source_property": "The needs-input question guard raises ordinary RuntimeError before the steered-specific guards; run_and_checkpoint catches only the special continuation exception.",
+          "behavioral_consequence_unexecuted": "A schema-valid needs-input receipt with question=null (or empty string) after an acknowledged budget steer becomes a generic failure receipt with no continuation checkpoint on a fresh run.",
+          "minimal_repair": "When steered, classify this semantic question guard as the candidate continuation exception; retain ordinary errors when unsteered.",
+          "counterexample": {
+            "status": "proposed, not executed",
+            "steps": [
+              "Build a fake native driver with canonical root identity and valid turn identity. Return TimeoutError twice, the valid steer acknowledgment, then turn/completed for that turn.",
+              "Its final JSON contains every schema field, matching phase, state=\"needs-input\", summary=\"Obligations remain unverified.\", question=None, and null unused fields.",
+              "Call run_and_checkpoint against a temporary Git repo with isolated BONAPARTE_HOME."
+            ],
+            "expected_after_repair": "A failed receipt <=4096 bytes carries a token; reading its checkpoint finds the continuation question; resume invokes thread/resume with the same root identity."
+          },
+          "evidence_kind": "static source inspection; behavior derived, not executed"
+        },
+        {
+          "id": "T06-C011-identity",
+          "title": "Resumed guard failures retain stale Git identity",
+          "category": "requirements",
+          "severity": "high",
+          "origin": "candidate change",
+          "location": {
+            "file": "bonaparte",
+            "packet_relative_path": "T06/candidates/C011/production/bonaparte",
+            "line": 1093,
+            "end_line": 1100,
+            "exact_code": "    except SoftBudgetContinuation as error:\n        _update_checkpoint_observation(checkpoint, observation)\n        if error.session_id != checkpoint[\"token\"]:\n            return _checkpoint_failure(\n                checkpoint, \"Codex resumed a different session\", remote_uncertain=True\n            ), 1\n        # The answer reached the native session; the saved continuation question\n        # replaces it so a later resume continues instead of replaying it."
+          },
+          "basis": "The continuation token returned after a post-steer guard failure must remain usable.",
+          "demonstrated_source_property": "The resume recovery branch delegates to _checkpoint_failure, whose _refresh_checkpoint_git(checkpoint) updates file inventories but defaults update_identity=False. Unlike the normal needs-input path, it does not refresh branch/identity_head.",
+          "behavioral_consequence_unexecuted": "If a resumed turn checks out its authorized branch or changes a detached commit before interruption, the saved branch/head remains stale; the next resume rejects the same worktree before sending thread/resume.",
+          "minimal_repair": "After the trusted same-session guard failure, refresh current Git identity with update_identity=True, require_identity=True, then persist the continuation question; handle refresh failures durably.",
+          "counterexample": {
+            "status": "proposed, not executed",
+            "steps": [
+              "Save a waiting-input checkpoint in a temporary Git repo on branch a.",
+              "Fake the resumed native turn to switch to branch b (or detach to another existing commit), then emit a budget interruption/post-steer guard failure.",
+              "Read the persisted checkpoint and call resume_checkpoint with Continue again, counting driver requests."
+            ],
+            "expected_after_repair": "The saved identity reflects the changed worktree; thread/resume uses the original checkpoint token instead of failing \"different branch\" or \"different detached commit\"."
+          },
+          "evidence_kind": "static source inspection; behavior derived, not executed"
+        },
+        {
+          "id": "T06-C011-turn-correlation",
+          "title": "Post-steer work guard does not correlate the item to the active turn",
+          "category": "engineering",
+          "severity": "medium",
+          "origin": "inherited baseline guard; newly material to candidate recovery behavior",
+          "location": {
+            "file": "bonaparte",
+            "packet_relative_path": "T06/candidates/C011/production/bonaparte",
+            "line": 658,
+            "end_line": 658,
+            "exact_code": "                    if isinstance(params, dict) and params.get(\"threadId\") == session_id:"
+          },
+          "basis": "Guard decisions must identify the current turn; old-turn notifications should not fail a different turn or create a spurious recovery checkpoint.",
+          "demonstrated_source_property": "The detector checks only threadId before marking command/tool/file work after acknowledgment; turnId is not checked, although turn/start established a specific turn_id.",
+          "behavioral_consequence_unexecuted": "A queued item/started from an earlier turn on the same resumed thread is treated as forbidden current-turn work, causing a false failed receipt and continuation checkpoint.",
+          "minimal_repair": "Require params.get(\"turnId\") == turn_id alongside threadId before setting post_steer_work.",
+          "counterexample": {
+            "status": "proposed, not executed",
+            "steps": [
+              "After a correlated successful budget steer acknowledgment for active turn T, feed item/started with threadId=R, turnId=\"old-turn\", type=\"commandExecution\".",
+              "Then complete T with a schema-valid needs-input wrap-up receipt containing the exact continuation question and an unverified summary.",
+              "Repeat with item turnId=T as the positive control."
+            ],
+            "expected_after_repair": "The old-turn event does not fail the phase; the current-turn event still triggers a continuation failure."
+          },
+          "evidence_kind": "static source inspection; behavior derived, not executed"
+        }
+      ],
+      "complexity_findings": [],
+      "requirements_assessment": {
+        "result": "supported missed requirements",
+        "finding_ids": [
+          "T06-C011-question-guard",
+          "T06-C011-identity"
+        ],
+        "scope_note": "T06 native bootstrap, ordinary protocol errors, root identity, steered terminal/semantic guards, bounded receipt, durable storage, and checkpoint resume paths inspected."
+      },
+      "engineering_assessment": {
+        "result": "supported engineering findings",
+        "finding_ids": [
+          "T06-C011-turn-correlation"
+        ],
+        "complexity": "No removable abstraction defect supported. Explicit selection markers and typed recovery exceptions solve real ambiguity/classification needs; class versus object or receipt helper shape alone is not a defect."
+      },
+      "inspection_limits": "Static review only. No test suite, candidate runtime, real provider, filesystem recovery execution, or external publication was run. Proposed counterexamples require an isolated merged baseline/candidate runtime and fake provider; temporal notification counterexamples demonstrate the unguarded interface case, not an observed real-provider occurrence.",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr31--baseline-opus--r1",
+        "task_id": "tweed-pr31",
+        "arm_id": "baseline-opus",
+        "repeat": 1
+      },
+      "published_patch": "../results/patches/tweed-pr31--baseline-opus--r1.patch"
+    },
+    {
+      "task": "T06",
+      "candidate": "C021",
+      "status": "available",
+      "reviewed": true,
+      "inspection": "All supplied production files, full baseline bonaparte and checkpoint module, supplied patch, and relevant native/progress/test contracts. Changed source was statically parsed and reconstructed from baseline plus every patch hunk. No candidate was executed.",
+      "source_sha256": {
+        "bonaparte": "e0e986e47992e1e317bfc5c051be1155eb3133ac980afb2fee494ebbd851e574"
+      },
+      "patch_sha256": "f7949345fe505099effdaa84284046427daafc012754a6461beaffe68e908ce9",
+      "full_source_lines": 1439,
+      "static_parse": "passed for supplied production Python source",
+      "patch_full_source_correspondence": "passed after exact hunk reconstruction",
+      "findings": [
+        {
+          "id": "T06-C021-question-guard",
+          "title": "Empty post-steer question bypasses continuation recovery",
+          "category": "requirements",
+          "severity": "medium",
+          "origin": "candidate change",
+          "location": {
+            "file": "bonaparte",
+            "packet_relative_path": "T06/candidates/C021/production/bonaparte",
+            "line": 720,
+            "end_line": 720,
+            "exact_code": "        raise RuntimeError(\"phase requested input without a question\")"
+          },
+          "basis": "A post-steer guard failure with a native session must produce a durable usable continuation token and saved question.",
+          "demonstrated_source_property": "The needs-input question guard raises ordinary RuntimeError before the steered-specific guards; run_and_checkpoint catches only the special continuation exception.",
+          "behavioral_consequence_unexecuted": "A schema-valid needs-input receipt with question=null (or empty string) after an acknowledged budget steer becomes a generic failure receipt with no continuation checkpoint on a fresh run.",
+          "minimal_repair": "When steered, classify this semantic question guard as the candidate continuation exception; retain ordinary errors when unsteered.",
+          "counterexample": {
+            "status": "proposed, not executed",
+            "steps": [
+              "Build a fake native driver with canonical root identity and valid turn identity. Return TimeoutError twice, the valid steer acknowledgment, then turn/completed for that turn.",
+              "Its final JSON contains every schema field, matching phase, state=\"needs-input\", summary=\"Obligations remain unverified.\", question=None, and null unused fields.",
+              "Call run_and_checkpoint against a temporary Git repo with isolated BONAPARTE_HOME."
+            ],
+            "expected_after_repair": "A failed receipt <=4096 bytes carries a token; reading its checkpoint finds the continuation question; resume invokes thread/resume with the same root identity."
+          },
+          "evidence_kind": "static source inspection; behavior derived, not executed"
+        },
+        {
+          "id": "T06-C021-identity",
+          "title": "Resumed guard failures retain stale Git identity",
+          "category": "requirements",
+          "severity": "high",
+          "origin": "candidate change",
+          "location": {
+            "file": "bonaparte",
+            "packet_relative_path": "T06/candidates/C021/production/bonaparte",
+            "line": 1086,
+            "end_line": 1093,
+            "exact_code": "    except SoftBudgetContinuation as error:\n        _update_checkpoint_observation(checkpoint, observation)\n        if error.session_id == checkpoint[\"token\"]:\n            # The answer reached the native session; the saved continuation\n            # question replaces it so the next resume continues that session.\n            checkpoint.update(\n                status=\"waiting-input\",\n                question=SOFT_BUDGET_CONTINUE_QUESTION,"
+          },
+          "basis": "The continuation token returned after a post-steer guard failure must remain usable.",
+          "demonstrated_source_property": "The resume recovery branch delegates to _checkpoint_failure, whose _refresh_checkpoint_git(checkpoint) updates file inventories but defaults update_identity=False. Unlike the normal needs-input path, it does not refresh branch/identity_head.",
+          "behavioral_consequence_unexecuted": "If a resumed turn checks out its authorized branch or changes a detached commit before interruption, the saved branch/head remains stale; the next resume rejects the same worktree before sending thread/resume.",
+          "minimal_repair": "After the trusted same-session guard failure, refresh current Git identity with update_identity=True, require_identity=True, then persist the continuation question; handle refresh failures durably.",
+          "counterexample": {
+            "status": "proposed, not executed",
+            "steps": [
+              "Save a waiting-input checkpoint in a temporary Git repo on branch a.",
+              "Fake the resumed native turn to switch to branch b (or detach to another existing commit), then emit a budget interruption/post-steer guard failure.",
+              "Read the persisted checkpoint and call resume_checkpoint with Continue again, counting driver requests."
+            ],
+            "expected_after_repair": "The saved identity reflects the changed worktree; thread/resume uses the original checkpoint token instead of failing \"different branch\" or \"different detached commit\"."
+          },
+          "evidence_kind": "static source inspection; behavior derived, not executed"
+        },
+        {
+          "id": "T06-C021-turn-correlation",
+          "title": "Post-steer work guard does not correlate the item to the active turn",
+          "category": "engineering",
+          "severity": "medium",
+          "origin": "inherited baseline guard; newly material to candidate recovery behavior",
+          "location": {
+            "file": "bonaparte",
+            "packet_relative_path": "T06/candidates/C021/production/bonaparte",
+            "line": 643,
+            "end_line": 643,
+            "exact_code": "                    if isinstance(params, dict) and params.get(\"threadId\") == session_id:"
+          },
+          "basis": "Guard decisions must identify the current turn; old-turn notifications should not fail a different turn or create a spurious recovery checkpoint.",
+          "demonstrated_source_property": "The detector checks only threadId before marking command/tool/file work after acknowledgment; turnId is not checked, although turn/start established a specific turn_id.",
+          "behavioral_consequence_unexecuted": "A queued item/started from an earlier turn on the same resumed thread is treated as forbidden current-turn work, causing a false failed receipt and continuation checkpoint.",
+          "minimal_repair": "Require params.get(\"turnId\") == turn_id alongside threadId before setting post_steer_work.",
+          "counterexample": {
+            "status": "proposed, not executed",
+            "steps": [
+              "After a correlated successful budget steer acknowledgment for active turn T, feed item/started with threadId=R, turnId=\"old-turn\", type=\"commandExecution\".",
+              "Then complete T with a schema-valid needs-input wrap-up receipt containing the exact continuation question and an unverified summary.",
+              "Repeat with item turnId=T as the positive control."
+            ],
+            "expected_after_repair": "The old-turn event does not fail the phase; the current-turn event still triggers a continuation failure."
+          },
+          "evidence_kind": "static source inspection; behavior derived, not executed"
+        }
+      ],
+      "complexity_findings": [],
+      "requirements_assessment": {
+        "result": "supported missed requirements",
+        "finding_ids": [
+          "T06-C021-question-guard",
+          "T06-C021-identity"
+        ],
+        "scope_note": "T06 native bootstrap, ordinary protocol errors, root identity, steered terminal/semantic guards, bounded receipt, durable storage, and checkpoint resume paths inspected."
+      },
+      "engineering_assessment": {
+        "result": "supported engineering findings",
+        "finding_ids": [
+          "T06-C021-turn-correlation"
+        ],
+        "complexity": "No removable abstraction defect supported. Explicit selection markers and typed recovery exceptions solve real ambiguity/classification needs; class versus object or receipt helper shape alone is not a defect."
+      },
+      "inspection_limits": "Static review only. No test suite, candidate runtime, real provider, filesystem recovery execution, or external publication was run. Proposed counterexamples require an isolated merged baseline/candidate runtime and fake provider; temporal notification counterexamples demonstrate the unguarded interface case, not an observed real-provider occurrence.",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr31--enhanced-opus--r1",
+        "task_id": "tweed-pr31",
+        "arm_id": "enhanced-opus",
+        "repeat": 1
+      },
+      "published_patch": "../results/patches/tweed-pr31--enhanced-opus--r1.patch"
+    },
+    {
+      "task": "T06",
+      "candidate": "C024",
+      "status": "available",
+      "reviewed": true,
+      "inspection": "All supplied production files, full baseline bonaparte and checkpoint module, supplied patch, and relevant native/progress/test contracts. Changed source was statically parsed and reconstructed from baseline plus every patch hunk. No candidate was executed.",
+      "source_sha256": {
+        "bonaparte": "ac81b5a673a28faae57a68446304141a3c7128e68070e71879589deed7d80e7d"
+      },
+      "patch_sha256": "702ca906f3dc9f65d477e7c3a89eb936d5fd5a99765d82cad56b588d37d4f6f4",
+      "full_source_lines": 1458,
+      "static_parse": "passed for supplied production Python source",
+      "patch_full_source_correspondence": "passed after exact hunk reconstruction",
+      "findings": [
+        {
+          "id": "T06-C024-question-guard",
+          "title": "Empty post-steer question bypasses continuation recovery",
+          "category": "requirements",
+          "severity": "medium",
+          "origin": "candidate change",
+          "location": {
+            "file": "bonaparte",
+            "packet_relative_path": "T06/candidates/C024/production/bonaparte",
+            "line": 723,
+            "end_line": 723,
+            "exact_code": "        raise RuntimeError(\"phase requested input without a question\")"
+          },
+          "basis": "A post-steer guard failure with a native session must produce a durable usable continuation token and saved question.",
+          "demonstrated_source_property": "The needs-input question guard raises ordinary RuntimeError before the steered-specific guards; run_and_checkpoint catches only the special continuation exception.",
+          "behavioral_consequence_unexecuted": "A schema-valid needs-input receipt with question=null (or empty string) after an acknowledged budget steer becomes a generic failure receipt with no continuation checkpoint on a fresh run.",
+          "minimal_repair": "When steered, classify this semantic question guard as the candidate continuation exception; retain ordinary errors when unsteered.",
+          "counterexample": {
+            "status": "proposed, not executed",
+            "steps": [
+              "Build a fake native driver with canonical root identity and valid turn identity. Return TimeoutError twice, the valid steer acknowledgment, then turn/completed for that turn.",
+              "Its final JSON contains every schema field, matching phase, state=\"needs-input\", summary=\"Obligations remain unverified.\", question=None, and null unused fields.",
+              "Call run_and_checkpoint against a temporary Git repo with isolated BONAPARTE_HOME."
+            ],
+            "expected_after_repair": "A failed receipt <=4096 bytes carries a token; reading its checkpoint finds the continuation question; resume invokes thread/resume with the same root identity."
+          },
+          "evidence_kind": "static source inspection; behavior derived, not executed"
+        },
+        {
+          "id": "T06-C024-turn-correlation",
+          "title": "Post-steer work guard does not correlate the item to the active turn",
+          "category": "engineering",
+          "severity": "medium",
+          "origin": "inherited baseline guard; newly material to candidate recovery behavior",
+          "location": {
+            "file": "bonaparte",
+            "packet_relative_path": "T06/candidates/C024/production/bonaparte",
+            "line": 643,
+            "end_line": 643,
+            "exact_code": "                    if isinstance(params, dict) and params.get(\"threadId\") == session_id:"
+          },
+          "basis": "Guard decisions must identify the current turn; old-turn notifications should not fail a different turn or create a spurious recovery checkpoint.",
+          "demonstrated_source_property": "The detector checks only threadId before marking command/tool/file work after acknowledgment; turnId is not checked, although turn/start established a specific turn_id.",
+          "behavioral_consequence_unexecuted": "A queued item/started from an earlier turn on the same resumed thread is treated as forbidden current-turn work, causing a false failed receipt and continuation checkpoint.",
+          "minimal_repair": "Require params.get(\"turnId\") == turn_id alongside threadId before setting post_steer_work.",
+          "counterexample": {
+            "status": "proposed, not executed",
+            "steps": [
+              "After a correlated successful budget steer acknowledgment for active turn T, feed item/started with threadId=R, turnId=\"old-turn\", type=\"commandExecution\".",
+              "Then complete T with a schema-valid needs-input wrap-up receipt containing the exact continuation question and an unverified summary.",
+              "Repeat with item turnId=T as the positive control."
+            ],
+            "expected_after_repair": "The old-turn event does not fail the phase; the current-turn event still triggers a continuation failure."
+          },
+          "evidence_kind": "static source inspection; behavior derived, not executed"
+        }
+      ],
+      "complexity_findings": [],
+      "requirements_assessment": {
+        "result": "supported missed requirements",
+        "finding_ids": [
+          "T06-C024-question-guard"
+        ],
+        "scope_note": "T06 native bootstrap, ordinary protocol errors, root identity, steered terminal/semantic guards, bounded receipt, durable storage, and checkpoint resume paths inspected."
+      },
+      "engineering_assessment": {
+        "result": "supported engineering findings",
+        "finding_ids": [
+          "T06-C024-turn-correlation"
+        ],
+        "complexity": "No removable abstraction defect supported. Explicit selection markers and typed recovery exceptions solve real ambiguity/classification needs; class versus object or receipt helper shape alone is not a defect."
+      },
+      "inspection_limits": "Static review only. No test suite, candidate runtime, real provider, filesystem recovery execution, or external publication was run. Proposed counterexamples require an isolated merged baseline/candidate runtime and fake provider; temporal notification counterexamples demonstrate the unguarded interface case, not an observed real-provider occurrence.",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr31--baseline-opus--r2",
+        "task_id": "tweed-pr31",
+        "arm_id": "baseline-opus",
+        "repeat": 2
+      },
+      "published_patch": "../results/patches/tweed-pr31--baseline-opus--r2.patch"
+    },
+    {
+      "task": "T06",
+      "candidate": "C028",
+      "status": "available",
+      "reviewed": true,
+      "inspection": "All supplied production files, full baseline bonaparte and checkpoint module, supplied patch, and relevant native/progress/test contracts. Changed source was statically parsed and reconstructed from baseline plus every patch hunk. No candidate was executed.",
+      "source_sha256": {
+        "bonaparte": "8a892d0a7e45274d077f6dd45d451ec6b0d50dbb77607bc28e6cb62d19ce9d06"
+      },
+      "patch_sha256": "eeb29d92fbce6f4e452588413b17697665f823bb89992ce63874a6f8134b359c",
+      "full_source_lines": 1439,
+      "static_parse": "passed for supplied production Python source",
+      "patch_full_source_correspondence": "passed after exact hunk reconstruction",
+      "findings": [
+        {
+          "id": "T06-C028-identity",
+          "title": "Resumed guard failures retain stale Git identity",
+          "category": "requirements",
+          "severity": "high",
+          "origin": "candidate change",
+          "location": {
+            "file": "bonaparte",
+            "packet_relative_path": "T06/candidates/C028/production/bonaparte",
+            "line": 1086,
+            "end_line": 1093,
+            "exact_code": "    except ContinuationFailure as error:\n        _update_checkpoint_observation(checkpoint, observation)\n        return _checkpoint_failure(\n            checkpoint, str(error).replace(\"\\n\", \" \")[:800], remote_uncertain=True\n        ), error.exit_code\n    except KeyboardInterrupt:\n        _update_checkpoint_observation(checkpoint, observation)\n        return ("
+          },
+          "basis": "The continuation token returned after a post-steer guard failure must remain usable.",
+          "demonstrated_source_property": "The resume recovery branch delegates to _checkpoint_failure, whose _refresh_checkpoint_git(checkpoint) updates file inventories but defaults update_identity=False. Unlike the normal needs-input path, it does not refresh branch/identity_head.",
+          "behavioral_consequence_unexecuted": "If a resumed turn checks out its authorized branch or changes a detached commit before interruption, the saved branch/head remains stale; the next resume rejects the same worktree before sending thread/resume.",
+          "minimal_repair": "After the trusted same-session guard failure, refresh current Git identity with update_identity=True, require_identity=True, then persist the continuation question; handle refresh failures durably.",
+          "counterexample": {
+            "status": "proposed, not executed",
+            "steps": [
+              "Save a waiting-input checkpoint in a temporary Git repo on branch a.",
+              "Fake the resumed native turn to switch to branch b (or detach to another existing commit), then emit a budget interruption/post-steer guard failure.",
+              "Read the persisted checkpoint and call resume_checkpoint with Continue again, counting driver requests."
+            ],
+            "expected_after_repair": "The saved identity reflects the changed worktree; thread/resume uses the original checkpoint token instead of failing \"different branch\" or \"different detached commit\"."
+          },
+          "evidence_kind": "static source inspection; behavior derived, not executed"
+        },
+        {
+          "id": "T06-C028-pending",
+          "title": "Interrupted resumed turn keeps the consumed clarification and old question",
+          "category": "engineering",
+          "severity": "medium",
+          "origin": "candidate change",
+          "location": {
+            "file": "bonaparte",
+            "packet_relative_path": "T06/candidates/C028/production/bonaparte",
+            "line": 1086,
+            "end_line": 1090,
+            "exact_code": "    except ContinuationFailure as error:\n        _update_checkpoint_observation(checkpoint, observation)\n        return _checkpoint_failure(\n            checkpoint, str(error).replace(\"\\n\", \" \")[:800], remote_uncertain=True\n        ), error.exit_code"
+          },
+          "basis": "A known post-steer continuation boundary should save the next continuation question and clear an answer that was already delivered; pending answers are for ambiguous at-least-once replay.",
+          "demonstrated_source_property": "The resume continuation catch only updates observations and calls _checkpoint_failure; it never replaces question or clears pending_answer.",
+          "behavioral_consequence_unexecuted": "After answering an ordinary clarification and hitting a guard failure, the failure receipt still asks the old question. Resuming with Continue is rejected as a different pending answer, and resuming without an answer replays the consumed clarification.",
+          "minimal_repair": "In the continuation catch set question=SOFT_BUDGET_CONTINUE_QUESTION and pending_answer=None before saving, while leaving generic transport failures on the replay path.",
+          "counterexample": {
+            "status": "proposed, not executed",
+            "steps": [
+              "Start with a checkpoint question=\"Which implementation strategy?\" and no pending answer.",
+              "Resume with \"Choose A\" through a fake same-session turn that reaches an acknowledged budget steer and a guarded root work item.",
+              "Read the failure checkpoint, then resume with \"Continue\"."
+            ],
+            "expected_after_repair": "Saved pending_answer is None, saved question is the continuation question, and the second resume delivers Continue to the same session."
+          },
+          "evidence_kind": "static source inspection; behavior derived, not executed"
+        },
+        {
+          "id": "T06-C028-turn-correlation",
+          "title": "Post-steer work guard does not correlate the item to the active turn",
+          "category": "engineering",
+          "severity": "medium",
+          "origin": "inherited baseline guard; newly material to candidate recovery behavior",
+          "location": {
+            "file": "bonaparte",
+            "packet_relative_path": "T06/candidates/C028/production/bonaparte",
+            "line": 650,
+            "end_line": 650,
+            "exact_code": "                    if isinstance(params, dict) and params.get(\"threadId\") == session_id:"
+          },
+          "basis": "Guard decisions must identify the current turn; old-turn notifications should not fail a different turn or create a spurious recovery checkpoint.",
+          "demonstrated_source_property": "The detector checks only threadId before marking command/tool/file work after acknowledgment; turnId is not checked, although turn/start established a specific turn_id.",
+          "behavioral_consequence_unexecuted": "A queued item/started from an earlier turn on the same resumed thread is treated as forbidden current-turn work, causing a false failed receipt and continuation checkpoint.",
+          "minimal_repair": "Require params.get(\"turnId\") == turn_id alongside threadId before setting post_steer_work.",
+          "counterexample": {
+            "status": "proposed, not executed",
+            "steps": [
+              "After a correlated successful budget steer acknowledgment for active turn T, feed item/started with threadId=R, turnId=\"old-turn\", type=\"commandExecution\".",
+              "Then complete T with a schema-valid needs-input wrap-up receipt containing the exact continuation question and an unverified summary.",
+              "Repeat with item turnId=T as the positive control."
+            ],
+            "expected_after_repair": "The old-turn event does not fail the phase; the current-turn event still triggers a continuation failure."
+          },
+          "evidence_kind": "static source inspection; behavior derived, not executed"
+        }
+      ],
+      "complexity_findings": [],
+      "requirements_assessment": {
+        "result": "supported missed requirements",
+        "finding_ids": [
+          "T06-C028-identity"
+        ],
+        "scope_note": "T06 native bootstrap, ordinary protocol errors, root identity, steered terminal/semantic guards, bounded receipt, durable storage, and checkpoint resume paths inspected."
+      },
+      "engineering_assessment": {
+        "result": "supported engineering findings",
+        "finding_ids": [
+          "T06-C028-pending",
+          "T06-C028-turn-correlation"
+        ],
+        "complexity": "No removable abstraction defect supported. Explicit selection markers and typed recovery exceptions solve real ambiguity/classification needs; class versus object or receipt helper shape alone is not a defect."
+      },
+      "inspection_limits": "Static review only. No test suite, candidate runtime, real provider, filesystem recovery execution, or external publication was run. Proposed counterexamples require an isolated merged baseline/candidate runtime and fake provider; temporal notification counterexamples demonstrate the unguarded interface case, not an observed real-provider occurrence.",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr31--enhanced-codex--r2",
+        "task_id": "tweed-pr31",
+        "arm_id": "enhanced-codex",
+        "repeat": 2
+      },
+      "published_patch": "../results/patches/tweed-pr31--enhanced-codex--r2.patch"
+    },
+    {
+      "task": "T06",
+      "candidate": "C040",
+      "status": "available",
+      "reviewed": true,
+      "inspection": "All supplied production files, full baseline bonaparte and checkpoint module, supplied patch, and relevant native/progress/test contracts. Changed source was statically parsed and reconstructed from baseline plus every patch hunk. No candidate was executed.",
+      "source_sha256": {
+        "bonaparte": "4df10c73ec2e7ef84ea2acbb1cbdb8b086ea0b4b7f7c35b9aea8c8e55569bc37"
+      },
+      "patch_sha256": "cc66bee9e0d4e2d6012dde15f037b93b35137eff29a85cf577f6aac5a5e881d9",
+      "full_source_lines": 1432,
+      "static_parse": "passed for supplied production Python source",
+      "patch_full_source_correspondence": "passed after exact hunk reconstruction",
+      "findings": [
+        {
+          "id": "T06-C040-question-guard",
+          "title": "Empty post-steer question bypasses continuation recovery",
+          "category": "requirements",
+          "severity": "medium",
+          "origin": "candidate change",
+          "location": {
+            "file": "bonaparte",
+            "packet_relative_path": "T06/candidates/C040/production/bonaparte",
+            "line": 736,
+            "end_line": 736,
+            "exact_code": "        raise RuntimeError(\"phase requested input without a question\")"
+          },
+          "basis": "A post-steer guard failure with a native session must produce a durable usable continuation token and saved question.",
+          "demonstrated_source_property": "The needs-input question guard raises ordinary RuntimeError before the steered-specific guards; run_and_checkpoint catches only the special continuation exception.",
+          "behavioral_consequence_unexecuted": "A schema-valid needs-input receipt with question=null (or empty string) after an acknowledged budget steer becomes a generic failure receipt with no continuation checkpoint on a fresh run.",
+          "minimal_repair": "When steered, classify this semantic question guard as the candidate continuation exception; retain ordinary errors when unsteered.",
+          "counterexample": {
+            "status": "proposed, not executed",
+            "steps": [
+              "Build a fake native driver with canonical root identity and valid turn identity. Return TimeoutError twice, the valid steer acknowledgment, then turn/completed for that turn.",
+              "Its final JSON contains every schema field, matching phase, state=\"needs-input\", summary=\"Obligations remain unverified.\", question=None, and null unused fields.",
+              "Call run_and_checkpoint against a temporary Git repo with isolated BONAPARTE_HOME."
+            ],
+            "expected_after_repair": "A failed receipt <=4096 bytes carries a token; reading its checkpoint finds the continuation question; resume invokes thread/resume with the same root identity."
+          },
+          "evidence_kind": "static source inspection; behavior derived, not executed"
+        },
+        {
+          "id": "T06-C040-turn-correlation",
+          "title": "Post-steer work guard does not correlate the item to the active turn",
+          "category": "engineering",
+          "severity": "medium",
+          "origin": "inherited baseline guard; newly material to candidate recovery behavior",
+          "location": {
+            "file": "bonaparte",
+            "packet_relative_path": "T06/candidates/C040/production/bonaparte",
+            "line": 655,
+            "end_line": 655,
+            "exact_code": "                    if isinstance(params, dict) and params.get(\"threadId\") == session_id:"
+          },
+          "basis": "Guard decisions must identify the current turn; old-turn notifications should not fail a different turn or create a spurious recovery checkpoint.",
+          "demonstrated_source_property": "The detector checks only threadId before marking command/tool/file work after acknowledgment; turnId is not checked, although turn/start established a specific turn_id.",
+          "behavioral_consequence_unexecuted": "A queued item/started from an earlier turn on the same resumed thread is treated as forbidden current-turn work, causing a false failed receipt and continuation checkpoint.",
+          "minimal_repair": "Require params.get(\"turnId\") == turn_id alongside threadId before setting post_steer_work.",
+          "counterexample": {
+            "status": "proposed, not executed",
+            "steps": [
+              "After a correlated successful budget steer acknowledgment for active turn T, feed item/started with threadId=R, turnId=\"old-turn\", type=\"commandExecution\".",
+              "Then complete T with a schema-valid needs-input wrap-up receipt containing the exact continuation question and an unverified summary.",
+              "Repeat with item turnId=T as the positive control."
+            ],
+            "expected_after_repair": "The old-turn event does not fail the phase; the current-turn event still triggers a continuation failure."
+          },
+          "evidence_kind": "static source inspection; behavior derived, not executed"
+        }
+      ],
+      "complexity_findings": [],
+      "requirements_assessment": {
+        "result": "supported missed requirements",
+        "finding_ids": [
+          "T06-C040-question-guard"
+        ],
+        "scope_note": "T06 native bootstrap, ordinary protocol errors, root identity, steered terminal/semantic guards, bounded receipt, durable storage, and checkpoint resume paths inspected."
+      },
+      "engineering_assessment": {
+        "result": "supported engineering findings",
+        "finding_ids": [
+          "T06-C040-turn-correlation"
+        ],
+        "complexity": "No removable abstraction defect supported. Explicit selection markers and typed recovery exceptions solve real ambiguity/classification needs; class versus object or receipt helper shape alone is not a defect."
+      },
+      "inspection_limits": "Static review only. No test suite, candidate runtime, real provider, filesystem recovery execution, or external publication was run. Proposed counterexamples require an isolated merged baseline/candidate runtime and fake provider; temporal notification counterexamples demonstrate the unguarded interface case, not an observed real-provider occurrence.",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr31--enhanced-codex--r1",
+        "task_id": "tweed-pr31",
+        "arm_id": "enhanced-codex",
+        "repeat": 1
+      },
+      "published_patch": "../results/patches/tweed-pr31--enhanced-codex--r1.patch"
+    },
+    {
+      "task": "T06",
+      "candidate": "C041",
+      "status": "available",
+      "reviewed": true,
+      "inspection": "All supplied production files, full baseline bonaparte and checkpoint module, supplied patch, and relevant native/progress/test contracts. Changed source was statically parsed and reconstructed from baseline plus every patch hunk. No candidate was executed.",
+      "source_sha256": {
+        "bonaparte": "e69568f1d8ebf18307645963bef0262d64991db010ca08b1267ce1b26d58fc22"
+      },
+      "patch_sha256": "f377295f6cff5692b4fb2055fada6d5e5ef2bd5a74b42762677bbdfc20feeef1",
+      "full_source_lines": 1441,
+      "static_parse": "passed for supplied production Python source",
+      "patch_full_source_correspondence": "passed after exact hunk reconstruction",
+      "findings": [
+        {
+          "id": "T06-C041-question-guard",
+          "title": "Empty post-steer question bypasses continuation recovery",
+          "category": "requirements",
+          "severity": "medium",
+          "origin": "candidate change",
+          "location": {
+            "file": "bonaparte",
+            "packet_relative_path": "T06/candidates/C041/production/bonaparte",
+            "line": 720,
+            "end_line": 720,
+            "exact_code": "        raise RuntimeError(\"phase requested input without a question\")"
+          },
+          "basis": "A post-steer guard failure with a native session must produce a durable usable continuation token and saved question.",
+          "demonstrated_source_property": "The needs-input question guard raises ordinary RuntimeError before the steered-specific guards; run_and_checkpoint catches only the special continuation exception.",
+          "behavioral_consequence_unexecuted": "A schema-valid needs-input receipt with question=null (or empty string) after an acknowledged budget steer becomes a generic failure receipt with no continuation checkpoint on a fresh run.",
+          "minimal_repair": "When steered, classify this semantic question guard as the candidate continuation exception; retain ordinary errors when unsteered.",
+          "counterexample": {
+            "status": "proposed, not executed",
+            "steps": [
+              "Build a fake native driver with canonical root identity and valid turn identity. Return TimeoutError twice, the valid steer acknowledgment, then turn/completed for that turn.",
+              "Its final JSON contains every schema field, matching phase, state=\"needs-input\", summary=\"Obligations remain unverified.\", question=None, and null unused fields.",
+              "Call run_and_checkpoint against a temporary Git repo with isolated BONAPARTE_HOME."
+            ],
+            "expected_after_repair": "A failed receipt <=4096 bytes carries a token; reading its checkpoint finds the continuation question; resume invokes thread/resume with the same root identity."
+          },
+          "evidence_kind": "static source inspection; behavior derived, not executed"
+        },
+        {
+          "id": "T06-C041-identity",
+          "title": "Resumed guard failures retain stale Git identity",
+          "category": "requirements",
+          "severity": "high",
+          "origin": "candidate change",
+          "location": {
+            "file": "bonaparte",
+            "packet_relative_path": "T06/candidates/C041/production/bonaparte",
+            "line": 1084,
+            "end_line": 1091,
+            "exact_code": "    except ContinuableSessionError as error:\n        _update_checkpoint_observation(checkpoint, observation)\n        checkpoint.update(\n            pending_answer=None,\n            question=SOFT_BUDGET_CONTINUE_QUESTION,\n            blocker=SOFT_BUDGET_CONTINUE_QUESTION,\n        )\n        return _checkpoint_failure("
+          },
+          "basis": "The continuation token returned after a post-steer guard failure must remain usable.",
+          "demonstrated_source_property": "The resume recovery branch delegates to _checkpoint_failure, whose _refresh_checkpoint_git(checkpoint) updates file inventories but defaults update_identity=False. Unlike the normal needs-input path, it does not refresh branch/identity_head.",
+          "behavioral_consequence_unexecuted": "If a resumed turn checks out its authorized branch or changes a detached commit before interruption, the saved branch/head remains stale; the next resume rejects the same worktree before sending thread/resume.",
+          "minimal_repair": "After the trusted same-session guard failure, refresh current Git identity with update_identity=True, require_identity=True, then persist the continuation question; handle refresh failures durably.",
+          "counterexample": {
+            "status": "proposed, not executed",
+            "steps": [
+              "Save a waiting-input checkpoint in a temporary Git repo on branch a.",
+              "Fake the resumed native turn to switch to branch b (or detach to another existing commit), then emit a budget interruption/post-steer guard failure.",
+              "Read the persisted checkpoint and call resume_checkpoint with Continue again, counting driver requests."
+            ],
+            "expected_after_repair": "The saved identity reflects the changed worktree; thread/resume uses the original checkpoint token instead of failing \"different branch\" or \"different detached commit\"."
+          },
+          "evidence_kind": "static source inspection; behavior derived, not executed"
+        },
+        {
+          "id": "T06-C041-turn-correlation",
+          "title": "Post-steer work guard does not correlate the item to the active turn",
+          "category": "engineering",
+          "severity": "medium",
+          "origin": "inherited baseline guard; newly material to candidate recovery behavior",
+          "location": {
+            "file": "bonaparte",
+            "packet_relative_path": "T06/candidates/C041/production/bonaparte",
+            "line": 643,
+            "end_line": 643,
+            "exact_code": "                    if isinstance(params, dict) and params.get(\"threadId\") == session_id:"
+          },
+          "basis": "Guard decisions must identify the current turn; old-turn notifications should not fail a different turn or create a spurious recovery checkpoint.",
+          "demonstrated_source_property": "The detector checks only threadId before marking command/tool/file work after acknowledgment; turnId is not checked, although turn/start established a specific turn_id.",
+          "behavioral_consequence_unexecuted": "A queued item/started from an earlier turn on the same resumed thread is treated as forbidden current-turn work, causing a false failed receipt and continuation checkpoint.",
+          "minimal_repair": "Require params.get(\"turnId\") == turn_id alongside threadId before setting post_steer_work.",
+          "counterexample": {
+            "status": "proposed, not executed",
+            "steps": [
+              "After a correlated successful budget steer acknowledgment for active turn T, feed item/started with threadId=R, turnId=\"old-turn\", type=\"commandExecution\".",
+              "Then complete T with a schema-valid needs-input wrap-up receipt containing the exact continuation question and an unverified summary.",
+              "Repeat with item turnId=T as the positive control."
+            ],
+            "expected_after_repair": "The old-turn event does not fail the phase; the current-turn event still triggers a continuation failure."
+          },
+          "evidence_kind": "static source inspection; behavior derived, not executed"
+        }
+      ],
+      "complexity_findings": [],
+      "requirements_assessment": {
+        "result": "supported missed requirements",
+        "finding_ids": [
+          "T06-C041-question-guard",
+          "T06-C041-identity"
+        ],
+        "scope_note": "T06 native bootstrap, ordinary protocol errors, root identity, steered terminal/semantic guards, bounded receipt, durable storage, and checkpoint resume paths inspected."
+      },
+      "engineering_assessment": {
+        "result": "supported engineering findings",
+        "finding_ids": [
+          "T06-C041-turn-correlation"
+        ],
+        "complexity": "No removable abstraction defect supported. Explicit selection markers and typed recovery exceptions solve real ambiguity/classification needs; class versus object or receipt helper shape alone is not a defect."
+      },
+      "inspection_limits": "Static review only. No test suite, candidate runtime, real provider, filesystem recovery execution, or external publication was run. Proposed counterexamples require an isolated merged baseline/candidate runtime and fake provider; temporal notification counterexamples demonstrate the unguarded interface case, not an observed real-provider occurrence.",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr31--enhanced-haiku--r1",
+        "task_id": "tweed-pr31",
+        "arm_id": "enhanced-haiku",
+        "repeat": 1
+      },
+      "published_patch": "../results/patches/tweed-pr31--enhanced-haiku--r1.patch"
+    },
+    {
+      "task": "T06",
+      "candidate": "C045",
+      "status": "available",
+      "reviewed": true,
+      "inspection": "All supplied production files, full baseline bonaparte and checkpoint module, supplied patch, and relevant native/progress/test contracts. Changed source was statically parsed and reconstructed from baseline plus every patch hunk. No candidate was executed.",
+      "source_sha256": {
+        "bonaparte": "9a04c45649a65ccf1ced3804a1a6a0cf079b8be4903b8225f7ad6e3bb09ec849"
+      },
+      "patch_sha256": "70591aefcfb52673d1a0beeb0130e34266a693bb275a1b0ac983f29a9d19d4ff",
+      "full_source_lines": 1434,
+      "static_parse": "passed for supplied production Python source",
+      "patch_full_source_correspondence": "passed after exact hunk reconstruction",
+      "findings": [
+        {
+          "id": "T06-C045-question-guard",
+          "title": "Empty post-steer question bypasses continuation recovery",
+          "category": "requirements",
+          "severity": "medium",
+          "origin": "candidate change",
+          "location": {
+            "file": "bonaparte",
+            "packet_relative_path": "T06/candidates/C045/production/bonaparte",
+            "line": 720,
+            "end_line": 720,
+            "exact_code": "        raise RuntimeError(\"phase requested input without a question\")"
+          },
+          "basis": "A post-steer guard failure with a native session must produce a durable usable continuation token and saved question.",
+          "demonstrated_source_property": "The needs-input question guard raises ordinary RuntimeError before the steered-specific guards; run_and_checkpoint catches only the special continuation exception.",
+          "behavioral_consequence_unexecuted": "A schema-valid needs-input receipt with question=null (or empty string) after an acknowledged budget steer becomes a generic failure receipt with no continuation checkpoint on a fresh run.",
+          "minimal_repair": "When steered, classify this semantic question guard as the candidate continuation exception; retain ordinary errors when unsteered.",
+          "counterexample": {
+            "status": "proposed, not executed",
+            "steps": [
+              "Build a fake native driver with canonical root identity and valid turn identity. Return TimeoutError twice, the valid steer acknowledgment, then turn/completed for that turn.",
+              "Its final JSON contains every schema field, matching phase, state=\"needs-input\", summary=\"Obligations remain unverified.\", question=None, and null unused fields.",
+              "Call run_and_checkpoint against a temporary Git repo with isolated BONAPARTE_HOME."
+            ],
+            "expected_after_repair": "A failed receipt <=4096 bytes carries a token; reading its checkpoint finds the continuation question; resume invokes thread/resume with the same root identity."
+          },
+          "evidence_kind": "static source inspection; behavior derived, not executed"
+        },
+        {
+          "id": "T06-C045-turn-correlation",
+          "title": "Post-steer work guard does not correlate the item to the active turn",
+          "category": "engineering",
+          "severity": "medium",
+          "origin": "inherited baseline guard; newly material to candidate recovery behavior",
+          "location": {
+            "file": "bonaparte",
+            "packet_relative_path": "T06/candidates/C045/production/bonaparte",
+            "line": 643,
+            "end_line": 643,
+            "exact_code": "                    if isinstance(params, dict) and params.get(\"threadId\") == session_id:"
+          },
+          "basis": "Guard decisions must identify the current turn; old-turn notifications should not fail a different turn or create a spurious recovery checkpoint.",
+          "demonstrated_source_property": "The detector checks only threadId before marking command/tool/file work after acknowledgment; turnId is not checked, although turn/start established a specific turn_id.",
+          "behavioral_consequence_unexecuted": "A queued item/started from an earlier turn on the same resumed thread is treated as forbidden current-turn work, causing a false failed receipt and continuation checkpoint.",
+          "minimal_repair": "Require params.get(\"turnId\") == turn_id alongside threadId before setting post_steer_work.",
+          "counterexample": {
+            "status": "proposed, not executed",
+            "steps": [
+              "After a correlated successful budget steer acknowledgment for active turn T, feed item/started with threadId=R, turnId=\"old-turn\", type=\"commandExecution\".",
+              "Then complete T with a schema-valid needs-input wrap-up receipt containing the exact continuation question and an unverified summary.",
+              "Repeat with item turnId=T as the positive control."
+            ],
+            "expected_after_repair": "The old-turn event does not fail the phase; the current-turn event still triggers a continuation failure."
+          },
+          "evidence_kind": "static source inspection; behavior derived, not executed"
+        }
+      ],
+      "complexity_findings": [],
+      "requirements_assessment": {
+        "result": "supported missed requirements",
+        "finding_ids": [
+          "T06-C045-question-guard"
+        ],
+        "scope_note": "T06 native bootstrap, ordinary protocol errors, root identity, steered terminal/semantic guards, bounded receipt, durable storage, and checkpoint resume paths inspected."
+      },
+      "engineering_assessment": {
+        "result": "supported engineering findings",
+        "finding_ids": [
+          "T06-C045-turn-correlation"
+        ],
+        "complexity": "No removable abstraction defect supported. Explicit selection markers and typed recovery exceptions solve real ambiguity/classification needs; class versus object or receipt helper shape alone is not a defect."
+      },
+      "inspection_limits": "Static review only. No test suite, candidate runtime, real provider, filesystem recovery execution, or external publication was run. Proposed counterexamples require an isolated merged baseline/candidate runtime and fake provider; temporal notification counterexamples demonstrate the unguarded interface case, not an observed real-provider occurrence.",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr31--enhanced-opus--r2",
+        "task_id": "tweed-pr31",
+        "arm_id": "enhanced-opus",
+        "repeat": 2
+      },
+      "published_patch": "../results/patches/tweed-pr31--enhanced-opus--r2.patch"
+    }
+  ],
+  "original_private_review_sha256": "5a2092120452829cf17a91d10908ad516ae51659dc94ac6ecb0eff607b4127a5",
+  "publication_note": "Assignment labels added only after all three fresh reviewers completed; original anonymous reports preserved."
+}

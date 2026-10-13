@@ -1,0 +1,404 @@
+{
+  "script_sha256": "386cc3a06a50fa6fdb892974f99535de9e3aa7a9064532a86a1e1e664086ab9b",
+  "rows": [
+    {
+      "anonymous_candidate": "C001",
+      "exit_code": 0,
+      "result": {
+        "accepted_active_receipt": true,
+        "case": "same_thread_work_after_steer",
+        "error": null,
+        "event_turn": "old-turn",
+        "primary_grade_unchanged": true,
+        "process_closed": true,
+        "source_files": {
+          "bonaparte": "67e46892dd45f0f1aed8ac3a50c0b3e73a10683e8aaa0cb15a33470ebb591520",
+          "bonaparte_native.py": "34b8cbe58da00516ae3db8b7fa9ee22bc2a69e440ea1f4f65bd3a7645ecb7e12"
+        },
+        "steer_exercised": true
+      },
+      "stderr": "",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr32--enhanced-codex--r2",
+        "task_id": "tweed-pr32",
+        "arm_id": "enhanced-codex",
+        "repeat": 2
+      }
+    },
+    {
+      "anonymous_candidate": "C001",
+      "exit_code": 0,
+      "result": {
+        "accepted_active_receipt": false,
+        "case": "same_thread_work_after_steer",
+        "error": "coordinator started new work after soft-budget steer",
+        "error_type": "RuntimeError",
+        "event_turn": "turn-1",
+        "primary_grade_unchanged": true,
+        "process_closed": true,
+        "source_files": {
+          "bonaparte": "67e46892dd45f0f1aed8ac3a50c0b3e73a10683e8aaa0cb15a33470ebb591520",
+          "bonaparte_native.py": "34b8cbe58da00516ae3db8b7fa9ee22bc2a69e440ea1f4f65bd3a7645ecb7e12"
+        },
+        "steer_exercised": true
+      },
+      "stderr": "",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr32--enhanced-codex--r2",
+        "task_id": "tweed-pr32",
+        "arm_id": "enhanced-codex",
+        "repeat": 2
+      }
+    },
+    {
+      "anonymous_candidate": "C002",
+      "exit_code": 0,
+      "result": {
+        "accepted_active_receipt": false,
+        "case": "same_thread_work_after_steer",
+        "error": "coordinator started new work after soft-budget steer",
+        "error_type": "RuntimeError",
+        "event_turn": "old-turn",
+        "primary_grade_unchanged": true,
+        "process_closed": true,
+        "source_files": {
+          "bonaparte": "76f2b5fe9885de86e697729431e4a582f9cb8ee06d339d6ce5b6f9be72822681",
+          "bonaparte_native.py": "2c1ea4d6cb0b9d46d6240be0c985f388e267ce3a54c1016e286a24962f9fc9de"
+        },
+        "steer_exercised": true
+      },
+      "stderr": "",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr32--baseline-opus--r1",
+        "task_id": "tweed-pr32",
+        "arm_id": "baseline-opus",
+        "repeat": 1
+      }
+    },
+    {
+      "anonymous_candidate": "C002",
+      "exit_code": 0,
+      "result": {
+        "accepted_active_receipt": false,
+        "case": "same_thread_work_after_steer",
+        "error": "coordinator started new work after soft-budget steer",
+        "error_type": "RuntimeError",
+        "event_turn": "turn-1",
+        "primary_grade_unchanged": true,
+        "process_closed": true,
+        "source_files": {
+          "bonaparte": "76f2b5fe9885de86e697729431e4a582f9cb8ee06d339d6ce5b6f9be72822681",
+          "bonaparte_native.py": "2c1ea4d6cb0b9d46d6240be0c985f388e267ce3a54c1016e286a24962f9fc9de"
+        },
+        "steer_exercised": true
+      },
+      "stderr": "",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr32--baseline-opus--r1",
+        "task_id": "tweed-pr32",
+        "arm_id": "baseline-opus",
+        "repeat": 1
+      }
+    },
+    {
+      "anonymous_candidate": "C003",
+      "exit_code": 0,
+      "result": {
+        "accepted_active_receipt": false,
+        "case": "same_thread_work_after_steer",
+        "error": "coordinator started new work after soft-budget steer",
+        "error_type": "RuntimeError",
+        "event_turn": "old-turn",
+        "primary_grade_unchanged": true,
+        "process_closed": true,
+        "source_files": {
+          "bonaparte": "009dca4202fe5701ec402c605b0fd6a94ac13800245d43fc5af8613f783a2be3",
+          "bonaparte_native.py": "c70512ec386f46673f9d4d401923ef103450f4ac1020a33ddcac5d0036aa4b51"
+        },
+        "steer_exercised": true
+      },
+      "stderr": "",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr32--enhanced-opus--r1",
+        "task_id": "tweed-pr32",
+        "arm_id": "enhanced-opus",
+        "repeat": 1
+      }
+    },
+    {
+      "anonymous_candidate": "C003",
+      "exit_code": 0,
+      "result": {
+        "accepted_active_receipt": false,
+        "case": "same_thread_work_after_steer",
+        "error": "coordinator started new work after soft-budget steer",
+        "error_type": "RuntimeError",
+        "event_turn": "turn-1",
+        "primary_grade_unchanged": true,
+        "process_closed": true,
+        "source_files": {
+          "bonaparte": "009dca4202fe5701ec402c605b0fd6a94ac13800245d43fc5af8613f783a2be3",
+          "bonaparte_native.py": "c70512ec386f46673f9d4d401923ef103450f4ac1020a33ddcac5d0036aa4b51"
+        },
+        "steer_exercised": true
+      },
+      "stderr": "",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr32--enhanced-opus--r1",
+        "task_id": "tweed-pr32",
+        "arm_id": "enhanced-opus",
+        "repeat": 1
+      }
+    },
+    {
+      "anonymous_candidate": "C006",
+      "exit_code": 0,
+      "result": {
+        "accepted_active_receipt": false,
+        "case": "same_thread_work_after_steer",
+        "error": "coordinator started new work after soft-budget steer",
+        "error_type": "RuntimeError",
+        "event_turn": "old-turn",
+        "primary_grade_unchanged": true,
+        "process_closed": true,
+        "source_files": {
+          "bonaparte": "2f12d64dce5db313bf015f8db0d7978e518dea3422cf9ecd7438a4ebe9b07e85",
+          "bonaparte_native.py": "c54429978edfb982644463623d2ae5de081d21fe3506b775e73d01009fd08355"
+        },
+        "steer_exercised": true
+      },
+      "stderr": "",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr32--enhanced-opus--r2",
+        "task_id": "tweed-pr32",
+        "arm_id": "enhanced-opus",
+        "repeat": 2
+      }
+    },
+    {
+      "anonymous_candidate": "C006",
+      "exit_code": 0,
+      "result": {
+        "accepted_active_receipt": false,
+        "case": "same_thread_work_after_steer",
+        "error": "coordinator started new work after soft-budget steer",
+        "error_type": "RuntimeError",
+        "event_turn": "turn-1",
+        "primary_grade_unchanged": true,
+        "process_closed": true,
+        "source_files": {
+          "bonaparte": "2f12d64dce5db313bf015f8db0d7978e518dea3422cf9ecd7438a4ebe9b07e85",
+          "bonaparte_native.py": "c54429978edfb982644463623d2ae5de081d21fe3506b775e73d01009fd08355"
+        },
+        "steer_exercised": true
+      },
+      "stderr": "",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr32--enhanced-opus--r2",
+        "task_id": "tweed-pr32",
+        "arm_id": "enhanced-opus",
+        "repeat": 2
+      }
+    },
+    {
+      "anonymous_candidate": "C016",
+      "exit_code": 0,
+      "result": {
+        "accepted_active_receipt": false,
+        "case": "same_thread_work_after_steer",
+        "error": "coordinator started new work after soft-budget steer",
+        "error_type": "RuntimeError",
+        "event_turn": "old-turn",
+        "primary_grade_unchanged": true,
+        "process_closed": true,
+        "source_files": {
+          "bonaparte": "7dc24a9394e05e4a081705145d80506932ca9e007f385d9f60293dd381fea151",
+          "bonaparte_native.py": "fdcf321832adb9c01bffdfa50796ac0d3b5a2e333e1c889ae7153cb1798f57a5"
+        },
+        "steer_exercised": true
+      },
+      "stderr": "",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr32--baseline-opus--r2",
+        "task_id": "tweed-pr32",
+        "arm_id": "baseline-opus",
+        "repeat": 2
+      }
+    },
+    {
+      "anonymous_candidate": "C016",
+      "exit_code": 0,
+      "result": {
+        "accepted_active_receipt": false,
+        "case": "same_thread_work_after_steer",
+        "error": "coordinator started new work after soft-budget steer",
+        "error_type": "RuntimeError",
+        "event_turn": "turn-1",
+        "primary_grade_unchanged": true,
+        "process_closed": true,
+        "source_files": {
+          "bonaparte": "7dc24a9394e05e4a081705145d80506932ca9e007f385d9f60293dd381fea151",
+          "bonaparte_native.py": "fdcf321832adb9c01bffdfa50796ac0d3b5a2e333e1c889ae7153cb1798f57a5"
+        },
+        "steer_exercised": true
+      },
+      "stderr": "",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr32--baseline-opus--r2",
+        "task_id": "tweed-pr32",
+        "arm_id": "baseline-opus",
+        "repeat": 2
+      }
+    },
+    {
+      "anonymous_candidate": "C025",
+      "exit_code": 0,
+      "result": {
+        "accepted_active_receipt": false,
+        "case": "same_thread_work_after_steer",
+        "error": "coordinator started new work after soft-budget steer",
+        "error_type": "RuntimeError",
+        "event_turn": "old-turn",
+        "primary_grade_unchanged": true,
+        "process_closed": true,
+        "source_files": {
+          "bonaparte": "acd7873e08a37010db785431e2e77e98f23fba4669982fb06f334a983ad6d3d7",
+          "bonaparte_native.py": "ae2bd849412bf45670ed76f115d968739a31ee3ec53f78c3003ed286ab4cf692"
+        },
+        "steer_exercised": true
+      },
+      "stderr": "",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr32--enhanced-haiku--r1",
+        "task_id": "tweed-pr32",
+        "arm_id": "enhanced-haiku",
+        "repeat": 1
+      }
+    },
+    {
+      "anonymous_candidate": "C025",
+      "exit_code": 0,
+      "result": {
+        "accepted_active_receipt": false,
+        "case": "same_thread_work_after_steer",
+        "error": "coordinator started new work after soft-budget steer",
+        "error_type": "RuntimeError",
+        "event_turn": "turn-1",
+        "primary_grade_unchanged": true,
+        "process_closed": true,
+        "source_files": {
+          "bonaparte": "acd7873e08a37010db785431e2e77e98f23fba4669982fb06f334a983ad6d3d7",
+          "bonaparte_native.py": "ae2bd849412bf45670ed76f115d968739a31ee3ec53f78c3003ed286ab4cf692"
+        },
+        "steer_exercised": true
+      },
+      "stderr": "",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr32--enhanced-haiku--r1",
+        "task_id": "tweed-pr32",
+        "arm_id": "enhanced-haiku",
+        "repeat": 1
+      }
+    },
+    {
+      "anonymous_candidate": "C036",
+      "exit_code": 0,
+      "result": {
+        "accepted_active_receipt": true,
+        "case": "same_thread_work_after_steer",
+        "error": null,
+        "event_turn": "old-turn",
+        "primary_grade_unchanged": true,
+        "process_closed": true,
+        "source_files": {
+          "bonaparte": "67e46892dd45f0f1aed8ac3a50c0b3e73a10683e8aaa0cb15a33470ebb591520",
+          "bonaparte_native.py": "a0e9eda9a57c955dafc765bd2b3eb86ee017c12ecf5ef71a158ae8e75bce6d80"
+        },
+        "steer_exercised": true
+      },
+      "stderr": "",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr32--enhanced-codex--r1",
+        "task_id": "tweed-pr32",
+        "arm_id": "enhanced-codex",
+        "repeat": 1
+      }
+    },
+    {
+      "anonymous_candidate": "C036",
+      "exit_code": 0,
+      "result": {
+        "accepted_active_receipt": false,
+        "case": "same_thread_work_after_steer",
+        "error": "coordinator started new work after soft-budget steer",
+        "error_type": "RuntimeError",
+        "event_turn": "turn-1",
+        "primary_grade_unchanged": true,
+        "process_closed": true,
+        "source_files": {
+          "bonaparte": "67e46892dd45f0f1aed8ac3a50c0b3e73a10683e8aaa0cb15a33470ebb591520",
+          "bonaparte_native.py": "a0e9eda9a57c955dafc765bd2b3eb86ee017c12ecf5ef71a158ae8e75bce6d80"
+        },
+        "steer_exercised": true
+      },
+      "stderr": "",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr32--enhanced-codex--r1",
+        "task_id": "tweed-pr32",
+        "arm_id": "enhanced-codex",
+        "repeat": 1
+      }
+    },
+    {
+      "anonymous_candidate": "C048",
+      "exit_code": 0,
+      "result": {
+        "accepted_active_receipt": false,
+        "case": "same_thread_work_after_steer",
+        "error": "coordinator started new work after soft-budget steer",
+        "error_type": "RuntimeError",
+        "event_turn": "old-turn",
+        "primary_grade_unchanged": true,
+        "process_closed": true,
+        "source_files": {
+          "bonaparte": "76f2b5fe9885de86e697729431e4a582f9cb8ee06d339d6ce5b6f9be72822681",
+          "bonaparte_native.py": "2b2236e88159b01fe116967b61c0e765f360b4c45f67cd3a481f314b970e6905"
+        },
+        "steer_exercised": true
+      },
+      "stderr": "",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr32--enhanced-haiku--r2",
+        "task_id": "tweed-pr32",
+        "arm_id": "enhanced-haiku",
+        "repeat": 2
+      }
+    },
+    {
+      "anonymous_candidate": "C048",
+      "exit_code": 0,
+      "result": {
+        "accepted_active_receipt": false,
+        "case": "same_thread_work_after_steer",
+        "error": "coordinator started new work after soft-budget steer",
+        "error_type": "RuntimeError",
+        "event_turn": "turn-1",
+        "primary_grade_unchanged": true,
+        "process_closed": true,
+        "source_files": {
+          "bonaparte": "76f2b5fe9885de86e697729431e4a582f9cb8ee06d339d6ce5b6f9be72822681",
+          "bonaparte_native.py": "2b2236e88159b01fe116967b61c0e765f360b4c45f67cd3a481f314b970e6905"
+        },
+        "steer_exercised": true
+      },
+      "stderr": "",
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr32--enhanced-haiku--r2",
+        "task_id": "tweed-pr32",
+        "arm_id": "enhanced-haiku",
+        "repeat": 2
+      }
+    }
+  ],
+  "limitation": "Posthoc fixture-level routing counterexample, not a preregistered model score. Original primary grades unchanged; live app-server transport not exercised."
+}

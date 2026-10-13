@@ -50,6 +50,7 @@ LIMITS = [
     'Usage and CLI cost estimates are not subscription bills; unknown cost, CPU accounting and effort observation remain unknown.',
     'Production patches, sources, raw commands, model summaries and error prose remain private pending a separate privacy review; artifacts are hashed without redaction.',
     'When prospective custody v2 is used, only the unused first-stage main/execution-scratch subtree is excluded from artifact inventory; source, receipt, patch, request and log bindings remain required. The original legacy controller and declaration are retained.',
+    'After execution, the follow-up analyzer wiring was corrected to pass hash-bound server events to the already-qualified provider guard. This correction is outside the original model intervention and does not rewrite primary receipts or grades.',
 ]
 
 
@@ -152,15 +153,22 @@ def grade(raw, label, directory, bindings):
     return truth
 
 
-def commands(main, raw, stage, adapter):
-    """Bind actual stream requests to server events; retain raw argv privately."""
+def load_bound_tool_events(main, raw):
+    """Load server evidence before the provider guard; never accept unbound logs."""
     events_path = main / 'tool-events.jsonl'
     if raw.get('tool_events_sha256') is None:
-        require(not events_path.exists(), 'Unbound tool-events log')
+        require(not events_path.exists() and not events_path.is_symlink(), 'Unbound tool-events log')
         events = []
     else:
         bound(events_path, raw['tool_events_sha256'], 'Actual tool events')
         events = [json.loads(line) for line in events_path.read_text().splitlines()]
+    require(all(isinstance(event, dict) for event in events), 'Actual server event is not an object')
+    return events
+
+
+def commands(main, raw, stage, adapter, events):
+    """Bind actual stream requests to already-bound events; retain argv privately."""
+    events_path = main / 'tool-events.jsonl'
     stream, _ = adapter.frozen.backend.parse_events(main / 'stream.jsonl')
     requested = []
     for event in stream:
@@ -309,7 +317,8 @@ def row(study, initial, declaration, adapter):
         bindings['request_sha256'] = r.sha(main / 'request.json')
         bindings['server_config_sha256'] = r.sha(main / 'server-config.json')
         bindings['stream_sha256'] = bound(main / 'stream.jsonl', stage.get('stream_sha256'), 'Followup provider stream')
-        a.provider_facts(main, stage, declaration['arm'], adapter)
+        tool_events = load_bound_tool_events(main, raw)
+        a.provider_facts(main, stage, declaration['arm'], adapter, tool_events)
         local_path = directory / 'qualification/local-qualification.json'
         q = r.qualification(stage, r.read(local_path), declaration['arm'], adapter)
         same(raw.get('qualification'), q, 'Followup qualification differs from current provider facts')
@@ -317,7 +326,7 @@ def row(study, initial, declaration, adapter):
         bindings['local_qualification_sha256'] = r.sha(local_path)
         if (main / 'stderr.log').exists(): bindings['current_stderr_sha256'] = r.sha(main / 'stderr.log')
         terminal = r.terminal(stage)
-        command_evidence = commands(main, raw, stage, adapter)
+        command_evidence = commands(main, raw, stage, adapter, tool_events)
     else:
         require(raw['eligible'] is False, 'Missing stage cannot certify a followup')
         if (directory / 'main').exists(): bindings['unbound_main_inventory_sha256'] = r.digest(r.inventory(directory / 'main'))

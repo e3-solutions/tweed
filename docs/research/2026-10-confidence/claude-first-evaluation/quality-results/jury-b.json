@@ -1,0 +1,2689 @@
+{
+  "schema_version": 1,
+  "reviewer": "b",
+  "review_type": "independent metadata-blinded static source review",
+  "authorized_tasks": [
+    "T03",
+    "T04"
+  ],
+  "access_boundary": "Read only visible packets; no private owner map/results/study metadata. Candidate/source clues were not used to infer provider. Only b.json and b.md created.",
+  "requirements": {
+    "T03": "Add installed-version status and explicit atomic self-update for the launcher. Stable tags determine latest availability; offline status must be truthful. Activate only a complete validated release snapshot. A moved tag, invalid required path or failing smoke check must leave the current release usable and clean staging. Ordinary status/check behavior must not silently install a release. The user-facing commands are bonaparte status and bonaparte update. Status prints three lines: installed: <release-id>, latest: <stable-tag or unavailable>, and current: yes|no. Stable tags follow vMAJOR.MINOR.PATCH. Preserve the existing install layout and launcher invocation. When latest cannot be resolved, status prints latest: unavailable and current: unknown and exits nonzero without changing installed state. Allowed production paths: bonaparte-launcher, workflows/scope.md. New regular root *.py helper modules are allowed; do not shadow Python standard-library or test-framework modules.\n\nAllowed production paths:\nbonaparte-launcher\nworkflows/scope.md\n",
+    "T04": "When reconciling an existing publish handoff, retain the latest complete review alongside the existing publish and its stable comment ID. This lets callers reconcile the same reviewed PR without duplicating the publish record. Preserve the existing behavior for missing, ambiguous and non-publish handoffs. Allowed production paths: bonaparte, workflows/publish.md. New regular root *.py helper modules are allowed; do not shadow Python standard-library or test-framework modules.\n\nAllowed production paths:\nbonaparte\nworkflows/publish.md\n"
+  },
+  "coverage": {
+    "expected_candidates": 16,
+    "reviewed_candidates": 16,
+    "by_task": {
+      "T03": [
+        "C012",
+        "C013",
+        "C017",
+        "C018",
+        "C022",
+        "C031",
+        "C037",
+        "C046"
+      ],
+      "T04": [
+        "C005",
+        "C010",
+        "C023",
+        "C034",
+        "C038",
+        "C039",
+        "C043",
+        "C044"
+      ]
+    },
+    "empty_patches": 0,
+    "unavailable_or_incomplete_packets": [],
+    "all_source_and_patch_hashes_recorded": true,
+    "method": "Read every patch and complete candidate launcher source; read full shared runner/workflow baseline and every candidate source change with context. Full byte/line comparisons establish unchanged repeated code. Any truncated reads were followed by targeted source/delta reads."
+  },
+  "reviewed_context_manifest": [
+    {
+      "path": "REVIEW.md",
+      "sha256": "d0491b185e66e4def18f387053c5167a03381f39f9bcfd930f6f94f5c03a1fb5"
+    },
+    {
+      "path": "T03/requirements.md",
+      "sha256": "0bf843db905c6fedc70037cac0b124cca83866c31e13ac2e2f31dde24f753708"
+    },
+    {
+      "path": "T04/requirements.md",
+      "sha256": "ee6ba50ce57e6e0fe645067b24db3a4dbe4f25fe827841425f480e3b170a72c5"
+    },
+    {
+      "path": "T03/baseline/bonaparte-launcher",
+      "sha256": "2dbc15f5393b36080edf06f8dd87a024938213a3e5eb9563c705fbb07f78ed3d"
+    },
+    {
+      "path": "T03/baseline/install",
+      "sha256": "700a37280bf155240111d2eaaea12cbab21e1ea6411dfa2da2bdb4a18a3353a8"
+    },
+    {
+      "path": "T03/baseline/workflows/scope.md",
+      "sha256": "c004d0775b9719fab000bce5ac46fe501c0cd2c7d123d0f863fc15d2bd768f87"
+    },
+    {
+      "path": "T04/baseline/bonaparte",
+      "sha256": "68f0dc2b2f5ddff6aeeff3c1628ebbf0977b7cc4e6cc05a15e15dbaa78d06d1a"
+    },
+    {
+      "path": "T04/baseline/workflows/publish.md",
+      "sha256": "fbbc900a1c2dba946d0e575c5e3dce4cda2c02282d3ffb537f88e2037ebb21c7"
+    },
+    {
+      "path": "T04/baseline/workflows/review.md",
+      "sha256": "46741b7e024c1fa532ff08308c5097a6e8121fb45ac3bb98fb795c868b83c37d"
+    },
+    {
+      "path": "T04/baseline/tests/test_handoff.py",
+      "sha256": "2c417619245f97c860d080272d42460534788e42dad60936149a8a108a3e24c3"
+    }
+  ],
+  "additional_context_manifest": [
+    {
+      "path": "T03/baseline/tests/test_installation.py",
+      "sha256": "39a8b5db288169b46b8f5d6ca4d61e053e8fc8fc0d94b9477edbb6726d5e5de7",
+      "inspection_ranges": [
+        "138-214",
+        "launcher-related indexed lines"
+      ]
+    },
+    {
+      "path": "T03/baseline/README.md",
+      "sha256": "4881c1e2633a0549d224d2b52290b70703c3cbf3098734c88aadd0751f0c5eae",
+      "inspection_ranges": [
+        "101-128",
+        "installation/update indexed lines"
+      ]
+    },
+    {
+      "path": "T04/baseline/bonaparte_linear.py",
+      "sha256": "62b3cd13eec171b91845f1534d692a449579e27aa70d7272d37cff7284070df3",
+      "inspection_ranges": [
+        "call_linear and pagination consumer context"
+      ]
+    }
+  ],
+  "execution_evidence": {
+    "candidate_code_executed": false,
+    "candidate_tests_run": false,
+    "model_calls": false,
+    "external_publication": false,
+    "observed_activity": "Source reads, SHA-256/byte/line comparisons and report generation only.",
+    "counterexample_status": "All proposed, not executed."
+  },
+  "candidates": [
+    {
+      "task": "T03",
+      "candidate": "C012",
+      "status": "available",
+      "patch": {
+        "path": "T03/candidates/C012/change.patch",
+        "sha256": "ec18307a48332ac7f3c9bd125205f604aec674502f282b2d01e5672136230e99"
+      },
+      "empty_patch": false,
+      "sources": [
+        {
+          "path": "T03/candidates/C012/production/bonaparte-launcher",
+          "sha256": "46d7c262dc6e8c6b93c1f93736fcb832e4da9911b6d95a6c5e111a51283ae7d1",
+          "production_path": "bonaparte-launcher",
+          "line_count": 239,
+          "byte_identical_to_baseline": false,
+          "full_source_delta_ranges": [
+            {
+              "operation": "replace",
+              "baseline_start": 22,
+              "baseline_end": 22,
+              "candidate_start": 22,
+              "candidate_end": 22
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 78,
+              "baseline_end": 77,
+              "candidate_start": 78,
+              "candidate_end": 82
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 97,
+              "baseline_end": 97,
+              "candidate_start": 102,
+              "candidate_end": 102
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 112,
+              "baseline_end": 111,
+              "candidate_start": 117,
+              "candidate_end": 117
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 166,
+              "baseline_end": 168,
+              "candidate_start": 172,
+              "candidate_end": 172
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 171,
+              "baseline_end": 172,
+              "candidate_start": 175,
+              "candidate_end": 175
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 192,
+              "baseline_end": 191,
+              "candidate_start": 195,
+              "candidate_end": 215
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 194,
+              "baseline_end": 193,
+              "candidate_start": 218,
+              "candidate_end": 219
+            }
+          ]
+        },
+        {
+          "path": "T03/candidates/C012/production/workflows/scope.md",
+          "sha256": "c004d0775b9719fab000bce5ac46fe501c0cd2c7d123d0f863fc15d2bd768f87",
+          "production_path": "workflows/scope.md",
+          "line_count": 215,
+          "byte_identical_to_baseline": true,
+          "full_source_delta_ranges": []
+        }
+      ],
+      "findings": [
+        {
+          "id": "T03-C012-IMPLICIT-INSTALL",
+          "axis": "requirements",
+          "priority": "major",
+          "title": "Daily checking still installs during ordinary invocation",
+          "location": {
+            "path": "T03/candidates/C012/production/bonaparte-launcher",
+            "line": 190
+          },
+          "exact_code": "        update(home)",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "main calls automatic_update on ordinary arguments; its daily check calls the mutating update after touching last-check. Only exact status bypasses this path.",
+          "behavioral_consequence": "With an expired check and a newer stable tag, bonaparte --help or a phase invocation can activate a release without an explicit update command.",
+          "requirement_or_engineering_basis": "T03 requires explicit self-update; ordinary status/check behavior must not silently install a release.",
+          "minimum_repair": "Replace this daily update(home) with a read-only latest_tag query, or remove automatic installation; activate only through the explicit update branch.",
+          "proposed_counterexamples": [
+            "CE-AUTO"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        },
+        {
+          "id": "T03-C012-UNVERIFIED-CACHE",
+          "axis": "requirements",
+          "priority": "major",
+          "title": "Existing tag directory bypasses expected source identity",
+          "location": {
+            "path": "T03/candidates/C012/production/bonaparte-launcher",
+            "line": 149
+          },
+          "exact_code": "    if destination.exists():\n        validate_release(destination)\n        return destination",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "The cached-directory branch returns before fetch and expected_oid comparison. validate_release checks files/help behavior, not source identity.",
+          "behavioral_consequence": "A stale but smoke-passing snapshot B at releases/v1.1.0 can be activated although the stable remote tag resolves to A. The moved-tag guard is skipped for a normal retained-release layout state.",
+          "requirement_or_engineering_basis": "T03: activate only a complete validated release snapshot; a moved tag must preserve the current release and clean staging.",
+          "minimum_repair": "Record updater-owned verified source identity and compare it with expected_oid before reuse; reject unproven/mismatched cache. Apply the same identity check to collision fallbacks and retain content validation.",
+          "proposed_counterexamples": [
+            "CE-CACHE",
+            "CE-MOVE"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        },
+        {
+          "id": "T03-C012-ENTRYPOINT-MODE",
+          "axis": "requirements",
+          "priority": "major",
+          "title": "Non-executable launcher can pass snapshot validation",
+          "location": {
+            "path": "T03/candidates/C012/production/bonaparte-launcher",
+            "line": 119
+          },
+          "exact_code": "        [sys.executable, str(release / \"bonaparte\"), \"--help\"],",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "Required paths are never checked for executable permissions. Compilation and help through sys.executable do not require executable mode on the script.",
+          "behavioral_consequence": "A stable snapshot with bonaparte-launcher committed 0644 can be activated, after which installed bin/bonaparte fails with permission denied. The directly invoked autoresearch entrypoint has the same gap.",
+          "requirement_or_engineering_basis": "T03 requires preserving launcher invocation and activating only validated complete snapshots; invalid required paths must leave the old release usable.",
+          "minimum_repair": "Require executable mode on the installed bonaparte-launcher and autoresearch before activation; keep file/content/smoke validation. A direct-entrypoint smoke can additionally exercise the preserved invocation contract.",
+          "proposed_counterexamples": [
+            "CE-MODE"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        },
+        {
+          "id": "T03-C012-REQUIRED-SYMLINK",
+          "axis": "requirements",
+          "priority": "major",
+          "title": "Required-path is_file follows external symlinks",
+          "location": {
+            "path": "T03/candidates/C012/production/bonaparte-launcher",
+            "line": 102
+          },
+          "exact_code": "    missing = [name for name in REQUIRED if not (release / name).is_file()]\n    if missing:\n        raise RuntimeError(f\"release is missing {', '.join(missing)}\")",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "is_file follows a symlink. No leaf/ancestor symlink rejection or resolved-root containment check exists.",
+          "behavioral_consequence": "An external symlink for workflows/scope.md passes required-path validation and help smoke; activation depends on mutable external content and removing the target breaks scope.",
+          "requirement_or_engineering_basis": "T03 requires a complete validated snapshot and rejection of invalid required paths before activation.",
+          "minimum_repair": "Reject symlink leaves/ancestors under the release root and require every required path to be a regular file in that snapshot before compile and smoke.",
+          "proposed_counterexamples": [
+            "CE-SYMLINK"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        }
+      ],
+      "requirements_assessment": {
+        "supported_by_source": [
+          "Exact status bypasses migration/update, prints installed/latest/current, and prints unavailable/unknown with nonzero return when latest resolution fails.",
+          "Remote tag selection full-matches stable versions and compares integer version tuples.",
+          "New-fetch path checks queried OID against FETCH_HEAD, validates before replacing current and cleans staging in finally.",
+          "Allowed production paths respected; workflows/scope.md is byte-identical to baseline."
+        ],
+        "missed_or_at_risk": [
+          "T03-C012-IMPLICIT-INSTALL",
+          "T03-C012-UNVERIFIED-CACHE",
+          "T03-C012-ENTRYPOINT-MODE",
+          "T03-C012-REQUIRED-SYMLINK"
+        ],
+        "unverified": [
+          "Installed invocation, offline processes, actual Git tag races, smoke results, concurrent update, permission failure and interruption cleanup were not executed.",
+          "The task does not fully define current yes/no for local IDs newer than/equal to a tag; no finding relies solely on equality versus version-at-least-latest policy."
+        ]
+      },
+      "engineering_assessment": {
+        "findings": [],
+        "supported_by_source": [
+          "Allowed paths respected; no newly added helper module shadows standard library/test framework."
+        ],
+        "limits": "Static source inspection, no execution acceptance claim."
+      },
+      "complexity_assessment": {
+        "finding_supported": false,
+        "rationale": "No independent material unnecessary-abstraction finding is supported. Code size/style is not evidence. Transaction guards, source identity and scoped selection helpers have direct behavioral purposes. Simpler bounded repairs are supplied for the faulty decisions without adding architecture."
+      },
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr35--enhanced-haiku--r2",
+        "task_id": "tweed-pr35",
+        "arm_id": "enhanced-haiku",
+        "repeat": 2
+      },
+      "published_patch": "../results/patches/tweed-pr35--enhanced-haiku--r2.patch"
+    },
+    {
+      "task": "T03",
+      "candidate": "C013",
+      "status": "available",
+      "patch": {
+        "path": "T03/candidates/C013/change.patch",
+        "sha256": "b03296395c13eb752cb7ad096d217453117e37d41a55b61c6fb797f89a4c4eae"
+      },
+      "empty_patch": false,
+      "sources": [
+        {
+          "path": "T03/candidates/C013/production/bonaparte-launcher",
+          "sha256": "e23ef2a2a0cf88dca0cccf7c7c59b3a27afc2776fd7e474a694035ff6d667c47",
+          "production_path": "bonaparte-launcher",
+          "line_count": 250,
+          "byte_identical_to_baseline": false,
+          "full_source_delta_ranges": [
+            {
+              "operation": "replace",
+              "baseline_start": 20,
+              "baseline_end": 20,
+              "candidate_start": 20,
+              "candidate_end": 20
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 97,
+              "baseline_end": 96,
+              "candidate_start": 97,
+              "candidate_end": 97
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 100,
+              "baseline_end": 99,
+              "candidate_start": 101,
+              "candidate_end": 109
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 112,
+              "baseline_end": 111,
+              "candidate_start": 122,
+              "candidate_end": 122
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 156,
+              "baseline_end": 156,
+              "candidate_start": 167,
+              "candidate_end": 172
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 166,
+              "baseline_end": 168,
+              "candidate_start": 182,
+              "candidate_end": 182
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 171,
+              "baseline_end": 172,
+              "candidate_start": 185,
+              "candidate_end": 185
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 177,
+              "baseline_end": 176,
+              "candidate_start": 190,
+              "candidate_end": 211
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 195,
+              "baseline_end": 194,
+              "candidate_start": 230,
+              "candidate_end": 231
+            }
+          ]
+        },
+        {
+          "path": "T03/candidates/C013/production/workflows/scope.md",
+          "sha256": "c004d0775b9719fab000bce5ac46fe501c0cd2c7d123d0f863fc15d2bd768f87",
+          "production_path": "workflows/scope.md",
+          "line_count": 215,
+          "byte_identical_to_baseline": true,
+          "full_source_delta_ranges": []
+        }
+      ],
+      "findings": [
+        {
+          "id": "T03-C013-IMPLICIT-INSTALL",
+          "axis": "requirements",
+          "priority": "major",
+          "title": "Daily checking still installs during ordinary invocation",
+          "location": {
+            "path": "T03/candidates/C013/production/bonaparte-launcher",
+            "line": 222
+          },
+          "exact_code": "        update(home)",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "main calls automatic_update on ordinary arguments; its daily check calls the mutating update after touching last-check. Only exact status bypasses this path.",
+          "behavioral_consequence": "With an expired check and a newer stable tag, bonaparte --help or a phase invocation can activate a release without an explicit update command.",
+          "requirement_or_engineering_basis": "T03 requires explicit self-update; ordinary status/check behavior must not silently install a release.",
+          "minimum_repair": "Replace this daily update(home) with a read-only latest_tag query, or remove automatic installation; activate only through the explicit update branch.",
+          "proposed_counterexamples": [
+            "CE-AUTO"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        },
+        {
+          "id": "T03-C013-UNVERIFIED-CACHE",
+          "axis": "requirements",
+          "priority": "major",
+          "title": "Existing tag directory bypasses expected source identity",
+          "location": {
+            "path": "T03/candidates/C013/production/bonaparte-launcher",
+            "line": 154
+          },
+          "exact_code": "    if destination.exists():\n        validate_release(destination)\n        return destination",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "The cached-directory branch returns before fetch and expected_oid comparison. validate_release checks files/help behavior, not source identity. C013 also returns a merely validated collision destination after rename OSError.",
+          "behavioral_consequence": "A stale but smoke-passing snapshot B at releases/v1.1.0 can be activated although the stable remote tag resolves to A. The moved-tag guard is skipped for a normal retained-release layout state.",
+          "requirement_or_engineering_basis": "T03: activate only a complete validated release snapshot; a moved tag must preserve the current release and clean staging.",
+          "minimum_repair": "Record updater-owned verified source identity and compare it with expected_oid before reuse; reject unproven/mismatched cache. Apply the same identity check to collision fallbacks and retain content validation.",
+          "proposed_counterexamples": [
+            "CE-CACHE",
+            "CE-MOVE"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        },
+        {
+          "id": "T03-C013-ENTRYPOINT-MODE",
+          "axis": "requirements",
+          "priority": "major",
+          "title": "Non-executable launcher can pass snapshot validation",
+          "location": {
+            "path": "T03/candidates/C013/production/bonaparte-launcher",
+            "line": 124
+          },
+          "exact_code": "        [sys.executable, str(release / \"bonaparte\"), \"--help\"],",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "Required paths are never checked for executable permissions. Compilation and help through sys.executable do not require executable mode on the script.",
+          "behavioral_consequence": "A stable snapshot with bonaparte-launcher committed 0644 can be activated, after which installed bin/bonaparte fails with permission denied. The directly invoked autoresearch entrypoint has the same gap.",
+          "requirement_or_engineering_basis": "T03 requires preserving launcher invocation and activating only validated complete snapshots; invalid required paths must leave the old release usable.",
+          "minimum_repair": "Require executable mode on the installed bonaparte-launcher and autoresearch before activation; keep file/content/smoke validation. A direct-entrypoint smoke can additionally exercise the preserved invocation contract.",
+          "proposed_counterexamples": [
+            "CE-MODE"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        }
+      ],
+      "requirements_assessment": {
+        "supported_by_source": [
+          "Exact status bypasses migration/update, prints installed/latest/current, and prints unavailable/unknown with nonzero return when latest resolution fails.",
+          "Remote tag selection full-matches stable versions and compares integer version tuples.",
+          "New-fetch path checks queried OID against FETCH_HEAD, validates before replacing current and cleans staging in finally.",
+          "Allowed production paths respected; workflows/scope.md is byte-identical to baseline."
+        ],
+        "missed_or_at_risk": [
+          "T03-C013-IMPLICIT-INSTALL",
+          "T03-C013-UNVERIFIED-CACHE",
+          "T03-C013-ENTRYPOINT-MODE"
+        ],
+        "unverified": [
+          "Installed invocation, offline processes, actual Git tag races, smoke results, concurrent update, permission failure and interruption cleanup were not executed.",
+          "The task does not fully define current yes/no for local IDs newer than/equal to a tag; no finding relies solely on equality versus version-at-least-latest policy."
+        ]
+      },
+      "engineering_assessment": {
+        "findings": [],
+        "supported_by_source": [
+          "Allowed paths respected; no newly added helper module shadows standard library/test framework."
+        ],
+        "limits": "Static source inspection, no execution acceptance claim."
+      },
+      "complexity_assessment": {
+        "finding_supported": false,
+        "rationale": "No independent material unnecessary-abstraction finding is supported. Code size/style is not evidence. Transaction guards, source identity and scoped selection helpers have direct behavioral purposes. Simpler bounded repairs are supplied for the faulty decisions without adding architecture."
+      },
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr35--baseline-opus--r2",
+        "task_id": "tweed-pr35",
+        "arm_id": "baseline-opus",
+        "repeat": 2
+      },
+      "published_patch": "../results/patches/tweed-pr35--baseline-opus--r2.patch"
+    },
+    {
+      "task": "T03",
+      "candidate": "C017",
+      "status": "available",
+      "patch": {
+        "path": "T03/candidates/C017/change.patch",
+        "sha256": "7190f3339c51925831d6da9c79296d75eea8f32b78bb24e5677bb971cbc42a1e"
+      },
+      "empty_patch": false,
+      "sources": [
+        {
+          "path": "T03/candidates/C017/production/bonaparte-launcher",
+          "sha256": "8ee90a599d5fa3569c5e231897882f5ec80a918fdeddca5c46477eae23269b3d",
+          "production_path": "bonaparte-launcher",
+          "line_count": 231,
+          "byte_identical_to_baseline": false,
+          "full_source_delta_ranges": [
+            {
+              "operation": "delete",
+              "baseline_start": 12,
+              "baseline_end": 12,
+              "candidate_start": 12,
+              "candidate_end": 11
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 18,
+              "baseline_end": 20,
+              "candidate_start": 17,
+              "candidate_end": 18
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 49,
+              "baseline_end": 50,
+              "candidate_start": 47,
+              "candidate_end": 51
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 74,
+              "baseline_end": 74,
+              "candidate_start": 75,
+              "candidate_end": 78
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 97,
+              "baseline_end": 107,
+              "candidate_start": 101,
+              "candidate_end": 103
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 109,
+              "baseline_end": 108,
+              "candidate_start": 105,
+              "candidate_end": 116
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 112,
+              "baseline_end": 111,
+              "candidate_start": 120,
+              "candidate_end": 120
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 142,
+              "baseline_end": 141,
+              "candidate_start": 151,
+              "candidate_end": 152
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 143,
+              "baseline_end": 145,
+              "candidate_start": 154,
+              "candidate_end": 156
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 164,
+              "baseline_end": 164,
+              "candidate_start": 175,
+              "candidate_end": 178
+            },
+            {
+              "operation": "delete",
+              "baseline_start": 175,
+              "baseline_end": 175,
+              "candidate_start": 189,
+              "candidate_end": 188
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 179,
+              "baseline_end": 184,
+              "candidate_start": 192,
+              "candidate_end": 194
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 186,
+              "baseline_end": 187,
+              "candidate_start": 196,
+              "candidate_end": 196
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 189,
+              "baseline_end": 189,
+              "candidate_start": 198,
+              "candidate_end": 206
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 195,
+              "baseline_end": 195,
+              "candidate_start": 212,
+              "candidate_end": 213
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 204,
+              "baseline_end": 204,
+              "candidate_start": 222,
+              "candidate_end": 222
+            }
+          ]
+        },
+        {
+          "path": "T03/candidates/C017/production/workflows/scope.md",
+          "sha256": "c004d0775b9719fab000bce5ac46fe501c0cd2c7d123d0f863fc15d2bd768f87",
+          "production_path": "workflows/scope.md",
+          "line_count": 215,
+          "byte_identical_to_baseline": true,
+          "full_source_delta_ranges": []
+        }
+      ],
+      "findings": [
+        {
+          "id": "T03-C017-MOVE-DURING-VALIDATION",
+          "axis": "requirements",
+          "priority": "moderate",
+          "title": "Tag movement during smoke checks is never rechecked",
+          "location": {
+            "path": "T03/candidates/C017/production/bonaparte-launcher",
+            "line": 161
+          },
+          "exact_code": "        actual_oid = git(staging, \"rev-parse\", \"FETCH_HEAD\", output=True).stdout.strip()\n        if actual_oid != expected_oid:\n            raise RuntimeError(f\"tag {tag} moved while updating\")\n        git(staging, \"checkout\", \"-q\", \"--detach\", \"FETCH_HEAD\")\n        validate_release(staging)\n        shutil.rmtree(staging / \".git\")\n        staging.rename(destination)",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "FETCH_HEAD is checked before checkout and validation; no tag query occurs after validation and before the new current link is activated.",
+          "behavioral_consequence": "A tag moved from A to B while a help smoke runs still allows the earlier A snapshot to be promoted.",
+          "requirement_or_engineering_basis": "T03 says a moved tag must leave the current release usable and clean staging; this counterexample moves it inside the update transaction.",
+          "minimum_repair": "Re-read the same stable tag after validation; reject an identity change before promoting staging, preserving finally cleanup.",
+          "proposed_counterexamples": [
+            "CE-MOVE"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        },
+        {
+          "id": "T03-C017-CACHE-RETRY",
+          "axis": "engineering",
+          "priority": "moderate",
+          "title": "Previously installed valid tag blocks future explicit update",
+          "location": {
+            "path": "T03/candidates/C017/production/bonaparte-launcher",
+            "line": 155
+          },
+          "exact_code": "    if destination.exists() or destination.is_symlink():\n        raise RuntimeError(f\"refusing to reuse unverified release: {destination}\")\n    staging = Path(tempfile.mkdtemp(prefix=\".update-\", dir=home))",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "Any existing releases/<tag> is rejected, including this updater's own validated snapshot. The visible installer retains old release directories when it repoints current.",
+          "behavioral_consequence": "After update followed by reinstall from an older checkout, update cannot return to the still-cached latest tag. C017 also leaves a promoted directory after current-link activation failure, preventing retry.",
+          "requirement_or_engineering_basis": "Compatibility and retryability in the preserved versioned install layout; T03 requests an explicit usable self-update.",
+          "minimum_repair": "Permit reuse only with verified matching source identity and passing validation; reject unproven caches. C018 already writes a source marker and can verify/reuse it. Alternatively stage anew and safely compare/replace only an inactive destination.",
+          "proposed_counterexamples": [
+            "CE-CACHE-RETRY"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        }
+      ],
+      "requirements_assessment": {
+        "supported_by_source": [
+          "Exact status bypasses migration/update, prints installed/latest/current, and prints unavailable/unknown with nonzero return when latest resolution fails.",
+          "Remote tag selection full-matches stable versions and compares integer version tuples.",
+          "New-fetch path checks queried OID against FETCH_HEAD, validates before replacing current and cleans staging in finally.",
+          "Allowed production paths respected; workflows/scope.md is byte-identical to baseline.",
+          "Ordinary invocation no longer installs; validation rejects symlink required paths and checks executable entrypoints."
+        ],
+        "missed_or_at_risk": [
+          "T03-C017-MOVE-DURING-VALIDATION"
+        ],
+        "unverified": [
+          "Installed invocation, offline processes, actual Git tag races, smoke results, concurrent update, permission failure and interruption cleanup were not executed.",
+          "The task does not fully define current yes/no for local IDs newer than/equal to a tag; no finding relies solely on equality versus version-at-least-latest policy."
+        ]
+      },
+      "engineering_assessment": {
+        "findings": [
+          "T03-C017-CACHE-RETRY"
+        ],
+        "supported_by_source": [
+          "Allowed paths respected; no newly added helper module shadows standard library/test framework."
+        ],
+        "limits": "Static source inspection, no execution acceptance claim."
+      },
+      "complexity_assessment": {
+        "finding_supported": false,
+        "rationale": "No independent material unnecessary-abstraction finding is supported. Code size/style is not evidence. Transaction guards, source identity and scoped selection helpers have direct behavioral purposes. Simpler bounded repairs are supplied for the faulty decisions without adding architecture."
+      },
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr35--enhanced-codex--r1",
+        "task_id": "tweed-pr35",
+        "arm_id": "enhanced-codex",
+        "repeat": 1
+      },
+      "published_patch": "../results/patches/tweed-pr35--enhanced-codex--r1.patch"
+    },
+    {
+      "task": "T03",
+      "candidate": "C018",
+      "status": "available",
+      "patch": {
+        "path": "T03/candidates/C018/change.patch",
+        "sha256": "50c16eb518b85605a7f3e5816ea09f9a5916315a6177384088afbd7a07cbec45"
+      },
+      "empty_patch": false,
+      "sources": [
+        {
+          "path": "T03/candidates/C018/production/bonaparte-launcher",
+          "sha256": "63f33ce11c43dc9b78556db8938009f96cdd3343b17ac9c0eb62c4211a2c8e1e",
+          "production_path": "bonaparte-launcher",
+          "line_count": 253,
+          "byte_identical_to_baseline": false,
+          "full_source_delta_ranges": [
+            {
+              "operation": "replace",
+              "baseline_start": 18,
+              "baseline_end": 18,
+              "candidate_start": 18,
+              "candidate_end": 18
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 20,
+              "baseline_end": 20,
+              "candidate_start": 20,
+              "candidate_end": 20
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 49,
+              "baseline_end": 50,
+              "candidate_start": 49,
+              "candidate_end": 53
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 74,
+              "baseline_end": 74,
+              "candidate_start": 77,
+              "candidate_end": 77
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 97,
+              "baseline_end": 107,
+              "candidate_start": 100,
+              "candidate_end": 100
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 109,
+              "baseline_end": 108,
+              "candidate_start": 102,
+              "candidate_end": 114
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 112,
+              "baseline_end": 111,
+              "candidate_start": 118,
+              "candidate_end": 118
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 143,
+              "baseline_end": 145,
+              "candidate_start": 150,
+              "candidate_end": 152
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 155,
+              "baseline_end": 154,
+              "candidate_start": 162,
+              "candidate_end": 167
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 163,
+              "baseline_end": 162,
+              "candidate_start": 176,
+              "candidate_end": 189
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 164,
+              "baseline_end": 176,
+              "candidate_start": 191,
+              "candidate_end": 215
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 187,
+              "baseline_end": 187,
+              "candidate_start": 226,
+              "candidate_end": 226
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 189,
+              "baseline_end": 189,
+              "candidate_start": 228,
+              "candidate_end": 228
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 195,
+              "baseline_end": 195,
+              "candidate_start": 234,
+              "candidate_end": 235
+            }
+          ]
+        },
+        {
+          "path": "T03/candidates/C018/production/workflows/scope.md",
+          "sha256": "c004d0775b9719fab000bce5ac46fe501c0cd2c7d123d0f863fc15d2bd768f87",
+          "production_path": "workflows/scope.md",
+          "line_count": 215,
+          "byte_identical_to_baseline": true,
+          "full_source_delta_ranges": []
+        }
+      ],
+      "findings": [
+        {
+          "id": "T03-C018-CACHE-RETRY",
+          "axis": "engineering",
+          "priority": "moderate",
+          "title": "Previously installed valid tag blocks future explicit update",
+          "location": {
+            "path": "T03/candidates/C018/production/bonaparte-launcher",
+            "line": 150
+          },
+          "exact_code": "    if destination.exists() or destination.is_symlink():\n        # Never trust a directory merely because its name matches a remote tag.\n        raise RuntimeError(f\"release destination already exists: {destination}\")",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "Any existing releases/<tag> is rejected, including this updater's own validated snapshot. The visible installer retains old release directories when it repoints current.",
+          "behavioral_consequence": "After update followed by reinstall from an older checkout, update cannot return to the still-cached latest tag. C017 also leaves a promoted directory after current-link activation failure, preventing retry.",
+          "requirement_or_engineering_basis": "Compatibility and retryability in the preserved versioned install layout; T03 requests an explicit usable self-update.",
+          "minimum_repair": "Permit reuse only with verified matching source identity and passing validation; reject unproven caches. C018 already writes a source marker and can verify/reuse it. Alternatively stage anew and safely compare/replace only an inactive destination.",
+          "proposed_counterexamples": [
+            "CE-CACHE-RETRY"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        },
+        {
+          "id": "T03-C018-LEGACY-LINK",
+          "axis": "engineering",
+          "priority": "moderate",
+          "title": "Legacy autoresearch link migration is no longer invoked",
+          "location": {
+            "path": "T03/candidates/C018/production/bonaparte-launcher",
+            "line": 245
+          },
+          "exact_code": "        runner = current_release(home) / \"bonaparte\"\n        os.execv(sys.executable, [sys.executable, str(runner), *sys.argv[1:]])",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "The migrate_autoresearch_link helper exists but main never calls it. Same-tag update returns before preparing the autoresearch link.",
+          "behavioral_consequence": "A legacy install upgraded through its old launcher leaves bin/autoresearch absent; the documented next bonaparte --help no longer creates it, and same-tag update cannot repair it.",
+          "requirement_or_engineering_basis": "T03 requires preserving existing install/invocation behavior. Visible baseline README lines 109\u2013120 and test_installation.py lines 147\u2013189 establish the migration route.",
+          "minimum_repair": "Call migrate_autoresearch_link before ordinary runner exec, leaving status read-only and the ordinary check non-installing. Also reconcile a safe missing symlink on same-tag explicit update if required.",
+          "proposed_counterexamples": [
+            "CE-LEGACY"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        }
+      ],
+      "requirements_assessment": {
+        "supported_by_source": [
+          "Exact status bypasses migration/update, prints installed/latest/current, and prints unavailable/unknown with nonzero return when latest resolution fails.",
+          "Remote tag selection full-matches stable versions and compares integer version tuples.",
+          "New-fetch path checks queried OID against FETCH_HEAD, validates before replacing current and cleans staging in finally.",
+          "Allowed production paths respected; workflows/scope.md is byte-identical to baseline.",
+          "Ordinary invocation no longer installs; validation rejects symlink required paths and checks executable entrypoints.",
+          "New-fetch path rechecks the tag after validation, serializes updates with a file lock, and removes its newly fetched release when activation raises."
+        ],
+        "missed_or_at_risk": [],
+        "unverified": [
+          "Installed invocation, offline processes, actual Git tag races, smoke results, concurrent update, permission failure and interruption cleanup were not executed.",
+          "The task does not fully define current yes/no for local IDs newer than/equal to a tag; no finding relies solely on equality versus version-at-least-latest policy."
+        ]
+      },
+      "engineering_assessment": {
+        "findings": [
+          "T03-C018-CACHE-RETRY",
+          "T03-C018-LEGACY-LINK"
+        ],
+        "supported_by_source": [
+          "Allowed paths respected; no newly added helper module shadows standard library/test framework."
+        ],
+        "limits": "Static source inspection, no execution acceptance claim."
+      },
+      "complexity_assessment": {
+        "finding_supported": false,
+        "rationale": "No independent material unnecessary-abstraction finding is supported. Code size/style is not evidence. Transaction guards, source identity and scoped selection helpers have direct behavioral purposes. Simpler bounded repairs are supplied for the faulty decisions without adding architecture."
+      },
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr35--enhanced-codex--r2",
+        "task_id": "tweed-pr35",
+        "arm_id": "enhanced-codex",
+        "repeat": 2
+      },
+      "published_patch": "../results/patches/tweed-pr35--enhanced-codex--r2.patch"
+    },
+    {
+      "task": "T03",
+      "candidate": "C022",
+      "status": "available",
+      "patch": {
+        "path": "T03/candidates/C022/change.patch",
+        "sha256": "588d6aba0c07b76904e72cfbe17816d19f1650d80cf80f34cbede32c8c3cbc27"
+      },
+      "empty_patch": false,
+      "sources": [
+        {
+          "path": "T03/candidates/C022/production/bonaparte-launcher",
+          "sha256": "dbb201295a4d97febdc413c5678584a27c5196625976cc5b3064894ac4b9a658",
+          "production_path": "bonaparte-launcher",
+          "line_count": 246,
+          "byte_identical_to_baseline": false,
+          "full_source_delta_ranges": [
+            {
+              "operation": "replace",
+              "baseline_start": 20,
+              "baseline_end": 20,
+              "candidate_start": 20,
+              "candidate_end": 20
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 35,
+              "baseline_end": 34,
+              "candidate_start": 35,
+              "candidate_end": 35
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 96,
+              "baseline_end": 95,
+              "candidate_start": 97,
+              "candidate_end": 105
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 97,
+              "baseline_end": 97,
+              "candidate_start": 107,
+              "candidate_end": 107
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 99,
+              "baseline_end": 99,
+              "candidate_start": 109,
+              "candidate_end": 109
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 166,
+              "baseline_end": 168,
+              "candidate_start": 176,
+              "candidate_end": 176
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 171,
+              "baseline_end": 172,
+              "candidate_start": 179,
+              "candidate_end": 179
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 177,
+              "baseline_end": 176,
+              "candidate_start": 184,
+              "candidate_end": 207
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 195,
+              "baseline_end": 194,
+              "candidate_start": 226,
+              "candidate_end": 227
+            }
+          ]
+        },
+        {
+          "path": "T03/candidates/C022/production/workflows/scope.md",
+          "sha256": "c004d0775b9719fab000bce5ac46fe501c0cd2c7d123d0f863fc15d2bd768f87",
+          "production_path": "workflows/scope.md",
+          "line_count": 215,
+          "byte_identical_to_baseline": true,
+          "full_source_delta_ranges": []
+        }
+      ],
+      "findings": [
+        {
+          "id": "T03-C022-IMPLICIT-INSTALL",
+          "axis": "requirements",
+          "priority": "major",
+          "title": "Daily checking still installs during ordinary invocation",
+          "location": {
+            "path": "T03/candidates/C022/production/bonaparte-launcher",
+            "line": 218
+          },
+          "exact_code": "        update(home)",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "main calls automatic_update on ordinary arguments; its daily check calls the mutating update after touching last-check. Only exact status bypasses this path.",
+          "behavioral_consequence": "With an expired check and a newer stable tag, bonaparte --help or a phase invocation can activate a release without an explicit update command.",
+          "requirement_or_engineering_basis": "T03 requires explicit self-update; ordinary status/check behavior must not silently install a release.",
+          "minimum_repair": "Replace this daily update(home) with a read-only latest_tag query, or remove automatic installation; activate only through the explicit update branch.",
+          "proposed_counterexamples": [
+            "CE-AUTO"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        },
+        {
+          "id": "T03-C022-UNVERIFIED-CACHE",
+          "axis": "requirements",
+          "priority": "major",
+          "title": "Existing tag directory bypasses expected source identity",
+          "location": {
+            "path": "T03/candidates/C022/production/bonaparte-launcher",
+            "line": 153
+          },
+          "exact_code": "    if destination.exists():\n        validate_release(destination)\n        return destination",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "The cached-directory branch returns before fetch and expected_oid comparison. validate_release checks files/help behavior, not source identity.",
+          "behavioral_consequence": "A stale but smoke-passing snapshot B at releases/v1.1.0 can be activated although the stable remote tag resolves to A. The moved-tag guard is skipped for a normal retained-release layout state.",
+          "requirement_or_engineering_basis": "T03: activate only a complete validated release snapshot; a moved tag must preserve the current release and clean staging.",
+          "minimum_repair": "Record updater-owned verified source identity and compare it with expected_oid before reuse; reject unproven/mismatched cache. Apply the same identity check to collision fallbacks and retain content validation.",
+          "proposed_counterexamples": [
+            "CE-CACHE",
+            "CE-MOVE"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        },
+        {
+          "id": "T03-C022-ENTRYPOINT-MODE",
+          "axis": "requirements",
+          "priority": "major",
+          "title": "Non-executable launcher can pass snapshot validation",
+          "location": {
+            "path": "T03/candidates/C022/production/bonaparte-launcher",
+            "line": 123
+          },
+          "exact_code": "        [sys.executable, str(release / \"bonaparte\"), \"--help\"],",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "Required paths are never checked for executable permissions. Compilation and help through sys.executable do not require executable mode on the script.",
+          "behavioral_consequence": "A stable snapshot with bonaparte-launcher committed 0644 can be activated, after which installed bin/bonaparte fails with permission denied. The directly invoked autoresearch entrypoint has the same gap.",
+          "requirement_or_engineering_basis": "T03 requires preserving launcher invocation and activating only validated complete snapshots; invalid required paths must leave the old release usable.",
+          "minimum_repair": "Require executable mode on the installed bonaparte-launcher and autoresearch before activation; keep file/content/smoke validation. A direct-entrypoint smoke can additionally exercise the preserved invocation contract.",
+          "proposed_counterexamples": [
+            "CE-MODE"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        }
+      ],
+      "requirements_assessment": {
+        "supported_by_source": [
+          "Exact status bypasses migration/update, prints installed/latest/current, and prints unavailable/unknown with nonzero return when latest resolution fails.",
+          "Remote tag selection full-matches stable versions and compares integer version tuples.",
+          "New-fetch path checks queried OID against FETCH_HEAD, validates before replacing current and cleans staging in finally.",
+          "Allowed production paths respected; workflows/scope.md is byte-identical to baseline."
+        ],
+        "missed_or_at_risk": [
+          "T03-C022-IMPLICIT-INSTALL",
+          "T03-C022-UNVERIFIED-CACHE",
+          "T03-C022-ENTRYPOINT-MODE"
+        ],
+        "unverified": [
+          "Installed invocation, offline processes, actual Git tag races, smoke results, concurrent update, permission failure and interruption cleanup were not executed.",
+          "The task does not fully define current yes/no for local IDs newer than/equal to a tag; no finding relies solely on equality versus version-at-least-latest policy."
+        ]
+      },
+      "engineering_assessment": {
+        "findings": [],
+        "supported_by_source": [
+          "Allowed paths respected; no newly added helper module shadows standard library/test framework."
+        ],
+        "limits": "Static source inspection, no execution acceptance claim."
+      },
+      "complexity_assessment": {
+        "finding_supported": false,
+        "rationale": "No independent material unnecessary-abstraction finding is supported. Code size/style is not evidence. Transaction guards, source identity and scoped selection helpers have direct behavioral purposes. Simpler bounded repairs are supplied for the faulty decisions without adding architecture."
+      },
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr35--enhanced-opus--r2",
+        "task_id": "tweed-pr35",
+        "arm_id": "enhanced-opus",
+        "repeat": 2
+      },
+      "published_patch": "../results/patches/tweed-pr35--enhanced-opus--r2.patch"
+    },
+    {
+      "task": "T03",
+      "candidate": "C031",
+      "status": "available",
+      "patch": {
+        "path": "T03/candidates/C031/change.patch",
+        "sha256": "b2d417bf16a33a9ec9db9a287ac1d1ba07a01bf174cd697845c4d4e404b42c21"
+      },
+      "empty_patch": false,
+      "sources": [
+        {
+          "path": "T03/candidates/C031/production/bonaparte-launcher",
+          "sha256": "31d40083f5d0b26fbf3cc46d15e9aed8743f883cf1a212237376b52b50217a58",
+          "production_path": "bonaparte-launcher",
+          "line_count": 247,
+          "byte_identical_to_baseline": false,
+          "full_source_delta_ranges": [
+            {
+              "operation": "replace",
+              "baseline_start": 97,
+              "baseline_end": 97,
+              "candidate_start": 97,
+              "candidate_end": 105
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 112,
+              "baseline_end": 111,
+              "candidate_start": 120,
+              "candidate_end": 120
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 163,
+              "baseline_end": 162,
+              "candidate_start": 172,
+              "candidate_end": 196
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 167,
+              "baseline_end": 168,
+              "candidate_start": 201,
+              "candidate_end": 201
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 171,
+              "baseline_end": 172,
+              "candidate_start": 204,
+              "candidate_end": 204
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 195,
+              "baseline_end": 194,
+              "candidate_start": 227,
+              "candidate_end": 228
+            }
+          ]
+        },
+        {
+          "path": "T03/candidates/C031/production/workflows/scope.md",
+          "sha256": "c004d0775b9719fab000bce5ac46fe501c0cd2c7d123d0f863fc15d2bd768f87",
+          "production_path": "workflows/scope.md",
+          "line_count": 215,
+          "byte_identical_to_baseline": true,
+          "full_source_delta_ranges": []
+        }
+      ],
+      "findings": [
+        {
+          "id": "T03-C031-IMPLICIT-INSTALL",
+          "axis": "requirements",
+          "priority": "major",
+          "title": "Daily checking still installs during ordinary invocation",
+          "location": {
+            "path": "T03/candidates/C031/production/bonaparte-launcher",
+            "line": 219
+          },
+          "exact_code": "        update(home)",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "main calls automatic_update on ordinary arguments; its daily check calls the mutating update after touching last-check. Only exact status bypasses this path.",
+          "behavioral_consequence": "With an expired check and a newer stable tag, bonaparte --help or a phase invocation can activate a release without an explicit update command.",
+          "requirement_or_engineering_basis": "T03 requires explicit self-update; ordinary status/check behavior must not silently install a release.",
+          "minimum_repair": "Replace this daily update(home) with a read-only latest_tag query, or remove automatic installation; activate only through the explicit update branch.",
+          "proposed_counterexamples": [
+            "CE-AUTO"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        },
+        {
+          "id": "T03-C031-UNVERIFIED-CACHE",
+          "axis": "requirements",
+          "priority": "major",
+          "title": "Existing tag directory bypasses expected source identity",
+          "location": {
+            "path": "T03/candidates/C031/production/bonaparte-launcher",
+            "line": 152
+          },
+          "exact_code": "    if destination.exists():\n        validate_release(destination)\n        return destination",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "The cached-directory branch returns before fetch and expected_oid comparison. validate_release checks files/help behavior, not source identity.",
+          "behavioral_consequence": "A stale but smoke-passing snapshot B at releases/v1.1.0 can be activated although the stable remote tag resolves to A. The moved-tag guard is skipped for a normal retained-release layout state.",
+          "requirement_or_engineering_basis": "T03: activate only a complete validated release snapshot; a moved tag must preserve the current release and clean staging.",
+          "minimum_repair": "Record updater-owned verified source identity and compare it with expected_oid before reuse; reject unproven/mismatched cache. Apply the same identity check to collision fallbacks and retain content validation.",
+          "proposed_counterexamples": [
+            "CE-CACHE",
+            "CE-MOVE"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        },
+        {
+          "id": "T03-C031-ENTRYPOINT-MODE",
+          "axis": "requirements",
+          "priority": "major",
+          "title": "Non-executable launcher can pass snapshot validation",
+          "location": {
+            "path": "T03/candidates/C031/production/bonaparte-launcher",
+            "line": 122
+          },
+          "exact_code": "        [sys.executable, str(release / \"bonaparte\"), \"--help\"],",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "Required paths are never checked for executable permissions. Compilation and help through sys.executable do not require executable mode on the script.",
+          "behavioral_consequence": "A stable snapshot with bonaparte-launcher committed 0644 can be activated, after which installed bin/bonaparte fails with permission denied. The directly invoked autoresearch entrypoint has the same gap.",
+          "requirement_or_engineering_basis": "T03 requires preserving launcher invocation and activating only validated complete snapshots; invalid required paths must leave the old release usable.",
+          "minimum_repair": "Require executable mode on the installed bonaparte-launcher and autoresearch before activation; keep file/content/smoke validation. A direct-entrypoint smoke can additionally exercise the preserved invocation contract.",
+          "proposed_counterexamples": [
+            "CE-MODE"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        }
+      ],
+      "requirements_assessment": {
+        "supported_by_source": [
+          "Exact status bypasses migration/update, prints installed/latest/current, and prints unavailable/unknown with nonzero return when latest resolution fails.",
+          "Remote tag selection full-matches stable versions and compares integer version tuples.",
+          "New-fetch path checks queried OID against FETCH_HEAD, validates before replacing current and cleans staging in finally.",
+          "Allowed production paths respected; workflows/scope.md is byte-identical to baseline."
+        ],
+        "missed_or_at_risk": [
+          "T03-C031-IMPLICIT-INSTALL",
+          "T03-C031-UNVERIFIED-CACHE",
+          "T03-C031-ENTRYPOINT-MODE"
+        ],
+        "unverified": [
+          "Installed invocation, offline processes, actual Git tag races, smoke results, concurrent update, permission failure and interruption cleanup were not executed.",
+          "The task does not fully define current yes/no for local IDs newer than/equal to a tag; no finding relies solely on equality versus version-at-least-latest policy."
+        ]
+      },
+      "engineering_assessment": {
+        "findings": [],
+        "supported_by_source": [
+          "Allowed paths respected; no newly added helper module shadows standard library/test framework."
+        ],
+        "limits": "Static source inspection, no execution acceptance claim."
+      },
+      "complexity_assessment": {
+        "finding_supported": false,
+        "rationale": "No independent material unnecessary-abstraction finding is supported. Code size/style is not evidence. Transaction guards, source identity and scoped selection helpers have direct behavioral purposes. Simpler bounded repairs are supplied for the faulty decisions without adding architecture."
+      },
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr35--baseline-opus--r1",
+        "task_id": "tweed-pr35",
+        "arm_id": "baseline-opus",
+        "repeat": 1
+      },
+      "published_patch": "../results/patches/tweed-pr35--baseline-opus--r1.patch"
+    },
+    {
+      "task": "T03",
+      "candidate": "C037",
+      "status": "available",
+      "patch": {
+        "path": "T03/candidates/C037/change.patch",
+        "sha256": "0c06ad3f94c7d6d182614422d92df5004c8a99e6ad98a1251803bb646dcb1a06"
+      },
+      "empty_patch": false,
+      "sources": [
+        {
+          "path": "T03/candidates/C037/production/bonaparte-launcher",
+          "sha256": "566f8a3b83c0f2fa369e148e57b14fc6cd75f69f41c00d6d48b4a34d7c5f481f",
+          "production_path": "bonaparte-launcher",
+          "line_count": 244,
+          "byte_identical_to_baseline": false,
+          "full_source_delta_ranges": [
+            {
+              "operation": "replace",
+              "baseline_start": 20,
+              "baseline_end": 20,
+              "candidate_start": 20,
+              "candidate_end": 20
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 97,
+              "baseline_end": 96,
+              "candidate_start": 97,
+              "candidate_end": 97
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 100,
+              "baseline_end": 99,
+              "candidate_start": 101,
+              "candidate_end": 108
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 112,
+              "baseline_end": 111,
+              "candidate_start": 121,
+              "candidate_end": 121
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 166,
+              "baseline_end": 168,
+              "candidate_start": 176,
+              "candidate_end": 176
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 171,
+              "baseline_end": 172,
+              "candidate_start": 179,
+              "candidate_end": 179
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 177,
+              "baseline_end": 176,
+              "candidate_start": 184,
+              "candidate_end": 205
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 195,
+              "baseline_end": 194,
+              "candidate_start": 224,
+              "candidate_end": 225
+            }
+          ]
+        },
+        {
+          "path": "T03/candidates/C037/production/workflows/scope.md",
+          "sha256": "c004d0775b9719fab000bce5ac46fe501c0cd2c7d123d0f863fc15d2bd768f87",
+          "production_path": "workflows/scope.md",
+          "line_count": 215,
+          "byte_identical_to_baseline": true,
+          "full_source_delta_ranges": []
+        }
+      ],
+      "findings": [
+        {
+          "id": "T03-C037-IMPLICIT-INSTALL",
+          "axis": "requirements",
+          "priority": "major",
+          "title": "Daily checking still installs during ordinary invocation",
+          "location": {
+            "path": "T03/candidates/C037/production/bonaparte-launcher",
+            "line": 216
+          },
+          "exact_code": "        update(home)",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "main calls automatic_update on ordinary arguments; its daily check calls the mutating update after touching last-check. Only exact status bypasses this path.",
+          "behavioral_consequence": "With an expired check and a newer stable tag, bonaparte --help or a phase invocation can activate a release without an explicit update command.",
+          "requirement_or_engineering_basis": "T03 requires explicit self-update; ordinary status/check behavior must not silently install a release.",
+          "minimum_repair": "Replace this daily update(home) with a read-only latest_tag query, or remove automatic installation; activate only through the explicit update branch.",
+          "proposed_counterexamples": [
+            "CE-AUTO"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        },
+        {
+          "id": "T03-C037-UNVERIFIED-CACHE",
+          "axis": "requirements",
+          "priority": "major",
+          "title": "Existing tag directory bypasses expected source identity",
+          "location": {
+            "path": "T03/candidates/C037/production/bonaparte-launcher",
+            "line": 153
+          },
+          "exact_code": "    if destination.exists():\n        validate_release(destination)\n        return destination",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "The cached-directory branch returns before fetch and expected_oid comparison. validate_release checks files/help behavior, not source identity.",
+          "behavioral_consequence": "A stale but smoke-passing snapshot B at releases/v1.1.0 can be activated although the stable remote tag resolves to A. The moved-tag guard is skipped for a normal retained-release layout state.",
+          "requirement_or_engineering_basis": "T03: activate only a complete validated release snapshot; a moved tag must preserve the current release and clean staging.",
+          "minimum_repair": "Record updater-owned verified source identity and compare it with expected_oid before reuse; reject unproven/mismatched cache. Apply the same identity check to collision fallbacks and retain content validation.",
+          "proposed_counterexamples": [
+            "CE-CACHE",
+            "CE-MOVE"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        },
+        {
+          "id": "T03-C037-ENTRYPOINT-MODE",
+          "axis": "requirements",
+          "priority": "major",
+          "title": "Non-executable launcher can pass snapshot validation",
+          "location": {
+            "path": "T03/candidates/C037/production/bonaparte-launcher",
+            "line": 123
+          },
+          "exact_code": "        [sys.executable, str(release / \"bonaparte\"), \"--help\"],",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "Required paths are never checked for executable permissions. Compilation and help through sys.executable do not require executable mode on the script.",
+          "behavioral_consequence": "A stable snapshot with bonaparte-launcher committed 0644 can be activated, after which installed bin/bonaparte fails with permission denied. The directly invoked autoresearch entrypoint has the same gap.",
+          "requirement_or_engineering_basis": "T03 requires preserving launcher invocation and activating only validated complete snapshots; invalid required paths must leave the old release usable.",
+          "minimum_repair": "Require executable mode on the installed bonaparte-launcher and autoresearch before activation; keep file/content/smoke validation. A direct-entrypoint smoke can additionally exercise the preserved invocation contract.",
+          "proposed_counterexamples": [
+            "CE-MODE"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        }
+      ],
+      "requirements_assessment": {
+        "supported_by_source": [
+          "Exact status bypasses migration/update, prints installed/latest/current, and prints unavailable/unknown with nonzero return when latest resolution fails.",
+          "Remote tag selection full-matches stable versions and compares integer version tuples.",
+          "New-fetch path checks queried OID against FETCH_HEAD, validates before replacing current and cleans staging in finally.",
+          "Allowed production paths respected; workflows/scope.md is byte-identical to baseline."
+        ],
+        "missed_or_at_risk": [
+          "T03-C037-IMPLICIT-INSTALL",
+          "T03-C037-UNVERIFIED-CACHE",
+          "T03-C037-ENTRYPOINT-MODE"
+        ],
+        "unverified": [
+          "Installed invocation, offline processes, actual Git tag races, smoke results, concurrent update, permission failure and interruption cleanup were not executed.",
+          "The task does not fully define current yes/no for local IDs newer than/equal to a tag; no finding relies solely on equality versus version-at-least-latest policy."
+        ]
+      },
+      "engineering_assessment": {
+        "findings": [],
+        "supported_by_source": [
+          "Allowed paths respected; no newly added helper module shadows standard library/test framework."
+        ],
+        "limits": "Static source inspection, no execution acceptance claim."
+      },
+      "complexity_assessment": {
+        "finding_supported": false,
+        "rationale": "No independent material unnecessary-abstraction finding is supported. Code size/style is not evidence. Transaction guards, source identity and scoped selection helpers have direct behavioral purposes. Simpler bounded repairs are supplied for the faulty decisions without adding architecture."
+      },
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr35--enhanced-opus--r1",
+        "task_id": "tweed-pr35",
+        "arm_id": "enhanced-opus",
+        "repeat": 1
+      },
+      "published_patch": "../results/patches/tweed-pr35--enhanced-opus--r1.patch"
+    },
+    {
+      "task": "T03",
+      "candidate": "C046",
+      "status": "available",
+      "patch": {
+        "path": "T03/candidates/C046/change.patch",
+        "sha256": "dc8dee3a6f152ef2e593b49c909ed5d15f1aa26348a42ae4e2df402c77f06b17"
+      },
+      "empty_patch": false,
+      "sources": [
+        {
+          "path": "T03/candidates/C046/production/bonaparte-launcher",
+          "sha256": "7abce5d2235a04d93181c3208ff1b679ebd46b40c3d6d469efe32be7a262354a",
+          "production_path": "bonaparte-launcher",
+          "line_count": 266,
+          "byte_identical_to_baseline": false,
+          "full_source_delta_ranges": [
+            {
+              "operation": "insert",
+              "baseline_start": 20,
+              "baseline_end": 19,
+              "candidate_start": 20,
+              "candidate_end": 20
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 22,
+              "baseline_end": 22,
+              "candidate_start": 23,
+              "candidate_end": 23
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 78,
+              "baseline_end": 77,
+              "candidate_start": 79,
+              "candidate_end": 83
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 79,
+              "baseline_end": 89,
+              "candidate_start": 85,
+              "candidate_end": 108
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 94,
+              "baseline_end": 93,
+              "candidate_start": 113,
+              "candidate_end": 132
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 110,
+              "baseline_end": 127,
+              "candidate_start": 149,
+              "candidate_end": 150
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 144,
+              "baseline_end": 143,
+              "candidate_start": 167,
+              "candidate_end": 173
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 154,
+              "baseline_end": 153,
+              "candidate_start": 184,
+              "candidate_end": 185
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 155,
+              "baseline_end": 155,
+              "candidate_start": 187,
+              "candidate_end": 187
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 166,
+              "baseline_end": 168,
+              "candidate_start": 198,
+              "candidate_end": 198
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 171,
+              "baseline_end": 172,
+              "candidate_start": 201,
+              "candidate_end": 201
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 177,
+              "baseline_end": 176,
+              "candidate_start": 206,
+              "candidate_end": 223
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 194,
+              "baseline_end": 193,
+              "candidate_start": 241,
+              "candidate_end": 246
+            }
+          ]
+        },
+        {
+          "path": "T03/candidates/C046/production/workflows/scope.md",
+          "sha256": "c004d0775b9719fab000bce5ac46fe501c0cd2c7d123d0f863fc15d2bd768f87",
+          "production_path": "workflows/scope.md",
+          "line_count": 215,
+          "byte_identical_to_baseline": true,
+          "full_source_delta_ranges": []
+        }
+      ],
+      "findings": [
+        {
+          "id": "T03-C046-IMPLICIT-INSTALL",
+          "axis": "requirements",
+          "priority": "major",
+          "title": "Daily checking still installs during ordinary invocation",
+          "location": {
+            "path": "T03/candidates/C046/production/bonaparte-launcher",
+            "line": 234
+          },
+          "exact_code": "        update(home)",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "main calls automatic_update on ordinary arguments; its daily check calls the mutating update after touching last-check. Only exact status bypasses this path.",
+          "behavioral_consequence": "With an expired check and a newer stable tag, bonaparte --help or a phase invocation can activate a release without an explicit update command.",
+          "requirement_or_engineering_basis": "T03 requires explicit self-update; ordinary status/check behavior must not silently install a release.",
+          "minimum_repair": "Replace this daily update(home) with a read-only latest_tag query, or remove automatic installation; activate only through the explicit update branch.",
+          "proposed_counterexamples": [
+            "CE-AUTO"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        },
+        {
+          "id": "T03-C046-MOVE-DURING-VALIDATION",
+          "axis": "requirements",
+          "priority": "moderate",
+          "title": "Tag movement during smoke checks is never rechecked",
+          "location": {
+            "path": "T03/candidates/C046/production/bonaparte-launcher",
+            "line": 180
+          },
+          "exact_code": "        actual_oid = git(staging, \"rev-parse\", \"FETCH_HEAD\", output=True).stdout.strip()\n        if actual_oid != expected_oid:\n            raise RuntimeError(f\"tag {tag} moved while updating\")\n        git(staging, \"checkout\", \"-q\", \"--detach\", \"FETCH_HEAD\")\n        shutil.rmtree(staging / \".git\")\n        (staging / RELEASE_MARKER).write_text(f\"{expected_oid}\\n\")\n        validate_release(staging)",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "FETCH_HEAD is checked before checkout and validation; no tag query occurs after validation and before the new current link is activated.",
+          "behavioral_consequence": "A tag moved from A to B while a help smoke runs still allows the earlier A snapshot to be promoted.",
+          "requirement_or_engineering_basis": "T03 says a moved tag must leave the current release usable and clean staging; this counterexample moves it inside the update transaction.",
+          "minimum_repair": "Re-read the same stable tag after validation; reject an identity change before promoting staging, preserving finally cleanup.",
+          "proposed_counterexamples": [
+            "CE-MOVE"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        },
+        {
+          "id": "T03-C046-ENTRYPOINT-MODE",
+          "axis": "requirements",
+          "priority": "major",
+          "title": "Non-executable launcher can pass snapshot validation",
+          "location": {
+            "path": "T03/candidates/C046/production/bonaparte-launcher",
+            "line": 120
+          },
+          "exact_code": "            [sys.executable, str(release / name), \"--help\"],",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "Required paths are never checked for executable permissions. Compilation and help through sys.executable do not require executable mode on the script.",
+          "behavioral_consequence": "A stable snapshot with bonaparte-launcher committed 0644 can be activated, after which installed bin/bonaparte fails with permission denied. The directly invoked autoresearch entrypoint has the same gap.",
+          "requirement_or_engineering_basis": "T03 requires preserving launcher invocation and activating only validated complete snapshots; invalid required paths must leave the old release usable.",
+          "minimum_repair": "Require executable mode on the installed bonaparte-launcher and autoresearch before activation; keep file/content/smoke validation. A direct-entrypoint smoke can additionally exercise the preserved invocation contract.",
+          "proposed_counterexamples": [
+            "CE-MODE"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        },
+        {
+          "id": "T03-C046-REQUIRED-DIRECTORY",
+          "axis": "requirements",
+          "priority": "major",
+          "title": "Required workflow directory counts as present",
+          "location": {
+            "path": "T03/candidates/C046/production/bonaparte-launcher",
+            "line": 136
+          },
+          "exact_code": "    missing = [name for name in REQUIRED if not (release / name).exists()]\n    if missing:\n        raise RuntimeError(f\"release is missing {', '.join(missing)}\")",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "exists accepts a directory; only selected Python paths are read. Help smoke does not read scope.md.",
+          "behavioral_consequence": "A tag with workflows/scope.md as a directory can activate successfully but a scope phase fails when its runner reads the path as text.",
+          "requirement_or_engineering_basis": "T03 explicitly requires rejection of invalid required paths and complete validated release snapshots.",
+          "minimum_repair": "Require all required paths to be regular files under the snapshot, rejecting symlink leaves/ancestors, then compile/smoke.",
+          "proposed_counterexamples": [
+            "CE-SYMLINK"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        },
+        {
+          "id": "T03-C046-MARKER-WRITE-ESCAPE",
+          "axis": "engineering",
+          "priority": "major",
+          "title": "Repository-owned marker symlink escapes updater staging",
+          "location": {
+            "path": "T03/candidates/C046/production/bonaparte-launcher",
+            "line": 185
+          },
+          "exact_code": "        (staging / RELEASE_MARKER).write_text(f\"{expected_oid}\\n\")",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "The bookkeeping marker is written after checkout without checking whether that path already exists or is a symlink. Path.write_text follows a symlink.",
+          "behavioral_consequence": "A tagged .bonaparte-source-oid symlink to an absolute user-owned file overwrites that file with the expected OID before validation. Staging cleanup cannot restore it.",
+          "requirement_or_engineering_basis": "Engineering write isolation: release bookkeeping must stay in the updater transaction, not follow repository-owned paths outside staging.",
+          "minimum_repair": "Reserve the marker path: reject exists or is_symlink before writing; create it exclusively; require regular in-root marker on reuse. This needs a bounded guard, not another metadata framework.",
+          "proposed_counterexamples": [
+            "CE-MARKER"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        }
+      ],
+      "requirements_assessment": {
+        "supported_by_source": [
+          "Exact status bypasses migration/update, prints installed/latest/current, and prints unavailable/unknown with nonzero return when latest resolution fails.",
+          "Remote tag selection full-matches stable versions and compares integer version tuples.",
+          "New-fetch path checks queried OID against FETCH_HEAD, validates before replacing current and cleans staging in finally.",
+          "Allowed production paths respected; workflows/scope.md is byte-identical to baseline.",
+          "Cached path compares stored source OID against expected_oid before validation."
+        ],
+        "missed_or_at_risk": [
+          "T03-C046-IMPLICIT-INSTALL",
+          "T03-C046-MOVE-DURING-VALIDATION",
+          "T03-C046-ENTRYPOINT-MODE",
+          "T03-C046-REQUIRED-DIRECTORY"
+        ],
+        "unverified": [
+          "Installed invocation, offline processes, actual Git tag races, smoke results, concurrent update, permission failure and interruption cleanup were not executed.",
+          "The task does not fully define current yes/no for local IDs newer than/equal to a tag; no finding relies solely on equality versus version-at-least-latest policy."
+        ]
+      },
+      "engineering_assessment": {
+        "findings": [
+          "T03-C046-MARKER-WRITE-ESCAPE"
+        ],
+        "supported_by_source": [
+          "Allowed paths respected; no newly added helper module shadows standard library/test framework."
+        ],
+        "limits": "Static source inspection, no execution acceptance claim."
+      },
+      "complexity_assessment": {
+        "finding_supported": false,
+        "rationale": "No independent material unnecessary-abstraction finding is supported. Code size/style is not evidence. Transaction guards, source identity and scoped selection helpers have direct behavioral purposes. Simpler bounded repairs are supplied for the faulty decisions without adding architecture."
+      },
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr35--enhanced-haiku--r1",
+        "task_id": "tweed-pr35",
+        "arm_id": "enhanced-haiku",
+        "repeat": 1
+      },
+      "published_patch": "../results/patches/tweed-pr35--enhanced-haiku--r1.patch"
+    },
+    {
+      "task": "T04",
+      "candidate": "C005",
+      "status": "available",
+      "patch": {
+        "path": "T04/candidates/C005/change.patch",
+        "sha256": "11c124de3fcdc714506038ac0f9ddbcdafeabe7f2d8b38b8b8727676915f32fa"
+      },
+      "empty_patch": false,
+      "sources": [
+        {
+          "path": "T04/candidates/C005/production/bonaparte",
+          "sha256": "175ea4a9ece7b08a163ed03793460c30f3fac779b49ec2d5751c3dae51712d09",
+          "production_path": "bonaparte",
+          "line_count": 1384,
+          "byte_identical_to_baseline": false,
+          "full_source_delta_ranges": [
+            {
+              "operation": "insert",
+              "baseline_start": 262,
+              "baseline_end": 261,
+              "candidate_start": 262,
+              "candidate_end": 267
+            }
+          ]
+        },
+        {
+          "path": "T04/candidates/C005/production/workflows/publish.md",
+          "sha256": "a5539e473b6b2a09671d1a0250e699a56d9eaa7e28a528204b22704b6cfc8809",
+          "production_path": "workflows/publish.md",
+          "line_count": 119,
+          "byte_identical_to_baseline": false,
+          "full_source_delta_ranges": [
+            {
+              "operation": "replace",
+              "baseline_start": 4,
+              "baseline_end": 5,
+              "candidate_start": 4,
+              "candidate_end": 6
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 13,
+              "baseline_end": 14,
+              "candidate_start": 14,
+              "candidate_end": 18
+            }
+          ]
+        }
+      ],
+      "findings": [
+        {
+          "id": "T04-C005-INCOMPLETE-REVIEW",
+          "axis": "requirements",
+          "priority": "major",
+          "title": "Latest matching header is mistaken for latest complete review",
+          "location": {
+            "path": "T04/candidates/C005/production/bonaparte",
+            "line": 265
+          },
+          "exact_code": "        review = latest_comment(comments, PHASE_HEADERS[\"review\"])\n        if review:\n            context[\"review\"] = review",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "latest_comment enforces exact first-line header, top-level/non-quoted record and date/ID ordering but contains no completeness predicate. Any nonempty matching body is retained.",
+          "behavioral_consequence": "A newer incomplete top-level review displaces an older complete review in context.review. The caller retains the publish ID but loses the available branch/commit/PR handoff needed for safe same-delivery reconciliation.",
+          "requirement_or_engineering_basis": "T04 requires the latest complete review alongside the existing publish and stable comment ID; visible workflows/review.md supplies the complete schema and populated Git handoff.",
+          "minimum_repair": "Use one bounded completeness predicate requiring populated Git handoff and review-schema contents, then reuse exact-header/top-level/date-ID selection. Scope it to existing-publish reconciliation, preserving unchanged missing/non-publish paths; avoid a separate general Markdown parser.",
+          "proposed_counterexamples": [
+            "CE-REVIEW"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        }
+      ],
+      "requirements_assessment": {
+        "supported_by_source": [
+          "Existing publish body remains context.existing; its string comment ID is retained as existing_comment_id.",
+          "Exact header/top-level/quoted filtering and deterministic date/ID ordering remain in use.",
+          "The new retention is guarded by publish and current, preserving baseline missing/no-existing/ambiguous-kind/non-publish selection paths by source trace.",
+          "Publish workflow instructs verification of the same reviewed PR and forbids another publish record. Allowed production paths respected."
+        ],
+        "missed_or_at_risk": [
+          "T04-C005-INCOMPLETE-REVIEW"
+        ],
+        "unverified": [
+          "No deterministic selector test or native/model phase was executed.",
+          "No actual duplicate Linear publish record is alleged; the demonstrated defect is handoff selection, not an observed external write."
+        ]
+      },
+      "engineering_assessment": {
+        "findings": [],
+        "supported_by_source": [
+          "Allowed paths respected; no newly added helper module shadows standard library/test framework."
+        ],
+        "limits": "Static source inspection, no execution acceptance claim."
+      },
+      "complexity_assessment": {
+        "finding_supported": false,
+        "rationale": "No independent material unnecessary-abstraction finding is supported. Code size/style is not evidence. Transaction guards, source identity and scoped selection helpers have direct behavioral purposes. Simpler bounded repairs are supplied for the faulty decisions without adding architecture."
+      },
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr34--baseline-opus--r2",
+        "task_id": "tweed-pr34",
+        "arm_id": "baseline-opus",
+        "repeat": 2
+      },
+      "published_patch": "../results/patches/tweed-pr34--baseline-opus--r2.patch"
+    },
+    {
+      "task": "T04",
+      "candidate": "C010",
+      "status": "available",
+      "patch": {
+        "path": "T04/candidates/C010/change.patch",
+        "sha256": "511da27010f2c2050d269da948e1f1e2d03115ca6618d1191903789498c33d58"
+      },
+      "empty_patch": false,
+      "sources": [
+        {
+          "path": "T04/candidates/C010/production/bonaparte",
+          "sha256": "4d2238416cceaaa38d00e2c88c53bb8f69e29485cd68c281d646cbe8700d2e31",
+          "production_path": "bonaparte",
+          "line_count": 1398,
+          "byte_identical_to_baseline": false,
+          "full_source_delta_ranges": [
+            {
+              "operation": "insert",
+              "baseline_start": 172,
+              "baseline_end": 171,
+              "candidate_start": 172,
+              "candidate_end": 177
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 226,
+              "baseline_end": 226,
+              "candidate_start": 232,
+              "candidate_end": 234
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 234,
+              "baseline_end": 233,
+              "candidate_start": 242,
+              "candidate_end": 243
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 258,
+              "baseline_end": 257,
+              "candidate_start": 268,
+              "candidate_end": 277
+            }
+          ]
+        },
+        {
+          "path": "T04/candidates/C010/production/workflows/publish.md",
+          "sha256": "c1c67e0dd1adf30df75557d78d2dd24534c37a189480f6535dc01be94e17292d",
+          "production_path": "workflows/publish.md",
+          "line_count": 119,
+          "byte_identical_to_baseline": false,
+          "full_source_delta_ranges": [
+            {
+              "operation": "replace",
+              "baseline_start": 14,
+              "baseline_end": 14,
+              "candidate_start": 14,
+              "candidate_end": 18
+            }
+          ]
+        }
+      ],
+      "findings": [
+        {
+          "id": "T04-C010-INCOMPLETE-REVIEW",
+          "axis": "requirements",
+          "priority": "major",
+          "title": "Two empty headings are accepted as complete review",
+          "location": {
+            "path": "T04/candidates/C010/production/bonaparte",
+            "line": 242
+          },
+          "exact_code": "            and set(required_lines)\n            <= {line.strip() for line in (comment.get(\"body\") or \"\").splitlines()}",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "Completeness requires only two heading lines. No ready verdict, filled result/evidence, branch, implementation/reviewed commits, PR URL or worktree state is required.",
+          "behavioral_consequence": "A newer incomplete top-level review displaces an older complete review in context.review. The caller retains the publish ID but loses the available branch/commit/PR handoff needed for safe same-delivery reconciliation.",
+          "requirement_or_engineering_basis": "T04 requires the latest complete review alongside the existing publish and stable comment ID; visible workflows/review.md supplies the complete schema and populated Git handoff.",
+          "minimum_repair": "Use one bounded completeness predicate requiring populated Git handoff and review-schema contents, then reuse exact-header/top-level/date-ID selection. Scope it to existing-publish reconciliation, preserving unchanged missing/non-publish paths; avoid a separate general Markdown parser.",
+          "proposed_counterexamples": [
+            "CE-REVIEW"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        }
+      ],
+      "requirements_assessment": {
+        "supported_by_source": [
+          "Existing publish body remains context.existing; its string comment ID is retained as existing_comment_id.",
+          "Exact header/top-level/quoted filtering and deterministic date/ID ordering remain in use.",
+          "The new retention is guarded by publish and current, preserving baseline missing/no-existing/ambiguous-kind/non-publish selection paths by source trace.",
+          "Publish workflow instructs verification of the same reviewed PR and forbids another publish record. Allowed production paths respected."
+        ],
+        "missed_or_at_risk": [
+          "T04-C010-INCOMPLETE-REVIEW"
+        ],
+        "unverified": [
+          "No deterministic selector test or native/model phase was executed.",
+          "No actual duplicate Linear publish record is alleged; the demonstrated defect is handoff selection, not an observed external write."
+        ]
+      },
+      "engineering_assessment": {
+        "findings": [],
+        "supported_by_source": [
+          "Allowed paths respected; no newly added helper module shadows standard library/test framework."
+        ],
+        "limits": "Static source inspection, no execution acceptance claim."
+      },
+      "complexity_assessment": {
+        "finding_supported": false,
+        "rationale": "No independent material unnecessary-abstraction finding is supported. Code size/style is not evidence. Transaction guards, source identity and scoped selection helpers have direct behavioral purposes. Simpler bounded repairs are supplied for the faulty decisions without adding architecture."
+      },
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr34--enhanced-haiku--r2",
+        "task_id": "tweed-pr34",
+        "arm_id": "enhanced-haiku",
+        "repeat": 2
+      },
+      "published_patch": "../results/patches/tweed-pr34--enhanced-haiku--r2.patch"
+    },
+    {
+      "task": "T04",
+      "candidate": "C023",
+      "status": "available",
+      "patch": {
+        "path": "T04/candidates/C023/change.patch",
+        "sha256": "b265f3aa90b19e3ec8561a435f705cf5830c5a23d57178ef63fb547fa7ab1838"
+      },
+      "empty_patch": false,
+      "sources": [
+        {
+          "path": "T04/candidates/C023/production/bonaparte",
+          "sha256": "78f4f11399288487079055c4310a4386228b026d5d771a50ddd20167425c6d0f",
+          "production_path": "bonaparte",
+          "line_count": 1384,
+          "byte_identical_to_baseline": false,
+          "full_source_delta_ranges": [
+            {
+              "operation": "insert",
+              "baseline_start": 260,
+              "baseline_end": 259,
+              "candidate_start": 260,
+              "candidate_end": 265
+            }
+          ]
+        },
+        {
+          "path": "T04/candidates/C023/production/workflows/publish.md",
+          "sha256": "5b9c8f088c8efa2574c19ace466f8ada898e209c3cfbb8ff7d3c965ce85e8afc",
+          "production_path": "workflows/publish.md",
+          "line_count": 118,
+          "byte_identical_to_baseline": false,
+          "full_source_delta_ranges": [
+            {
+              "operation": "replace",
+              "baseline_start": 4,
+              "baseline_end": 5,
+              "candidate_start": 4,
+              "candidate_end": 5
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 12,
+              "baseline_end": 13,
+              "candidate_start": 12,
+              "candidate_end": 16
+            }
+          ]
+        }
+      ],
+      "findings": [
+        {
+          "id": "T04-C023-INCOMPLETE-REVIEW",
+          "axis": "requirements",
+          "priority": "major",
+          "title": "Latest matching header is mistaken for latest complete review",
+          "location": {
+            "path": "T04/candidates/C023/production/bonaparte",
+            "line": 263
+          },
+          "exact_code": "        review = latest_comment(comments, PHASE_HEADERS[\"review\"])\n        if review:\n            context[\"review\"] = review",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "latest_comment enforces exact first-line header, top-level/non-quoted record and date/ID ordering but contains no completeness predicate. Any nonempty matching body is retained.",
+          "behavioral_consequence": "A newer incomplete top-level review displaces an older complete review in context.review. The caller retains the publish ID but loses the available branch/commit/PR handoff needed for safe same-delivery reconciliation.",
+          "requirement_or_engineering_basis": "T04 requires the latest complete review alongside the existing publish and stable comment ID; visible workflows/review.md supplies the complete schema and populated Git handoff.",
+          "minimum_repair": "Use one bounded completeness predicate requiring populated Git handoff and review-schema contents, then reuse exact-header/top-level/date-ID selection. Scope it to existing-publish reconciliation, preserving unchanged missing/non-publish paths; avoid a separate general Markdown parser.",
+          "proposed_counterexamples": [
+            "CE-REVIEW"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        }
+      ],
+      "requirements_assessment": {
+        "supported_by_source": [
+          "Existing publish body remains context.existing; its string comment ID is retained as existing_comment_id.",
+          "Exact header/top-level/quoted filtering and deterministic date/ID ordering remain in use.",
+          "The new retention is guarded by publish and current, preserving baseline missing/no-existing/ambiguous-kind/non-publish selection paths by source trace.",
+          "Publish workflow instructs verification of the same reviewed PR and forbids another publish record. Allowed production paths respected."
+        ],
+        "missed_or_at_risk": [
+          "T04-C023-INCOMPLETE-REVIEW"
+        ],
+        "unverified": [
+          "No deterministic selector test or native/model phase was executed.",
+          "No actual duplicate Linear publish record is alleged; the demonstrated defect is handoff selection, not an observed external write."
+        ]
+      },
+      "engineering_assessment": {
+        "findings": [],
+        "supported_by_source": [
+          "Allowed paths respected; no newly added helper module shadows standard library/test framework."
+        ],
+        "limits": "Static source inspection, no execution acceptance claim."
+      },
+      "complexity_assessment": {
+        "finding_supported": false,
+        "rationale": "No independent material unnecessary-abstraction finding is supported. Code size/style is not evidence. Transaction guards, source identity and scoped selection helpers have direct behavioral purposes. Simpler bounded repairs are supplied for the faulty decisions without adding architecture."
+      },
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr34--enhanced-opus--r2",
+        "task_id": "tweed-pr34",
+        "arm_id": "enhanced-opus",
+        "repeat": 2
+      },
+      "published_patch": "../results/patches/tweed-pr34--enhanced-opus--r2.patch"
+    },
+    {
+      "task": "T04",
+      "candidate": "C034",
+      "status": "available",
+      "patch": {
+        "path": "T04/candidates/C034/change.patch",
+        "sha256": "d752e18f83f2d99a6f33e30279d79c70b95b596b70cb0c36058bcd8578db7ab8"
+      },
+      "empty_patch": false,
+      "sources": [
+        {
+          "path": "T04/candidates/C034/production/bonaparte",
+          "sha256": "175ea4a9ece7b08a163ed03793460c30f3fac779b49ec2d5751c3dae51712d09",
+          "production_path": "bonaparte",
+          "line_count": 1384,
+          "byte_identical_to_baseline": false,
+          "full_source_delta_ranges": [
+            {
+              "operation": "insert",
+              "baseline_start": 262,
+              "baseline_end": 261,
+              "candidate_start": 262,
+              "candidate_end": 267
+            }
+          ]
+        },
+        {
+          "path": "T04/candidates/C034/production/workflows/publish.md",
+          "sha256": "1c441c0e01011fcf1d53a65dd6d8667e2ef93782f8c21e3b0a14d8ab99855149",
+          "production_path": "workflows/publish.md",
+          "line_count": 120,
+          "byte_identical_to_baseline": false,
+          "full_source_delta_ranges": [
+            {
+              "operation": "replace",
+              "baseline_start": 4,
+              "baseline_end": 5,
+              "candidate_start": 4,
+              "candidate_end": 7
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 13,
+              "baseline_end": 14,
+              "candidate_start": 15,
+              "candidate_end": 19
+            }
+          ]
+        }
+      ],
+      "findings": [
+        {
+          "id": "T04-C034-INCOMPLETE-REVIEW",
+          "axis": "requirements",
+          "priority": "major",
+          "title": "Latest matching header is mistaken for latest complete review",
+          "location": {
+            "path": "T04/candidates/C034/production/bonaparte",
+            "line": 265
+          },
+          "exact_code": "        review = latest_comment(comments, PHASE_HEADERS[\"review\"])\n        if review:\n            context[\"review\"] = review",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "latest_comment enforces exact first-line header, top-level/non-quoted record and date/ID ordering but contains no completeness predicate. Any nonempty matching body is retained.",
+          "behavioral_consequence": "A newer incomplete top-level review displaces an older complete review in context.review. The caller retains the publish ID but loses the available branch/commit/PR handoff needed for safe same-delivery reconciliation.",
+          "requirement_or_engineering_basis": "T04 requires the latest complete review alongside the existing publish and stable comment ID; visible workflows/review.md supplies the complete schema and populated Git handoff.",
+          "minimum_repair": "Use one bounded completeness predicate requiring populated Git handoff and review-schema contents, then reuse exact-header/top-level/date-ID selection. Scope it to existing-publish reconciliation, preserving unchanged missing/non-publish paths; avoid a separate general Markdown parser.",
+          "proposed_counterexamples": [
+            "CE-REVIEW"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        }
+      ],
+      "requirements_assessment": {
+        "supported_by_source": [
+          "Existing publish body remains context.existing; its string comment ID is retained as existing_comment_id.",
+          "Exact header/top-level/quoted filtering and deterministic date/ID ordering remain in use.",
+          "The new retention is guarded by publish and current, preserving baseline missing/no-existing/ambiguous-kind/non-publish selection paths by source trace.",
+          "Publish workflow instructs verification of the same reviewed PR and forbids another publish record. Allowed production paths respected."
+        ],
+        "missed_or_at_risk": [
+          "T04-C034-INCOMPLETE-REVIEW"
+        ],
+        "unverified": [
+          "No deterministic selector test or native/model phase was executed.",
+          "No actual duplicate Linear publish record is alleged; the demonstrated defect is handoff selection, not an observed external write."
+        ]
+      },
+      "engineering_assessment": {
+        "findings": [],
+        "supported_by_source": [
+          "Allowed paths respected; no newly added helper module shadows standard library/test framework."
+        ],
+        "limits": "Static source inspection, no execution acceptance claim."
+      },
+      "complexity_assessment": {
+        "finding_supported": false,
+        "rationale": "No independent material unnecessary-abstraction finding is supported. Code size/style is not evidence. Transaction guards, source identity and scoped selection helpers have direct behavioral purposes. Simpler bounded repairs are supplied for the faulty decisions without adding architecture."
+      },
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr34--enhanced-codex--r1",
+        "task_id": "tweed-pr34",
+        "arm_id": "enhanced-codex",
+        "repeat": 1
+      },
+      "published_patch": "../results/patches/tweed-pr34--enhanced-codex--r1.patch"
+    },
+    {
+      "task": "T04",
+      "candidate": "C038",
+      "status": "available",
+      "patch": {
+        "path": "T04/candidates/C038/change.patch",
+        "sha256": "e3725fdffeabc10ad9043541401b83cb59c4120a8a892aa41e86ec5819d42a1e"
+      },
+      "empty_patch": false,
+      "sources": [
+        {
+          "path": "T04/candidates/C038/production/bonaparte",
+          "sha256": "6bc3fee0b26f6f1f36d51a33bcd6367a7a29c66e8383f9f75b3470e5974f84f0",
+          "production_path": "bonaparte",
+          "line_count": 1404,
+          "byte_identical_to_baseline": false,
+          "full_source_delta_ranges": [
+            {
+              "operation": "insert",
+              "baseline_start": 245,
+              "baseline_end": 244,
+              "candidate_start": 245,
+              "candidate_end": 264
+            },
+            {
+              "operation": "insert",
+              "baseline_start": 262,
+              "baseline_end": 261,
+              "candidate_start": 282,
+              "candidate_end": 287
+            }
+          ]
+        },
+        {
+          "path": "T04/candidates/C038/production/workflows/publish.md",
+          "sha256": "f4116b8f117d4e72ac820c51217c7eb2713ad2ca4fa8c970be55083b2a79522f",
+          "production_path": "workflows/publish.md",
+          "line_count": 120,
+          "byte_identical_to_baseline": false,
+          "full_source_delta_ranges": [
+            {
+              "operation": "replace",
+              "baseline_start": 14,
+              "baseline_end": 14,
+              "candidate_start": 14,
+              "candidate_end": 19
+            }
+          ]
+        }
+      ],
+      "findings": [
+        {
+          "id": "T04-C038-INCOMPLETE-REVIEW",
+          "axis": "requirements",
+          "priority": "major",
+          "title": "Marker-only body is accepted as complete review",
+          "location": {
+            "path": "T04/candidates/C038/production/bonaparte",
+            "line": 259
+          },
+          "exact_code": "            marker in (comment.get(\"body\") or \"\") for marker in COMPLETE_REVIEW_MARKERS",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "Completeness requires only substring presence of five markers. Verdict plus empty headings passes with no Git handoff/result/evidence values; markers in a quoted/code-fenced example also satisfy this predicate.",
+          "behavioral_consequence": "A newer incomplete top-level review displaces an older complete review in context.review. The caller retains the publish ID but loses the available branch/commit/PR handoff needed for safe same-delivery reconciliation.",
+          "requirement_or_engineering_basis": "T04 requires the latest complete review alongside the existing publish and stable comment ID; visible workflows/review.md supplies the complete schema and populated Git handoff.",
+          "minimum_repair": "Use one bounded completeness predicate requiring populated Git handoff and review-schema contents, then reuse exact-header/top-level/date-ID selection. Scope it to existing-publish reconciliation, preserving unchanged missing/non-publish paths; avoid a separate general Markdown parser.",
+          "proposed_counterexamples": [
+            "CE-REVIEW"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        }
+      ],
+      "requirements_assessment": {
+        "supported_by_source": [
+          "Existing publish body remains context.existing; its string comment ID is retained as existing_comment_id.",
+          "Exact header/top-level/quoted filtering and deterministic date/ID ordering remain in use.",
+          "The new retention is guarded by publish and current, preserving baseline missing/no-existing/ambiguous-kind/non-publish selection paths by source trace.",
+          "Publish workflow instructs verification of the same reviewed PR and forbids another publish record. Allowed production paths respected."
+        ],
+        "missed_or_at_risk": [
+          "T04-C038-INCOMPLETE-REVIEW"
+        ],
+        "unverified": [
+          "No deterministic selector test or native/model phase was executed.",
+          "No actual duplicate Linear publish record is alleged; the demonstrated defect is handoff selection, not an observed external write."
+        ]
+      },
+      "engineering_assessment": {
+        "findings": [],
+        "supported_by_source": [
+          "Allowed paths respected; no newly added helper module shadows standard library/test framework."
+        ],
+        "limits": "Static source inspection, no execution acceptance claim."
+      },
+      "complexity_assessment": {
+        "finding_supported": false,
+        "rationale": "No independent material unnecessary-abstraction finding is supported. Code size/style is not evidence. Transaction guards, source identity and scoped selection helpers have direct behavioral purposes. Simpler bounded repairs are supplied for the faulty decisions without adding architecture."
+      },
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr34--enhanced-haiku--r1",
+        "task_id": "tweed-pr34",
+        "arm_id": "enhanced-haiku",
+        "repeat": 1
+      },
+      "published_patch": "../results/patches/tweed-pr34--enhanced-haiku--r1.patch"
+    },
+    {
+      "task": "T04",
+      "candidate": "C039",
+      "status": "available",
+      "patch": {
+        "path": "T04/candidates/C039/change.patch",
+        "sha256": "0b7d00d0d2d7e53ce34b15698b35a24c311fd7285e4507b1eedd43f255406910"
+      },
+      "empty_patch": false,
+      "sources": [
+        {
+          "path": "T04/candidates/C039/production/bonaparte",
+          "sha256": "175ea4a9ece7b08a163ed03793460c30f3fac779b49ec2d5751c3dae51712d09",
+          "production_path": "bonaparte",
+          "line_count": 1384,
+          "byte_identical_to_baseline": false,
+          "full_source_delta_ranges": [
+            {
+              "operation": "insert",
+              "baseline_start": 262,
+              "baseline_end": 261,
+              "candidate_start": 262,
+              "candidate_end": 267
+            }
+          ]
+        },
+        {
+          "path": "T04/candidates/C039/production/workflows/publish.md",
+          "sha256": "95e48c264704f26f853192c62861fa2b3a41a0f2d53e75d07596e9082711ceea",
+          "production_path": "workflows/publish.md",
+          "line_count": 120,
+          "byte_identical_to_baseline": false,
+          "full_source_delta_ranges": [
+            {
+              "operation": "replace",
+              "baseline_start": 4,
+              "baseline_end": 5,
+              "candidate_start": 4,
+              "candidate_end": 7
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 12,
+              "baseline_end": 14,
+              "candidate_start": 14,
+              "candidate_end": 19
+            }
+          ]
+        }
+      ],
+      "findings": [
+        {
+          "id": "T04-C039-INCOMPLETE-REVIEW",
+          "axis": "requirements",
+          "priority": "major",
+          "title": "Latest matching header is mistaken for latest complete review",
+          "location": {
+            "path": "T04/candidates/C039/production/bonaparte",
+            "line": 265
+          },
+          "exact_code": "        review = latest_comment(comments, PHASE_HEADERS[\"review\"])\n        if review:\n            context[\"review\"] = review",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "latest_comment enforces exact first-line header, top-level/non-quoted record and date/ID ordering but contains no completeness predicate. Any nonempty matching body is retained.",
+          "behavioral_consequence": "A newer incomplete top-level review displaces an older complete review in context.review. The caller retains the publish ID but loses the available branch/commit/PR handoff needed for safe same-delivery reconciliation.",
+          "requirement_or_engineering_basis": "T04 requires the latest complete review alongside the existing publish and stable comment ID; visible workflows/review.md supplies the complete schema and populated Git handoff.",
+          "minimum_repair": "Use one bounded completeness predicate requiring populated Git handoff and review-schema contents, then reuse exact-header/top-level/date-ID selection. Scope it to existing-publish reconciliation, preserving unchanged missing/non-publish paths; avoid a separate general Markdown parser.",
+          "proposed_counterexamples": [
+            "CE-REVIEW"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        }
+      ],
+      "requirements_assessment": {
+        "supported_by_source": [
+          "Existing publish body remains context.existing; its string comment ID is retained as existing_comment_id.",
+          "Exact header/top-level/quoted filtering and deterministic date/ID ordering remain in use.",
+          "The new retention is guarded by publish and current, preserving baseline missing/no-existing/ambiguous-kind/non-publish selection paths by source trace.",
+          "Publish workflow instructs verification of the same reviewed PR and forbids another publish record. Allowed production paths respected."
+        ],
+        "missed_or_at_risk": [
+          "T04-C039-INCOMPLETE-REVIEW"
+        ],
+        "unverified": [
+          "No deterministic selector test or native/model phase was executed.",
+          "No actual duplicate Linear publish record is alleged; the demonstrated defect is handoff selection, not an observed external write."
+        ]
+      },
+      "engineering_assessment": {
+        "findings": [],
+        "supported_by_source": [
+          "Allowed paths respected; no newly added helper module shadows standard library/test framework."
+        ],
+        "limits": "Static source inspection, no execution acceptance claim."
+      },
+      "complexity_assessment": {
+        "finding_supported": false,
+        "rationale": "No independent material unnecessary-abstraction finding is supported. Code size/style is not evidence. Transaction guards, source identity and scoped selection helpers have direct behavioral purposes. Simpler bounded repairs are supplied for the faulty decisions without adding architecture."
+      },
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr34--enhanced-codex--r2",
+        "task_id": "tweed-pr34",
+        "arm_id": "enhanced-codex",
+        "repeat": 2
+      },
+      "published_patch": "../results/patches/tweed-pr34--enhanced-codex--r2.patch"
+    },
+    {
+      "task": "T04",
+      "candidate": "C043",
+      "status": "available",
+      "patch": {
+        "path": "T04/candidates/C043/change.patch",
+        "sha256": "2c432feb81388d19fa1edebf56428dedd8f881f5b7bcbd9d3b33803ee5e640f4"
+      },
+      "empty_patch": false,
+      "sources": [
+        {
+          "path": "T04/candidates/C043/production/bonaparte",
+          "sha256": "78f4f11399288487079055c4310a4386228b026d5d771a50ddd20167425c6d0f",
+          "production_path": "bonaparte",
+          "line_count": 1384,
+          "byte_identical_to_baseline": false,
+          "full_source_delta_ranges": [
+            {
+              "operation": "insert",
+              "baseline_start": 260,
+              "baseline_end": 259,
+              "candidate_start": 260,
+              "candidate_end": 265
+            }
+          ]
+        },
+        {
+          "path": "T04/candidates/C043/production/workflows/publish.md",
+          "sha256": "6a9eb8a09b5286a1239f65491e279d5b31e728488bd39ec35f31270f6c472174",
+          "production_path": "workflows/publish.md",
+          "line_count": 118,
+          "byte_identical_to_baseline": false,
+          "full_source_delta_ranges": [
+            {
+              "operation": "replace",
+              "baseline_start": 4,
+              "baseline_end": 5,
+              "candidate_start": 4,
+              "candidate_end": 6
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 12,
+              "baseline_end": 14,
+              "candidate_start": 13,
+              "candidate_end": 17
+            }
+          ]
+        }
+      ],
+      "findings": [
+        {
+          "id": "T04-C043-INCOMPLETE-REVIEW",
+          "axis": "requirements",
+          "priority": "major",
+          "title": "Latest matching header is mistaken for latest complete review",
+          "location": {
+            "path": "T04/candidates/C043/production/bonaparte",
+            "line": 263
+          },
+          "exact_code": "        review = latest_comment(comments, PHASE_HEADERS[\"review\"])\n        if review:\n            context[\"review\"] = review",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "latest_comment enforces exact first-line header, top-level/non-quoted record and date/ID ordering but contains no completeness predicate. Any nonempty matching body is retained.",
+          "behavioral_consequence": "A newer incomplete top-level review displaces an older complete review in context.review. The caller retains the publish ID but loses the available branch/commit/PR handoff needed for safe same-delivery reconciliation.",
+          "requirement_or_engineering_basis": "T04 requires the latest complete review alongside the existing publish and stable comment ID; visible workflows/review.md supplies the complete schema and populated Git handoff.",
+          "minimum_repair": "Use one bounded completeness predicate requiring populated Git handoff and review-schema contents, then reuse exact-header/top-level/date-ID selection. Scope it to existing-publish reconciliation, preserving unchanged missing/non-publish paths; avoid a separate general Markdown parser.",
+          "proposed_counterexamples": [
+            "CE-REVIEW"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        }
+      ],
+      "requirements_assessment": {
+        "supported_by_source": [
+          "Existing publish body remains context.existing; its string comment ID is retained as existing_comment_id.",
+          "Exact header/top-level/quoted filtering and deterministic date/ID ordering remain in use.",
+          "The new retention is guarded by publish and current, preserving baseline missing/no-existing/ambiguous-kind/non-publish selection paths by source trace.",
+          "Publish workflow instructs verification of the same reviewed PR and forbids another publish record. Allowed production paths respected."
+        ],
+        "missed_or_at_risk": [
+          "T04-C043-INCOMPLETE-REVIEW"
+        ],
+        "unverified": [
+          "No deterministic selector test or native/model phase was executed.",
+          "No actual duplicate Linear publish record is alleged; the demonstrated defect is handoff selection, not an observed external write."
+        ]
+      },
+      "engineering_assessment": {
+        "findings": [],
+        "supported_by_source": [
+          "Allowed paths respected; no newly added helper module shadows standard library/test framework."
+        ],
+        "limits": "Static source inspection, no execution acceptance claim."
+      },
+      "complexity_assessment": {
+        "finding_supported": false,
+        "rationale": "No independent material unnecessary-abstraction finding is supported. Code size/style is not evidence. Transaction guards, source identity and scoped selection helpers have direct behavioral purposes. Simpler bounded repairs are supplied for the faulty decisions without adding architecture."
+      },
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr34--baseline-opus--r1",
+        "task_id": "tweed-pr34",
+        "arm_id": "baseline-opus",
+        "repeat": 1
+      },
+      "published_patch": "../results/patches/tweed-pr34--baseline-opus--r1.patch"
+    },
+    {
+      "task": "T04",
+      "candidate": "C044",
+      "status": "available",
+      "patch": {
+        "path": "T04/candidates/C044/change.patch",
+        "sha256": "8c6401f3155742bf19fc5805d247eac9cc2be6165d66b57f7343ed2aa62b7c01"
+      },
+      "empty_patch": false,
+      "sources": [
+        {
+          "path": "T04/candidates/C044/production/bonaparte",
+          "sha256": "78f4f11399288487079055c4310a4386228b026d5d771a50ddd20167425c6d0f",
+          "production_path": "bonaparte",
+          "line_count": 1384,
+          "byte_identical_to_baseline": false,
+          "full_source_delta_ranges": [
+            {
+              "operation": "insert",
+              "baseline_start": 260,
+              "baseline_end": 259,
+              "candidate_start": 260,
+              "candidate_end": 265
+            }
+          ]
+        },
+        {
+          "path": "T04/candidates/C044/production/workflows/publish.md",
+          "sha256": "b54a0499f4596aed8860de180288f295fa34914e53760c4a118edd00efe0429a",
+          "production_path": "workflows/publish.md",
+          "line_count": 117,
+          "byte_identical_to_baseline": false,
+          "full_source_delta_ranges": [
+            {
+              "operation": "replace",
+              "baseline_start": 4,
+              "baseline_end": 5,
+              "candidate_start": 4,
+              "candidate_end": 5
+            },
+            {
+              "operation": "replace",
+              "baseline_start": 12,
+              "baseline_end": 13,
+              "candidate_start": 12,
+              "candidate_end": 15
+            }
+          ]
+        }
+      ],
+      "findings": [
+        {
+          "id": "T04-C044-INCOMPLETE-REVIEW",
+          "axis": "requirements",
+          "priority": "major",
+          "title": "Latest matching header is mistaken for latest complete review",
+          "location": {
+            "path": "T04/candidates/C044/production/bonaparte",
+            "line": 263
+          },
+          "exact_code": "        review = latest_comment(comments, PHASE_HEADERS[\"review\"])\n        if review:\n            context[\"review\"] = review",
+          "evidence": "static_source_trace",
+          "demonstrated_source_property": "latest_comment enforces exact first-line header, top-level/non-quoted record and date/ID ordering but contains no completeness predicate. Any nonempty matching body is retained.",
+          "behavioral_consequence": "A newer incomplete top-level review displaces an older complete review in context.review. The caller retains the publish ID but loses the available branch/commit/PR handoff needed for safe same-delivery reconciliation.",
+          "requirement_or_engineering_basis": "T04 requires the latest complete review alongside the existing publish and stable comment ID; visible workflows/review.md supplies the complete schema and populated Git handoff.",
+          "minimum_repair": "Use one bounded completeness predicate requiring populated Git handoff and review-schema contents, then reuse exact-header/top-level/date-ID selection. Scope it to existing-publish reconciliation, preserving unchanged missing/non-publish paths; avoid a separate general Markdown parser.",
+          "proposed_counterexamples": [
+            "CE-REVIEW"
+          ],
+          "execution_status": "not_executed",
+          "inspection_limit": "The consequence follows the listed preconditions; no installed-command, fixture, model phase or acceptance outcome was observed."
+        }
+      ],
+      "requirements_assessment": {
+        "supported_by_source": [
+          "Existing publish body remains context.existing; its string comment ID is retained as existing_comment_id.",
+          "Exact header/top-level/quoted filtering and deterministic date/ID ordering remain in use.",
+          "The new retention is guarded by publish and current, preserving baseline missing/no-existing/ambiguous-kind/non-publish selection paths by source trace.",
+          "Publish workflow instructs verification of the same reviewed PR and forbids another publish record. Allowed production paths respected."
+        ],
+        "missed_or_at_risk": [
+          "T04-C044-INCOMPLETE-REVIEW"
+        ],
+        "unverified": [
+          "No deterministic selector test or native/model phase was executed.",
+          "No actual duplicate Linear publish record is alleged; the demonstrated defect is handoff selection, not an observed external write."
+        ]
+      },
+      "engineering_assessment": {
+        "findings": [],
+        "supported_by_source": [
+          "Allowed paths respected; no newly added helper module shadows standard library/test framework."
+        ],
+        "limits": "Static source inspection, no execution acceptance claim."
+      },
+      "complexity_assessment": {
+        "finding_supported": false,
+        "rationale": "No independent material unnecessary-abstraction finding is supported. Code size/style is not evidence. Transaction guards, source identity and scoped selection helpers have direct behavioral purposes. Simpler bounded repairs are supplied for the faulty decisions without adding architecture."
+      },
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr34--enhanced-opus--r1",
+        "task_id": "tweed-pr34",
+        "arm_id": "enhanced-opus",
+        "repeat": 1
+      },
+      "published_patch": "../results/patches/tweed-pr34--enhanced-opus--r1.patch"
+    }
+  ],
+  "proposed_counterexamples": {
+    "CE-AUTO": {
+      "status": "proposed_not_executed",
+      "procedure": "Load the launcher using runpy.run_path without entering main. In a temporary home create current -> releases/v1.0.0 and complete releases/v1.1.0. Patch migrate_autoresearch_link to a no-op, latest_tag to return (v1.1.0,A), and fetch_release to return the new directory; set BONAPARTE_AUTO_UPDATE=1 and remove last-check. Call automatic_update(home); assert current still resolves to v1.0.0. The six cited candidates instead activate the new release. Separately invoke bin/bonaparte --help in the visible installation fixture with a higher stable local tag to exercise main."
+    },
+    "CE-CACHE": {
+      "status": "proposed_not_executed",
+      "procedure": "Use a local installation fixture with current at v1.0.0. Put a complete smoke-passing snapshot B, containing a distinct sentinel and no .git, at home/releases/v1.1.0. Expose v1.1.0 at different commit A in the local fixture remote. Run bonaparte update; assert rejection, old current remains usable, and no .update-* staging. The five cited candidates return B without comparing expected_oid. Minimal unit equivalent: fetch_release(home,\"v1.1.0\",A) with a passing validate_release stub must not return an existing unproven B directory."
+    },
+    "CE-MODE": {
+      "status": "proposed_not_executed",
+      "procedure": "In the visible installation fixture publish a higher stable local tag after git update-index --chmod=-x bonaparte-launcher, keeping valid source and required paths. Repeat independently with autoresearch. Run bonaparte update; assert failure, unchanged current, no .update-* staging, and old bin/bonaparte --help still executes. Python compile and help smoke through sys.executable do not inspect executable mode, so the six cited validators can accept the unusable entrypoint. Minimal unit version: create all REQUIRED files plus autoresearch in a temp snapshot; Python files contain pass, documentation files fixture; launcher/autoresearch are 0644; assert validate_release raises."
+    },
+    "CE-SYMLINK": {
+      "status": "proposed_not_executed",
+      "procedure": "In a local fixture remote replace workflows/scope.md with a symlink to an existing temporary file outside the snapshot. Publish a higher stable tag and run update. Assert rejection, old current usable, and empty staging. C012 is_file follows the symlink and help smoke never reads that workflow; if activated, deleting the external file breaks scope. For C046 repeat with workflows/scope.md as a directory: exists accepts it but the phase runner cannot read it as text."
+    },
+    "CE-CACHE-RETRY": {
+      "status": "proposed_not_executed",
+      "procedure": "Install a source snapshot carrying this candidate launcher with baseline v1.0.0 into a temporary BONAPARTE_HOME, publish/update to a complete v1.1.0 carrying the same launcher, then rerun the visible install script from the original lower-version candidate snapshot into the same home/bin directories. install points current to local-v1.0.0-* while retaining releases/v1.1.0. Run update and assert the verified latest can be activated again. C017/C018 reject that existing destination unconditionally. Also inject atomic_link(current) failure after C017 fetch_release succeeds: it leaves the destination and the same rejection blocks retry."
+    },
+    "CE-MOVE": {
+      "status": "proposed_not_executed",
+      "procedure": "In a local fixture remote expose v1.1.0 at valid commit A and retain another valid commit B. Arrange a smoke-check hook that moves refs/tags/v1.1.0 to B after fetch completed but before help returns zero. Run update; assert nonzero, current stays on its prior usable release, and no .update-* staging. The seven cited paths compare OID only before validation. Minimal deterministic equivalent: patch git to report A at FETCH_HEAD and validate_release to change a latest_tag fixture from (v1.1.0,A) to (v1.1.0,B); update must reject before switching current. This concerns a move inside validation, not any future arbitrary remote change."
+    },
+    "CE-MARKER": {
+      "status": "proposed_not_executed",
+      "procedure": "In a local fixture remote commit .bonaparte-source-oid as an absolute symlink to a temporary victim file containing keep-me, then publish a higher stable tag. Run C046 update; assert failure, victim still contains keep-me, old current usable, and no staging. Path.write_text follows the tagged symlink before validation and writes expected_oid outside staging. Keep both repository and victim in a test temp directory, never a real user file."
+    },
+    "CE-LEGACY": {
+      "status": "proposed_not_executed",
+      "procedure": "Repeat visible T03 baseline/tests/test_installation.py:test_legacy_launcher_bootstraps_autoresearch_on_second_invocation using the candidate at the new tag. Or simulate post-upgrade state: current -> complete releases/v1.1.0, bin/bonaparte points through current, bin/autoresearch absent. Run bonaparte --help then assert bin/autoresearch points to home/current/autoresearch and autoresearch --help works. C018 never invokes migration on the ordinary route; update with latest v1.1.0 also returns before preparing the link."
+    },
+    "CE-REVIEW": {
+      "status": "proposed_not_executed",
+      "procedure": "Load candidate production/bonaparte with runpy.run_path after adding visible/T04/baseline to sys.path for unchanged dependencies; do not enter main. Build an existing publish record with id stable-publish-id; an older top-level complete review using the populated current schema from baseline/workflows/review.md; and a newer top-level review with only the exact first-line review header plus Review still in progress. Call select_handoff(issue,comments,\"publish\"); assert context.existing and existing_comment_id are unchanged and context.review equals the older complete body. For C010 make the newer incomplete body contain only the two headings Contract and quality result and Git handoff. For C038 use its five COMPLETE_REVIEW_MARKERS as otherwise empty lines. Both incomplete bodies pass their predicates without branch/commit/PR fields. Repeat with newer reply/quoted/near-header comments, tied dates ordered by id, existing publish without review, no existing publish, ambiguous kind, and a non-publish phase; unchanged branches should match baseline. No native/model service is required.",
+      "python": "from pathlib import Path\nimport runpy, sys\nvisible = Path(\".confidence/claude-first/code-review-packets/visible\")\nsys.path.insert(0, str(visible / \"T04/baseline\"))\ncandidate = \"C005\"  # substitute each reviewed T04 identifier\nns = runpy.run_path(str(visible / \"T04/candidates\" / candidate / \"production/bonaparte\"))\nheaders = ns[\"PHASE_HEADERS\"]\n# Structurally complete local test fixture, not a live review/acceptance claim.\ncomplete = (visible / \"T04/baseline/workflows/review.md\").read_text().split(\"```markdown\\n\", 1)[1].split(\"```\", 1)[0]\ncomplete = complete.replace(\"[branch]\", \"issue-branch\").replace(\"[full final commit]\", \"a\"*40).replace(\"[commit]\", \"b\"*40).replace(\"[URL]\", \"https://github.test/o/r/pull/1\")\nif candidate == \"C010\":\n    incomplete = headers[\"review\"] + \"\\n\\n### Contract and quality result\\n\\n### Git handoff\\n\"\nelif candidate == \"C038\":\n    incomplete = headers[\"review\"] + \"\\n\\n\" + \"\\n\".join(ns[\"COMPLETE_REVIEW_MARKERS\"]) + \"\\n\"\nelse:\n    incomplete = headers[\"review\"] + \"\\n\\nReview still in progress.\\n\"\ndef record(identifier, body, date):\n    return {\"id\":identifier,\"body\":body,\"createdAt\":date,\"parentId\":None,\"quotedText\":None}\npublish = record(\"stable-publish-id\", headers[\"publish\"] + \"\\n\\nExisting delivery\", \"3\")\ncomments = [record(\"complete\",complete,\"1\"), record(\"incomplete\",incomplete,\"2\"), publish]\nissue = {\"identifier\":\"LIN-1\",\"description\":\"**Kind:** Feature\",\"labels\":[]}\ncontext = ns[\"select_handoff\"](issue, comments, \"publish\")[\"context\"]\nassert context[\"existing\"] == publish[\"body\"]\nassert context[\"existing_comment_id\"] == \"stable-publish-id\"\nassert context[\"review\"] == complete, context\n"
+    }
+  },
+  "inspection_limits": [
+    "Source review is not runtime acceptance or provider ranking. No numeric aesthetic score or provider inference.",
+    "All sixteen candidates were assessed; every packet was available and every patch was nonempty.",
+    "Real installed process behavior, network/native boundaries, concurrency and interruption cleanup remain unverified.",
+    "No independent complexity finding was invented. Required behavior and separate engineering retry/migration/write-isolation consequences are distinguished."
+  ],
+  "report_validation": {
+    "candidate_coverage_and_hashes_match_visible_packets": true,
+    "all_exact_code_fragments_match_reported_file_and_line": true,
+    "validation_type": "Report integrity only; candidate code not executed."
+  },
+  "original_private_review_sha256": "d4e99d9de097c08727c4b9fd375cfbab18d225a528c90b32fc58b44fb14dad47",
+  "publication_note": "Assignment labels added only after all three fresh reviewers completed; original anonymous reports preserved."
+}

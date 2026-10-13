@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "role": "adversarial_reviewer",
+  "declared_reviewer_origin": "/root/final_v07_integrated_review",
+  "harness": "Codex collaboration subagent",
+  "model_observed": null,
+  "model_basis": "System-described Codex/GPT-6; exact runtime identifier unobserved",
+  "independent_of_implementation": true,
+  "implementation_edits": 0,
+  "additional_external_model_calls": 0,
+  "publications": 0,
+  "blinded": false,
+  "completed_at_utc": "2026-10-13T17:57:00.465874+00:00",
+  "git_head_at_review": "4e1c74da0da7c0c720b15ed148134b4962779056",
+  "contract_file_sha256": "fc15a0acd385a65f6b4ddd3ae0fa05209caaa9c5caf50b9f3fcd6150b2eaf685",
+  "contract_sha256": "ea84c2f75d29adf21ac2765ae133bf5af7e95152caabae361c693fed70d57c16",
+  "review_scope": [
+    "P1",
+    "P2",
+    "P3",
+    "P4",
+    "P5",
+    "P6",
+    "P7"
+  ],
+  "verdict": "PASS_CURRENT_REVIEW_WITH_HISTORICAL_SCOPE_LIMITS",
+  "unresolved_implementation_findings": [],
+  "resolved_findings": [
+    {
+      "id": "F1",
+      "scope": "research delivery checker",
+      "mechanism": "Optimized Python removed assertions",
+      "red": "Normal inventory rejected a dummy symlink; optimize=1 admitted it",
+      "resolution": "Explicit require validations; optimized refusal controls pass"
+    },
+    {
+      "id": "F2",
+      "scope": "research delivery checker",
+      "mechanism": "Missing cached evidence could create preparation files before grader refusal",
+      "red": "No-grader component created a missing cache/input-seal.json",
+      "resolution": "Complete-cache preflight plus Python protected-evidence audit guard; no-write normal/optimized controls pass"
+    }
+  ],
+  "remaining_required_proof_gap": {
+    "obligation_id": "P7",
+    "status": "partial",
+    "reason": "Retained designer reconciliation declares partial historical provenance and cannot certify full seven-claim preimplementation coverage; this late review cannot supply missing prior design",
+    "original_scope_gaps": [
+      "D5 answer-dependent implementation",
+      "D1 callback-specific execution not established by original designer",
+      "Other original completeness/recovery/quality/final-source/custody coverage not certified by text-only reconciliation"
+    ],
+    "origin_authentication_and_original_timestamp_unobserved": true
+  },
+  "actual_executed_checks": [
+    {
+      "command": "python3 -m unittest discover -s docs/research/2026-10-confidence/claude-first-evaluation -p test_*.py",
+      "tests": 104,
+      "exit_code": 0,
+      "seconds": 90.935,
+      "scope": "Initial stable suite; changed follow-up and later checker covered separately"
+    },
+    {
+      "command": "python3 -B -m unittest discover -s docs/research/2026-10-confidence/claude-first-evaluation -p test_analyze_followup.py -v",
+      "tests": 18,
+      "exit_code": 0,
+      "seconds": 46.181
+    },
+    {
+      "command": "python3 -B -m unittest discover -s docs/research/2026-10-confidence/claude-first-evaluation -p test_verify_delivery.py -v",
+      "tests": 5,
+      "exit_code": 0,
+      "seconds": 0.478
+    },
+    {
+      "check": "Independent public main/intake/follow-up arithmetic, bootstrap enumeration, current hashes, jury coverage/source bindings, installed source/cache equality and retained version backups",
+      "exit_code": 0
+    },
+    {
+      "check": "Independent red and green normal/optimized symlink and missing-cache filesystem component probes, without inference/grading",
+      "exit_code": 0
+    }
+  ],
+  "exclusions": [
+    "Authentication/settings files",
+    "Private provider streams",
+    "New inference or CPU grades",
+    "Independent remote CI execution",
+    "Final owner report authoring after this review",
+    "Authentication of underlying model weights or statistical independence"
+  ],
+  "input_hash_scope": "Every regular skill/source/reference/test/asset file and Claude-first public evaluation file, plus explicitly listed safe private contract/design/review/installation/packet metadata; byte/mode inventory is not semantic coverage of every line",
+  "input_manifest_sha256": "8bd3cd006f4b6edbb7b8d91b54232cf929053e00c06f5b5631b65f02dd2774d2",
+  "review_report_sha256": "dd8cadee3aa9c04eb94606751f3a4d03d55a1001c0e86172a13d5410d9c06ee9",
+  "reviewed_input_count": 155,
+  "source_scope_note": "The full155-input manifest remains local; this published report is an exact byte copy added after the review and is not included in its own review input manifest."
+}

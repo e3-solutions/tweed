@@ -1,0 +1,1364 @@
+{
+  "reviewer": "a",
+  "metadata_blinding": "Accessed only code-review-packets/visible for review inputs; did not access private owner mappings, results, or study metadata; no provider inference or model call. Wrote only jury/a.json and jury/a.md.",
+  "review_instructions": "REVIEW.md",
+  "review_kind": "Independent static source review",
+  "execution_evidence": {
+    "tests_run": [],
+    "candidate_execution": false,
+    "claims": "No executed acceptance evidence. Read/hash operations are not candidate tests. All behavioral outcomes below are source traces or proposed unexecuted counterexamples."
+  },
+  "inspection_method": "Read requirements, REVIEW.md, all sixteen complete patches/status files, shared runner/native/Linear baseline code and relevant consumers/workflows/tests; compare supplied production snapshots to baselines by bytes. Unchanged source regions were reviewed through the shared baseline, changed regions through patches and production line references. No candidates were edited.",
+  "coverage": {
+    "expected_candidate_count": 16,
+    "reviewed_candidate_count": 16,
+    "all_candidates_reviewed": true,
+    "candidate_ids": [
+      "T01/C009",
+      "T01/C014",
+      "T01/C015",
+      "T01/C020",
+      "T01/C026",
+      "T01/C033",
+      "T01/C042",
+      "T01/C047",
+      "T02/C001",
+      "T02/C002",
+      "T02/C003",
+      "T02/C006",
+      "T02/C016",
+      "T02/C025",
+      "T02/C036",
+      "T02/C048"
+    ]
+  },
+  "requirements_hashes": {
+    "T01": "0fbc02a9b10869a0524a5187800363c4709638dc227861f1db8ebfbf3d863cbd",
+    "T02": "caf925d0cc217a20d9f715770e29b9fdbb4ad02fc7d0c71e9320d1df93f54e67"
+  },
+  "shared_baseline_hashes": {
+    "T01/baseline/.github/workflows/ci.yml": "4b95313743b190cc89984f0476abfb74340516d2995da65c2fdebc6afba926cb",
+    "T01/baseline/.gitignore": "1180e510a75b49e24ec888196d6a405e447ab7f9679270f03deffa7bee54a95c",
+    "T01/baseline/README.md": "3b0ffa59ac0ab5fb30a95fdff6aab958a41a8d79445649c942ffd3b2a8956ca2",
+    "T01/baseline/autoresearch": "dc06f5031bd74b685dd68ef3f2066cc899461a0fed7d882865f2f97122502453",
+    "T01/baseline/bonaparte": "346c1e16c8b9d702279f8c7ac9438138c29f808094cfc55043f566f5ceefa56b",
+    "T01/baseline/bonaparte-launcher": "345bc0e770f8725752ee7d0e9f5ce4f959a28039ff0b82023ba21ff20e07ce0f",
+    "T01/baseline/bonaparte_checkpoint.py": "ae9025ccbb2f6bddf8eeecaa3fd146c84f851de615d2c612fc8a0622946374ae",
+    "T01/baseline/bonaparte_linear.py": "62b3cd13eec171b91845f1534d692a449579e27aa70d7272d37cff7284070df3",
+    "T01/baseline/bonaparte_native.py": "a025039aceeddddccdfb21cc32c56a1cf338b97a45036c5b6e3b218843eda3d9",
+    "T01/baseline/bonaparte_progress.py": "df718ee1143d09e4fcbc1662c3111476ebecded3465c9bfb124a64c45635b797",
+    "T01/baseline/install": "700a37280bf155240111d2eaaea12cbab21e1ea6411dfa2da2bdb4a18a3353a8",
+    "T01/baseline/skills/use-bonaparte/SKILL.md": "05f992b8b6894d130965db8e28d2bc0c0ef09c68f3e81f6c062159318298e341",
+    "T01/baseline/skills/use-bonaparte/agents/openai.yaml": "defa44077cc3cf53c9e2d313980b9b5f40e8b3ec580bdcfaf0a2290a9a0c31a7",
+    "T01/baseline/tests/fixtures/codex_app_server_v2.jsonl": "809736775f911b8786fdcf209d122226433dfaf6f30d3e6c3a2dffca58fab632",
+    "T01/baseline/tests/test_autoresearch.py": "a8a82a3c413917d7cff6771ff44f37b71ce311d4de6e9c601a03082d673f8e08",
+    "T01/baseline/tests/test_bonaparte.py": "6bd3c15b74387f67b6e9275d935330f4d16939f66372267329c6966f50fcaa20",
+    "T01/baseline/tests/test_checkpoint.py": "e4d7a63cee1497127b21397e18cdbe7eba132a46363e0ff074adfae64cea9a98",
+    "T01/baseline/tests/test_handoff.py": "260054eae3f093a2038688c0801e21bf1f1e1aa6e29b47c99e9848528ab67f33",
+    "T01/baseline/tests/test_installation.py": "04f571d1961c6c27e8dd9df485fe09a08360d11a8a9e2fa619169fedf879021e",
+    "T01/baseline/tests/test_linear.py": "abc0754553b4f20bae3f8a8eeb6364559284c316b24f902eb4f20dc8443e846c",
+    "T01/baseline/tests/test_phase_runtime.py": "3dcd3730d031268ccfd585339c6901661509967d50f820e09278fdcf3dac93d1",
+    "T01/baseline/tests/test_progress.py": "a3e0f44bb6d7ee5510a3a9d7d3f2abc644886a34fd4652c7c7c129adb97cab27",
+    "T01/baseline/workflows/autoresearch-critic.md": "1803611a8fb76ddf17cc300f67897c2e3febe39bcc2526e0adad09a1d08b3afd",
+    "T01/baseline/workflows/autoresearch-setup.md": "5fe5a70a9fc775c8a9681144df4c65f82275db96b1409abaf2aa3684b67a1ff5",
+    "T01/baseline/workflows/autoresearch-worker.md": "60a82964d53f29b8682f03483edf9b3e1cd4fe1b0f0f4a8d6cfd656ea42fea38",
+    "T01/baseline/workflows/bug-rca.md": "439226b0b7fec0e999a2ff37ea1a194c4e2ce8ba5e261fa364f3097e95ee86ad",
+    "T01/baseline/workflows/create.md": "fb6bb1cf96acf0d0be73fac342171250dc3aa1f9bbbeb1f19fe8518e1d61bd42",
+    "T01/baseline/workflows/implement.md": "aa0d5e25dc1ff126ff241a25e9ff34a7ba83df64613999c7456e68a06cb97eb2",
+    "T01/baseline/workflows/publish.md": "912c274c5a6b3ab58ee80958cd3965b0a3b830021b8db33ac788ba831b9bc192",
+    "T01/baseline/workflows/review.md": "9a280f2ed69d89522651d5b642b109ce899fdeb302e868c618ccf1dc30110a88",
+    "T01/baseline/workflows/scope.md": "8a0d614bae1b5f1756d3d2714b4a5d7143e747234dd03704bb0a29a2a99dffc2",
+    "T02/baseline/.github/workflows/ci.yml": "560aa2e8746b8e525ce76b75b97348b881b5415cdd2ccb68725677cf8eec477b",
+    "T02/baseline/.gitignore": "1180e510a75b49e24ec888196d6a405e447ab7f9679270f03deffa7bee54a95c",
+    "T02/baseline/README.md": "95ec7ea179bde06f582e25586c961feced0d781a4e6bf8dfe316116c9d8fc133",
+    "T02/baseline/bonaparte": "76f2b5fe9885de86e697729431e4a582f9cb8ee06d339d6ce5b6f9be72822681",
+    "T02/baseline/bonaparte-launcher": "88c62326eabd1fec1415816bf4df54e92830f150d1abca2490baedd6f8cacf33",
+    "T02/baseline/bonaparte_checkpoint.py": "ae9025ccbb2f6bddf8eeecaa3fd146c84f851de615d2c612fc8a0622946374ae",
+    "T02/baseline/bonaparte_linear.py": "62b3cd13eec171b91845f1534d692a449579e27aa70d7272d37cff7284070df3",
+    "T02/baseline/bonaparte_native.py": "c54429978edfb982644463623d2ae5de081d21fe3506b775e73d01009fd08355",
+    "T02/baseline/bonaparte_progress.py": "df718ee1143d09e4fcbc1662c3111476ebecded3465c9bfb124a64c45635b797",
+    "T02/baseline/install": "5ab14d0a2580810abd668d50df2a590e3895dd5faaa683f050e15c10b64638a3",
+    "T02/baseline/skills/use-bonaparte/SKILL.md": "05f992b8b6894d130965db8e28d2bc0c0ef09c68f3e81f6c062159318298e341",
+    "T02/baseline/skills/use-bonaparte/agents/openai.yaml": "defa44077cc3cf53c9e2d313980b9b5f40e8b3ec580bdcfaf0a2290a9a0c31a7",
+    "T02/baseline/tests/fixtures/codex_app_server_v2.jsonl": "809736775f911b8786fdcf209d122226433dfaf6f30d3e6c3a2dffca58fab632",
+    "T02/baseline/tests/test_bonaparte.py": "d46953af1fb613907ed9043a53d260a8ac86b3f3ee5d0a463993d55a02b89154",
+    "T02/baseline/tests/test_checkpoint.py": "e4d7a63cee1497127b21397e18cdbe7eba132a46363e0ff074adfae64cea9a98",
+    "T02/baseline/tests/test_handoff.py": "e0d5d3bbb55d42210bcaed815d4542748425f0fa043c61fd2622d6c78c989d28",
+    "T02/baseline/tests/test_installation.py": "f15e5512549a6d8ba28b03cbcb078e107c4eff4cf0793a4acd58dde4e2ca1954",
+    "T02/baseline/tests/test_linear.py": "abc0754553b4f20bae3f8a8eeb6364559284c316b24f902eb4f20dc8443e846c",
+    "T02/baseline/tests/test_phase_runtime.py": "f9c1dd1fbbcea1a882707239357ee4c493d3290d7bd9c49c11b59114fc421678",
+    "T02/baseline/tests/test_progress.py": "a3e0f44bb6d7ee5510a3a9d7d3f2abc644886a34fd4652c7c7c129adb97cab27",
+    "T02/baseline/workflows/bug-rca.md": "06101cd20985c590a995578ca9136e8e66e8a86a62eaf7698ddd5e0d5c8fa8f3",
+    "T02/baseline/workflows/create.md": "fb6bb1cf96acf0d0be73fac342171250dc3aa1f9bbbeb1f19fe8518e1d61bd42",
+    "T02/baseline/workflows/implement.md": "abf41efbd5c482392942d08ae6bb056c5634f2402ae9eada12608cd777d19b2c",
+    "T02/baseline/workflows/publish.md": "fbbc900a1c2dba946d0e575c5e3dce4cda2c02282d3ffb537f88e2037ebb21c7",
+    "T02/baseline/workflows/review.md": "8c70376086ff541e019a1f12e502f7215657997b6a94b0e16331b77de0bb8ed0",
+    "T02/baseline/workflows/scope.md": "f5094ea6530190d9ac48d3ef5c638a391681844527c460b330d5e5377567c43a"
+  },
+  "candidates": [
+    {
+      "task": "T01",
+      "candidate": "C009",
+      "reviewed": true,
+      "status_text": "available",
+      "patch_file": "T01/candidates/C009/change.patch",
+      "patch_sha256": "b9011e853fc479e5bb5d8ce2444cafb46311f898a4012ba47aaa16570a620819",
+      "patch_bytes": 7804,
+      "reviewed_source_hashes": [
+        {
+          "file": "T01/candidates/C009/production/bonaparte",
+          "sha256": "a854e407fbc344abac2bc1893227d3016585502ba405a6433ca87640103a79b5",
+          "same_as_baseline": false
+        },
+        {
+          "file": "T01/candidates/C009/production/bonaparte_linear.py",
+          "sha256": "62b3cd13eec171b91845f1534d692a449579e27aa70d7272d37cff7284070df3",
+          "same_as_baseline": true
+        },
+        {
+          "file": "T01/candidates/C009/production/bonaparte_native.py",
+          "sha256": "8261291c6608802fd4f0957f2ac660fd0b4e31867e709d06d6c1e0b9859e1dd1",
+          "same_as_baseline": false
+        },
+        {
+          "file": "T01/candidates/C009/production/workflows/implement.md",
+          "sha256": "aa0d5e25dc1ff126ff241a25e9ff34a7ba83df64613999c7456e68a06cb97eb2",
+          "same_as_baseline": true
+        },
+        {
+          "file": "T01/candidates/C009/production/workflows/review.md",
+          "sha256": "9a280f2ed69d89522651d5b642b109ce899fdeb302e868c618ccf1dc30110a88",
+          "same_as_baseline": true
+        }
+      ],
+      "findings": [
+        {
+          "id": "T01-C009-branch-resume",
+          "axis": "requirements",
+          "materiality": "material",
+          "file": "T01/candidates/C009/production/bonaparte",
+          "line": 455,
+          "exact_code": "    issue_branch = None",
+          "demonstrated_source_property": "issue_branch starts as None and is populated only in the non-resume Linear handoff branch. The resume path and checkpoint caller do not carry the canonical issue branch into this driver.",
+          "behavioral_consequence": "Owned children of a resumed terminal phase receive no canonical metadata update. C047 instead raises a missing-branch teardown failure after archiving the root, even though the original issue branch was known.",
+          "requirement_or_engineering_basis": "Child metadata must use the canonical issue branch, including the supported clarification/resume lifecycle.",
+          "minimal_repair": "Save the trusted Linear issue branch with the within-phase checkpoint and pass it into run_phase on resume; keep this value distinct from the working-tree and receipt branches.",
+          "proposed_executable_counterexample": "Using the visible AppServerFixture pattern, run an initial issue phase whose Linear gitBranchName is \"arya/cor-1-canonical\" and receipt is needs-input; persist a checkpoint, then resume it. Emit actual thread/started events for root R and child C with source.subAgent.thread_spawn.parent_thread_id=R; return a terminal receipt with branch=null. Record requests and assert C receives thread/metadata/update with gitInfo.branch=\"arya/cor-1-canonical\", followed by thread/archive(R). Do not substitute the working-tree branch.",
+          "evidence_kind": "static source trace; counterexample not executed"
+        },
+        {
+          "id": "T01-C009-hidden-cleanup-error",
+          "axis": "requirements",
+          "materiality": "material",
+          "file": "T01/candidates/C009/production/bonaparte",
+          "line": 720,
+          "exact_code": "                if not failed:",
+          "demonstrated_source_property": "The finally block suppresses every driver.close exception when the phase already failed. These drivers attempt descendant updates and root archive after a terminal failed turn, then raise aggregated teardown errors.",
+          "behavioral_consequence": "A descendant metadata failure is lost from the caller-visible failure after cleanup/reaping; only the original coordinator failure survives.",
+          "requirement_or_engineering_basis": "Surface descendant cleanup failure after attempting cleanup, without preventing root archive or reaping.",
+          "minimal_repair": "Preserve both the primary phase error and cleanup errors in a combined error string or structured failure that the CLI/checkpoint serializer actually returns; retain the finally reaping guarantee.",
+          "proposed_executable_counterexample": "Emit root/child started events and an active root turn/completed with status=failed and error=\"coordinator failure\". Make thread/metadata/update(C) reject with \"child metadata denied\", let archive(R) succeed, and spy on reaping. Assert archive and reap occur, and the returned CLI/checkpoint failure contains both messages.",
+          "evidence_kind": "static source trace; counterexample not executed"
+        }
+      ],
+      "uncertainty": [
+        "No candidate code or tests were executed. Native protocol acceptance and timing remain unverified.",
+        "Ancestry payload aliases and native metadata/archive endpoint behavior are inferred from visible source only. Confirm against real thread/started payloads and request errors outside this blinded review."
+      ],
+      "requirements_assessment": {
+        "result": "source-supported gaps",
+        "finding_ids": [
+          "T01-C009-branch-resume",
+          "T01-C009-hidden-cleanup-error"
+        ]
+      },
+      "engineering_assessment": {
+        "result": "no separate material engineering finding",
+        "finding_ids": []
+      },
+      "supported_properties": [
+        "Inspected every patch hunk against the supplied production snapshot and shared baseline context."
+      ],
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr39--baseline-opus--r2",
+        "task_id": "tweed-pr39",
+        "arm_id": "baseline-opus",
+        "repeat": 2
+      },
+      "published_patch": "../results/patches/tweed-pr39--baseline-opus--r2.patch"
+    },
+    {
+      "task": "T01",
+      "candidate": "C014",
+      "reviewed": true,
+      "status_text": "available",
+      "patch_file": "T01/candidates/C014/change.patch",
+      "patch_sha256": "9350febbc16c1964e258954ce87794030c1cc601969129c267f3e552e94296e8",
+      "patch_bytes": 9233,
+      "reviewed_source_hashes": [
+        {
+          "file": "T01/candidates/C014/production/bonaparte",
+          "sha256": "f88002bb7874ceb8032af2ad0fa77d7ca98aa17bed2987f1bc497052f8ae36f3",
+          "same_as_baseline": false
+        },
+        {
+          "file": "T01/candidates/C014/production/bonaparte_linear.py",
+          "sha256": "62b3cd13eec171b91845f1534d692a449579e27aa70d7272d37cff7284070df3",
+          "same_as_baseline": true
+        },
+        {
+          "file": "T01/candidates/C014/production/bonaparte_native.py",
+          "sha256": "652760b26ec9ef52737535bdd19252e35bccb6779bb8fbe66562287e4d3bb40c",
+          "same_as_baseline": false
+        },
+        {
+          "file": "T01/candidates/C014/production/workflows/implement.md",
+          "sha256": "aa0d5e25dc1ff126ff241a25e9ff34a7ba83df64613999c7456e68a06cb97eb2",
+          "same_as_baseline": true
+        },
+        {
+          "file": "T01/candidates/C014/production/workflows/review.md",
+          "sha256": "9a280f2ed69d89522651d5b642b109ce899fdeb302e868c618ccf1dc30110a88",
+          "same_as_baseline": true
+        }
+      ],
+      "findings": [
+        {
+          "id": "T01-C014-branch-resume",
+          "axis": "requirements",
+          "materiality": "material",
+          "file": "T01/candidates/C014/production/bonaparte",
+          "line": 455,
+          "exact_code": "    issue_branch = None",
+          "demonstrated_source_property": "issue_branch starts as None and is populated only in the non-resume Linear handoff branch. The resume path and checkpoint caller do not carry the canonical issue branch into this driver.",
+          "behavioral_consequence": "Owned children of a resumed terminal phase receive no canonical metadata update. C047 instead raises a missing-branch teardown failure after archiving the root, even though the original issue branch was known.",
+          "requirement_or_engineering_basis": "Child metadata must use the canonical issue branch, including the supported clarification/resume lifecycle.",
+          "minimal_repair": "Save the trusted Linear issue branch with the within-phase checkpoint and pass it into run_phase on resume; keep this value distinct from the working-tree and receipt branches.",
+          "proposed_executable_counterexample": "Using the visible AppServerFixture pattern, run an initial issue phase whose Linear gitBranchName is \"arya/cor-1-canonical\" and receipt is needs-input; persist a checkpoint, then resume it. Emit actual thread/started events for root R and child C with source.subAgent.thread_spawn.parent_thread_id=R; return a terminal receipt with branch=null. Record requests and assert C receives thread/metadata/update with gitInfo.branch=\"arya/cor-1-canonical\", followed by thread/archive(R). Do not substitute the working-tree branch.",
+          "evidence_kind": "static source trace; counterexample not executed"
+        },
+        {
+          "id": "T01-C014-hidden-cleanup-error",
+          "axis": "requirements",
+          "materiality": "material",
+          "file": "T01/candidates/C014/production/bonaparte",
+          "line": 733,
+          "exact_code": "                if not failed:",
+          "demonstrated_source_property": "The finally block suppresses every driver.close exception when the phase already failed. These drivers attempt descendant updates and root archive after a terminal failed turn, then raise aggregated teardown errors.",
+          "behavioral_consequence": "A descendant metadata failure is lost from the caller-visible failure after cleanup/reaping; only the original coordinator failure survives.",
+          "requirement_or_engineering_basis": "Surface descendant cleanup failure after attempting cleanup, without preventing root archive or reaping.",
+          "minimal_repair": "Preserve both the primary phase error and cleanup errors in a combined error string or structured failure that the CLI/checkpoint serializer actually returns; retain the finally reaping guarantee.",
+          "proposed_executable_counterexample": "Emit root/child started events and an active root turn/completed with status=failed and error=\"coordinator failure\". Make thread/metadata/update(C) reject with \"child metadata denied\", let archive(R) succeed, and spy on reaping. Assert archive and reap occur, and the returned CLI/checkpoint failure contains both messages.",
+          "evidence_kind": "static source trace; counterexample not executed"
+        }
+      ],
+      "uncertainty": [
+        "No candidate code or tests were executed. Native protocol acceptance and timing remain unverified.",
+        "Ancestry payload aliases and native metadata/archive endpoint behavior are inferred from visible source only. Confirm against real thread/started payloads and request errors outside this blinded review."
+      ],
+      "requirements_assessment": {
+        "result": "source-supported gaps",
+        "finding_ids": [
+          "T01-C014-branch-resume",
+          "T01-C014-hidden-cleanup-error"
+        ]
+      },
+      "engineering_assessment": {
+        "result": "no separate material engineering finding",
+        "finding_ids": []
+      },
+      "supported_properties": [
+        "Inspected every patch hunk against the supplied production snapshot and shared baseline context."
+      ],
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr39--baseline-opus--r1",
+        "task_id": "tweed-pr39",
+        "arm_id": "baseline-opus",
+        "repeat": 1
+      },
+      "published_patch": "../results/patches/tweed-pr39--baseline-opus--r1.patch"
+    },
+    {
+      "task": "T01",
+      "candidate": "C015",
+      "reviewed": true,
+      "status_text": "available",
+      "patch_file": "T01/candidates/C015/change.patch",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "patch_bytes": 0,
+      "reviewed_source_hashes": [
+        {
+          "file": "T01/candidates/C015/production/bonaparte",
+          "sha256": "346c1e16c8b9d702279f8c7ac9438138c29f808094cfc55043f566f5ceefa56b",
+          "same_as_baseline": true
+        },
+        {
+          "file": "T01/candidates/C015/production/bonaparte_linear.py",
+          "sha256": "62b3cd13eec171b91845f1534d692a449579e27aa70d7272d37cff7284070df3",
+          "same_as_baseline": true
+        },
+        {
+          "file": "T01/candidates/C015/production/bonaparte_native.py",
+          "sha256": "a025039aceeddddccdfb21cc32c56a1cf338b97a45036c5b6e3b218843eda3d9",
+          "same_as_baseline": true
+        },
+        {
+          "file": "T01/candidates/C015/production/workflows/implement.md",
+          "sha256": "aa0d5e25dc1ff126ff241a25e9ff34a7ba83df64613999c7456e68a06cb97eb2",
+          "same_as_baseline": true
+        },
+        {
+          "file": "T01/candidates/C015/production/workflows/review.md",
+          "sha256": "9a280f2ed69d89522651d5b642b109ce899fdeb302e868c618ccf1dc30110a88",
+          "same_as_baseline": true
+        }
+      ],
+      "findings": [
+        {
+          "id": "T01-C015-missing-implementation",
+          "axis": "requirements",
+          "materiality": "material",
+          "file": "T01/candidates/C015/production/bonaparte_native.py",
+          "line": 348,
+          "exact_code": "    def close(self, *, failed: bool) -> None:",
+          "demonstrated_source_property": "The patch is empty and every supplied production file is byte-identical to the task baseline. close only calls terminate_and_reap; no started-parent ownership state, descendant metadata update, or root archive request exists.",
+          "behavioral_consequence": "A finished coordinator and its owned children retain stale native session metadata and the root is never archived by this path.",
+          "requirement_or_engineering_basis": "Implement native terminal-session teardown, actual-start ownership, canonical child branch metadata, and cleanup error handling.",
+          "minimal_repair": "Record parent relationships from thread/started, carry the canonical issue branch, and on terminal-root cleanup attempt each owned started descendant update and root archive before finally reaping; aggregate failures.",
+          "proposed_executable_counterexample": "Construct a driver with a recording request stub and fake process; feed root R, owned child C, and unrelated U thread/started notifications, then an active terminal completion. Call close. Assert only update(C, canonical branch) and archive(R) are requested and reap runs. Current source records neither request.",
+          "evidence_kind": "static source trace; counterexample not executed"
+        }
+      ],
+      "uncertainty": [
+        "No candidate code or tests were executed. Native protocol acceptance and timing remain unverified."
+      ],
+      "requirements_assessment": {
+        "result": "source-supported gaps",
+        "finding_ids": [
+          "T01-C015-missing-implementation"
+        ]
+      },
+      "engineering_assessment": {
+        "result": "no separate material engineering finding",
+        "finding_ids": []
+      },
+      "supported_properties": [
+        "Inspected every patch hunk against the supplied production snapshot and shared baseline context."
+      ],
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr39--enhanced-haiku--r2",
+        "task_id": "tweed-pr39",
+        "arm_id": "enhanced-haiku",
+        "repeat": 2
+      },
+      "published_patch": "../results/patches/tweed-pr39--enhanced-haiku--r2.patch"
+    },
+    {
+      "task": "T01",
+      "candidate": "C020",
+      "reviewed": true,
+      "status_text": "available",
+      "patch_file": "T01/candidates/C020/change.patch",
+      "patch_sha256": "4b2c914a1f99819fdd72a0b326d1148bc3c3430823e989f22189f0626afeb789",
+      "patch_bytes": 7613,
+      "reviewed_source_hashes": [
+        {
+          "file": "T01/candidates/C020/production/bonaparte",
+          "sha256": "255abc95eb01305c683232739b1594cbf3706e61ad0992ae09f1bfdbdb5b933e",
+          "same_as_baseline": false
+        },
+        {
+          "file": "T01/candidates/C020/production/bonaparte_linear.py",
+          "sha256": "62b3cd13eec171b91845f1534d692a449579e27aa70d7272d37cff7284070df3",
+          "same_as_baseline": true
+        },
+        {
+          "file": "T01/candidates/C020/production/bonaparte_native.py",
+          "sha256": "2d3374a174ecc61680ef2e81fd3856fb660ba678874aacde8f294c867ded94fc",
+          "same_as_baseline": false
+        },
+        {
+          "file": "T01/candidates/C020/production/workflows/implement.md",
+          "sha256": "aa0d5e25dc1ff126ff241a25e9ff34a7ba83df64613999c7456e68a06cb97eb2",
+          "same_as_baseline": true
+        },
+        {
+          "file": "T01/candidates/C020/production/workflows/review.md",
+          "sha256": "9a280f2ed69d89522651d5b642b109ce899fdeb302e868c618ccf1dc30110a88",
+          "same_as_baseline": true
+        }
+      ],
+      "findings": [
+        {
+          "id": "T01-C020-branch-resume",
+          "axis": "requirements",
+          "materiality": "material",
+          "file": "T01/candidates/C020/production/bonaparte",
+          "line": 455,
+          "exact_code": "    issue_branch = None",
+          "demonstrated_source_property": "issue_branch starts as None and is populated only in the non-resume Linear handoff branch. The resume path and checkpoint caller do not carry the canonical issue branch into this driver.",
+          "behavioral_consequence": "Owned children of a resumed terminal phase receive no canonical metadata update. C047 instead raises a missing-branch teardown failure after archiving the root, even though the original issue branch was known.",
+          "requirement_or_engineering_basis": "Child metadata must use the canonical issue branch, including the supported clarification/resume lifecycle.",
+          "minimal_repair": "Save the trusted Linear issue branch with the within-phase checkpoint and pass it into run_phase on resume; keep this value distinct from the working-tree and receipt branches.",
+          "proposed_executable_counterexample": "Using the visible AppServerFixture pattern, run an initial issue phase whose Linear gitBranchName is \"arya/cor-1-canonical\" and receipt is needs-input; persist a checkpoint, then resume it. Emit actual thread/started events for root R and child C with source.subAgent.thread_spawn.parent_thread_id=R; return a terminal receipt with branch=null. Record requests and assert C receives thread/metadata/update with gitInfo.branch=\"arya/cor-1-canonical\", followed by thread/archive(R). Do not substitute the working-tree branch.",
+          "evidence_kind": "static source trace; counterexample not executed"
+        },
+        {
+          "id": "T01-C020-unstarted-root",
+          "axis": "requirements",
+          "materiality": "material",
+          "file": "T01/candidates/C020/production/bonaparte_native.py",
+          "line": 376,
+          "exact_code": "        owned = {root_id}",
+          "demonstrated_source_property": "owned_descendants seeds ownership with root_id even when no root start event was recorded, and finish_root unconditionally archives that ID whenever archive=True.",
+          "behavioral_consequence": "A thread/start response or resumed identity alone permits mutating a root never seen in thread/started, and permits attributing children to that unstarted root.",
+          "requirement_or_engineering_basis": "Track root and child ownership from actual thread-started events; do not touch unstarted threads.",
+          "minimal_repair": "Return without mutation unless root_id is in the recorded started-thread map; seed the ownership closure only after that check.",
+          "proposed_executable_counterexample": "Initialize _started_threads={\"C\":\"R\"} without any start for R; stub request to record calls. Call finish_root(\"R\", branch=\"arya/cor-1\", archive=True). Assert no requests. Current source requests update(C) and archive(R).",
+          "evidence_kind": "static source trace; counterexample not executed"
+        }
+      ],
+      "uncertainty": [
+        "No candidate code or tests were executed. Native protocol acceptance and timing remain unverified.",
+        "The generic depth-limited parent parser searches arbitrary source dictionary values. No supplied protocol schema establishes whether unrelated nested parent fields are possible; no separate material finding is asserted for this uncertainty. Prefer a test containing conflicting source fields if the owner has real payload evidence.",
+        "Ancestry payload aliases and native metadata/archive endpoint behavior are inferred from visible source only. Confirm against real thread/started payloads and request errors outside this blinded review."
+      ],
+      "requirements_assessment": {
+        "result": "source-supported gaps",
+        "finding_ids": [
+          "T01-C020-branch-resume",
+          "T01-C020-unstarted-root"
+        ]
+      },
+      "engineering_assessment": {
+        "result": "no separate material engineering finding",
+        "finding_ids": []
+      },
+      "supported_properties": [
+        "Inspected every patch hunk against the supplied production snapshot and shared baseline context."
+      ],
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr39--enhanced-opus--r1",
+        "task_id": "tweed-pr39",
+        "arm_id": "enhanced-opus",
+        "repeat": 1
+      },
+      "published_patch": "../results/patches/tweed-pr39--enhanced-opus--r1.patch"
+    },
+    {
+      "task": "T01",
+      "candidate": "C026",
+      "reviewed": true,
+      "status_text": "available",
+      "patch_file": "T01/candidates/C026/change.patch",
+      "patch_sha256": "cfdc9e46d004afe91c3b62959eb7b3764dfa04a54ad6fd9622062b7c2645d82a",
+      "patch_bytes": 7608,
+      "reviewed_source_hashes": [
+        {
+          "file": "T01/candidates/C026/production/bonaparte",
+          "sha256": "2f719ac94ee8e051eb17a73ade266fbf197c81cd2caadc21291697f328d7f73f",
+          "same_as_baseline": false
+        },
+        {
+          "file": "T01/candidates/C026/production/bonaparte_linear.py",
+          "sha256": "62b3cd13eec171b91845f1534d692a449579e27aa70d7272d37cff7284070df3",
+          "same_as_baseline": true
+        },
+        {
+          "file": "T01/candidates/C026/production/bonaparte_native.py",
+          "sha256": "39ccf01ca1d32e92cf633c514a7732fa851910a62eb7e05044d1596ce75c98a4",
+          "same_as_baseline": false
+        },
+        {
+          "file": "T01/candidates/C026/production/workflows/implement.md",
+          "sha256": "aa0d5e25dc1ff126ff241a25e9ff34a7ba83df64613999c7456e68a06cb97eb2",
+          "same_as_baseline": true
+        },
+        {
+          "file": "T01/candidates/C026/production/workflows/review.md",
+          "sha256": "9a280f2ed69d89522651d5b642b109ce899fdeb302e868c618ccf1dc30110a88",
+          "same_as_baseline": true
+        }
+      ],
+      "findings": [
+        {
+          "id": "T01-C026-terminal-failure-skipped",
+          "axis": "requirements",
+          "materiality": "material",
+          "file": "T01/candidates/C026/production/bonaparte_native.py",
+          "line": 373,
+          "exact_code": "                not failed",
+          "demonstrated_source_property": "close conditions all metadata/archive cleanup on not failed. run_phase leaves failed=True when an active terminal turn has status=failed, has no final receipt, or its JSON is invalid.",
+          "behavioral_consequence": "An already finished root is left unarchived and owned descendants are not updated on these terminal failure paths, although the process is reaped.",
+          "requirement_or_engineering_basis": "A terminal root must be archived; whether receipt processing succeeds is a separate state from whether the native root finished.",
+          "minimal_repair": "Track accepted terminal completion independently of failed, gate cleanup on that state and actual root start, and exclude needs-input only when a valid receipt establishes resumability.",
+          "proposed_executable_counterexample": "Emit actual starts R and owned C, then active completion status=failed. Spy on requests and reap. Assert update(C) and archive(R) occur before reap even though run_phase raises. Current close skips both requests.",
+          "evidence_kind": "static source trace; counterexample not executed"
+        },
+        {
+          "id": "T01-C026-nonterminal-intake-archived",
+          "axis": "requirements",
+          "materiality": "material",
+          "file": "T01/candidates/C026/production/bonaparte_native.py",
+          "line": 373,
+          "exact_code": "                not failed",
+          "demonstrated_source_property": "The same not-failed gate also treats a successful non-turn driver session as terminal. call_linear uses this driver, sets _root_thread_id through thread/start, and always closes with failed=False; archive_on_close defaults True.",
+          "behavioral_consequence": "An actual-started ephemeral Linear intake root is archived even though it never had a coordinator turn completion. Root lifecycle is inferred from caller success rather than actual terminal state.",
+          "requirement_or_engineering_basis": "Archive the terminal root when it finishes; track terminal state independently from transport-call success.",
+          "minimal_repair": "Use the accepted terminal-root flag described above, so the shared Linear intake driver remains a transport session unless its own terminal turn is observed.",
+          "proposed_executable_counterexample": "Simulate call_linear: actual start R, successful issue/comment MCP calls, no turn/start or turn/completed, then close(failed=False). Assert no terminal-session archive request, and reap still occurs. Current close sends archive(R).",
+          "evidence_kind": "static source trace; counterexample not executed"
+        }
+      ],
+      "uncertainty": [
+        "No candidate code or tests were executed. Native protocol acceptance and timing remain unverified.",
+        "Ancestry payload aliases and native metadata/archive endpoint behavior are inferred from visible source only. Confirm against real thread/started payloads and request errors outside this blinded review."
+      ],
+      "requirements_assessment": {
+        "result": "source-supported gaps",
+        "finding_ids": [
+          "T01-C026-terminal-failure-skipped",
+          "T01-C026-nonterminal-intake-archived"
+        ]
+      },
+      "engineering_assessment": {
+        "result": "no separate material engineering finding",
+        "finding_ids": []
+      },
+      "supported_properties": [
+        "Inspected every patch hunk against the supplied production snapshot and shared baseline context."
+      ],
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr39--enhanced-codex--r1",
+        "task_id": "tweed-pr39",
+        "arm_id": "enhanced-codex",
+        "repeat": 1
+      },
+      "published_patch": "../results/patches/tweed-pr39--enhanced-codex--r1.patch"
+    },
+    {
+      "task": "T01",
+      "candidate": "C033",
+      "reviewed": true,
+      "status_text": "available",
+      "patch_file": "T01/candidates/C033/change.patch",
+      "patch_sha256": "541b9d353fd9e92b735ace65c49c287290d14bfac92e7e425c8bdb8184bbc033",
+      "patch_bytes": 6869,
+      "reviewed_source_hashes": [
+        {
+          "file": "T01/candidates/C033/production/bonaparte",
+          "sha256": "1a3f08b42f996062caf0aefacae68ae5b0753cd26402c6b70c2166857881bc7f",
+          "same_as_baseline": false
+        },
+        {
+          "file": "T01/candidates/C033/production/bonaparte_linear.py",
+          "sha256": "62b3cd13eec171b91845f1534d692a449579e27aa70d7272d37cff7284070df3",
+          "same_as_baseline": true
+        },
+        {
+          "file": "T01/candidates/C033/production/bonaparte_native.py",
+          "sha256": "aebdad5f910959a60d4bfbba4c60bc35fa2c5c8a0b8d940967292ed2dd191bd5",
+          "same_as_baseline": false
+        },
+        {
+          "file": "T01/candidates/C033/production/workflows/implement.md",
+          "sha256": "aa0d5e25dc1ff126ff241a25e9ff34a7ba83df64613999c7456e68a06cb97eb2",
+          "same_as_baseline": true
+        },
+        {
+          "file": "T01/candidates/C033/production/workflows/review.md",
+          "sha256": "9a280f2ed69d89522651d5b642b109ce899fdeb302e868c618ccf1dc30110a88",
+          "same_as_baseline": true
+        }
+      ],
+      "findings": [
+        {
+          "id": "T01-C033-branch-resume-fallback",
+          "axis": "requirements",
+          "materiality": "material",
+          "file": "T01/candidates/C033/production/bonaparte_native.py",
+          "line": 366,
+          "exact_code": "                            self._issue_branch = branch",
+          "demonstrated_source_property": "On resume expected_branch is None. The thread/resume result falls back to thread.gitInfo.branch, and run_phase can then replace it with receipt.branch. Neither is established as the canonical Linear issue branch.",
+          "behavioral_consequence": "A resumed RCA/scope/review running on main or another existing branch labels owned children with that branch, violating the canonical issue provenance requirement.",
+          "requirement_or_engineering_basis": "Child metadata must use the canonical issue branch; the repository branch and coordinator receipt are not substitutes.",
+          "minimal_repair": "Persist and pass the canonical Linear branch from the initial handoff. Remove gitInfo/receipt fallbacks for this canonical value; separately handle a missing canonical value without claiming the fallback is official.",
+          "proposed_executable_counterexample": "Using the visible AppServerFixture pattern, run an initial issue phase whose Linear gitBranchName is \"arya/cor-1-canonical\" and receipt is needs-input; persist a checkpoint, then resume it. Emit actual thread/started events for root R and child C with source.subAgent.thread_spawn.parent_thread_id=R; return a terminal receipt with branch=null. Record requests and assert C receives thread/metadata/update with gitInfo.branch=\"arya/cor-1-canonical\", followed by thread/archive(R). Do not substitute the working-tree branch. In the resumed thread result explicitly set gitInfo.branch=\"main\"; assert the update still uses the saved canonical value, not main.",
+          "evidence_kind": "static source trace; counterexample not executed"
+        },
+        {
+          "id": "T01-C033-notes-not-surfaced",
+          "axis": "requirements",
+          "materiality": "material",
+          "file": "T01/candidates/C033/production/bonaparte",
+          "line": 724,
+          "exact_code": "                    coordinator_error.add_note(f\"Native session cleanup failed: {cleanup_error}\")",
+          "demonstrated_source_property": "Cleanup failure during a primary phase failure is attached only with exception.add_note. The CLI and resume checkpoint code serialize str(error), which excludes exception notes (main at line 1434).",
+          "behavioral_consequence": "The cleanup error is visible in a traceback but absent from the product failure receipt/checkpoint; the descendant failure is not surfaced through the normal CLI interface.",
+          "requirement_or_engineering_basis": "Surface descendant cleanup failure after root archive and process reaping.",
+          "minimal_repair": "Compose both failures into the exception message or teach both normal and checkpoint failure serialization to include notes; avoid relying on traceback display.",
+          "proposed_executable_counterexample": "Run the same failed-root/denied-child metadata scenario through main or resume_checkpoint, not just run_phase. Assert archive and reap happen and the serialized summary includes \"child metadata denied\". Current str(error) only includes the coordinator error.",
+          "evidence_kind": "static source trace; counterexample not executed",
+          "related_locations": [
+            "T01/candidates/C033/production/bonaparte:1434"
+          ]
+        }
+      ],
+      "uncertainty": [
+        "No candidate code or tests were executed. Native protocol acceptance and timing remain unverified.",
+        "Ancestry payload aliases and native metadata/archive endpoint behavior are inferred from visible source only. Confirm against real thread/started payloads and request errors outside this blinded review."
+      ],
+      "requirements_assessment": {
+        "result": "source-supported gaps",
+        "finding_ids": [
+          "T01-C033-branch-resume-fallback",
+          "T01-C033-notes-not-surfaced"
+        ]
+      },
+      "engineering_assessment": {
+        "result": "no separate material engineering finding",
+        "finding_ids": []
+      },
+      "supported_properties": [
+        "Inspected every patch hunk against the supplied production snapshot and shared baseline context."
+      ],
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr39--enhanced-codex--r2",
+        "task_id": "tweed-pr39",
+        "arm_id": "enhanced-codex",
+        "repeat": 2
+      },
+      "published_patch": "../results/patches/tweed-pr39--enhanced-codex--r2.patch"
+    },
+    {
+      "task": "T01",
+      "candidate": "C042",
+      "reviewed": true,
+      "status_text": "available",
+      "patch_file": "T01/candidates/C042/change.patch",
+      "patch_sha256": "2f97fa1e9056ceb6d3e19dae72b4839e794a9887105d693364884e155b9606b5",
+      "patch_bytes": 6675,
+      "reviewed_source_hashes": [
+        {
+          "file": "T01/candidates/C042/production/bonaparte",
+          "sha256": "2637e2652e8afc5c83b29fad328a5e1ef19ecc789f47d6e29d874894a0138f67",
+          "same_as_baseline": false
+        },
+        {
+          "file": "T01/candidates/C042/production/bonaparte_linear.py",
+          "sha256": "62b3cd13eec171b91845f1534d692a449579e27aa70d7272d37cff7284070df3",
+          "same_as_baseline": true
+        },
+        {
+          "file": "T01/candidates/C042/production/bonaparte_native.py",
+          "sha256": "81168396c5a65bfc39a0ce8acec170417cd20ce90c9460b64f1c6869812a9180",
+          "same_as_baseline": false
+        },
+        {
+          "file": "T01/candidates/C042/production/workflows/implement.md",
+          "sha256": "aa0d5e25dc1ff126ff241a25e9ff34a7ba83df64613999c7456e68a06cb97eb2",
+          "same_as_baseline": true
+        },
+        {
+          "file": "T01/candidates/C042/production/workflows/review.md",
+          "sha256": "9a280f2ed69d89522651d5b642b109ce899fdeb302e868c618ccf1dc30110a88",
+          "same_as_baseline": true
+        }
+      ],
+      "findings": [
+        {
+          "id": "T01-C042-branch-resume",
+          "axis": "requirements",
+          "materiality": "material",
+          "file": "T01/candidates/C042/production/bonaparte",
+          "line": 455,
+          "exact_code": "    issue_branch = None",
+          "demonstrated_source_property": "issue_branch starts as None and is populated only in the non-resume Linear handoff branch. The resume path and checkpoint caller do not carry the canonical issue branch into this driver.",
+          "behavioral_consequence": "Owned children of a resumed terminal phase receive no canonical metadata update. C047 instead raises a missing-branch teardown failure after archiving the root, even though the original issue branch was known.",
+          "requirement_or_engineering_basis": "Child metadata must use the canonical issue branch, including the supported clarification/resume lifecycle.",
+          "minimal_repair": "Save the trusted Linear issue branch with the within-phase checkpoint and pass it into run_phase on resume; keep this value distinct from the working-tree and receipt branches.",
+          "proposed_executable_counterexample": "Using the visible AppServerFixture pattern, run an initial issue phase whose Linear gitBranchName is \"arya/cor-1-canonical\" and receipt is needs-input; persist a checkpoint, then resume it. Emit actual thread/started events for root R and child C with source.subAgent.thread_spawn.parent_thread_id=R; return a terminal receipt with branch=null. Record requests and assert C receives thread/metadata/update with gitInfo.branch=\"arya/cor-1-canonical\", followed by thread/archive(R). Do not substitute the working-tree branch.",
+          "evidence_kind": "static source trace; counterexample not executed"
+        },
+        {
+          "id": "T01-C042-terminal-failure-skipped",
+          "axis": "requirements",
+          "materiality": "material",
+          "file": "T01/candidates/C042/production/bonaparte",
+          "line": 711,
+          "exact_code": "        root_finished = isinstance(receipt, dict) and receipt.get(\"state\") in {",
+          "demonstrated_source_property": "root_finished becomes True only after status checks, final receipt presence, and JSON parsing all succeed. It remains False when an accepted terminal turn fails or a completed turn lacks valid JSON.",
+          "behavioral_consequence": "The finally block reaps the process but skips finish_root, leaving a finished root unarchived and started owned descendants unupdated.",
+          "requirement_or_engineering_basis": "Archive a terminal root and clean its started owned descendants even when receipt processing fails.",
+          "minimal_repair": "Initialize terminal outside try and derive terminal-root state from accepted completion in finally; retain needs-input resumability when a valid parsed receipt establishes it.",
+          "proposed_executable_counterexample": "Emit starts R/C and a matching turn/completed with status=failed, or status=completed with no final agentMessage. Assert finish_root updates C and archives R before reap. Current root_finished stays False.",
+          "evidence_kind": "static source trace; counterexample not executed"
+        }
+      ],
+      "uncertainty": [
+        "No candidate code or tests were executed. Native protocol acceptance and timing remain unverified.",
+        "Ancestry payload aliases and native metadata/archive endpoint behavior are inferred from visible source only. Confirm against real thread/started payloads and request errors outside this blinded review."
+      ],
+      "requirements_assessment": {
+        "result": "source-supported gaps",
+        "finding_ids": [
+          "T01-C042-branch-resume",
+          "T01-C042-terminal-failure-skipped"
+        ]
+      },
+      "engineering_assessment": {
+        "result": "no separate material engineering finding",
+        "finding_ids": []
+      },
+      "supported_properties": [
+        "Inspected every patch hunk against the supplied production snapshot and shared baseline context."
+      ],
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr39--enhanced-opus--r2",
+        "task_id": "tweed-pr39",
+        "arm_id": "enhanced-opus",
+        "repeat": 2
+      },
+      "published_patch": "../results/patches/tweed-pr39--enhanced-opus--r2.patch"
+    },
+    {
+      "task": "T01",
+      "candidate": "C047",
+      "reviewed": true,
+      "status_text": "available",
+      "patch_file": "T01/candidates/C047/change.patch",
+      "patch_sha256": "87dfb1d49f3367f2c1f9073109fc2727786ad7a25aa9f1092961a84862c900a3",
+      "patch_bytes": 6240,
+      "reviewed_source_hashes": [
+        {
+          "file": "T01/candidates/C047/production/bonaparte",
+          "sha256": "19c6c8a8919ac288b2e6e544ac15968371c44e5053db98259b309961f3efee1d",
+          "same_as_baseline": false
+        },
+        {
+          "file": "T01/candidates/C047/production/bonaparte_linear.py",
+          "sha256": "62b3cd13eec171b91845f1534d692a449579e27aa70d7272d37cff7284070df3",
+          "same_as_baseline": true
+        },
+        {
+          "file": "T01/candidates/C047/production/bonaparte_native.py",
+          "sha256": "802c1252688afd6bbbdc73e4693a9217bfb3dcee1ec0421cee408b7f7c023c51",
+          "same_as_baseline": false
+        },
+        {
+          "file": "T01/candidates/C047/production/bonaparte_teardown.py",
+          "sha256": "a075fdf42adedd387b1f751f5693b2b005d19d87c8ba18743985f1eff12cf608",
+          "same_as_baseline": false
+        },
+        {
+          "file": "T01/candidates/C047/production/workflows/implement.md",
+          "sha256": "aa0d5e25dc1ff126ff241a25e9ff34a7ba83df64613999c7456e68a06cb97eb2",
+          "same_as_baseline": true
+        },
+        {
+          "file": "T01/candidates/C047/production/workflows/review.md",
+          "sha256": "9a280f2ed69d89522651d5b642b109ce899fdeb302e868c618ccf1dc30110a88",
+          "same_as_baseline": true
+        }
+      ],
+      "findings": [
+        {
+          "id": "T01-C047-branch-resume",
+          "axis": "requirements",
+          "materiality": "material",
+          "file": "T01/candidates/C047/production/bonaparte",
+          "line": 455,
+          "exact_code": "    canonical_branch = None",
+          "demonstrated_source_property": "canonical_branch starts as None and is populated only in the non-resume Linear handoff branch. The resume path and checkpoint caller do not carry the canonical issue branch into this driver.",
+          "behavioral_consequence": "Owned children of a resumed terminal phase receive no canonical metadata update. C047 instead raises a missing-branch teardown failure after archiving the root, even though the original issue branch was known.",
+          "requirement_or_engineering_basis": "Child metadata must use the canonical issue branch, including the supported clarification/resume lifecycle.",
+          "minimal_repair": "Save the trusted Linear issue branch with the within-phase checkpoint and pass it into run_phase on resume; keep this value distinct from the working-tree and receipt branches.",
+          "proposed_executable_counterexample": "Using the visible AppServerFixture pattern, run an initial issue phase whose Linear gitBranchName is \"arya/cor-1-canonical\" and receipt is needs-input; persist a checkpoint, then resume it. Emit actual thread/started events for root R and child C with source.subAgent.thread_spawn.parent_thread_id=R; return a terminal receipt with branch=null. Record requests and assert C receives thread/metadata/update with gitInfo.branch=\"arya/cor-1-canonical\", followed by thread/archive(R). Do not substitute the working-tree branch.",
+          "evidence_kind": "static source trace; counterexample not executed"
+        },
+        {
+          "id": "T01-C047-unrelated-owned",
+          "axis": "requirements",
+          "materiality": "material",
+          "file": "T01/candidates/C047/production/bonaparte_teardown.py",
+          "line": 31,
+          "exact_code": "        return [thread_id for thread_id in self._started if thread_id != root_id]",
+          "demonstrated_source_property": "ThreadOwnership retains only IDs. started_descendants returns every started ID other than root and never reads the parent evidence present on thread/started payloads.",
+          "behavioral_consequence": "An unrelated started session U is mutated with this issue branch, just like a real child C. Grandchild ownership cannot be proved either.",
+          "requirement_or_engineering_basis": "Update only started owned descendants; do not touch unrelated threads.",
+          "minimal_repair": "Store started ID -> spawning parent from actual start payloads, and derive a closure that reaches an actually started root. Pass the whole thread payload to observe_started instead of dropping its ancestry.",
+          "proposed_executable_counterexample": "Feed starts R (root), C with parent R, G with parent C, and U with parent another-root. Call terminal teardown with a request recorder. Assert metadata targets exactly C/G. Current started_descendants returns C/G/U.",
+          "evidence_kind": "static source trace; counterexample not executed"
+        },
+        {
+          "id": "T01-C047-nonterminal-root-archived",
+          "axis": "requirements",
+          "materiality": "material",
+          "file": "T01/candidates/C047/production/bonaparte_native.py",
+          "line": 361,
+          "exact_code": "            if root_id is not None:",
+          "demonstrated_source_property": "close calls teardown_terminal_session whenever root_thread_id is set, without checking accepted terminal completion, needs-input, or actual root start. run_phase sets that ID from the thread response before starting the turn.",
+          "behavioral_consequence": "A resumable needs-input root is archived, and startup/interrupt failures can archive a root whose start or completion was never observed, breaking clarification/resume behavior.",
+          "requirement_or_engineering_basis": "Archive the terminal root; track ownership from actual starts and do not touch unstarted threads.",
+          "minimal_repair": "Pass/record accepted terminal-root state and parsed resumability, require actual root start, and call teardown only for a terminal session. Keep unconditional process reaping in finally.",
+          "proposed_executable_counterexample": "Return a needs-input receipt after actual starts R/C; assert close reaps but does not archive R. Separately set root_thread_id=R with ownership empty and fail before turn/start; assert no archive. Current close archives R in both cases.",
+          "evidence_kind": "static source trace; counterexample not executed"
+        },
+        {
+          "id": "T01-C047-hidden-cleanup-error",
+          "axis": "requirements",
+          "materiality": "material",
+          "file": "T01/candidates/C047/production/bonaparte",
+          "line": 718,
+          "exact_code": "                if not failed:",
+          "demonstrated_source_property": "The inherited caller catches and suppresses every close error when failed=True. The new helper raises TeardownError after requests, but primary phase failures hide it.",
+          "behavioral_consequence": "A descendant cleanup failure during a failed coordinator run disappears from its final failure after archive/reaping.",
+          "requirement_or_engineering_basis": "Surface descendant cleanup failure after attempted cleanup.",
+          "minimal_repair": "Preserve primary and cleanup errors in a combined caller-visible error after reaping; do not discard TeardownError on the failed path.",
+          "proposed_executable_counterexample": "Emit terminal failed root and reject an owned child metadata update, accept archive, then inspect main failure receipt. Assert the metadata error is included after both archive/reap were attempted.",
+          "evidence_kind": "static source trace; counterexample not executed"
+        }
+      ],
+      "uncertainty": [
+        "No candidate code or tests were executed. Native protocol acceptance and timing remain unverified.",
+        "Ancestry payload aliases and native metadata/archive endpoint behavior are inferred from visible source only. Confirm against real thread/started payloads and request errors outside this blinded review."
+      ],
+      "requirements_assessment": {
+        "result": "source-supported gaps",
+        "finding_ids": [
+          "T01-C047-branch-resume",
+          "T01-C047-unrelated-owned",
+          "T01-C047-nonterminal-root-archived",
+          "T01-C047-hidden-cleanup-error"
+        ]
+      },
+      "engineering_assessment": {
+        "result": "no separate material engineering finding",
+        "finding_ids": []
+      },
+      "supported_properties": [
+        "Inspected every patch hunk against the supplied production snapshot and shared baseline context."
+      ],
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr39--enhanced-haiku--r1",
+        "task_id": "tweed-pr39",
+        "arm_id": "enhanced-haiku",
+        "repeat": 1
+      },
+      "published_patch": "../results/patches/tweed-pr39--enhanced-haiku--r1.patch"
+    },
+    {
+      "task": "T02",
+      "candidate": "C001",
+      "reviewed": true,
+      "status_text": "available",
+      "patch_file": "T02/candidates/C001/change.patch",
+      "patch_sha256": "5d4e7afd31d623ebcd0925c820920b6426c7b081100904993f640a21926547f2",
+      "patch_bytes": 2495,
+      "reviewed_source_hashes": [
+        {
+          "file": "T02/candidates/C001/production/bonaparte",
+          "sha256": "67e46892dd45f0f1aed8ac3a50c0b3e73a10683e8aaa0cb15a33470ebb591520",
+          "same_as_baseline": false
+        },
+        {
+          "file": "T02/candidates/C001/production/bonaparte_native.py",
+          "sha256": "34b8cbe58da00516ae3db8b7fa9ee22bc2a69e440ea1f4f65bd3a7645ecb7e12",
+          "same_as_baseline": false
+        }
+      ],
+      "findings": [],
+      "uncertainty": [
+        "No candidate code or tests were executed. Native protocol acceptance and timing remain unverified."
+      ],
+      "requirements_assessment": {
+        "result": "no supported gap found within inspection scope",
+        "finding_ids": []
+      },
+      "engineering_assessment": {
+        "result": "no separate material engineering finding",
+        "finding_ids": []
+      },
+      "supported_properties": [
+        "Filters foreign-thread and inactive-turn completions; accepts omitted-threadId completion for active turn ID.",
+        "Scopes post-steer work to coordinator thread and active turn.",
+        "Retains receipt extraction and unconditional driver close/reaping flow."
+      ],
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr32--enhanced-codex--r2",
+        "task_id": "tweed-pr32",
+        "arm_id": "enhanced-codex",
+        "repeat": 2
+      },
+      "published_patch": "../results/patches/tweed-pr32--enhanced-codex--r2.patch"
+    },
+    {
+      "task": "T02",
+      "candidate": "C002",
+      "reviewed": true,
+      "status_text": "available",
+      "patch_file": "T02/candidates/C002/change.patch",
+      "patch_sha256": "a026a132ee8d2994eed8254313e39e29a24b367dbcaff8b319234d70e97297d8",
+      "patch_bytes": 1663,
+      "reviewed_source_hashes": [
+        {
+          "file": "T02/candidates/C002/production/bonaparte",
+          "sha256": "76f2b5fe9885de86e697729431e4a582f9cb8ee06d339d6ce5b6f9be72822681",
+          "same_as_baseline": true
+        },
+        {
+          "file": "T02/candidates/C002/production/bonaparte_native.py",
+          "sha256": "2c1ea4d6cb0b9d46d6240be0c985f388e267ce3a54c1016e286a24962f9fc9de",
+          "same_as_baseline": false
+        }
+      ],
+      "findings": [
+        {
+          "id": "T02-C002-stale-work-guard",
+          "axis": "requirements",
+          "materiality": "material",
+          "file": "T02/candidates/C002/production/bonaparte",
+          "line": 635,
+          "exact_code": "                    if isinstance(params, dict) and params.get(\"threadId\") == session_id:",
+          "demonstrated_source_property": "After steer acknowledgement, post_steer_work accepts item/started events based only on threadId==session_id; it never checks params.turnId. Later the flag rejects the active coordinator receipt.",
+          "behavioral_consequence": "A delayed command/file/tool event from an older coordinator turn makes the current turn fail even though the active coordinator completion and final receipt are valid.",
+          "requirement_or_engineering_basis": "Only events belonging to the active coordinator thread/turn may establish its outcome.",
+          "minimal_repair": "Require the active turnId as well as threadId before counting post-steer work. Keep legacy completion acceptance in the completion matcher, independent from work-event routing.",
+          "proposed_executable_counterexample": "Use AppServerFixture to force soft-budget steer; emit its acknowledgement, then item/started with threadId=R, turnId=\"turn-old\", type=\"commandExecution\"; finally emit a valid needs-input receipt and completion for active turn \"turn-1\". Assert receipt is accepted. Current guard raises \"coordinator started new work after soft-budget steer\". The same item with turnId=\"turn-1\" must remain rejected.",
+          "evidence_kind": "static source trace; counterexample not executed"
+        }
+      ],
+      "uncertainty": [
+        "No candidate code or tests were executed. Native protocol acceptance and timing remain unverified."
+      ],
+      "requirements_assessment": {
+        "result": "source-supported gaps",
+        "finding_ids": [
+          "T02-C002-stale-work-guard"
+        ]
+      },
+      "engineering_assessment": {
+        "result": "no separate material engineering finding",
+        "finding_ids": []
+      },
+      "supported_properties": [
+        "Inspected every patch hunk against the supplied production snapshot and shared baseline context."
+      ],
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr32--baseline-opus--r1",
+        "task_id": "tweed-pr32",
+        "arm_id": "baseline-opus",
+        "repeat": 1
+      },
+      "published_patch": "../results/patches/tweed-pr32--baseline-opus--r1.patch"
+    },
+    {
+      "task": "T02",
+      "candidate": "C003",
+      "reviewed": true,
+      "status_text": "available",
+      "patch_file": "T02/candidates/C003/change.patch",
+      "patch_sha256": "6763a7355d68b357e1a5525b784391f9131f903420168c4ed2aa77c856aeb7bc",
+      "patch_bytes": 4441,
+      "reviewed_source_hashes": [
+        {
+          "file": "T02/candidates/C003/production/bonaparte",
+          "sha256": "009dca4202fe5701ec402c605b0fd6a94ac13800245d43fc5af8613f783a2be3",
+          "same_as_baseline": false
+        },
+        {
+          "file": "T02/candidates/C003/production/bonaparte_native.py",
+          "sha256": "c70512ec386f46673f9d4d401923ef103450f4ac1020a33ddcac5d0036aa4b51",
+          "same_as_baseline": false
+        }
+      ],
+      "findings": [
+        {
+          "id": "T02-C003-stale-work-guard",
+          "axis": "requirements",
+          "materiality": "material",
+          "file": "T02/candidates/C003/production/bonaparte",
+          "line": 644,
+          "exact_code": "                    if isinstance(params, dict) and params.get(\"threadId\") == session_id:",
+          "demonstrated_source_property": "After steer acknowledgement, post_steer_work accepts item/started events based only on threadId==session_id; it never checks params.turnId. Later the flag rejects the active coordinator receipt.",
+          "behavioral_consequence": "A delayed command/file/tool event from an older coordinator turn makes the current turn fail even though the active coordinator completion and final receipt are valid.",
+          "requirement_or_engineering_basis": "Only events belonging to the active coordinator thread/turn may establish its outcome.",
+          "minimal_repair": "Require the active turnId as well as threadId before counting post-steer work. Keep legacy completion acceptance in the completion matcher, independent from work-event routing.",
+          "proposed_executable_counterexample": "Use AppServerFixture to force soft-budget steer; emit its acknowledgement, then item/started with threadId=R, turnId=\"turn-old\", type=\"commandExecution\"; finally emit a valid needs-input receipt and completion for active turn \"turn-1\". Assert receipt is accepted. Current guard raises \"coordinator started new work after soft-budget steer\". The same item with turnId=\"turn-1\" must remain rejected.",
+          "evidence_kind": "static source trace; counterexample not executed"
+        },
+        {
+          "id": "T02-C003-duplicated-routing-policy",
+          "axis": "engineering",
+          "materiality": "limited",
+          "file": "T02/candidates/C003/production/bonaparte",
+          "line": 596,
+          "exact_code": "        def coordinator_completion(message: dict, completed_turn) -> bool:",
+          "demonstrated_source_property": "A new local coordinator_completion function repeats the active-thread/turn routing policy already enforced by owns_coordinator_event inside driver.observe_notification. Both caller paths then run the second policy again.",
+          "behavioral_consequence": "Routing has two implementations to update for a bounded event-identity change. Their handling of new identity locations/legacy forms can drift, while no demonstrated caller needs the second policy.",
+          "requirement_or_engineering_basis": "Keep one ownership decision at the transport boundary; duplicate policy is an avoidable maintenance and regression surface.",
+          "minimal_repair": "Remove the local coordinator_completion function. Keep owns_coordinator_event in the driver, and at both caller sites use `if completed_turn is not None and terminal is None: terminal = completed_turn`. This retains terminal immutability and all current routing behavior. Tradeoff: the caller trusts the driver return contract, which it already owns.",
+          "proposed_executable_counterexample": "After removing the duplicate, replay foreign-child, wrong-turn, active legacy, and active coordinator completion packets through the driver and both caller branches; assert identical accepted outcomes. This is an equivalence check proposal, not an executed result.",
+          "evidence_kind": "static source trace; counterexample not executed"
+        }
+      ],
+      "uncertainty": [
+        "No candidate code or tests were executed. Native protocol acceptance and timing remain unverified."
+      ],
+      "requirements_assessment": {
+        "result": "source-supported gaps",
+        "finding_ids": [
+          "T02-C003-stale-work-guard"
+        ]
+      },
+      "engineering_assessment": {
+        "result": "source-supported avoidable duplication",
+        "finding_ids": [
+          "T02-C003-duplicated-routing-policy"
+        ]
+      },
+      "supported_properties": [
+        "Inspected every patch hunk against the supplied production snapshot and shared baseline context."
+      ],
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr32--enhanced-opus--r1",
+        "task_id": "tweed-pr32",
+        "arm_id": "enhanced-opus",
+        "repeat": 1
+      },
+      "published_patch": "../results/patches/tweed-pr32--enhanced-opus--r1.patch"
+    },
+    {
+      "task": "T02",
+      "candidate": "C006",
+      "reviewed": true,
+      "status_text": "available",
+      "patch_file": "T02/candidates/C006/change.patch",
+      "patch_sha256": "6060db1a2024360ae87cef690a51282e9612c3d6ad9abdd737abebecea6874a9",
+      "patch_bytes": 3035,
+      "reviewed_source_hashes": [
+        {
+          "file": "T02/candidates/C006/production/bonaparte",
+          "sha256": "2f12d64dce5db313bf015f8db0d7978e518dea3422cf9ecd7438a4ebe9b07e85",
+          "same_as_baseline": false
+        },
+        {
+          "file": "T02/candidates/C006/production/bonaparte_native.py",
+          "sha256": "c54429978edfb982644463623d2ae5de081d21fe3506b775e73d01009fd08355",
+          "same_as_baseline": true
+        }
+      ],
+      "findings": [
+        {
+          "id": "T02-C006-stale-work-guard",
+          "axis": "requirements",
+          "materiality": "material",
+          "file": "T02/candidates/C006/production/bonaparte",
+          "line": 659,
+          "exact_code": "                    if isinstance(params, dict) and params.get(\"threadId\") == session_id:",
+          "demonstrated_source_property": "After steer acknowledgement, post_steer_work accepts item/started events based only on threadId==session_id; it never checks params.turnId. Later the flag rejects the active coordinator receipt.",
+          "behavioral_consequence": "A delayed command/file/tool event from an older coordinator turn makes the current turn fail even though the active coordinator completion and final receipt are valid.",
+          "requirement_or_engineering_basis": "Only events belonging to the active coordinator thread/turn may establish its outcome.",
+          "minimal_repair": "Require the active turnId as well as threadId before counting post-steer work. Keep legacy completion acceptance in the completion matcher, independent from work-event routing.",
+          "proposed_executable_counterexample": "Use AppServerFixture to force soft-budget steer; emit its acknowledgement, then item/started with threadId=R, turnId=\"turn-old\", type=\"commandExecution\"; finally emit a valid needs-input receipt and completion for active turn \"turn-1\". Assert receipt is accepted. Current guard raises \"coordinator started new work after soft-budget steer\". The same item with turnId=\"turn-1\" must remain rejected.",
+          "evidence_kind": "static source trace; counterexample not executed"
+        },
+        {
+          "id": "T02-C006-inactive-completion-fatal",
+          "axis": "requirements",
+          "materiality": "material",
+          "file": "T02/candidates/C006/production/bonaparte",
+          "line": 433,
+          "exact_code": "        raise RuntimeError(\"Codex app-server completed the wrong turn\")",
+          "demonstrated_source_property": "The completion matcher raises on a different turn ID when the event names the coordinator thread, instead of ignoring that inactive turn.",
+          "behavioral_consequence": "An inactive coordinator completion (or legacy child/stale completion for C025) terminates the current run as an error before its legitimate active completion can establish the outcome.",
+          "requirement_or_engineering_basis": "Only the active coordinator thread/turn may establish the outcome; legacy completion with the active turn ID remains accepted.",
+          "minimal_repair": "Reject/ignore all nonmatching turn IDs as well as foreign thread IDs before accepting the completion; return None rather than raising for an inactive turn.",
+          "proposed_executable_counterexample": "During active turn \"turn-1\" on root R, first emit turn/completed with threadId=R and turn.id=\"turn-old\", then emit the valid active final receipt/completion. Assert the active receipt survives. For C025 repeat with threadId omitted and turn.id=\"turn-child\". Active legacy turn.id=\"turn-1\" must still be accepted.",
+          "evidence_kind": "static source trace; counterexample not executed"
+        }
+      ],
+      "uncertainty": [
+        "No candidate code or tests were executed. Native protocol acceptance and timing remain unverified."
+      ],
+      "requirements_assessment": {
+        "result": "source-supported gaps",
+        "finding_ids": [
+          "T02-C006-stale-work-guard",
+          "T02-C006-inactive-completion-fatal"
+        ]
+      },
+      "engineering_assessment": {
+        "result": "no separate material engineering finding",
+        "finding_ids": []
+      },
+      "supported_properties": [
+        "Inspected every patch hunk against the supplied production snapshot and shared baseline context."
+      ],
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr32--enhanced-opus--r2",
+        "task_id": "tweed-pr32",
+        "arm_id": "enhanced-opus",
+        "repeat": 2
+      },
+      "published_patch": "../results/patches/tweed-pr32--enhanced-opus--r2.patch"
+    },
+    {
+      "task": "T02",
+      "candidate": "C016",
+      "reviewed": true,
+      "status_text": "available",
+      "patch_file": "T02/candidates/C016/change.patch",
+      "patch_sha256": "04a1f3e011911cd98ac77a20637516bd0434a36f597ecf6b07f9903632cfe7e5",
+      "patch_bytes": 3278,
+      "reviewed_source_hashes": [
+        {
+          "file": "T02/candidates/C016/production/bonaparte",
+          "sha256": "7dc24a9394e05e4a081705145d80506932ca9e007f385d9f60293dd381fea151",
+          "same_as_baseline": false
+        },
+        {
+          "file": "T02/candidates/C016/production/bonaparte_native.py",
+          "sha256": "fdcf321832adb9c01bffdfa50796ac0d3b5a2e333e1c889ae7153cb1798f57a5",
+          "same_as_baseline": false
+        }
+      ],
+      "findings": [
+        {
+          "id": "T02-C016-stale-work-guard",
+          "axis": "requirements",
+          "materiality": "material",
+          "file": "T02/candidates/C016/production/bonaparte",
+          "line": 638,
+          "exact_code": "                    if isinstance(params, dict) and params.get(\"threadId\") == session_id:",
+          "demonstrated_source_property": "After steer acknowledgement, post_steer_work accepts item/started events based only on threadId==session_id; it never checks params.turnId. Later the flag rejects the active coordinator receipt.",
+          "behavioral_consequence": "A delayed command/file/tool event from an older coordinator turn makes the current turn fail even though the active coordinator completion and final receipt are valid.",
+          "requirement_or_engineering_basis": "Only events belonging to the active coordinator thread/turn may establish its outcome.",
+          "minimal_repair": "Require the active turnId as well as threadId before counting post-steer work. Keep legacy completion acceptance in the completion matcher, independent from work-event routing.",
+          "proposed_executable_counterexample": "Use AppServerFixture to force soft-budget steer; emit its acknowledgement, then item/started with threadId=R, turnId=\"turn-old\", type=\"commandExecution\"; finally emit a valid needs-input receipt and completion for active turn \"turn-1\". Assert receipt is accepted. Current guard raises \"coordinator started new work after soft-budget steer\". The same item with turnId=\"turn-1\" must remain rejected.",
+          "evidence_kind": "static source trace; counterexample not executed"
+        }
+      ],
+      "uncertainty": [
+        "No candidate code or tests were executed. Native protocol acceptance and timing remain unverified."
+      ],
+      "requirements_assessment": {
+        "result": "source-supported gaps",
+        "finding_ids": [
+          "T02-C016-stale-work-guard"
+        ]
+      },
+      "engineering_assessment": {
+        "result": "no separate material engineering finding",
+        "finding_ids": []
+      },
+      "supported_properties": [
+        "Inspected every patch hunk against the supplied production snapshot and shared baseline context."
+      ],
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr32--baseline-opus--r2",
+        "task_id": "tweed-pr32",
+        "arm_id": "baseline-opus",
+        "repeat": 2
+      },
+      "published_patch": "../results/patches/tweed-pr32--baseline-opus--r2.patch"
+    },
+    {
+      "task": "T02",
+      "candidate": "C025",
+      "reviewed": true,
+      "status_text": "available",
+      "patch_file": "T02/candidates/C025/change.patch",
+      "patch_sha256": "870823f7422dff78654c49e2a027b748f701d08d2080eebf20d33e46a14aabf7",
+      "patch_bytes": 3183,
+      "reviewed_source_hashes": [
+        {
+          "file": "T02/candidates/C025/production/bonaparte",
+          "sha256": "acd7873e08a37010db785431e2e77e98f23fba4669982fb06f334a983ad6d3d7",
+          "same_as_baseline": false
+        },
+        {
+          "file": "T02/candidates/C025/production/bonaparte_native.py",
+          "sha256": "ae2bd849412bf45670ed76f115d968739a31ee3ec53f78c3003ed286ab4cf692",
+          "same_as_baseline": false
+        }
+      ],
+      "findings": [
+        {
+          "id": "T02-C025-stale-work-guard",
+          "axis": "requirements",
+          "materiality": "material",
+          "file": "T02/candidates/C025/production/bonaparte",
+          "line": 636,
+          "exact_code": "                    if isinstance(params, dict) and params.get(\"threadId\") == session_id:",
+          "demonstrated_source_property": "After steer acknowledgement, post_steer_work accepts item/started events based only on threadId==session_id; it never checks params.turnId. Later the flag rejects the active coordinator receipt.",
+          "behavioral_consequence": "A delayed command/file/tool event from an older coordinator turn makes the current turn fail even though the active coordinator completion and final receipt are valid.",
+          "requirement_or_engineering_basis": "Only events belonging to the active coordinator thread/turn may establish its outcome.",
+          "minimal_repair": "Require the active turnId as well as threadId before counting post-steer work. Keep legacy completion acceptance in the completion matcher, independent from work-event routing.",
+          "proposed_executable_counterexample": "Use AppServerFixture to force soft-budget steer; emit its acknowledgement, then item/started with threadId=R, turnId=\"turn-old\", type=\"commandExecution\"; finally emit a valid needs-input receipt and completion for active turn \"turn-1\". Assert receipt is accepted. Current guard raises \"coordinator started new work after soft-budget steer\". The same item with turnId=\"turn-1\" must remain rejected.",
+          "evidence_kind": "static source trace; counterexample not executed"
+        },
+        {
+          "id": "T02-C025-inactive-completion-fatal",
+          "axis": "requirements",
+          "materiality": "material",
+          "file": "T02/candidates/C025/production/bonaparte_native.py",
+          "line": 113,
+          "exact_code": "        raise RuntimeError(\"Codex app-server completed the wrong turn\")",
+          "demonstrated_source_property": "The completion matcher raises on any different turn ID once a foreign threadId is excluded; this includes legacy notifications without threadId, and same-thread inactive turns.",
+          "behavioral_consequence": "An inactive coordinator completion (or legacy child/stale completion for C025) terminates the current run as an error before its legitimate active completion can establish the outcome.",
+          "requirement_or_engineering_basis": "Only the active coordinator thread/turn may establish the outcome; legacy completion with the active turn ID remains accepted.",
+          "minimal_repair": "Reject/ignore all nonmatching turn IDs as well as foreign thread IDs before accepting the completion; return None rather than raising for an inactive turn.",
+          "proposed_executable_counterexample": "During active turn \"turn-1\" on root R, first emit turn/completed with threadId=R and turn.id=\"turn-old\", then emit the valid active final receipt/completion. Assert the active receipt survives. For C025 repeat with threadId omitted and turn.id=\"turn-child\". Active legacy turn.id=\"turn-1\" must still be accepted.",
+          "evidence_kind": "static source trace; counterexample not executed"
+        }
+      ],
+      "uncertainty": [
+        "No candidate code or tests were executed. Native protocol acceptance and timing remain unverified."
+      ],
+      "requirements_assessment": {
+        "result": "source-supported gaps",
+        "finding_ids": [
+          "T02-C025-stale-work-guard",
+          "T02-C025-inactive-completion-fatal"
+        ]
+      },
+      "engineering_assessment": {
+        "result": "no separate material engineering finding",
+        "finding_ids": []
+      },
+      "supported_properties": [
+        "Inspected every patch hunk against the supplied production snapshot and shared baseline context."
+      ],
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr32--enhanced-haiku--r1",
+        "task_id": "tweed-pr32",
+        "arm_id": "enhanced-haiku",
+        "repeat": 1
+      },
+      "published_patch": "../results/patches/tweed-pr32--enhanced-haiku--r1.patch"
+    },
+    {
+      "task": "T02",
+      "candidate": "C036",
+      "reviewed": true,
+      "status_text": "available",
+      "patch_file": "T02/candidates/C036/change.patch",
+      "patch_sha256": "b68f29ce3965fc1a054d9b1924ba5d31f685e7de154809ebf13cbdb89ff0be55",
+      "patch_bytes": 2950,
+      "reviewed_source_hashes": [
+        {
+          "file": "T02/candidates/C036/production/bonaparte",
+          "sha256": "67e46892dd45f0f1aed8ac3a50c0b3e73a10683e8aaa0cb15a33470ebb591520",
+          "same_as_baseline": false
+        },
+        {
+          "file": "T02/candidates/C036/production/bonaparte_native.py",
+          "sha256": "a0e9eda9a57c955dafc765bd2b3eb86ee017c12ecf5ef71a158ae8e75bce6d80",
+          "same_as_baseline": false
+        }
+      ],
+      "findings": [],
+      "uncertainty": [
+        "No candidate code or tests were executed. Native protocol acceptance and timing remain unverified."
+      ],
+      "requirements_assessment": {
+        "result": "no supported gap found within inspection scope",
+        "finding_ids": []
+      },
+      "engineering_assessment": {
+        "result": "no separate material engineering finding",
+        "finding_ids": []
+      },
+      "supported_properties": [
+        "Filters foreign-thread and inactive-turn completions; accepts omitted-threadId completion for active turn ID.",
+        "Scopes post-steer work to coordinator thread and active turn.",
+        "Retains receipt extraction and unconditional driver close/reaping flow."
+      ],
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr32--enhanced-codex--r1",
+        "task_id": "tweed-pr32",
+        "arm_id": "enhanced-codex",
+        "repeat": 1
+      },
+      "published_patch": "../results/patches/tweed-pr32--enhanced-codex--r1.patch"
+    },
+    {
+      "task": "T02",
+      "candidate": "C048",
+      "reviewed": true,
+      "status_text": "available",
+      "patch_file": "T02/candidates/C048/change.patch",
+      "patch_sha256": "b20603087716f7797886e8ae9323336d0c18e74bdcfd86c9c168f82f509fd54c",
+      "patch_bytes": 952,
+      "reviewed_source_hashes": [
+        {
+          "file": "T02/candidates/C048/production/bonaparte",
+          "sha256": "76f2b5fe9885de86e697729431e4a582f9cb8ee06d339d6ce5b6f9be72822681",
+          "same_as_baseline": true
+        },
+        {
+          "file": "T02/candidates/C048/production/bonaparte_native.py",
+          "sha256": "2b2236e88159b01fe116967b61c0e765f360b4c45f67cd3a481f314b970e6905",
+          "same_as_baseline": false
+        }
+      ],
+      "findings": [
+        {
+          "id": "T02-C048-stale-work-guard",
+          "axis": "requirements",
+          "materiality": "material",
+          "file": "T02/candidates/C048/production/bonaparte",
+          "line": 635,
+          "exact_code": "                    if isinstance(params, dict) and params.get(\"threadId\") == session_id:",
+          "demonstrated_source_property": "After steer acknowledgement, post_steer_work accepts item/started events based only on threadId==session_id; it never checks params.turnId. Later the flag rejects the active coordinator receipt.",
+          "behavioral_consequence": "A delayed command/file/tool event from an older coordinator turn makes the current turn fail even though the active coordinator completion and final receipt are valid.",
+          "requirement_or_engineering_basis": "Only events belonging to the active coordinator thread/turn may establish its outcome.",
+          "minimal_repair": "Require the active turnId as well as threadId before counting post-steer work. Keep legacy completion acceptance in the completion matcher, independent from work-event routing.",
+          "proposed_executable_counterexample": "Use AppServerFixture to force soft-budget steer; emit its acknowledgement, then item/started with threadId=R, turnId=\"turn-old\", type=\"commandExecution\"; finally emit a valid needs-input receipt and completion for active turn \"turn-1\". Assert receipt is accepted. Current guard raises \"coordinator started new work after soft-budget steer\". The same item with turnId=\"turn-1\" must remain rejected.",
+          "evidence_kind": "static source trace; counterexample not executed"
+        },
+        {
+          "id": "T02-C048-inactive-completion-fatal",
+          "axis": "requirements",
+          "materiality": "material",
+          "file": "T02/candidates/C048/production/bonaparte_native.py",
+          "line": 318,
+          "exact_code": "            return method, turn",
+          "demonstrated_source_property": "The driver accepts any turn ID for a matching threadId and returns it to run_phase, whose two notification paths raise when its ID differs from the active turn.",
+          "behavioral_consequence": "An inactive coordinator completion (or legacy child/stale completion for C025) terminates the current run as an error before its legitimate active completion can establish the outcome.",
+          "requirement_or_engineering_basis": "Only the active coordinator thread/turn may establish the outcome; legacy completion with the active turn ID remains accepted.",
+          "minimal_repair": "Reject/ignore all nonmatching turn IDs as well as foreign thread IDs before accepting the completion; return None rather than raising for an inactive turn.",
+          "proposed_executable_counterexample": "During active turn \"turn-1\" on root R, first emit turn/completed with threadId=R and turn.id=\"turn-old\", then emit the valid active final receipt/completion. Assert the active receipt survives. For C025 repeat with threadId omitted and turn.id=\"turn-child\". Active legacy turn.id=\"turn-1\" must still be accepted.",
+          "evidence_kind": "static source trace; counterexample not executed"
+        }
+      ],
+      "uncertainty": [
+        "No candidate code or tests were executed. Native protocol acceptance and timing remain unverified."
+      ],
+      "requirements_assessment": {
+        "result": "source-supported gaps",
+        "finding_ids": [
+          "T02-C048-stale-work-guard",
+          "T02-C048-inactive-completion-fatal"
+        ]
+      },
+      "engineering_assessment": {
+        "result": "no separate material engineering finding",
+        "finding_ids": []
+      },
+      "supported_properties": [
+        "Inspected every patch hunk against the supplied production snapshot and shared baseline context."
+      ],
+      "unmasked_assignment": {
+        "trial_id": "tweed-pr32--enhanced-haiku--r2",
+        "task_id": "tweed-pr32",
+        "arm_id": "enhanced-haiku",
+        "repeat": 2
+      },
+      "published_patch": "../results/patches/tweed-pr32--enhanced-haiku--r2.patch"
+    }
+  ],
+  "original_private_review_sha256": "e2bac185af072cea6518c605310fe8493e04295b93d51781cfdbada07e717738",
+  "publication_note": "Assignment labels added only after all three fresh reviewers completed; original anonymous reports preserved."
+}

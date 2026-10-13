@@ -1,0 +1,19 @@
+# Delivery and proof scope
+
+Confidence Protocol **0.7.0** is installed and enabled on the authorized laptop. All 21 regular files in both marketplace source and cache match the release byte hashes and modes. Version 0.6.0 source and cache were retained in a separate rollback backup. The [safe install manifest](installation-results.json) records these files and health checks. Doctor exits zero with status pass; its legacy Bonaparte PATH warning is pre-existing. Fresh tasks load the new installed skill.
+
+The core entry point grows from 674 to 727 words. One conditional reference file is added. Runtime proof code changes only its version identifier; the shipped archive has 28 entries, 21 regular files, and excludes research controllers, tests, model transcripts and experimental results. Routing is an instruction to the coordinator to use qualified Claude Code workers. It adds no installed dispatch service, automatic credential pooling, dependency or mandatory model ladder.
+
+The [main report](REPORT.md), [intake report](INTAKE-REPORT.md), [quality review](QUALITY-REPORT.md) and [maintenance report](FOLLOWUP-REPORT.md) remain separate. They include unfavorable outcomes and unknowns. This release follows the user's Claude-first preference; measured prompt superiority, Haiku-versus-Luna/Terra superiority, broad code consistency, cost savings and uninterrupted autonomy remain unproven.
+
+The evaluation tools have deterministic custody, transport, projection and counterexample tests. CI runs that research-only suite separately from the 247 core tests on Python 3.10, 3.12 and 3.14, archive validation and whitespace checks. [Read-only closure verification](verify_delivery.py) additionally reconstructs all three retained analyses with completed CPU caches, checks exact public projections and patches, binds all 48 anonymous source reviews, and compares current installed bytes. It refuses to run a new grader when a completed CPU record is missing. The local task retains current captures and the full independent final review; current CI results are linked from the PR.
+
+## Explicit Critical proof limitation
+
+The original preimplementation proof-design report, its retained original scope mapping and successor reconciliation are preserved. The reconciliation explicitly cannot authenticate full seven-obligation preimplementation coverage. Original answer-dependent implementation scope D5 was not executed; the separate callback-specific D1 coverage was not established by that original designer. The final adversarial source review does not retrospectively fill historical proof-design coverage. The new local task therefore retains **partial P7 provenance/scope**, and does not claim a complete Critical certificate. Current implementation, measurements, installation and review evidence are assessed separately.
+
+The initial task's universal intake-authority claim was also contradicted. Its original contract and unmet assessment remain retained. The successor obligation requires complete measurement and disclosure of those errors; it does not make the erroneous interviews successful. Primary registered outcomes were not changed. The previous v0.6 completion proof belongs to its historical commit and is not reused as a current v0.7 certificate.
+
+One optional supplemental release-marker symlink reproduction was blocked by an automated safety check for possible cybersecurity risk. No execution evidence was obtained, and that finding remains static. The independent sixteen-observation routing fixture probe is actual executed evidence, with its own narrower limits.
+
+Rollback restores the retained v0.6 source and refreshes the personal plugin installation. Research-only later commits do not change the installed manifest; verification compares file bytes and modes to current source rather than assuming archive-header identity across commits.

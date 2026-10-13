@@ -36,6 +36,25 @@ None of these changes adds an installed dispatcher, dependency, model ladder,
 mandatory question count or evidence-report field. The new detailed guidance
 loads through conditional references.
 
+The first maintenance closure attempt stopped before publishing results or
+running CPU rechecks. The follow-up analyzer omitted the main provider verifier's
+server-event argument, so an exactly logged, safely rejected command proposal
+could not be verified. The correction binds the actual server-event file before
+passing that same list to provider and command checks. Synthetic positive and
+eight negative variants, and a separate reviewer, qualified the correction before
+the next analysis. The main verifier, frozen controllers, input declarations,
+worker attempts and primary grades were unchanged. This is a post-call analysis
+correction, not a new intervention or a replacement model attempt.
+
+Final review also found two defects in the newly added delivery checker, which is
+excluded from installation: optimized Python could omit its validation assertions,
+and a missing CPU cache could create preparation files before grading was refused.
+Explicit validation, complete-cache preflight and a Python evidence-write guard
+replace that behavior. Optimized-interpreter filesystem/projection/installation
+drift controls and an independent repeat confirm rejection without new evidence
+artifacts. The guard is not presented as operating-system subprocess confinement.
+Actual complete-cache verification remains separate from these synthetic controls.
+
 The owner's initial task contract also overstated intake evidence: P4 said the
 actual interviews preserve unresolved user authority. The primary blinded jury's
 I07 and I12 findings contradict that universal claim. The original contract and

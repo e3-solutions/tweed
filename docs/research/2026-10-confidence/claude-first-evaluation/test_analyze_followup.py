@@ -279,6 +279,64 @@ class FollowupClosureTests(unittest.TestCase):
             self.raw_mutation(fixture, change)
             with self.assertRaisesRegex(ValueError, 'qualification'): self.evaluate(fixture)
 
+    def denied_proposal(self, fixture):
+        """Actual frozen server guard, without a callback/child or model call."""
+        directory = self.first(fixture); main = directory / 'main'
+        raw = r.read(directory / 'receipt.json')
+        adapter = r.route(r.read(fixture[0] / 'declaration.json')['payload']['arm'])
+        arguments = {'argv': ['grep', 'needle', 'bonaparte']}
+        worker = adapter.frozen.base.WorkspaceTools({'workspace': str(directory / 'result_snapshot'), 'control': str(main / 'synthetic-denial-control'),
+            'temporary': str(directory / 'result_snapshot/.trial-tmp'), 'readonly': False, 'deadline': 0, 'python_executable': sys.executable})
+        response, denial = worker.call('run_tests', arguments)
+        self.assertFalse(denial['ok'])
+        self.assertFalse(list(worker.control.glob('*.command-request.json')))
+        proposal = {'type': 'tool_use', 'id': 'synthetic-denied-1', 'name': 'mcp__cp_trial__run_tests', 'input': arguments}
+        result = {'type': 'tool_result', 'tool_use_id': proposal['id'], 'is_error': True, 'content': json.dumps(response)}
+        stream = [json.loads(line) for line in (main / 'stream.jsonl').read_text().splitlines()]
+        stream.insert(2, {'type': 'assistant', 'message': {'model': m.MODEL, 'content': [proposal]}})
+        stream.insert(3, {'type': 'user', 'message': {'content': [result]}})
+        events = [json.loads(line) for line in (main / 'tool-events.jsonl').read_text().splitlines()] + [denial]
+        self.reseal_proposal(fixture, raw, stream, events)
+        return raw, stream, events, proposal, result
+
+    def reseal_proposal(self, fixture, raw, stream, events):
+        directory = self.first(fixture); main = directory / 'main'
+        (main / 'stream.jsonl').write_text(''.join(json.dumps(event) + '\n' for event in stream))
+        (main / 'tool-events.jsonl').write_text(''.join(json.dumps(event) + '\n' for event in events))
+        raw['stage']['stream_sha256'] = r.sha(main / 'stream.jsonl')
+        raw['tool_events_sha256'] = r.sha(main / 'tool-events.jsonl')
+        raw['executed_check_counts']['requested'] = len(events)
+        raw['executed_check_counts']['run_tests_commands'] = len(events)
+        write(directory / 'receipt.json', raw)
+        normalized = r.read(fixture[0] / 'results.json'); normalized['results'][0] = raw; write(fixture[0] / 'results.json', normalized)
+
+    def test_exact_bound_preexecution_denial_allows_recovered_followup(self):
+        with tempfile.TemporaryDirectory() as td:
+            fixture = self.fixture(Path(td)); self.denied_proposal(fixture)
+            report = self.evaluate(fixture)
+            self.assertTrue(report['rows'][0]['eligible'])
+            self.assertTrue(report['rows'][0]['both_requirements_preserved'])
+            self.assertEqual(report['rows'][0]['command_evidence']['server_rejected_checks'], 1)
+            self.assertEqual(len(report['rows'][0]['command_evidence']['callbacks']), 1)
+
+    def test_unsupported_proposal_needs_exact_hash_bound_rejection_not_success(self):
+        for fault in ('unbound', 'digest', 'error', 'kind', 'ok-true', 'ok-true-and-denial', 'provider-result', 'missing-server'):
+            with self.subTest(fault=fault), tempfile.TemporaryDirectory() as td:
+                fixture = self.fixture(Path(td)); raw, stream, events, proposal, result = self.denied_proposal(fixture)
+                if fault == 'digest': events[-1]['arguments_sha256'] = '0' * 64
+                elif fault == 'error': events[-1]['error'] = 'ValueError: unrelated denial'
+                elif fault == 'kind': events[-1]['error_kind'] = 'policy'
+                elif fault == 'ok-true': events[-1]['ok'] = True
+                elif fault == 'ok-true-and-denial': events.append(dict(events[-1], ok=True))
+                elif fault == 'provider-result': result['is_error'] = False
+                elif fault == 'missing-server': events.pop()
+                self.reseal_proposal(fixture, raw, stream, events)
+                if fault == 'unbound':
+                    raw['tool_events_sha256'] = None
+                    write(self.first(fixture) / 'receipt.json', raw)
+                    normalized = r.read(fixture[0] / 'results.json'); normalized['results'][0] = raw; write(fixture[0] / 'results.json', normalized)
+                with self.assertRaises(ValueError): self.evaluate(fixture)
+
     def test_command_callback_arguments_exit_and_paths_rebind_actual_tool_events(self):
         for kind in ('argv', 'exit', 'path'):
             with self.subTest(kind=kind), tempfile.TemporaryDirectory() as td:
