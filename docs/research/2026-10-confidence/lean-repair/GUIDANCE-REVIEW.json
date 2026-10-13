@@ -1,0 +1,47 @@
+{
+  "reviewer": "/root/lean_repair_adversary",
+  "kind": "final-guidance-review-only",
+  "files": {
+    "skills/confidence-protocol/SKILL.md": "c0bd76e19626b3547fc7abf9aef50a807fc47d27b1363e4c2e663cece56593dc",
+    "skills/confidence-protocol/references/intent-flows.md": "d7b4461527b613f9607805f4ff6e2380ee87b47b68d44fa88b06661d544acbec",
+    "skills/confidence-protocol/references/model-routing.md": "016d305701972280250c3938d5db2399807df93cf55962baaea53f89ee13fa61",
+    "skills/confidence-protocol/references/harnesses.md": "8e992421a83e5d5bb678ff0c381eee736722b76479f5da9053618d3ee0f999db",
+    "skills/confidence-protocol/references/complex-tasks.md": "8c0396928105db561147b65b8f95b6a838ed9429efcbffc2b168030a77ae08c2",
+    "skills/confidence-protocol/references/evidence.md": "bd097c352130c5199ee907199bfab369927cf8ee6f990e8133cb79a87ca01d02",
+    "README.md": "5ba94abc35f27cdf693076fffdaeaa849217c37314f602d45cc2c9c3cf1f1ae7",
+    "CHANGELOG.md": "e5c341cccd8182c2355c77dec17543851250cf9b1ce9b1795af0576fd702e5d7",
+    "docs/research/2026-10-confidence/lean-repair/DESIGN.md": "2463de6cfd6736eec32a2dd5af2fc46073dc95326b2a1b077401001e26008f79",
+    "docs/research/2026-10-confidence/lean-repair/answer_delivery.py": "ca1036e52e20a89d5f57bd8e0b316637d34b5eea081ea6e5ee1a5fd28adc2a7c",
+    "docs/research/2026-10-confidence/lean-repair/test_answer_delivery.py": "95ac9baf8a6c2992f6f0230208961534127e9a06875823b3ebb2f9bc1b0bd426"
+  },
+  "lead_root_guidance_identical": {
+    "skills/confidence-protocol/SKILL.md": true,
+    "skills/confidence-protocol/references/intent-flows.md": true,
+    "skills/confidence-protocol/references/model-routing.md": true,
+    "skills/confidence-protocol/references/harnesses.md": true,
+    "skills/confidence-protocol/references/complex-tasks.md": true,
+    "skills/confidence-protocol/references/evidence.md": true,
+    "README.md": true,
+    "CHANGELOG.md": true,
+    "docs/research/2026-10-confidence/lean-repair/DESIGN.md": true
+  },
+  "status": "passed-bounded-guidance-review",
+  "corrected_findings": [
+    "harnesses repair handoff ownership",
+    "DESIGN additional diagnostic provenance"
+  ],
+  "remaining_findings": [],
+  "answer_delivery": {
+    "exit_code": 0,
+    "methods": 3,
+    "positive_wordings": 2,
+    "adjacent_negative_wordings": 4,
+    "log_sha256": "e99766c3163bbadf2764006baa18d1a0d1722ea7a296000a8c891576416e90cb",
+    "scope": "Narrow lexical answer delivery; no semantic grading claim; unused by fully specified cohort"
+  },
+  "limitations": [
+    "No instruction-only review proves every agent will follow guidance",
+    "Controller preflight and actual cohort execution remain separate gates",
+    "No install/publication or measured improvement claim"
+  ]
+}

@@ -2,6 +2,22 @@
 
 This file records user-visible changes to Tweed and Confidence Protocol.
 
+## [0.8.1] - 2026-10-13 (experimental, source only)
+
+- Intake readiness: stop asking when no required choice or necessary fact blocks
+  the next authorized action; defer optional choices visibly; keep unknown
+  necessary facts as required gaps; separate reading sources from settling choices.
+- Completion pairing includes a relevant negative or boundary case where one could
+  refute the claim; a passing suite, review agreement or accepted reference does
+  not close a known counterexample.
+- Codex returns concrete requirement-affecting findings to Opus, which repairs and
+  rechecks. When Codex repairs directly, its own check is author evidence, not
+  independent post-repair review; record repair actor, paths and rerun checks.
+- Not installed automatically; 0.8.0 remains the installed version until a measured
+  comparison supports this revision. CLI, evidence schema, tests and prior study
+  records are unchanged. No accuracy, cost or autonomy improvement is claimed. See
+  `docs/research/2026-10-confidence/lean-repair/DESIGN.md`.
+
 ## [0.8.0] - 2026-10-13
 
 - Return the always-loaded skill to the 0.6 baseline body, which recorded more

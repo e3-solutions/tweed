@@ -69,8 +69,10 @@ Quick work stays direct. For substantial work, Claude Opus leads difficult
 development and runs its own implement/check/repair loop; Claude Haiku is optional
 for bounded discovery when its output is cheaper to check than to produce. When
 Codex coordinates, it keeps the conversation, authority, integration, focused
-independent checks and fallback, without redoing delegated work. Unavailable
-routes fall back to direct work. Whoever claims completion verifies promoted
+independent checks and fallback, without redoing delegated work; it returns
+concrete requirement-affecting findings to Opus, which repairs and rechecks them.
+Unavailable routes fall back to direct work. An actor's check of its own repair is
+not independent review of it. Whoever claims completion verifies promoted
 findings, and the separate Critical review roles remain. Model names, agent
 counts and majority votes do not establish accuracy or savings. See
 [model routing](skills/confidence-protocol/references/model-routing.md).
@@ -78,9 +80,12 @@ counts and majority votes do not establish accuracy or savings. See
 New or substantial tasks start with [intent and task flows](skills/confidence-protocol/references/intent-flows.md):
 recover accepted decisions, investigate facts, ask only the remaining
 consequential choices, write a concise contract, then carry authorized work
-through implementation, checks and repair. An answer settles only what it
-addresses, so readiness rechecks every remaining prerequisite. Before completion,
-each required behavior is paired with a current executed check.
+through implementation, checks and repair. Intake is ready when no required
+choice or necessary fact blocks the next authorized action; optional choices are
+deferred visibly. Before completion, each required behavior is paired with a
+current executed check or inspected artifact, including a relevant negative or
+boundary case where one could refute it; passing suites or reviews do not close a
+known counterexample.
 [Question and solver patterns](skills/confidence-protocol/references/question-patterns.md)
 load only when a choice or diagnosis needs sharpening.
 

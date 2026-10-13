@@ -33,17 +33,25 @@ implementation choices stay with the owner. Use
 [question patterns](question-patterns.md) when a choice is hard to frame or a
 diagnosis needs sharpening.
 
-An answer settles only what it addresses. Who may perform an action does not
+An answer settles only what it addresses: who may perform an action does not
 settle when it may happen, what it must wait for, or which later updates it
-accepts. Before declaring readiness, check each remaining prerequisite of the
-next dependent action: discover existing behavior, then ask if a consequential
-gate is still open. Do not infer the rest of a decision from one answer.
+accepts. Do not infer the rest of a decision from one answer.
 
-Hold only work that depends on an unanswered consequential choice, and continue
-independent discovery or preparation. A timeout or suggested default does not
-supply the answer. If assumptions are adequate for reversible work, state them and
-proceed within scope. After each answer or discovery, recompute the open frontier;
-new evidence can reopen a question.
+Intake is ready when no unresolved required choice or necessary fact blocks the
+next authorized action. For each prerequisite of that action, discover existing
+behavior first, then ask only if a consequential choice remains open. Defer an
+optional choice, such as extra UI, logging or reporting surfaces, visibly in the
+brief's open questions when existing behavior and scope are preserved without it.
+A necessary fact that is still unknown stays a required gap; never reclassify it as
+optional or out of scope to finish intake. Readiness does not require proof that
+later discovery cannot matter. Reading sources and settling choices are separate:
+exhausting the sources does not answer an open choice, and an open choice does not
+pause independent discovery or preparation.
+
+Hold only work that depends on an unanswered consequential choice. A timeout or
+suggested default does not supply the answer. If assumptions are adequate for
+reversible work, state them and proceed within scope. After each answer or
+discovery, recompute the open frontier; new evidence can reopen a question.
 
 ## Write a concise contract
 

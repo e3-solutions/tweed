@@ -1,0 +1,266 @@
+{
+  "date": "2026-10-13",
+  "stage": "prospective shared discovery before scored implementation",
+  "task_manifest_sha256": "524061c2d098f358e29ad4c1e58fa9df18c06732bc27e81b3b7414af1614a89b",
+  "tasks": [
+    {
+      "task_id": "tweed-pr20",
+      "pr_url": "https://github.com/e3-solutions/tweed/pull/20",
+      "base_sha": "59a1f2b45cadde341e26b7f9d36207faf0967573",
+      "head_sha": "195888057e57d25635dc75cfbcd78c16388ee530",
+      "merge_sha": "5f7d85359879c9f3173158611b99fcb7a0041445",
+      "task_kind": "real-public-historical-PR-behavioral-slice",
+      "requirements": "Make model selection configurable for a Bonaparte phase and its resume. The public --model option overrides BONAPARTE_MODEL; when neither is supplied, leave the coordinator and default/worker/explorer children to Codex model defaults. An explicitly selected model must reach the coordinator and all three children. Trim surrounding whitespace from the selected model; a blank selected value must fail before provider execution. A valid explicit option must override even a blank environment value. Treat model names as opaque strings and encode child configuration safely. Preserve the default medium reasoning and same-session resume behavior. Allowed production path: bonaparte. New regular root *.py helper modules are allowed; do not shadow Python standard-library or test-framework modules.",
+      "prompt": "Make model selection configurable for a Bonaparte phase and its resume. The public --model option overrides BONAPARTE_MODEL; when neither is supplied, leave the coordinator and default/worker/explorer children to Codex model defaults. An explicitly selected model must reach the coordinator and all three children. Trim surrounding whitespace from the selected model; a blank selected value must fail before provider execution. A valid explicit option must override even a blank environment value. Treat model names as opaque strings and encode child configuration safely. Preserve the default medium reasoning and same-session resume behavior. Allowed production path: bonaparte. New regular root *.py helper modules are allowed; do not shadow Python standard-library or test-framework modules.\nThis is an isolated historical repository snapshot with baseline tests. Keep all testing offline; do not fetch history, accepted solutions or external services. Do not run live Bonaparte provider workflows. Use the existing fixture patterns. An evaluator restores original tests and applies held-out public-boundary checks to declared production files; added tests do not affect grading.",
+      "production_paths": [
+        "bonaparte"
+      ],
+      "source_sha256": "f6d792aaf987df4cca1703b96359aff09e22b5d0740e61b471892fbd39a9a75e",
+      "head_source_sha256": "ff3aa5c125ca9bd8f4e671315820f7b5fe46e65582e49ea576d56de9e4b85b80",
+      "oracle_script_sha256": "324b3d9eeb704584197ade4a69e0a5376fcc307e107c77f4c6b9997a035382aa",
+      "oracle_sha256": "82a16a17465a4b27281829c848a5e4ae3954755a3e673a51aee8e22765ee4059",
+      "oracle_tests": [
+        "tests.test_owner_options.PublicOptions.test_model_omitted_preserves_provider_defaults",
+        "tests.test_owner_options.PublicOptions.test_model_environment_and_explicit_override_are_semantic_values",
+        "tests.test_owner_options.PublicOptions.test_model_empty_inputs_fail_before_provider"
+      ],
+      "test_commands": [
+        [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "tests.test_bonaparte.BonaparteRunnerTests.test_non_review_run_phase_retains_baseline_key_only_validation",
+          "tests.test_bonaparte.BonaparteRunnerTests.test_nested_invocation_is_blocked"
+        ]
+      ],
+      "required_checks": [
+        {
+          "id": "focused-baseline",
+          "argv": [
+            "python3",
+            "-B",
+            "-m",
+            "unittest",
+            "tests.test_bonaparte.BonaparteRunnerTests.test_non_review_run_phase_retains_baseline_key_only_validation",
+            "tests.test_bonaparte.BonaparteRunnerTests.test_nested_invocation_is_blocked"
+          ],
+          "timeout_seconds": 60
+        }
+      ],
+      "discovery_paths": [
+        "bonaparte",
+        "tests/test_bonaparte.py"
+      ]
+    },
+    {
+      "task_id": "tweed-pr23",
+      "pr_url": "https://github.com/e3-solutions/tweed/pull/23",
+      "base_sha": "5f7d85359879c9f3173158611b99fcb7a0041445",
+      "head_sha": "b1ba8c51d423bf1d9c504333f4552044ff338597",
+      "merge_sha": "383e05d165272ec088ca0d52d655d90f54c79954",
+      "task_kind": "real-public-historical-PR-behavioral-slice",
+      "requirements": "Add public --reasoning selection for a Bonaparte phase and its resume. Apply the selected effort to the coordinator and every default/worker/explorer child; preserve medium when omitted. Trim surrounding whitespace and reject a blank selected value before provider execution. Keep the model option working alongside reasoning and preserve same-session resume behavior. This is the executable reasoning slice of the historical options PR; PR-base workflow/documentation changes are outside this task. Allowed production path: bonaparte. New regular root *.py helper modules are allowed; do not shadow Python standard-library or test-framework modules.",
+      "prompt": "Add public --reasoning selection for a Bonaparte phase and its resume. Apply the selected effort to the coordinator and every default/worker/explorer child; preserve medium when omitted. Trim surrounding whitespace and reject a blank selected value before provider execution. Keep the model option working alongside reasoning and preserve same-session resume behavior. This is the executable reasoning slice of the historical options PR; PR-base workflow/documentation changes are outside this task. Allowed production path: bonaparte. New regular root *.py helper modules are allowed; do not shadow Python standard-library or test-framework modules.\nThis is an isolated historical repository snapshot with baseline tests. Keep all testing offline; do not fetch history, accepted solutions or external services. Do not run live Bonaparte provider workflows. Use the existing fixture patterns. An evaluator restores original tests and applies held-out public-boundary checks to declared production files; added tests do not affect grading.",
+      "production_paths": [
+        "bonaparte"
+      ],
+      "source_sha256": "ff3aa5c125ca9bd8f4e671315820f7b5fe46e65582e49ea576d56de9e4b85b80",
+      "head_source_sha256": "1fdb18524a5ade78355b496b95b45cf9c93be969679658933078bc33f4c22ca8",
+      "oracle_script_sha256": "324b3d9eeb704584197ade4a69e0a5376fcc307e107c77f4c6b9997a035382aa",
+      "oracle_sha256": "779d115fadcc043a856fd13a7391d6e70b483845b41127cb85eff8b871c6eb95",
+      "oracle_tests": [
+        "tests.test_owner_options.PublicOptions.test_reasoning_omitted_is_medium",
+        "tests.test_owner_options.PublicOptions.test_reasoning_override_reaches_coordinator_and_every_child_on_resume",
+        "tests.test_owner_options.PublicOptions.test_reasoning_blank_fails_before_provider"
+      ],
+      "test_commands": [
+        [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex",
+          "tests.test_bonaparte.BonaparteRunnerTests.test_non_review_run_phase_retains_baseline_key_only_validation"
+        ]
+      ],
+      "required_checks": [
+        {
+          "id": "focused-baseline",
+          "argv": [
+            "python3",
+            "-B",
+            "-m",
+            "unittest",
+            "tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex",
+            "tests.test_bonaparte.BonaparteRunnerTests.test_non_review_run_phase_retains_baseline_key_only_validation"
+          ],
+          "timeout_seconds": 60
+        }
+      ],
+      "discovery_paths": [
+        "bonaparte",
+        "tests/test_bonaparte.py"
+      ]
+    },
+    {
+      "task_id": "tweed-pr37",
+      "pr_url": "https://github.com/e3-solutions/tweed/pull/37",
+      "base_sha": "e2b5d20fe78ae2bf39baba7d69e5366708ae0416",
+      "head_sha": "cd923a1473486995aa27a995576b8868719eee6e",
+      "merge_sha": null,
+      "task_kind": "real-public-historical-PR-behavioral-slice",
+      "requirements": "Fix false phase failures caused by queued app-server activity notifications arriving after a soft-budget turn/steer acknowledgement. The protocol gives no ordering guarantee that distinguishes earlier queued activity from new work: those notifications must not invalidate an otherwise compliant wrap-up. Preserve strict wrap-up validation: needs-input state, an exact soft-budget continuation question (Soft phase budget reached. Resume this token with Continue.) or a Clarification required: prefix, and unverified proof in the summary. Preserve the coordinator resume session and successful cleanup. Invalid wrap-up receipts must still fail. Keep budget steering and its rejection behavior intact. Allowed production path: bonaparte. New regular root *.py helper modules are allowed; do not shadow Python standard-library or test-framework modules.",
+      "prompt": "Fix false phase failures caused by queued app-server activity notifications arriving after a soft-budget turn/steer acknowledgement. The protocol gives no ordering guarantee that distinguishes earlier queued activity from new work: those notifications must not invalidate an otherwise compliant wrap-up. Preserve strict wrap-up validation: needs-input state, an exact soft-budget continuation question (Soft phase budget reached. Resume this token with Continue.) or a Clarification required: prefix, and unverified proof in the summary. Preserve the coordinator resume session and successful cleanup. Invalid wrap-up receipts must still fail. Keep budget steering and its rejection behavior intact. Allowed production path: bonaparte. New regular root *.py helper modules are allowed; do not shadow Python standard-library or test-framework modules.\nThis is an isolated historical repository snapshot with baseline tests. Keep all testing offline; do not fetch history, accepted solutions or external services. Do not run live Bonaparte provider workflows. Use the existing fixture patterns. An evaluator restores original tests and applies held-out public-boundary checks to declared production files; added tests do not affect grading.",
+      "production_paths": [
+        "bonaparte"
+      ],
+      "source_sha256": "e11e216c0e81eae365bb202523a705fb5dea162689c3494203e937406546de2b",
+      "head_source_sha256": "b5fda839f6a016c16fed0ae72e59da0baea30894424572f9505e179a7d2d0702",
+      "oracle_script_sha256": "324b3d9eeb704584197ade4a69e0a5376fcc307e107c77f4c6b9997a035382aa",
+      "oracle_sha256": "f9755fc1d87b084dbb92fa082a72152e6849337ff570fad9c82faa967251033b",
+      "oracle_tests": [
+        "tests.test_owner_queued.QueuedWrapup.test_queued_activity_after_ack_keeps_valid_continuation",
+        "tests.test_owner_queued.QueuedWrapup.test_no_queued_activity_and_clarification_remain_valid",
+        "tests.test_owner_queued.QueuedWrapup.test_queued_activity_cannot_make_invalid_receipt_valid"
+      ],
+      "test_commands": [
+        [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "tests.test_phase_runtime.PhaseRuntimeTests.test_terminal_before_deadline_does_not_steer",
+          "tests.test_phase_runtime.PhaseRuntimeTests.test_budget_steer_rejection_is_fatal_and_cleanup_runs"
+        ]
+      ],
+      "required_checks": [
+        {
+          "id": "focused-baseline",
+          "argv": [
+            "python3",
+            "-B",
+            "-m",
+            "unittest",
+            "tests.test_phase_runtime.PhaseRuntimeTests.test_terminal_before_deadline_does_not_steer",
+            "tests.test_phase_runtime.PhaseRuntimeTests.test_budget_steer_rejection_is_fatal_and_cleanup_runs"
+          ],
+          "timeout_seconds": 60
+        }
+      ],
+      "discovery_paths": [
+        "bonaparte",
+        "tests/test_phase_runtime.py"
+      ]
+    }
+  ],
+  "runtime_source_sha256": {
+    "controller.py": "7ec25f9122b6c80f5d6bcb6dd0383369d81d021eb1c633a7e31ae9bdf3ef70bc",
+    "discovery.py": "779a77e871260b422cce66f144cf9f159242266347a02389331f489aca2ba642",
+    "test_controller.py": "072d8254f3eb70982ca1342928d65c572dd4f9cd8331b0169eea5b80b5490324",
+    "test_discovery.py": "1eb8260e0a5935573a54a68c30c080d4aede1f3e72236c980b347f45e10d75a4"
+  },
+  "source_guidance_sha256": {
+    "SKILL.md": "c0bd76e19626b3547fc7abf9aef50a807fc47d27b1363e4c2e663cece56593dc",
+    "assets/contract.example.json": "85066dbfebe8310b5414a02f8d7cc73f925987cda69ffcb508975ee0fe738112",
+    "assets/report.example.json": "d76fa00db14f903c423133b3a84d763b95d9dfb5e3c3170f160708e66dc8ec47",
+    "assets/runs/invitation-authorization.json": "676de57ab147634eefa21c7251b1385500b375bb271dca0168de867b34e5283d",
+    "assets/runs/invitation-authorization.log": "ec5ce487789f0bf1b922299cf02b3e3633d037e37a94d17df2b3bbbe3ed5fcc6",
+    "assets/runs/invitation-e2e.json": "e1d88a4c7d16e31afc9caa23bdc5576c6d758c3fbc3435d81f198eacbf156802",
+    "assets/runs/invitation-e2e.log": "a92b7fdcb45e1d22fc2af4c80adc6e7fc1389ff8a694010cf5e6ff0b5ffbf1f6",
+    "references/complex-tasks.md": "8c0396928105db561147b65b8f95b6a838ed9429efcbffc2b168030a77ae08c2",
+    "references/evidence.md": "bd097c352130c5199ee907199bfab369927cf8ee6f990e8133cb79a87ca01d02",
+    "references/harnesses.md": "8e992421a83e5d5bb678ff0c381eee736722b76479f5da9053618d3ee0f999db",
+    "references/intent-flows.md": "d7b4461527b613f9607805f4ff6e2380ee87b47b68d44fa88b06661d544acbec",
+    "references/model-routing.md": "016d305701972280250c3938d5db2399807df93cf55962baaea53f89ee13fa61",
+    "references/modes.md": "58bdefb0a2be2a6093bd4c599e139eaf39e41c009b07aa913a51274ae90708f6",
+    "references/question-patterns.md": "d4815150b8418b5f747f909f4e141f8f42e6ee2890c70cf220a1ac8cf6973295",
+    "references/report-rules.md": "cd71fbb00b82a7b0c4811a929d1ceac8338708c59788b3a6e8ae3268b94dd61f",
+    "references/task-profiles.md": "864f7ddc73868dde6172c51e998f24c4e275f9d85f61ac7da2b20062c1cc15e7",
+    "scripts/__pycache__/confidence.cpython-314.pyc": "b091dd8f4e6dcd69a464c5356db6d7b0c2ba26292af8b7ed1b263663ff95adde",
+    "scripts/__pycache__/diagnostics.cpython-314.pyc": "a77e17e7546764631e5074dc028f726204f97342142d62fb21ed90f05618ac99",
+    "scripts/confidence.py": "8c898d5bf416990e520a1bb9b113f06ffd573854346ef4512ea5798e38d684be",
+    "scripts/diagnostics.py": "49a3f33e230b3598f212caad5e21315b89702c1fecaa0ffc6129220f41d25258",
+    "tests/check_release.py": "591177dc406102e3b83386ae1aadf0bf91d40452ec85a207b71181d99585a256",
+    "tests/support.py": "2ff46f81cb02720fadc665d125d211cabeae8b771604c0888322fa00c304b5b7",
+    "tests/test_autonomy_integration.py": "cea21305a7d291804c48ebaeb57b9c514ed589c9f8b5aeea3d2ad9f2d3fd4400",
+    "tests/test_cancellation.py": "6aa8dcce7fc2f62029ed0144eb838d5f0213869c9123d3cfa23cd890970ac7ed",
+    "tests/test_capture_io.py": "2d24d630769553b8c8c31a8bac5566cb38cba9aa73d779ea935c78dd78a702df",
+    "tests/test_capture_metadata.py": "bf6984ddc3815de07a15650b5c3e70d8eae8fe7152de7d513680dab04ac91bd9",
+    "tests/test_cli_recovery.py": "18c5de2ead4e7675ad41a3acc93ed90b45f9bea0ad91ed259592e5d0a203cd42",
+    "tests/test_confidence.py": "cce4c1a13d4ec28538bf13fe225c23e78a9d07b3b9a65498667e98d832767528",
+    "tests/test_content_binding.py": "da7b19f7742156993e6d4dc7edefd0c7f0b81dbf7c8d4d31ec57c8fd0d10ad2b",
+    "tests/test_dependency_frontier.py": "835def8f39816402227db6a5b6125a47cd9b3ec16126ee0ab2c8d404ec9549b7",
+    "tests/test_diagnostics.py": "87109b26eb2deadc34a653c03e4a315ae58f39a618c9b55a488b0dcc4de5eea5",
+    "tests/test_dirty_submodule.py": "1e6ffdac6d4075552ae6139f58de593cb823122d61b9150dfdf82aab019e5e3b",
+    "tests/test_evidence_root.py": "63dfb21de5cc1949e6c1d06394dff02e1fd22595041d97f2244c57f56d551a26",
+    "tests/test_evidence_subtree.py": "9f5a5dcb0d4d8e5568ecf0ebfe87513ea5b2107106e3542738aa3a6397d347eb",
+    "tests/test_fingerprint_staging_retry.py": "e8a13589fbb90a5f0dfae72ed62bae68cd8cb3448557a0465667c76c07d8e104",
+    "tests/test_git_availability.py": "544ac46da0aa9130ff2cc1db467efc7df94c52a9b026fb1b9f1d1260cea67410",
+    "tests/test_init_recovery.py": "b925247ed89abdcce8b9f0ca6b6b24b6951195591cddfad27fb1b6126ab60f7b",
+    "tests/test_integrity.py": "fda7cbf536e3646d2570bb023bceb4a01992bd9d6aa8d4574676f9fec8bd54ee",
+    "tests/test_launch_cancellation.py": "147d49689fe3d0f4162589667eb4accf4232265ce79d74103d2d368abb168fc2",
+    "tests/test_limits.py": "959c99c96b6d4cab56d172dcfdcfe65f548f422205156ba40b2872521067ac9d",
+    "tests/test_log_inputs.py": "97b7750150c585b4698ca9b890cf93f3f0918f7b93a2182955a47f56bede5d57",
+    "tests/test_parallel_capture.py": "d2faa51758fec174caa59775b0b6c9199bfe11ca98256361278069832916f95d",
+    "tests/test_record.py": "58482fbbdab686af9aa20a5b7d6760d07ec000e6b8c17acb432ffe1507e5a8ba",
+    "tests/test_release_archive.py": "a93e5c1d3a5a6554c5d79cbfaf477a45cb1d61b2e90acc6c0f840c22cf901057",
+    "tests/test_reporting_scope.py": "d21cd893379b4c3da3a694f9c73052e4b027342cf4d8b81758ce6624bdb08b60",
+    "tests/test_review_provenance.py": "375b9a2ebb0a48abf6107882d439a5d780af661fdba818b0c7da78ea72db6ece",
+    "tests/test_run_receipt.py": "19bfc866454d48c22097d03cbb798354c3327c03f654802863d91c4e3c6053f3",
+    "tests/test_source_scope_output.py": "b90467106cf976d5a4c9ec5b94241adc68366371e2c512762b113557516e24a5",
+    "tests/test_validation_cache.py": "5aa413a27a8d715e1aadda8bcaa793ff10928c50f68fe79fc82237b5e67cb8c0"
+  },
+  "original_guidance_lineage_sha256": "131587ad645c6e564b2ecb4f20d04c77c8b2eb1bbca6163b2a80afa75c84e3f1",
+  "original_guidance": "Original0.6 exact prior sealed tree; common current0.8.1 runtime/assets in botharms",
+  "developer": {
+    "model": "claude-opus-5-5",
+    "effort": "high",
+    "main_seconds": 480,
+    "main_cli_usd_guard": 4,
+    "closure_seconds": 300,
+    "closure_cli_usd_guard": 3
+  },
+  "reviewer": {
+    "requested_model": "gpt-6-astra",
+    "effort": "medium",
+    "seconds": 180,
+    "actual_model_attribution": "Unobserved/requested-only allowed and disclosed; no substitution"
+  },
+  "discovery": {
+    "requested_model": "claude-haiku-5-5",
+    "effort": "medium",
+    "seconds": 120,
+    "cli_usd_guard": 0.6,
+    "max_facts": 6,
+    "empty_tools": true,
+    "common_quotes_shared_across_arms": true
+  },
+  "assigned_trials": 6,
+  "repeats": 1,
+  "arms": [
+    "original",
+    "revised"
+  ],
+  "aggregate_cell_seconds": 1100,
+  "seed": 8101337,
+  "execution": "sequential sole roster; started identities cannot retry",
+  "feedback": "Fixed public-boundary diagnostics and independent findings, no reference or oracle source; finalgrader not unseenpostrepairholdout",
+  "primary_metric": "Qualified completed final product delivery per all three assigned tasks in each arm",
+  "secondary_metrics": [
+    "First-pass selected check outcome separately",
+    "Final product grade versus delivery qualification",
+    "Actual source repair versus no-change verification",
+    "Review findings and required unresolved witnesses",
+    "Unknowns, stage lifecycle, requested/observed models and tool metadata",
+    "Available usage/elapsed estimates; billing unobserved"
+  ],
+  "limits": [
+    "Three small fresh historical identities; related mechanisms may be familiar, not temporal novelty or fullPR acceptance",
+    "One trial per arm and task; no population quality conclusion",
+    "Controlled delegated lifecycle common acrossarms, not the original entire free workflow",
+    "Final acceptance after disclosed fixed diagnostics, not hiddenpostrepairaccuracy",
+    "Supplied requirements; no live intake efficacy measurement",
+    "No install/promotion from design alone; installed0.8.0unchanged"
+  ]
+}

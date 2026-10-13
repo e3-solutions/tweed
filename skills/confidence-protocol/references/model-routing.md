@@ -9,7 +9,7 @@ govern route selection inside that experiment only.
 
 | Responsibility | Route | Check before relying on it |
 | --- | --- | --- |
-| Difficult bugs, substantial or coupled implementation, design alternatives | Claude Opus (`claude-opus-5-5`) as development lead | Executed acceptance checks on the integrated tree, not the lead's summary. |
+| Difficult bugs, substantial or coupled implementation and its repair, design alternatives | Claude Opus (`claude-opus-5-5`) as development lead | Executed acceptance checks on the integrated tree, not the lead's summary. |
 | Bounded discovery: source maps, evidence extraction, candidate questions or test cases | Claude Haiku (`claude-haiku-5-5`), only when checking its output costs less than producing it | Retrace cited source; rerun any completeness search. |
 | Mechanical edits fully decided by a deterministic check | Haiku or direct | Inspect the diff and run that check. |
 | User conversation, authority, integration, focused independent checks, fallback | Codex when it coordinates; otherwise the session owner | Current evidence and the contract pairing in `SKILL.md`. |
@@ -18,9 +18,21 @@ govern route selection inside that experiment only.
 Opus leads development: give it the contract, owned files and acceptance checks,
 and let it run its own implement/check/repair loop to completion or a precise
 blocker. It returns the diff, the commands it executed with their outcomes, and
-remaining gaps. Codex is the interface and backup. It does not redo delegated work;
-it reruns focused acceptance checks, asks one counterexample question where risk
-warrants, integrates, and takes over directly when a route is unavailable or stalls.
+remaining gaps. Codex is the interface, independent checker and backup. It does not
+redo delegated work; it reruns focused acceptance checks and asks one
+counterexample question where risk warrants. Each finding that affects a stated
+requirement goes back to Opus as a packet: the requirement, the concrete
+counterexample or source location, and the executed or reproducible check. Opus
+repairs, reruns the affected checks, and returns the current diff and remaining
+gaps; Codex rechecks the affected behavior and integrates. Other suggestions stay
+optional. This handoff applies to delegated substantial work, not Quick tasks.
+
+Codex takes over directly when a route is unavailable or stalls, or when a repair
+is fully determined by the finding and cheaper than a handoff. It then becomes the
+author of that repair: record the finding, changed paths and rerun checks, and do
+not report its own passing check as independent post-repair review. Where
+independent review is required, a separate actor that did not implement or repair
+that scope performs it ([complex tasks](complex-tasks.md)).
 
 Haiku is optional. Use it for a narrow question with inspectable answers, not as a
 compulsory first step. In one small registered comparison, Haiku implementation
@@ -70,6 +82,7 @@ missed.
 Route:        requested model/effort | observed model | harness version | boundary checked
 Terminal:     exit status | result status | nested tool errors | timeout
 Findings:     promoted item -> source read | check run | outcome
+Repairs:      finding -> repair actor | changed paths | affected checks rerun | post-repair reviewer
 Completeness: scope and method rerun | remaining gaps
 Critical:     proof-design origin | adversarial-review origin | separate contexts
 Rejected:     unverified or contradicted findings, with reasons

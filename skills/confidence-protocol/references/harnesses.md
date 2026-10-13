@@ -74,8 +74,11 @@ execution; an implementation slice needs explicit file ownership and write acces
 
 Return a durable artifact containing the role, question, requested and observed
 model metadata, provider/runtime version, session reference, source digest, actual
-checks, findings, gaps and usage. Codex should reconcile concrete findings, repair
-real defects, and capture fresh proof for the resulting source. A timeout,
+checks, findings, gaps and usage. Codex should reconcile concrete findings and
+return real defects to Opus or the implementation owner for repair, as in
+[model routing](model-routing.md); Codex then rechecks the affected scope,
+integrates, and captures fresh proof for the resulting source. Where Codex repairs
+as authorized fallback, record Codex as author of that repair. A timeout,
 unsupported model, missing receipt or incomplete required review remains a gap.
 Never retry reviews merely to obtain agreement or treat a peer's prose as an
 executed check. Do not request hidden reasoning.

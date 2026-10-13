@@ -1,0 +1,91 @@
+{
+  "scope": "Actual actor/tool/lifecycle metadata, not comparative efficacy; raw client logs are retained privately",
+  "source_only_candidate": "0.8.1 experimental",
+  "installed_version_unchanged": "0.8.0",
+  "actors": [
+    {
+      "role": "haiku-discovery",
+      "observed_models": [
+        "claude-haiku-5-5"
+      ],
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 41.11072508399957,
+      "tool_calls": 1,
+      "tool_names": [
+        "StructuredOutput"
+      ],
+      "nested_tool_errors": 0,
+      "terminal_subtype": "success",
+      "terminal_is_error": false,
+      "receipt_sha256": "e7461393c949d58214a97d83f83e1929bc8b584ffd5aab50ae216f186746ee56",
+      "stream_sha256": "925f8e9e99a073be2c1f12efc4e0e454da6112c05201bb811f85e8206aed61d9",
+      "request_sha256": "cd560d9408af87cdaeb28e905cc81bc9380f024bd6b7e4f951f7ffbe99071dc6",
+      "runtime_version": "2.1.285 (Claude Code)"
+    },
+    {
+      "role": "opus-development",
+      "observed_models": [
+        "claude-opus-5-5"
+      ],
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 150.89051062499857,
+      "tool_calls": 31,
+      "tool_names": [
+        "Edit",
+        "Glob",
+        "Grep",
+        "Read",
+        "Write"
+      ],
+      "nested_tool_errors": 0,
+      "terminal_subtype": "success",
+      "terminal_is_error": false,
+      "receipt_sha256": "7be45234c72b9f8755d8867f53b768aa5e890830984a7cfeac83cdc220c61b7e",
+      "stream_sha256": "0bfba1256fd8f2429a70aed17103bd1112231d3076a80156ee581940613e6b79",
+      "request_sha256": "e87f242822aae6e8ad863075fedd66fcf17f179ab6cc44b2e23982334e6d9e53",
+      "runtime_version": "2.1.285 (Claude Code)"
+    },
+    {
+      "role": "opus-correction",
+      "observed_models": [
+        "claude-opus-5-5"
+      ],
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 30.36480712499906,
+      "tool_calls": 7,
+      "tool_names": [
+        "Edit",
+        "Grep",
+        "Read"
+      ],
+      "nested_tool_errors": 0,
+      "terminal_subtype": "success",
+      "terminal_is_error": false,
+      "receipt_sha256": "45718a86d3feb1cfc1d958f77fb9cfbd93494efd03fe07d94102e9f200ad13f4",
+      "stream_sha256": "d8e8e87255fd5757c323fe1b33a3420b65997b698a1670d512a7e437293c64e6",
+      "request_sha256": "16c624fd024c7f9a9f726df02f0018ffa613ae018e2afaa33dd7f85f3726ae50",
+      "runtime_version": "2.1.285 (Claude Code)"
+    }
+  ],
+  "source_check": {
+    "prior_source": "8e1bf488c4da7cfc446cc9b7f28ba38a4405cb2e",
+    "core_engine_unchanged": true,
+    "diagnostics_version_only": true,
+    "relative_links": "resolved",
+    "source_version": "0.8.1 experimental",
+    "source_sha256": {
+      "skills/confidence-protocol/SKILL.md": "c0bd76e19626b3547fc7abf9aef50a807fc47d27b1363e4c2e663cece56593dc",
+      "skills/confidence-protocol/references/intent-flows.md": "d7b4461527b613f9607805f4ff6e2380ee87b47b68d44fa88b06661d544acbec",
+      "skills/confidence-protocol/references/model-routing.md": "016d305701972280250c3938d5db2399807df93cf55962baaea53f89ee13fa61",
+      "skills/confidence-protocol/references/question-patterns.md": "d4815150b8418b5f747f909f4e141f8f42e6ee2890c70cf220a1ac8cf6973295",
+      "skills/confidence-protocol/references/harnesses.md": "8e992421a83e5d5bb678ff0c381eee736722b76479f5da9053618d3ee0f999db",
+      "docs/research/2026-10-confidence/lean-repair/DESIGN.md": "2463de6cfd6736eec32a2dd5af2fc46073dc95326b2a1b077401001e26008f79"
+    },
+    "main_guidance_lines_before": 361,
+    "main_guidance_lines_after": 382
+  },
+  "haiku_implications": "Quote bytes verified; interpretive suggestions stay candidates. One overbroad stopping implication was not adopted; final guidance requires resolving required consequential choices."
+}
