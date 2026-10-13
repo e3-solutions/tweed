@@ -104,6 +104,42 @@ login; a catalog entry is not a successful request. Cross-provider review is a
 candidate route to better coverage, with accuracy established by behavioral
 checks and comparative trials rather than vendor identity or agreement.
 
+### Packet-only Claude call from Codex
+
+Use this pattern when the Claude worker needs only supplied text, for example for
+research, proof design, or review of a packet. Codex stays the launchpad and owner.
+
+- Place only authorized source in a fresh packet directory, and use it as the
+  working directory.
+- Keep client authentication in the provider process. Never copy tokens, keys, or
+  credential files into the packet, the arguments, or the environment of any
+  executable child.
+- Invoke noninteractive mode through an argv list, without shell interpolation.
+- Set the requested model and effort explicitly, using the options that the
+  installed version's help output documents. If effort cannot be set, record that
+  as a gap.
+- Give the call an empty tool inventory. Confirm from the receipt that no tool calls
+  occurred. An instruction not to use tools is not confinement.
+- Bound each call with its own timeout under the aggregate task deadline. On
+  timeout, stop the process group and reap the child. Retain the partial receipt as
+  a gap.
+- Request structured output. Check the exit status, the terminal result status, the
+  error flag, the requested and actual model identifiers from runtime usage
+  metadata, the absence of tool use, and usage.
+- Treat a mismatch or a missing field as a gap. Do not substitute silently.
+
+An edit route, such as an isolated low-risk edit or a difficult implementation
+slice, needs a qualified actual tool boundary:
+
+- an isolated worktree or snapshot;
+- an effective tool inventory read from the runtime;
+- a write scope enforced by sandbox or filesystem permissions, not by the prompt;
+- confined test execution;
+- no production credentials.
+
+The owner then inspects the diff against the owned files and reruns the affected
+proof.
+
 ## T3 Code and borrowed project patterns
 
 T3 Code manages provider sessions through provider-specific adapters. Discover

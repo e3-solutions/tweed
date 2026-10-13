@@ -29,6 +29,7 @@ REQUIRED = {
     "skills/confidence-protocol/references/harnesses.md",
     "skills/confidence-protocol/references/model-routing.md",
     "skills/confidence-protocol/references/intent-flows.md",
+    "skills/confidence-protocol/references/question-patterns.md",
 }
 
 

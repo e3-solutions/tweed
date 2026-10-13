@@ -7,6 +7,32 @@ launch models. Preserve the task's existing authority, proof mode, and required
 reviews. A fixed experiment's registered routes govern route selection; they do
 not override authority, proof mode, or required reviews.
 
+## Default when Codex coordinates
+
+Prefer Claude workers for substantial suitable work when their actual route is
+available, qualified and covered by the task's cost and source authority. Codex
+owns the user conversation, accepted intent, scope, integration and completion.
+This is a routing preference, not a claim that Haiku outperforms Luna or Terra.
+
+| Responsibility | Preferred route | Owner check |
+| --- | --- | --- |
+| Source maps, evidence extraction, candidate questions and test cases | Claude Haiku 5.5 | Retrace source and independently check completeness. |
+| Small isolated edits classified low-risk by the owner | Qualified Haiku 5.5; escalate to Opus when checking/repair outweighs the saving | Inspect the diff and execute behavioral checks. |
+| Difficult bugs, substantial implementation, interacting components | Claude Opus 5.5 | Verify integration, required behavior and regression boundaries. |
+| Architecture alternatives and maintainability review | Fresh scoped Opus 5.5 worker | Check concrete tradeoffs/removable complexity; prefer independent Codex challenge of Opus-written changes. |
+| Required Critical proof design and adversarial review | Separate capable actors and contexts; retain a Codex role when Opus implements | Verify each required role's source scope, evidence and unresolved findings. |
+| Authority, user decisions, final verification and delivery | Codex coordinator | Actual checks and current evidence, not worker completion prose. |
+
+Use explicit model identifiers with Claude Code: `claude-opus-5-5` and
+`claude-haiku-5-5`; record runtime-observed identities. These are preferred roles,
+not a forced sequence. Haiku can do most bounded support work and Opus can own most
+implementation; do not force a cheap handoff on a coupled task or duplicate work.
+Keep Quick tasks direct. Native Codex workers remain available for independent
+checks and qualified fallback; preserve explicit task model requirements. If a
+preferred route is unavailable, retain its failed attempt and disclose the
+substitution. Follow [harness guidance](harnesses.md) for the actual external call.
+A route preference does not grant production credentials or expand action scope.
+
 ## Choose a route before dispatch
 
 Prefer a qualified lower-cost worker for a narrow question with inspectable
@@ -29,6 +55,13 @@ Required Critical proof design and adversarial review need suitably capable,
 independent reviewers with separate origins and contexts. A smaller model can
 assist those reviewers with bounded evidence work; assistance does not replace
 the required roles. Different model names do not establish independence.
+
+A user's route preference is routing intent, not evidence of accuracy or price.
+The owner, not a cheap classifier, decides that an edit is low-risk. Changes to
+trust, persistence, external contracts or interacting components need a capable
+route and the relevant proof. Confine execution with actual qualified permissions;
+an isolated worktree alone does not enforce read or write scope. Codex's challenge
+of a worker does not replace either required Critical review role.
 
 Choose by the failure consequences, uncertainty, coupling, and ease of checking
 the output, rather than a fixed model ladder. Reuse inspectable qualification from

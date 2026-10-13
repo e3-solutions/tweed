@@ -32,7 +32,10 @@ of each meaningful option. Preserve answers already given and existing
 authorization; routine implementation choices remain with the owner.
 
 Use the host's asynchronous question mechanism when available, with concise
-options and a recommendation when evidence supports one. After an answer or a new
+options and a recommendation when evidence supports one. Word questions neutrally
+so that agreement is not the default answer. Use
+[question patterns](question-patterns.md) for scenarios, counterexamples and
+tradeoffs. After an answer or a new
 discovery, recompute the unresolved decision frontier and relevant readiness;
 neither a question timeout nor a suggested default supplies a required answer.
 
@@ -68,6 +71,9 @@ For a difficult bug, derive competing causes from source and observed evidence.
 State the observable prediction of each live hypothesis and choose a targeted
 probe that distinguishes them. Use the result to retire or refine the explanation;
 do not apply a speculative fix just because one plausible story was generated.
+[Question and solver patterns](question-patterns.md) give compact forms for
+predictions, symptom-sensitive diagnostics, independent expected values, and
+before/after checks on the original scenario.
 
 Use [model routing](model-routing.md) throughout. Qualified lower-cost workers can
 map source, extract known decisions, identify candidate ambiguities, and propose

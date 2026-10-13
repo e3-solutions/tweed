@@ -2,6 +2,23 @@
 
 This file records user-visible changes to Tweed and Confidence Protocol.
 
+## [0.7.0] - 2026-10-13
+
+- Prefer qualified Opus and Haiku workers when Codex coordinates substantial work;
+  keep Codex responsible for intent, integration, independent checks and completion.
+  Retain direct Quick work and disclose unavailable-route substitutions.
+- Add conditional question and solver patterns: neutral choices, concrete scenarios,
+  falsifiable predictions, symptom-sensitive diagnostics, independent expected
+  values, abstraction removal and deliberately contrasting designs.
+- Document actual packet-only Claude Code calls and the separately qualified tool
+  boundary needed for edits. Retain requested/observed model distinctions, partial
+  outcomes, source authority and required independent Critical roles.
+- Require the new question-pattern reference in regular-file release validation.
+
+Routing preference is user intent, not a claim that Haiku beats Luna/Terra or that
+Opus always produces better code. Controlled comparisons and their limitations are
+reported separately; no new dispatcher, dependency or evidence schema is added.
+
 ## [0.6.0] - 2026-10-12
 
 - Add optional obligation dependency graphs, ancestor proof checks, and atomic
