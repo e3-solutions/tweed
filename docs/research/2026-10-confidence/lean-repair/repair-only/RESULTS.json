@@ -1,0 +1,39 @@
+{
+  "supplement": "prospectively sealed sole observed README scope-correction pair",
+  "assigned_correction_attempts": 2,
+  "task_id": "tweed-pr20",
+  "primary_six_cell_metrics_changed": false,
+  "registration_sha256": "70fdb3a543e1e0c619dc7eaa1fe295ba294ea81c4a4ee51ab76c169f130faca4",
+  "origin_primary_registration_sha256": "e2fddcd40281f75c1863bc2a2301d02eb36946cb1ff4fdf392f503394be74948",
+  "rows": [
+    {
+      "attempt_id": "pr20-observed-scope-original-r1",
+      "error": "ValueError: Supplemental attempt did not complete; retained failure/unknown",
+      "qualified_scope_correction": false,
+      "status": "supplemental_custody_failure"
+    },
+    {
+      "attempt_id": "pr20-observed-scope-revised-r1",
+      "error": "ValueError: Supplemental attempt did not complete; retained failure/unknown",
+      "qualified_scope_correction": false,
+      "status": "supplemental_custody_failure"
+    }
+  ],
+  "custody_failures": [
+    {
+      "attempt_id": "pr20-observed-scope-original-r1",
+      "error": "ValueError: Supplemental attempt did not complete; retained failure/unknown"
+    },
+    {
+      "attempt_id": "pr20-observed-scope-revised-r1",
+      "error": "ValueError: Supplemental attempt did not complete; retained failure/unknown"
+    }
+  ],
+  "limitations": [
+    "Two separate correction attempts of one outcome-selected revised-origin README scope breach; not new development tasks or production bug repairs.",
+    "Common supplemental feedback explicitly discloses the scope verdict/nonproduction diff absent from primary closure packets; no causal policy-improvement claim.",
+    "Original primary strict acceptance and six-cell scores remain untouched. Full source corrections and production patch changes are distinct.",
+    "Stage policy context is the sole assigned instruction difference; the complete authentic candidate is copied before mounting each frozen policy.",
+    "Qualified scope correction is based on independently executed source/preservation/behavior checks; completion/remaining declarations are separate and do not certify full protocol release gates."
+  ]
+}
