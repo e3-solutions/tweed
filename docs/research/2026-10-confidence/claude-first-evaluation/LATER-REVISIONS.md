@@ -35,3 +35,11 @@ from the original recorded verdict.
 None of these changes adds an installed dispatcher, dependency, model ladder,
 mandatory question count or evidence-report field. The new detailed guidance
 loads through conditional references.
+
+The owner's initial task contract also overstated intake evidence: P4 said the
+actual interviews preserve unresolved user authority. The primary blinded jury's
+I07 and I12 findings contradict that universal claim. The original contract and
+an explicitly partial P4 assessment are retained. A successor contract instead
+requires complete, traceable measurement of questions, actual answers, readiness
+and authority errors. That reporting scope does not establish that every interview
+is correct, and does not change the registered treatment, rubric or outcomes.
