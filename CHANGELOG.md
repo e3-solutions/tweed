@@ -2,6 +2,15 @@
 
 This file records user-visible changes to Tweed and Confidence Protocol.
 
+## [0.7.1] - 2026-10-13
+
+- Reobserve a complete source inventory a bounded number of times when exact
+  untracked protocol atomic staging files disappear during parallel publication.
+  Ordinary missing-source retries, tracked-file and type checks, unsupported
+  context refusal, and unknown binding on exhaustion remain in force.
+- Preserve the failed Python 3.14 CI observation and deterministic two-publisher
+  reproduction. This maintenance fix is outside the frozen model comparisons.
+
 ## [0.7.0] - 2026-10-13
 
 - Prefer qualified Opus and Haiku workers when Codex coordinates substantial work;

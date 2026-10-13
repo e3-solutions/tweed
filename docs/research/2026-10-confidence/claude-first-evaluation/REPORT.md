@@ -47,7 +47,7 @@ The [later revisions](LATER-REVISIONS.md) identify guidance fixes outside the fr
 
 The release adds a conditional question-pattern reference and Claude-first task routing, not an installed dispatcher or extra dependency. Haiku can extract evidence, map bounded sources and propose questions or tests; the owner checks completeness. Only owner-classified low-risk isolated edits use Haiku after route qualification. Opus is preferred for difficult implementation, coupled changes and maintainability review. Codex retains user decisions, integration, independent challenges, executed proof and delivery. Required Critical review roles remain separate and cannot be replaced by smaller-model assistance or worker agreement.
 
-The guide adapts Matt Pocock's clarification, source discovery, counterexample, hypothesis and simplicity fundamentals with attribution. It does not install all 27 skills or impose a fixed questionnaire. Existing source answers questions first; unresolved consequential choices go to the user. The runtime proof machinery is unchanged apart from its version identifier.
+The guide adapts Matt Pocock's clarification, source discovery, counterexample, hypothesis and simplicity fundamentals with attribution. It does not install all 27 skills or impose a fixed questionnaire. Existing source answers questions first; unresolved consequential choices go to the user. Version 0.7 added guidance and a runtime version identifier. The subsequent 0.7.1 maintenance release adds the separately verified [parallel-publication retry correction](CAPTURE-RACE.md), outside every frozen model comparison.
 
 ```mermaid
 flowchart TD

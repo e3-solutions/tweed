@@ -108,7 +108,7 @@ def inventory(path):
 
 
 def check_installation(installed, repo):
-    require(installed['enabled'] and installed['installed_plugin']['version'] == '0.7.0', 'Installed version/state differs')
+    require(installed['enabled'] and installed['installed_plugin']['version'] == '0.7.1', 'Installed version/state differs')
     require(isinstance(installed['files'], dict) and installed['files'], 'Installed manifest must be nonempty')
     require(inventory(installed['source_directory']) == inventory(installed['cache_directory']) == installed['files'], 'Installed source/cache differs')
     for path, facts in installed['files'].items():
@@ -187,7 +187,7 @@ def verify(evidence):
     backup = Path(installed['backup_directory'])
     require(read(backup / 'source-0.6.0/.codex-plugin/plugin.json')['version'] == '0.6.0', 'Prior version backup differs')
     require(read(evidence / 'installed-doctor.json')['exit_code'] == 0, 'Installed doctor did not succeed')
-    require(read(evidence / 'installed-doctor.json')['result']['tool_version'] == '0.7.0', 'Installed doctor version differs')
+    require(read(evidence / 'installed-doctor.json')['result']['tool_version'] == '0.7.1', 'Installed doctor version differs')
     print(json.dumps({'main_assignments': main_counts[0], 'intake_assignments': intake_assigned,
                       'followup_assignments': followup_counts[0],
                       'anonymous_candidates_reviewed': len(covered), 'supplemental_routing_observations': len(probe['rows']),

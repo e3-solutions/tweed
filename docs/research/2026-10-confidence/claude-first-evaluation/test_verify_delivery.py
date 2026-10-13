@@ -39,7 +39,7 @@ print(json.dumps({"regular": list(regular), "refusal": refusal}))
         result = self.child('''
 for name in ("source", "cache", "repo"):
     (root / name).mkdir(); (root / name / "file").write_text("control")
-installed = {"enabled": True, "installed_plugin": {"version": "0.7.0"},
+installed = {"enabled": True, "installed_plugin": {"version": "0.7.1"},
              "source_directory": str(root / "source"), "cache_directory": str(root / "cache"),
              "files": namespace["inventory"](root / "source")}
 namespace["check_installation"](installed, root / "repo")

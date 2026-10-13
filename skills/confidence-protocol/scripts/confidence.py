@@ -178,7 +178,17 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def git_workspace_fingerprint(cwd: Path, evidence_directory: Path, *, _retry_missing: bool = True) -> dict[str, str] | None:
+def _atomic_staging_name(relative: Path) -> bool:
+    """Exact protocol staging names, relative to the evidence anchor."""
+    if len(relative.parts) == 1:
+        return bool(re.fullmatch(r"\.(?:contract\.json|report\.json|REPORT\.md)\.tmp-[a-z0-9_]{8}", relative.name))
+    if len(relative.parts) == 2 and relative.parts[0] == 'runs':
+        return bool(re.fullmatch(r"\.([A-Za-z0-9][A-Za-z0-9._-]*)\.json\.tmp-[a-z0-9_]{8}", relative.name))
+    return False
+
+
+def git_workspace_fingerprint(cwd: Path, evidence_directory: Path, *, _retry_missing: bool = True,
+                              _staging_retries: int = 8) -> dict[str, str] | None:
     """Bind enumerated working-tree bytes; ignored/external inputs are outside scope."""
     generated_names = {"contract.json", "report.json", "REPORT.md", "telemetry/events.jsonl", "telemetry/installation-id"}
     # Do not silently bind a different index/repository than the executed command.
@@ -219,36 +229,45 @@ def git_workspace_fingerprint(cwd: Path, evidence_directory: Path, *, _retry_mis
         evidence = Path(evidence_directory)
         # An evidence symlink is not an owned-output exclusion namespace.
         exclude_generated = not evidence.is_symlink()
+        def evidence_relative(path):
+            if exclude_generated and evidence.exists():
+                # Parent identities support casing aliases without lowercasing source names.
+                for ancestor in path.parents:
+                    if ancestor == root.parent:
+                        break
+                    try:
+                        anchored = ancestor.samefile(evidence)
+                    except FileNotFoundError:
+                        continue
+                    if anchored:
+                        return path.relative_to(ancestor)
+            return None
         for name in sorted(names):
             path = root / os.fsdecode(name)
             try:
                 info = path.lstat()
             except FileNotFoundError:
                 if name not in tracked:
-                    # A publisher can remove staging after Git enumerates it.
-                    # Re-observe once; never assume an unseen entry was regular.
+                    relative = evidence_relative(path)
+                    if relative is not None and _atomic_staging_name(relative):
+                        # Eight publishers can each unlink staging after enumeration.
+                        # Retry the complete inventory; never skip an unseen entry.
+                        if _staging_retries > 0:
+                            return git_workspace_fingerprint(original_cwd, evidence_directory,
+                                _retry_missing=_retry_missing, _staging_retries=_staging_retries - 1)
+                        return None
+                    # Ordinary source instability has a separate single retry.
                     if _retry_missing:
-                        return git_workspace_fingerprint(original_cwd, evidence_directory, _retry_missing=False)
+                        return git_workspace_fingerprint(original_cwd, evidence_directory,
+                            _retry_missing=False, _staging_retries=_staging_retries)
                     return None
                 payload = b'missing'
             else:
-                # Compare parent identities to support casing aliases without lowercasing source names.
                 generated = False
-                if exclude_generated and name not in tracked and stat.S_ISREG(info.st_mode) and evidence.exists():
-                    for ancestor in path.parents:
-                        if ancestor == root.parent:
-                            break
-                        if ancestor.samefile(evidence):
-                            relative = path.relative_to(ancestor)
-                            generated = relative.as_posix() in generated_names or (len(relative.parts) == 2 and relative.parts[0] == 'runs' and relative.suffix in ('.json', '.log'))
-                            # Atomic publishers own only these temporary output names.
-                            # This branch applies only to untracked regular files.
-                            if len(relative.parts) == 1:
-                                generated = generated or bool(re.fullmatch(r"\.(?:contract\.json|report\.json|REPORT\.md)\.tmp-[a-z0-9_]{8}", relative.name))
-                            elif len(relative.parts) == 2 and relative.parts[0] == 'runs':
-                                temporary = re.fullmatch(r"\.([A-Za-z0-9][A-Za-z0-9._-]*)\.json\.tmp-[a-z0-9_]{8}", relative.name)
-                                generated = generated or temporary is not None
-                            break
+                if name not in tracked and stat.S_ISREG(info.st_mode):
+                    relative = evidence_relative(path)
+                    if relative is not None:
+                        generated = relative.as_posix() in generated_names or (len(relative.parts) == 2 and relative.parts[0] == 'runs' and relative.suffix in ('.json', '.log')) or _atomic_staging_name(relative)
                 if generated:
                     continue
                 if stat.S_ISLNK(info.st_mode):
