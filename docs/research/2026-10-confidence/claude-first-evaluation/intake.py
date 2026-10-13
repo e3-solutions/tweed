@@ -88,7 +88,7 @@ def episode(spec,payload,out):
 def main():
  p=argparse.ArgumentParser();p.add_argument('action',choices=['prepare','run']);p.add_argument('--config',type=Path);p.add_argument('--study',type=Path,required=True);a=p.parse_args();study=a.study.resolve()
  if a.action=='prepare':
-  
+
   if study.exists():raise ValueError('Fresh intake study required')
   study.mkdir(parents=True);config=runner.read(a.config);payload=inputs(config);payload['schedule']=[{'case':c['id'],'policy':policy,'repeat':repeat} for repeat in [1,2] for c in CASES for policy in ['baseline','enhanced']];random.Random(6102031).shuffle(payload['schedule']);runner.write(study/'registration.json',{'payload':payload,'sha256':runner.digest(payload)});print('sealed 12 interview episodes; maximum 3 rounds each')
  else:
