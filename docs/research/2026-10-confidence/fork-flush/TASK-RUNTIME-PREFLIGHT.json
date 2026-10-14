@@ -1,0 +1,432 @@
+{
+  "passed": true,
+  "model_calls": 0,
+  "cells": [
+    {
+      "cell_id": "tweed-pr26--incumbent",
+      "passed": true,
+      "hosted_model_calls": 0,
+      "effective_tools": [
+        "list_files",
+        "read_file",
+        "write_file",
+        "replace_text",
+        "run_tests",
+        "confidence",
+        "request_review"
+      ],
+      "expected_tools": [
+        "list_files",
+        "read_file",
+        "write_file",
+        "replace_text",
+        "run_tests",
+        "confidence",
+        "request_review"
+      ],
+      "outside_read_denied_api": true,
+      "outside_read_denied_executed_child": true,
+      "baseline_commands": [
+        [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex"
+        ]
+      ],
+      "baseline_results": [
+        {
+          "argv": [
+            "/usr/bin/sandbox-exec",
+            "-p",
+            "(version 1)\n(deny default)\n(allow process-fork)\n(allow process-exec)\n(allow signal (target same-sandbox))\n(allow file-read* (literal \"/\") (literal \"/Library\") (literal \"/Library/Developer\") (literal \"/Users\") (literal \"/Users/aryagm\") (literal \"/Users/aryagm/.codex\") (literal \"/Users/aryagm/.codex/worktrees\") (literal \"/Users/aryagm/.codex/worktrees/b6ce\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--incumbent\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--incumbent/preflight\") (literal \"/opt\") (literal \"/opt/homebrew\") (subpath \"/System\") (subpath \"/usr\") (subpath \"/bin\") (subpath \"/opt/homebrew/bin\") (subpath \"/opt/homebrew/lib\") (subpath \"/opt/homebrew/opt\") (subpath \"/opt/homebrew/Cellar\") (subpath \"/opt/homebrew/Frameworks\") (subpath \"/Library/Frameworks\") (subpath \"/Library/Developer/CommandLineTools\") (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--incumbent/workspace\") (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--incumbent/preflight/execution-scratch\") (literal \"/dev/null\") (literal \"/dev/urandom\") (literal \"/dev/random\"))\n(allow file-write* (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--incumbent/workspace\") (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--incumbent/preflight/execution-scratch\"))\n(allow file-write* (literal \"/dev/null\"))\n(deny file-write* (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--incumbent/workspace/.protocol\"))\n(deny file-write* (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--incumbent/workspace/.git\"))\n(deny file-write* (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--incumbent/workspace/AGENTS.md\"))",
+            "/opt/homebrew/opt/python@3.14/bin/python3.14",
+            "-B",
+            "-m",
+            "unittest",
+            "tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex"
+          ],
+          "exit_code": 0,
+          "timed_out": false,
+          "wall_seconds": 0.12613945900375256,
+          "stdout": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--incumbent/preflight/command-8303fbf9036b49c7907217b1bbd3800a.stdout",
+          "stderr": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--incumbent/preflight/command-8303fbf9036b49c7907217b1bbd3800a.stderr",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "fb184ea57734512b1f088f9181209901b9cd46df3eb7eaa2500ea9e48dde20b5",
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false,
+          "output": "",
+          "error_output": ".\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n"
+        }
+      ],
+      "process_exit": 0,
+      "timed_out": false,
+      "stdout_sha256": "e0497d3517a80b273c8739888bae817253a98f4e5c4f13904b64c9b30344f46d",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command_path": "actual MCP run_tests -> WorkspaceTools.execute -> existing sandbox service_commands",
+      "control_scope": "workspace only; fresh outside execution scratch; no oracle/history/network"
+    },
+    {
+      "cell_id": "tweed-pr26--branch-a",
+      "passed": true,
+      "hosted_model_calls": 0,
+      "effective_tools": [
+        "list_files",
+        "read_file",
+        "write_file",
+        "replace_text",
+        "run_tests",
+        "confidence",
+        "request_review"
+      ],
+      "expected_tools": [
+        "list_files",
+        "read_file",
+        "write_file",
+        "replace_text",
+        "run_tests",
+        "confidence",
+        "request_review"
+      ],
+      "outside_read_denied_api": true,
+      "outside_read_denied_executed_child": true,
+      "baseline_commands": [
+        [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex"
+        ]
+      ],
+      "baseline_results": [
+        {
+          "argv": [
+            "/usr/bin/sandbox-exec",
+            "-p",
+            "(version 1)\n(deny default)\n(allow process-fork)\n(allow process-exec)\n(allow signal (target same-sandbox))\n(allow file-read* (literal \"/\") (literal \"/Library\") (literal \"/Library/Developer\") (literal \"/Users\") (literal \"/Users/aryagm\") (literal \"/Users/aryagm/.codex\") (literal \"/Users/aryagm/.codex/worktrees\") (literal \"/Users/aryagm/.codex/worktrees/b6ce\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-a\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-a/preflight\") (literal \"/opt\") (literal \"/opt/homebrew\") (subpath \"/System\") (subpath \"/usr\") (subpath \"/bin\") (subpath \"/opt/homebrew/bin\") (subpath \"/opt/homebrew/lib\") (subpath \"/opt/homebrew/opt\") (subpath \"/opt/homebrew/Cellar\") (subpath \"/opt/homebrew/Frameworks\") (subpath \"/Library/Frameworks\") (subpath \"/Library/Developer/CommandLineTools\") (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-a/workspace\") (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-a/preflight/execution-scratch\") (literal \"/dev/null\") (literal \"/dev/urandom\") (literal \"/dev/random\"))\n(allow file-write* (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-a/workspace\") (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-a/preflight/execution-scratch\"))\n(allow file-write* (literal \"/dev/null\"))\n(deny file-write* (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-a/workspace/.protocol\"))\n(deny file-write* (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-a/workspace/.git\"))\n(deny file-write* (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-a/workspace/AGENTS.md\"))",
+            "/opt/homebrew/opt/python@3.14/bin/python3.14",
+            "-B",
+            "-m",
+            "unittest",
+            "tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex"
+          ],
+          "exit_code": 0,
+          "timed_out": false,
+          "wall_seconds": 0.1296361659988179,
+          "stdout": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-a/preflight/command-679827a961b647b48cd780220d65930b.stdout",
+          "stderr": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-a/preflight/command-679827a961b647b48cd780220d65930b.stderr",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "fb184ea57734512b1f088f9181209901b9cd46df3eb7eaa2500ea9e48dde20b5",
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false,
+          "output": "",
+          "error_output": ".\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n"
+        }
+      ],
+      "process_exit": 0,
+      "timed_out": false,
+      "stdout_sha256": "da6559a600847e6d02125c72a1008b50b4cc018dc88b81e1118e99885f764769",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command_path": "actual MCP run_tests -> WorkspaceTools.execute -> existing sandbox service_commands",
+      "control_scope": "workspace only; fresh outside execution scratch; no oracle/history/network"
+    },
+    {
+      "cell_id": "tweed-pr26--branch-b",
+      "passed": true,
+      "hosted_model_calls": 0,
+      "effective_tools": [
+        "list_files",
+        "read_file",
+        "write_file",
+        "replace_text",
+        "run_tests",
+        "confidence",
+        "request_review"
+      ],
+      "expected_tools": [
+        "list_files",
+        "read_file",
+        "write_file",
+        "replace_text",
+        "run_tests",
+        "confidence",
+        "request_review"
+      ],
+      "outside_read_denied_api": true,
+      "outside_read_denied_executed_child": true,
+      "baseline_commands": [
+        [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex"
+        ]
+      ],
+      "baseline_results": [
+        {
+          "argv": [
+            "/usr/bin/sandbox-exec",
+            "-p",
+            "(version 1)\n(deny default)\n(allow process-fork)\n(allow process-exec)\n(allow signal (target same-sandbox))\n(allow file-read* (literal \"/\") (literal \"/Library\") (literal \"/Library/Developer\") (literal \"/Users\") (literal \"/Users/aryagm\") (literal \"/Users/aryagm/.codex\") (literal \"/Users/aryagm/.codex/worktrees\") (literal \"/Users/aryagm/.codex/worktrees/b6ce\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-b\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-b/preflight\") (literal \"/opt\") (literal \"/opt/homebrew\") (subpath \"/System\") (subpath \"/usr\") (subpath \"/bin\") (subpath \"/opt/homebrew/bin\") (subpath \"/opt/homebrew/lib\") (subpath \"/opt/homebrew/opt\") (subpath \"/opt/homebrew/Cellar\") (subpath \"/opt/homebrew/Frameworks\") (subpath \"/Library/Frameworks\") (subpath \"/Library/Developer/CommandLineTools\") (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-b/workspace\") (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-b/preflight/execution-scratch\") (literal \"/dev/null\") (literal \"/dev/urandom\") (literal \"/dev/random\"))\n(allow file-write* (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-b/workspace\") (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-b/preflight/execution-scratch\"))\n(allow file-write* (literal \"/dev/null\"))\n(deny file-write* (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-b/workspace/.protocol\"))\n(deny file-write* (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-b/workspace/.git\"))\n(deny file-write* (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-b/workspace/AGENTS.md\"))",
+            "/opt/homebrew/opt/python@3.14/bin/python3.14",
+            "-B",
+            "-m",
+            "unittest",
+            "tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex"
+          ],
+          "exit_code": 0,
+          "timed_out": false,
+          "wall_seconds": 0.12924550000025192,
+          "stdout": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-b/preflight/command-d3db3d38cf17471da615b8dc82bf4e9d.stdout",
+          "stderr": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-b/preflight/command-d3db3d38cf17471da615b8dc82bf4e9d.stderr",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "fb184ea57734512b1f088f9181209901b9cd46df3eb7eaa2500ea9e48dde20b5",
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false,
+          "output": "",
+          "error_output": ".\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n"
+        }
+      ],
+      "process_exit": 0,
+      "timed_out": false,
+      "stdout_sha256": "4b66dab2eee9ade075b644240240c5de09ea9dd816f270ed5b25093ceb0c7c7e",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command_path": "actual MCP run_tests -> WorkspaceTools.execute -> existing sandbox service_commands",
+      "control_scope": "workspace only; fresh outside execution scratch; no oracle/history/network"
+    },
+    {
+      "cell_id": "tweed-pr45--incumbent",
+      "passed": true,
+      "hosted_model_calls": 0,
+      "effective_tools": [
+        "list_files",
+        "read_file",
+        "write_file",
+        "replace_text",
+        "run_tests",
+        "confidence",
+        "request_review"
+      ],
+      "expected_tools": [
+        "list_files",
+        "read_file",
+        "write_file",
+        "replace_text",
+        "run_tests",
+        "confidence",
+        "request_review"
+      ],
+      "outside_read_denied_api": true,
+      "outside_read_denied_executed_child": true,
+      "baseline_commands": [
+        [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "skills/confidence-protocol/tests",
+          "-p",
+          "test_confidence.py",
+          "-k",
+          "test_run_records_failure_and_returns_child_status"
+        ]
+      ],
+      "baseline_results": [
+        {
+          "argv": [
+            "/usr/bin/sandbox-exec",
+            "-p",
+            "(version 1)\n(deny default)\n(allow process-fork)\n(allow process-exec)\n(allow signal (target same-sandbox))\n(allow file-read* (literal \"/\") (literal \"/Library\") (literal \"/Library/Developer\") (literal \"/Users\") (literal \"/Users/aryagm\") (literal \"/Users/aryagm/.codex\") (literal \"/Users/aryagm/.codex/worktrees\") (literal \"/Users/aryagm/.codex/worktrees/b6ce\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--incumbent\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--incumbent/preflight\") (literal \"/opt\") (literal \"/opt/homebrew\") (subpath \"/System\") (subpath \"/usr\") (subpath \"/bin\") (subpath \"/opt/homebrew/bin\") (subpath \"/opt/homebrew/lib\") (subpath \"/opt/homebrew/opt\") (subpath \"/opt/homebrew/Cellar\") (subpath \"/opt/homebrew/Frameworks\") (subpath \"/Library/Frameworks\") (subpath \"/Library/Developer/CommandLineTools\") (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--incumbent/workspace\") (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--incumbent/preflight/execution-scratch\") (literal \"/dev/null\") (literal \"/dev/urandom\") (literal \"/dev/random\"))\n(allow file-write* (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--incumbent/workspace\") (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--incumbent/preflight/execution-scratch\"))\n(allow file-write* (literal \"/dev/null\"))\n(deny file-write* (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--incumbent/workspace/.protocol\"))\n(deny file-write* (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--incumbent/workspace/.git\"))\n(deny file-write* (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--incumbent/workspace/AGENTS.md\"))",
+            "/opt/homebrew/opt/python@3.14/bin/python3.14",
+            "-B",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "skills/confidence-protocol/tests",
+            "-p",
+            "test_confidence.py",
+            "-k",
+            "test_run_records_failure_and_returns_child_status"
+          ],
+          "exit_code": 0,
+          "timed_out": false,
+          "wall_seconds": 0.8241724580002483,
+          "stdout": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--incumbent/preflight/command-059b745cc8b94f0a9bc10b6cc03c0a97.stdout",
+          "stderr": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--incumbent/preflight/command-059b745cc8b94f0a9bc10b6cc03c0a97.stderr",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1d5890ba7951b7b9bb06a8f36ca0c8efef33d88bcca5a0412757632d97c2eea6",
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false,
+          "output": "",
+          "error_output": ".\n----------------------------------------------------------------------\nRan 1 test in 0.688s\n\nOK\n"
+        }
+      ],
+      "process_exit": 0,
+      "timed_out": false,
+      "stdout_sha256": "93e1e5746675ae43893de7384515924a7320a72bbd1e9193d0f5639ea967b238",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command_path": "actual MCP run_tests -> WorkspaceTools.execute -> existing sandbox service_commands",
+      "control_scope": "workspace only; fresh outside execution scratch; no oracle/history/network"
+    },
+    {
+      "cell_id": "tweed-pr45--branch-a",
+      "passed": true,
+      "hosted_model_calls": 0,
+      "effective_tools": [
+        "list_files",
+        "read_file",
+        "write_file",
+        "replace_text",
+        "run_tests",
+        "confidence",
+        "request_review"
+      ],
+      "expected_tools": [
+        "list_files",
+        "read_file",
+        "write_file",
+        "replace_text",
+        "run_tests",
+        "confidence",
+        "request_review"
+      ],
+      "outside_read_denied_api": true,
+      "outside_read_denied_executed_child": true,
+      "baseline_commands": [
+        [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "skills/confidence-protocol/tests",
+          "-p",
+          "test_confidence.py",
+          "-k",
+          "test_run_records_failure_and_returns_child_status"
+        ]
+      ],
+      "baseline_results": [
+        {
+          "argv": [
+            "/usr/bin/sandbox-exec",
+            "-p",
+            "(version 1)\n(deny default)\n(allow process-fork)\n(allow process-exec)\n(allow signal (target same-sandbox))\n(allow file-read* (literal \"/\") (literal \"/Library\") (literal \"/Library/Developer\") (literal \"/Users\") (literal \"/Users/aryagm\") (literal \"/Users/aryagm/.codex\") (literal \"/Users/aryagm/.codex/worktrees\") (literal \"/Users/aryagm/.codex/worktrees/b6ce\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-a\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-a/preflight\") (literal \"/opt\") (literal \"/opt/homebrew\") (subpath \"/System\") (subpath \"/usr\") (subpath \"/bin\") (subpath \"/opt/homebrew/bin\") (subpath \"/opt/homebrew/lib\") (subpath \"/opt/homebrew/opt\") (subpath \"/opt/homebrew/Cellar\") (subpath \"/opt/homebrew/Frameworks\") (subpath \"/Library/Frameworks\") (subpath \"/Library/Developer/CommandLineTools\") (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-a/workspace\") (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-a/preflight/execution-scratch\") (literal \"/dev/null\") (literal \"/dev/urandom\") (literal \"/dev/random\"))\n(allow file-write* (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-a/workspace\") (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-a/preflight/execution-scratch\"))\n(allow file-write* (literal \"/dev/null\"))\n(deny file-write* (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-a/workspace/.protocol\"))\n(deny file-write* (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-a/workspace/.git\"))\n(deny file-write* (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-a/workspace/AGENTS.md\"))",
+            "/opt/homebrew/opt/python@3.14/bin/python3.14",
+            "-B",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "skills/confidence-protocol/tests",
+            "-p",
+            "test_confidence.py",
+            "-k",
+            "test_run_records_failure_and_returns_child_status"
+          ],
+          "exit_code": 0,
+          "timed_out": false,
+          "wall_seconds": 0.8343948340043426,
+          "stdout": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-a/preflight/command-fef96043f02241e29525bc8c1c90d1ca.stdout",
+          "stderr": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-a/preflight/command-fef96043f02241e29525bc8c1c90d1ca.stderr",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "95f9348f7c6461f47b77e7be10bac81a278bc8cef54bad810cf87d276d59bc26",
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false,
+          "output": "",
+          "error_output": ".\n----------------------------------------------------------------------\nRan 1 test in 0.692s\n\nOK\n"
+        }
+      ],
+      "process_exit": 0,
+      "timed_out": false,
+      "stdout_sha256": "bd009c6f344928d454b01c86b844cfbf836d143404c008c2d95104bbac38c54e",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command_path": "actual MCP run_tests -> WorkspaceTools.execute -> existing sandbox service_commands",
+      "control_scope": "workspace only; fresh outside execution scratch; no oracle/history/network"
+    },
+    {
+      "cell_id": "tweed-pr45--branch-b",
+      "passed": true,
+      "hosted_model_calls": 0,
+      "effective_tools": [
+        "list_files",
+        "read_file",
+        "write_file",
+        "replace_text",
+        "run_tests",
+        "confidence",
+        "request_review"
+      ],
+      "expected_tools": [
+        "list_files",
+        "read_file",
+        "write_file",
+        "replace_text",
+        "run_tests",
+        "confidence",
+        "request_review"
+      ],
+      "outside_read_denied_api": true,
+      "outside_read_denied_executed_child": true,
+      "baseline_commands": [
+        [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "skills/confidence-protocol/tests",
+          "-p",
+          "test_confidence.py",
+          "-k",
+          "test_run_records_failure_and_returns_child_status"
+        ]
+      ],
+      "baseline_results": [
+        {
+          "argv": [
+            "/usr/bin/sandbox-exec",
+            "-p",
+            "(version 1)\n(deny default)\n(allow process-fork)\n(allow process-exec)\n(allow signal (target same-sandbox))\n(allow file-read* (literal \"/\") (literal \"/Library\") (literal \"/Library/Developer\") (literal \"/Users\") (literal \"/Users/aryagm\") (literal \"/Users/aryagm/.codex\") (literal \"/Users/aryagm/.codex/worktrees\") (literal \"/Users/aryagm/.codex/worktrees/b6ce\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-b\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-b/preflight\") (literal \"/opt\") (literal \"/opt/homebrew\") (subpath \"/System\") (subpath \"/usr\") (subpath \"/bin\") (subpath \"/opt/homebrew/bin\") (subpath \"/opt/homebrew/lib\") (subpath \"/opt/homebrew/opt\") (subpath \"/opt/homebrew/Cellar\") (subpath \"/opt/homebrew/Frameworks\") (subpath \"/Library/Frameworks\") (subpath \"/Library/Developer/CommandLineTools\") (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-b/workspace\") (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-b/preflight/execution-scratch\") (literal \"/dev/null\") (literal \"/dev/urandom\") (literal \"/dev/random\"))\n(allow file-write* (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-b/workspace\") (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-b/preflight/execution-scratch\"))\n(allow file-write* (literal \"/dev/null\"))\n(deny file-write* (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-b/workspace/.protocol\"))\n(deny file-write* (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-b/workspace/.git\"))\n(deny file-write* (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-b/workspace/AGENTS.md\"))",
+            "/opt/homebrew/opt/python@3.14/bin/python3.14",
+            "-B",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "skills/confidence-protocol/tests",
+            "-p",
+            "test_confidence.py",
+            "-k",
+            "test_run_records_failure_and_returns_child_status"
+          ],
+          "exit_code": 0,
+          "timed_out": false,
+          "wall_seconds": 0.77698125000461,
+          "stdout": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-b/preflight/command-4a00b53bee3d45a98cda535cf795a506.stdout",
+          "stderr": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-b/preflight/command-4a00b53bee3d45a98cda535cf795a506.stderr",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d1dd42bec31ab5b3bc73f585700dd30f78d048f6b8a3bdca38853ac66e309440",
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false,
+          "output": "",
+          "error_output": ".\n----------------------------------------------------------------------\nRan 1 test in 0.661s\n\nOK\n"
+        }
+      ],
+      "process_exit": 0,
+      "timed_out": false,
+      "stdout_sha256": "c106db323209e1ba5ea2d58b6a503e757b281f85b285dda914647a86097f4731",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command_path": "actual MCP run_tests -> WorkspaceTools.execute -> existing sandbox service_commands",
+      "control_scope": "workspace only; fresh outside execution scratch; no oracle/history/network"
+    }
+  ]
+}

@@ -1,0 +1,1475 @@
+{
+  "payload": {
+    "config": {
+      "tasks": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/TASKS.json",
+      "common_protocol": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/policies/incumbent",
+      "evaluator": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/evaluate.py",
+      "task_ids": [
+        "tweed-pr26",
+        "tweed-pr45"
+      ],
+      "arms": [
+        {
+          "id": "incumbent",
+          "skill_file": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/policies/incumbent/SKILL.md"
+        },
+        {
+          "id": "branch-a",
+          "skill_file": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/policies/branch-a/SKILL.md"
+        },
+        {
+          "id": "branch-b",
+          "skill_file": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/policies/branch-b/SKILL.md"
+        }
+      ]
+    },
+    "tasks": {
+      "tweed-pr26": {
+        "task_id": "tweed-pr26",
+        "role": "selection",
+        "repo": "e3-solutions/tweed",
+        "pr_url": "https://github.com/e3-solutions/tweed/pull/26",
+        "base_sha": "9a8f1a2960b8ea5c9cefd88e05d19f6a5b39b694",
+        "base_commit": "9a8f1a2960b8ea5c9cefd88e05d19f6a5b39b694",
+        "head_sha": "1936e624f8a64d920de390afffdbb444e3593305",
+        "requirements": "Ensure the non-review Bonaparte public receipt emitter applies the existing 4 KiB limit to the entire emitted UTF-8 line, including its trailing newline. Preserve JSON values, UTF-8 output and ordinary within-limit emission. Reject oversized output before emitting any receipt bytes. This is only the emitted receipt size slice of PR26; native progress streaming and the remainder of that PR are excluded.",
+        "prompt": "Ensure the non-review Bonaparte public receipt emitter applies the existing 4 KiB limit to the entire emitted UTF-8 line, including its trailing newline. Preserve JSON values, UTF-8 output and ordinary within-limit emission. Reject oversized output before emitting any receipt bytes. This is only the emitted receipt size slice of PR26; native progress streaming and the remainder of that PR are excluded.\nAllowed production paths: bonaparte. New regular root Python helpers are allowed under the existing grading rules. Keep baseline tests intact; test edits do not influence grading. Standard focused offline task. Follow the supplied .protocol/SKILL.md. An independent final checker will execute the selected behavior, negative, scope and current-proof checks. Do not run live providers, fetch Git history or accepted solutions, or change unrelated documentation. Use focused author checks; no product-protocol certificates outside this contract are required.",
+        "production_paths": [
+          "bonaparte"
+        ],
+        "base_snapshot": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/oracles/pr-26/base",
+        "source_directory": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/oracles/pr-26/base",
+        "head_snapshot": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/oracles/pr-26/head",
+        "source_sha256": "34edfca821c900b9b6741293f3f3b0bafda637f8e50d1cdad57b4bb5c6b9c589",
+        "head_source_sha256": "cc7e4eaa0c6b9023b829bd2e2f5efcaa5a0f55a3dcf7c10a8dc2d1cc98cba446",
+        "test_commands": [
+          [
+            "python3",
+            "-B",
+            "-m",
+            "unittest",
+            "tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex"
+          ]
+        ],
+        "visible_commands": [
+          [
+            "python3",
+            "-B",
+            "-m",
+            "unittest",
+            "tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex"
+          ]
+        ],
+        "discovery_paths": [
+          "bonaparte"
+        ],
+        "positive_tests": [
+          "tests.test_fork_owner.Owner.test_positive_boundary_and_unicode"
+        ],
+        "negative_tests": [
+          "tests.test_fork_owner.Owner.test_negative_overflow_is_not_emitted"
+        ],
+        "oracle_tests": [
+          "tests.test_fork_owner.Owner.test_positive_boundary_and_unicode",
+          "tests.test_fork_owner.Owner.test_negative_overflow_is_not_emitted"
+        ],
+        "private_module": "oracles/owner26.py",
+        "oracle_script": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/evaluate.py",
+        "oracle_argv": [
+          "python3",
+          "-B",
+          "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/evaluate.py",
+          "--task-id",
+          "tweed-pr26",
+          "--workspace",
+          "{workspace}"
+        ],
+        "provenance_sha256": "8269aeb8ac3d30718df85800d387b28f96294e4903047c8ef3083526507e7c8f",
+        "reference_snapshot": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/oracles/pr-26/reference"
+      },
+      "tweed-pr45": {
+        "task_id": "tweed-pr45",
+        "role": "selection",
+        "repo": "e3-solutions/tweed",
+        "pr_url": "https://github.com/e3-solutions/tweed/pull/45",
+        "base_sha": "190af227d3cb180263e7fbf9563055ffb06f20a0",
+        "base_commit": "190af227d3cb180263e7fbf9563055ffb06f20a0",
+        "head_sha": "951ca774d1f5a6b4c37b027a7f982b1e0d5ebcea",
+        "requirements": "Add the public run --json option so captured commands emit a compact JSON receipt instead of replaying child output. The receipt must expose id, exit_code, record and log paths relative to the evidence directory, and workspace_binding as unchanged/changed/unknown. Preserve full binary captured output and its recorded SHA256. Preserve default non-JSON output replay. A child failure must retain its nonzero status in CLI exit and receipt/record; source mutation must be reported changed, never unchanged. This is only the compact run receipt slice of PR45; other recovery/recording/release changes are excluded.",
+        "prompt": "Add the public run --json option so captured commands emit a compact JSON receipt instead of replaying child output. The receipt must expose id, exit_code, record and log paths relative to the evidence directory, and workspace_binding as unchanged/changed/unknown. Preserve full binary captured output and its recorded SHA256. Preserve default non-JSON output replay. A child failure must retain its nonzero status in CLI exit and receipt/record; source mutation must be reported changed, never unchanged. This is only the compact run receipt slice of PR45; other recovery/recording/release changes are excluded.\nAllowed production paths: skills/confidence-protocol/scripts/confidence.py. New regular root Python helpers are allowed under the existing grading rules. Keep baseline tests intact; test edits do not influence grading. Standard focused offline task. Follow the supplied .protocol/SKILL.md. An independent final checker will execute the selected behavior, negative, scope and current-proof checks. Do not run live providers, fetch Git history or accepted solutions, or change unrelated documentation. Use focused author checks; no product-protocol certificates outside this contract are required.",
+        "production_paths": [
+          "skills/confidence-protocol/scripts/confidence.py"
+        ],
+        "base_snapshot": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/oracles/pr-45/base",
+        "source_directory": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/oracles/pr-45/base",
+        "head_snapshot": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/oracles/pr-45/head",
+        "source_sha256": "9a4efa00c0ce114da707f756f5418492a3fab3db8376548994a9d10296f6061c",
+        "head_source_sha256": "015f508a4a71779c2c3c6dae9796e531ad4d9aeff2b779c16f2b6f47ceb1699f",
+        "test_commands": [
+          [
+            "python3",
+            "-B",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "skills/confidence-protocol/tests",
+            "-p",
+            "test_confidence.py",
+            "-k",
+            "test_run_records_failure_and_returns_child_status"
+          ]
+        ],
+        "visible_commands": [
+          [
+            "python3",
+            "-B",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "skills/confidence-protocol/tests",
+            "-p",
+            "test_confidence.py",
+            "-k",
+            "test_run_records_failure_and_returns_child_status"
+          ]
+        ],
+        "discovery_paths": [
+          "skills/confidence-protocol/scripts/confidence.py"
+        ],
+        "positive_tests": [
+          "tests.test_fork_owner.Owner.test_positive_compact_capture_and_default_output"
+        ],
+        "negative_tests": [
+          "tests.test_fork_owner.Owner.test_negative_failed_child_stays_failed",
+          "tests.test_fork_owner.Owner.test_negative_mutated_source_is_not_unchanged"
+        ],
+        "oracle_tests": [
+          "tests.test_fork_owner.Owner.test_positive_compact_capture_and_default_output",
+          "tests.test_fork_owner.Owner.test_negative_failed_child_stays_failed",
+          "tests.test_fork_owner.Owner.test_negative_mutated_source_is_not_unchanged"
+        ],
+        "private_module": "oracles/owner45.py",
+        "oracle_script": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/evaluate.py",
+        "oracle_argv": [
+          "python3",
+          "-B",
+          "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/evaluate.py",
+          "--task-id",
+          "tweed-pr45",
+          "--workspace",
+          "{workspace}"
+        ],
+        "provenance_sha256": "db1cc640e5651df6de4565f33bcf4a1bc06bac59a5aa556932b1dc0596ddeed8",
+        "reference_snapshot": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/oracles/pr-45/reference"
+      }
+    },
+    "files": {
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/TASK-RUN-CONFIG.json": "8208f9a228e0a26ddab8684f296aee185568a355d75c3c1b57c60eec3c32dda1",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/run_tasks.py": "6b5b3e17864a428a135d87c4c069a2d05132921f881a62c2fa6f9c2ae462db13",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/TASKS.json": "8b77cd481fbc94172d7d8c5d103f55359bbb8986e603740367de929bc732613b",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/evaluate.py": "f2c56d851b5d0dc196d511f122812000225cca968211b3b3e66352871e131b38",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/claude-first-evaluation/runner.py": "ca59e94400c971ab5f426b296e8caa505247c9c16be671aebfec2d1a3757252a",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/analyze_hybrid_v2.py": "15368e2a0be3ee1fc6c62ec5073f42d6b49372f4a5fd93cc5fcce044d0be510b",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/cross_backend.py": "a4c94f220d66be06c40c88fdbb65578d45ce61a46b07e11c607f3aab50281739",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/export_completed_study.py": "66b8ef7c603c7df3b7fb1b92b71e43a4efe06db02fc88d0f79a8db898b0d41b6",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/export_results.py": "e04c296431abb500497452e87f151e32d251c7c353f1065de32f0f553f56a85f",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/grading_adapter.py": "bcec860d709ddbe3c3566fb7bcdc86805b4a3e5c69131167b7743c91cbb2a007",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/hybrid_grader.py": "28f49892a059f4cd628618a4aff0e347b55946bb14159a606629261184cd4932",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/hybrid_process.py": "c1f1da477c8d13e1824e604fc83a0e64483d52208cede728ac80439b88c11b96",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/hybrid_process_v2.py": "631e695e36f5c000b3fef02d4f64f8c518edc31befac116db559816750d8e95f",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/hybrid_runner.py": "2e560c9300d16adba435048f45383293aea6ace3b7749ae17a0aea6652657a8d",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/hybrid_runtime_v2.py": "7b5c3bbabe03f7bd3b2ce3fa8b1dc049e8ee4659cd567590a42fcbe5617c76e6",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/hybrid_v2.py": "926a1fde84379ebd591939ad10706bdbfb7cb64503d75d7c8bf5e39a9a1ad7d6",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/hybrid_v2_grader.py": "48bf6aa09a4bd34d718f6f2761b8b631c2af5b48716df27ca7f5b62a1205481a",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/original_analysis_supplement.py": "a1e81e86d3c82a018305bb5008c80d90e3b92458ded3828a229cb263596bf0b0",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/replay_public_patches.py": "31efc97c8260c0b2702600a5060a57d36cb9f577895d159b51cf4aecf6b89601",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/runner.py": "1f5e9ab2e5f0823a34c8f637ae08b4b3e7e1d1ac7bbbf5aab64ab79c95288fb8",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/seal_hybrid_v2.py": "e7084d4c2e95a85c58346a8049f65969d77e4964f9870b90f3c629f5d9f7e900",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/summarize.py": "a94197c1ceeca0c6f48486111d6d667b55c246dab60b951f3e8fbec33b87f369",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/supervised_resume.py": "f4760b9931f3997b7997c283870a6a0ebf8d09706246b9e60e08ccfb6a1292c6",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_analyze_hybrid_v2.py": "2b348e0e042e446efc4b043c8bcfba333df7339a2972be1522b1388a4ec190fc",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_cross_backend.py": "1206a7c4bf13f963c120529ba1d99342491b2da947bca85fe4fe747dbc4248cc",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_export_completed_study.py": "77c52013792e1cf42498f0feb6d1a0ff5cbc4c3608cc1109d8f69b39b15060e5",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_export_results.py": "75e11074eab0d0a9213a9dedc5c471a1ab60b7824997f30d92372b353e6c1904",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_hybrid_process.py": "0c899ffbb2460c4bb7cccf20751ee93b6461da1b7709a4bae89cbc3de8b27be0",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_hybrid_process_v2.py": "d15052fcb23aa221429110011114c00e9fd12091bf906dbebf1821045a0f208e",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_hybrid_runner.py": "58cddf8a08e5bbe291993bac88c4035b7d72f72ada52ad180a84702da8c2d703",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_hybrid_runtime_v2.py": "4f13b5f5ecd49f59a298bd617508be268740e2ce1500fb166dd38b8fd0209e71",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_hybrid_v2.py": "c43c2ac053da61cffc55d7f39d7f57e25472a6910975718ba0d6f820d5041d3b",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_hybrid_v2_grader.py": "86c0a7ac6d2cfe2f6d37c22b04afe1ce04daf5f47648c7780099f4b790e0bcae",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_original_analysis_supplement.py": "49123e42a445bc5790e6b2683b03bd2d9bc147e5453369d801bfb632e198da3b",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_runner.py": "e9c8766fa2cca6925fb74b1c4da0c19a19bee29c6733b957bb45c73b84f3024c",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_seal_hybrid_v2.py": "f88e018aa8748dbd569c82f5ce93f2fc69c2cf67af355a7eddce0afd022f055d",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_summarize.py": "ee07e7e70b73d0008f0e3ff3b7a3e57a47fec946b158306382c46dbc50053f17",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_supervised_resume.py": "5664987d3edb314b5bb50f3f41953565e3ce9e7bdf12bf937a432900dc9406f8",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_v1_inventory_supplement.py": "e77c192412f8779a1199ca254cad719833371ad5afd6f9674786a4c36b0621a0",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_v2_controls.py": "7e671b2fdba90ac906b74eea9bb764de9632153b2b3f77ba96a24f8fd150168c",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/v1_inventory_supplement.py": "e1c4b836b81bbe05610d45f80c29b7501fbb4c39605f982952b68c8826a1fbb7",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/v2_controls.py": "c7fc3b0f7fe1efa22248508bded95022459b53bafa49bb4cab212bbed5349df6",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/v2_grading_controls.py": "d11aaf952baf84fd77bac8229dad0cf1d8bd9cf31776374651f8b9e369521b5d",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/policies/incumbent/SKILL.md": "26b8c7ce5dcf06f8f3129c7e7794f77dee5b0c2ba5b50e882c6939b558064950",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/policies/branch-a/SKILL.md": "b5ce87bdd7d01ce190f3b46a7522fcbd3e5d4ae894d082f6d84f333e262f22ef",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/policies/branch-b/SKILL.md": "cd0a3dff92a12203914063c19b5224699e3983ee0b488f3fe530ef7c88681210"
+    },
+    "trees": {
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/policies/incumbent": {
+        "SKILL.md": {
+          "sha256": "26b8c7ce5dcf06f8f3129c7e7794f77dee5b0c2ba5b50e882c6939b558064950",
+          "mode": 420
+        },
+        "assets/contract.example.json": {
+          "sha256": "85066dbfebe8310b5414a02f8d7cc73f925987cda69ffcb508975ee0fe738112",
+          "mode": 420
+        },
+        "assets/report.example.json": {
+          "sha256": "d76fa00db14f903c423133b3a84d763b95d9dfb5e3c3170f160708e66dc8ec47",
+          "mode": 420
+        },
+        "assets/runs/invitation-authorization.json": {
+          "sha256": "676de57ab147634eefa21c7251b1385500b375bb271dca0168de867b34e5283d",
+          "mode": 420
+        },
+        "assets/runs/invitation-authorization.log": {
+          "sha256": "ec5ce487789f0bf1b922299cf02b3e3633d037e37a94d17df2b3bbbe3ed5fcc6",
+          "mode": 420
+        },
+        "assets/runs/invitation-e2e.json": {
+          "sha256": "e1d88a4c7d16e31afc9caa23bdc5576c6d758c3fbc3435d81f198eacbf156802",
+          "mode": 420
+        },
+        "assets/runs/invitation-e2e.log": {
+          "sha256": "a92b7fdcb45e1d22fc2af4c80adc6e7fc1389ff8a694010cf5e6ff0b5ffbf1f6",
+          "mode": 420
+        },
+        "references/complex-tasks.md": {
+          "sha256": "8c0396928105db561147b65b8f95b6a838ed9429efcbffc2b168030a77ae08c2",
+          "mode": 420
+        },
+        "references/evidence.md": {
+          "sha256": "bd097c352130c5199ee907199bfab369927cf8ee6f990e8133cb79a87ca01d02",
+          "mode": 420
+        },
+        "references/harnesses.md": {
+          "sha256": "6d05e95838f2a50931c734002f7179cdb61a981549c5f22cc4f2aa73e80c6c71",
+          "mode": 420
+        },
+        "references/intent-flows.md": {
+          "sha256": "d7b4461527b613f9607805f4ff6e2380ee87b47b68d44fa88b06661d544acbec",
+          "mode": 420
+        },
+        "references/model-routing.md": {
+          "sha256": "016d305701972280250c3938d5db2399807df93cf55962baaea53f89ee13fa61",
+          "mode": 420
+        },
+        "references/modes.md": {
+          "sha256": "58bdefb0a2be2a6093bd4c599e139eaf39e41c009b07aa913a51274ae90708f6",
+          "mode": 420
+        },
+        "references/question-patterns.md": {
+          "sha256": "d4815150b8418b5f747f909f4e141f8f42e6ee2890c70cf220a1ac8cf6973295",
+          "mode": 420
+        },
+        "references/report-rules.md": {
+          "sha256": "cd71fbb00b82a7b0c4811a929d1ceac8338708c59788b3a6e8ae3268b94dd61f",
+          "mode": 420
+        },
+        "references/task-profiles.md": {
+          "sha256": "83e4c88178608ab83b88829000be95962c294e2baa3444b77715d9a620c7a2a6",
+          "mode": 420
+        },
+        "scripts/confidence.py": {
+          "sha256": "8c898d5bf416990e520a1bb9b113f06ffd573854346ef4512ea5798e38d684be",
+          "mode": 420
+        },
+        "scripts/diagnostics.py": {
+          "sha256": "49a3f33e230b3598f212caad5e21315b89702c1fecaa0ffc6129220f41d25258",
+          "mode": 420
+        },
+        "tests/check_release.py": {
+          "sha256": "591177dc406102e3b83386ae1aadf0bf91d40452ec85a207b71181d99585a256",
+          "mode": 420
+        },
+        "tests/support.py": {
+          "sha256": "2ff46f81cb02720fadc665d125d211cabeae8b771604c0888322fa00c304b5b7",
+          "mode": 420
+        },
+        "tests/test_autonomy_integration.py": {
+          "sha256": "cea21305a7d291804c48ebaeb57b9c514ed589c9f8b5aeea3d2ad9f2d3fd4400",
+          "mode": 420
+        },
+        "tests/test_cancellation.py": {
+          "sha256": "6aa8dcce7fc2f62029ed0144eb838d5f0213869c9123d3cfa23cd890970ac7ed",
+          "mode": 420
+        },
+        "tests/test_capture_io.py": {
+          "sha256": "2d24d630769553b8c8c31a8bac5566cb38cba9aa73d779ea935c78dd78a702df",
+          "mode": 420
+        },
+        "tests/test_capture_metadata.py": {
+          "sha256": "bf6984ddc3815de07a15650b5c3e70d8eae8fe7152de7d513680dab04ac91bd9",
+          "mode": 420
+        },
+        "tests/test_cli_recovery.py": {
+          "sha256": "18c5de2ead4e7675ad41a3acc93ed90b45f9bea0ad91ed259592e5d0a203cd42",
+          "mode": 420
+        },
+        "tests/test_confidence.py": {
+          "sha256": "cce4c1a13d4ec28538bf13fe225c23e78a9d07b3b9a65498667e98d832767528",
+          "mode": 420
+        },
+        "tests/test_content_binding.py": {
+          "sha256": "da7b19f7742156993e6d4dc7edefd0c7f0b81dbf7c8d4d31ec57c8fd0d10ad2b",
+          "mode": 420
+        },
+        "tests/test_dependency_frontier.py": {
+          "sha256": "835def8f39816402227db6a5b6125a47cd9b3ec16126ee0ab2c8d404ec9549b7",
+          "mode": 420
+        },
+        "tests/test_diagnostics.py": {
+          "sha256": "87109b26eb2deadc34a653c03e4a315ae58f39a618c9b55a488b0dcc4de5eea5",
+          "mode": 420
+        },
+        "tests/test_dirty_submodule.py": {
+          "sha256": "1e6ffdac6d4075552ae6139f58de593cb823122d61b9150dfdf82aab019e5e3b",
+          "mode": 420
+        },
+        "tests/test_evidence_root.py": {
+          "sha256": "63dfb21de5cc1949e6c1d06394dff02e1fd22595041d97f2244c57f56d551a26",
+          "mode": 420
+        },
+        "tests/test_evidence_subtree.py": {
+          "sha256": "9f5a5dcb0d4d8e5568ecf0ebfe87513ea5b2107106e3542738aa3a6397d347eb",
+          "mode": 420
+        },
+        "tests/test_fingerprint_staging_retry.py": {
+          "sha256": "e8a13589fbb90a5f0dfae72ed62bae68cd8cb3448557a0465667c76c07d8e104",
+          "mode": 420
+        },
+        "tests/test_git_availability.py": {
+          "sha256": "544ac46da0aa9130ff2cc1db467efc7df94c52a9b026fb1b9f1d1260cea67410",
+          "mode": 420
+        },
+        "tests/test_init_recovery.py": {
+          "sha256": "b925247ed89abdcce8b9f0ca6b6b24b6951195591cddfad27fb1b6126ab60f7b",
+          "mode": 420
+        },
+        "tests/test_integrity.py": {
+          "sha256": "fda7cbf536e3646d2570bb023bceb4a01992bd9d6aa8d4574676f9fec8bd54ee",
+          "mode": 420
+        },
+        "tests/test_launch_cancellation.py": {
+          "sha256": "147d49689fe3d0f4162589667eb4accf4232265ce79d74103d2d368abb168fc2",
+          "mode": 420
+        },
+        "tests/test_limits.py": {
+          "sha256": "959c99c96b6d4cab56d172dcfdcfe65f548f422205156ba40b2872521067ac9d",
+          "mode": 420
+        },
+        "tests/test_log_inputs.py": {
+          "sha256": "97b7750150c585b4698ca9b890cf93f3f0918f7b93a2182955a47f56bede5d57",
+          "mode": 420
+        },
+        "tests/test_parallel_capture.py": {
+          "sha256": "d2faa51758fec174caa59775b0b6c9199bfe11ca98256361278069832916f95d",
+          "mode": 420
+        },
+        "tests/test_record.py": {
+          "sha256": "58482fbbdab686af9aa20a5b7d6760d07ec000e6b8c17acb432ffe1507e5a8ba",
+          "mode": 420
+        },
+        "tests/test_release_archive.py": {
+          "sha256": "a93e5c1d3a5a6554c5d79cbfaf477a45cb1d61b2e90acc6c0f840c22cf901057",
+          "mode": 420
+        },
+        "tests/test_reporting_scope.py": {
+          "sha256": "d21cd893379b4c3da3a694f9c73052e4b027342cf4d8b81758ce6624bdb08b60",
+          "mode": 420
+        },
+        "tests/test_review_provenance.py": {
+          "sha256": "375b9a2ebb0a48abf6107882d439a5d780af661fdba818b0c7da78ea72db6ece",
+          "mode": 420
+        },
+        "tests/test_run_receipt.py": {
+          "sha256": "19bfc866454d48c22097d03cbb798354c3327c03f654802863d91c4e3c6053f3",
+          "mode": 420
+        },
+        "tests/test_source_scope_output.py": {
+          "sha256": "b90467106cf976d5a4c9ec5b94241adc68366371e2c512762b113557516e24a5",
+          "mode": 420
+        },
+        "tests/test_validation_cache.py": {
+          "sha256": "5aa413a27a8d715e1aadda8bcaa793ff10928c50f68fe79fc82237b5e67cb8c0",
+          "mode": 420
+        }
+      },
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/oracles/pr-26/base": {
+        ".github/workflows/ci.yml": {
+          "sha256": "2cb386a24b1cb6252ac12bcb69bef26d3f0e8c107f99f22d29f6daf25f4166f0",
+          "mode": 420
+        },
+        ".gitignore": {
+          "sha256": "1180e510a75b49e24ec888196d6a405e447ab7f9679270f03deffa7bee54a95c",
+          "mode": 420
+        },
+        "README.md": {
+          "sha256": "501ce915410f29ae93dddce2fdcbc0b16a8cf4c1429794002761a6affa1bff4e",
+          "mode": 420
+        },
+        "bonaparte": {
+          "sha256": "421171eb73f11cc8960a56800657e981266d355a483ed4986267e320e88cb87b",
+          "mode": 493
+        },
+        "bonaparte-launcher": {
+          "sha256": "50a56e44c1cf4f4e6ad3c0a64844358ac803ec669f188d93b5bb2717c9d35aaa",
+          "mode": 493
+        },
+        "bonaparte_checkpoint.py": {
+          "sha256": "31d93277879f8b3f24ef14ed37eed8b351a17f82b33fc318ba3a3ee58bac7300",
+          "mode": 420
+        },
+        "install": {
+          "sha256": "22506fee2ecbc6dd32861d52351805c2c55f6285a655ced201ced3614d396223",
+          "mode": 493
+        },
+        "skills/use-bonaparte/SKILL.md": {
+          "sha256": "9a05fd0f564e03c94111093fe1e84d82d3a41f28cdee5fb2febe2e8cc18d01c4",
+          "mode": 420
+        },
+        "skills/use-bonaparte/agents/openai.yaml": {
+          "sha256": "defa44077cc3cf53c9e2d313980b9b5f40e8b3ec580bdcfaf0a2290a9a0c31a7",
+          "mode": 420
+        },
+        "tests/test_bonaparte.py": {
+          "sha256": "7dba61f3ce0048f500124f4f48672bca313b8cfe7d8ae5f7ebfa8d50b79c9610",
+          "mode": 420
+        },
+        "tests/test_checkpoint.py": {
+          "sha256": "e97fa48c0981f287b102d96f43c161f9b80bb76e5270431c91af4ecea5ab6801",
+          "mode": 420
+        },
+        "tests/test_handoff.py": {
+          "sha256": "0136a04480cba0d36bb15432213e3d1a99f06d6dbee71a2ed4abed2d0ad91ca0",
+          "mode": 420
+        },
+        "tests/test_installation.py": {
+          "sha256": "f648b5e9264db1fd1869e20332c2cb82e1a00ce2acb26bd73b3eef6a21ecc645",
+          "mode": 420
+        },
+        "workflows/bug-rca.md": {
+          "sha256": "52bf0050d8deee304601b8af14618fc327170da8f0ef50aa9c54db186ed6c0de",
+          "mode": 420
+        },
+        "workflows/create.md": {
+          "sha256": "fb6bb1cf96acf0d0be73fac342171250dc3aa1f9bbbeb1f19fe8518e1d61bd42",
+          "mode": 420
+        },
+        "workflows/implement.md": {
+          "sha256": "55a70cfb60bd7f41f3a7b90d493b1d4a744c7c7984e6f0f8abe44cf0f6cc3bfd",
+          "mode": 420
+        },
+        "workflows/publish.md": {
+          "sha256": "96b07dbfefdd1a700be1667ec717ace4c93fd8127b381c55304a059e9ab605bc",
+          "mode": 420
+        },
+        "workflows/review.md": {
+          "sha256": "d6df5c62110ccea86735090c5497d09ed24f57c8d7d4640cc249b03249015d67",
+          "mode": 420
+        },
+        "workflows/scope.md": {
+          "sha256": "5862ceb7b3ab8920c30bd1b9342a144803204b567c2f5002d91681b4c61b0e05",
+          "mode": 420
+        }
+      },
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/oracles": {
+        "PREFLIGHT-before-actual-prefix-amendment.json": {
+          "sha256": "82af855709ce04a6c12dbafb14a124dd3232b45143550995ff37a253cbc94ffb",
+          "mode": 420
+        },
+        "TASKS-before-actual-prefix-amendment.json": {
+          "sha256": "450b965ccfc321e54a7a9d8541eb08a1db4e05d75432c342671bdb695e899f99",
+          "mode": 420
+        },
+        "actual-prefix-amendment.json": {
+          "sha256": "e5a4459db27f39485b5a47c403afe45ae533ab134b96dfa3eecf98adbd3c21da",
+          "mode": 420
+        },
+        "initial-setup-preflight.json": {
+          "sha256": "9d24867387ce96bbfdde026baf481a411f447b6bc7e35aaf259541b1df5aed41",
+          "mode": 420
+        },
+        "owner18.py": {
+          "sha256": "150922f1cb6ab84e7c89c51aced0aec68592f2be6decba38d06f1f52616fe1ca",
+          "mode": 420
+        },
+        "owner26.py": {
+          "sha256": "a64fdbed6ab6a3f175ab826cf33092f1b6537f3d6b3b762e02edba687a08a20c",
+          "mode": 420
+        },
+        "owner45.py": {
+          "sha256": "385aba6802aaa640f8f6632328068ecdc1d15d87d94ceb48d1cae0f902152820",
+          "mode": 420
+        },
+        "pr-18/base/.github/workflows/ci.yml": {
+          "sha256": "2cb386a24b1cb6252ac12bcb69bef26d3f0e8c107f99f22d29f6daf25f4166f0",
+          "mode": 420
+        },
+        "pr-18/base/.gitignore": {
+          "sha256": "1180e510a75b49e24ec888196d6a405e447ab7f9679270f03deffa7bee54a95c",
+          "mode": 420
+        },
+        "pr-18/base/README.md": {
+          "sha256": "9eb6c509a7ae39b31966c33d28ed01c783a5de906443ce28f82e5533fe73dc6e",
+          "mode": 420
+        },
+        "pr-18/base/bonaparte": {
+          "sha256": "82d0b2f919ebf8d497e4e62ae1cdd60a334ee5f76f0d78a340d2c895dd101bbf",
+          "mode": 493
+        },
+        "pr-18/base/bonaparte-launcher": {
+          "sha256": "b1ad7792b6e82dd494ab1a3e0f5fac0a640029a45134d5a380747f89ef84c414",
+          "mode": 493
+        },
+        "pr-18/base/install": {
+          "sha256": "1af4784ee7566f118a7507d41cd14137d3ec81b7d1c2e9617e668a6585800158",
+          "mode": 493
+        },
+        "pr-18/base/skills/use-bonaparte/SKILL.md": {
+          "sha256": "bf663162a2bea2739ad0165476e66483057ff13a335a977e4f0d47732956b3c8",
+          "mode": 420
+        },
+        "pr-18/base/skills/use-bonaparte/agents/openai.yaml": {
+          "sha256": "defa44077cc3cf53c9e2d313980b9b5f40e8b3ec580bdcfaf0a2290a9a0c31a7",
+          "mode": 420
+        },
+        "pr-18/base/tests/test_bonaparte.py": {
+          "sha256": "1c184a875bbc3dea07b4bb314b89393b9c82daa9c7ab7e8eaf185e9c1f66b520",
+          "mode": 420
+        },
+        "pr-18/base/tests/test_handoff.py": {
+          "sha256": "638411e243afada874d9a6d31f8ccfc56064863940e7b1961d5a7ed5e1de23f0",
+          "mode": 420
+        },
+        "pr-18/base/tests/test_installation.py": {
+          "sha256": "d9085f0b1e0d0a7525581c5939f9c7c37a1e064d72f49a78dcb01daab31a00f8",
+          "mode": 420
+        },
+        "pr-18/base/workflows/bug-rca.md": {
+          "sha256": "3a0cf3438d3313e53a60e62f13cc141e89433ca96b91fc263ab622c26858710e",
+          "mode": 420
+        },
+        "pr-18/base/workflows/create.md": {
+          "sha256": "1482bc9a49230da7fa587ec0afa78371364fd9baf436d781833a078953db7013",
+          "mode": 420
+        },
+        "pr-18/base/workflows/implement.md": {
+          "sha256": "de8fe1f0964d27102eb7b4405fc8419b5beff4396963abf6096ea9798de31cf3",
+          "mode": 420
+        },
+        "pr-18/base/workflows/publish.md": {
+          "sha256": "e1f06b7d39edd8e291aa2b09e340debc1b0e4d82629fa198e49fedcca425b3a3",
+          "mode": 420
+        },
+        "pr-18/base/workflows/review.md": {
+          "sha256": "4648c7e9d3670223142909c9a4fda2f722c7df7291d705558bb7b1b1d30abfed",
+          "mode": 420
+        },
+        "pr-18/base/workflows/scope.md": {
+          "sha256": "b555ed0bf4d305a44b66113c0a4fa88cd668c7b3261ad1eea31fee105170804e",
+          "mode": 420
+        },
+        "pr-18/base-actual-prefix-amended-control.log": {
+          "sha256": "d96aa56bf546049d924f7f625e284cafef97db58665c87b7aab99f2339c964f5",
+          "mode": 420
+        },
+        "pr-18/base-control-initial-setup.log": {
+          "sha256": "12b74670ae6d29c25b177e7af91322432b7a5a57a50560ff3f7e2dcb331dcb73",
+          "mode": 420
+        },
+        "pr-18/base-control.log": {
+          "sha256": "cdcfb4524c38f8aa4fb42d863d9dabc460be2bc3b7a5c5b2f68f0b737dd342ff",
+          "mode": 420
+        },
+        "pr-18/base-final-control.log": {
+          "sha256": "e076538c04c416f3332ce44e685c55b849fa05fe10329ccb2d0113a62c47d542",
+          "mode": 420
+        },
+        "pr-18/head/.github/workflows/ci.yml": {
+          "sha256": "2cb386a24b1cb6252ac12bcb69bef26d3f0e8c107f99f22d29f6daf25f4166f0",
+          "mode": 420
+        },
+        "pr-18/head/.gitignore": {
+          "sha256": "1180e510a75b49e24ec888196d6a405e447ab7f9679270f03deffa7bee54a95c",
+          "mode": 420
+        },
+        "pr-18/head/README.md": {
+          "sha256": "5a8bbcd1546d8c6c6279037dc4cfbf9b884bc8af871ea54749ce968279921b7e",
+          "mode": 420
+        },
+        "pr-18/head/bonaparte": {
+          "sha256": "41cb5c8038d51184b2a7c87b34bb3d363a20f8fc52150f85c137242c775fc235",
+          "mode": 493
+        },
+        "pr-18/head/bonaparte-launcher": {
+          "sha256": "e505d5dfead686d31ed1789d6f92c7941fb8df942a5648f975ef8088735905a4",
+          "mode": 493
+        },
+        "pr-18/head/install": {
+          "sha256": "1af4784ee7566f118a7507d41cd14137d3ec81b7d1c2e9617e668a6585800158",
+          "mode": 493
+        },
+        "pr-18/head/skills/use-bonaparte/SKILL.md": {
+          "sha256": "7414218e02e5a229bad49a7d24f5114bc6dd3822345fc6cf8155f1df357d4e2e",
+          "mode": 420
+        },
+        "pr-18/head/skills/use-bonaparte/agents/openai.yaml": {
+          "sha256": "defa44077cc3cf53c9e2d313980b9b5f40e8b3ec580bdcfaf0a2290a9a0c31a7",
+          "mode": 420
+        },
+        "pr-18/head/tests/test_bonaparte.py": {
+          "sha256": "c2fe0827087681b26844af4dd58a3f456b536c755356ae8e7f1ee707c282b193",
+          "mode": 420
+        },
+        "pr-18/head/tests/test_handoff.py": {
+          "sha256": "638411e243afada874d9a6d31f8ccfc56064863940e7b1961d5a7ed5e1de23f0",
+          "mode": 420
+        },
+        "pr-18/head/tests/test_installation.py": {
+          "sha256": "dc35b7c6ae65ca49eeecb82cca53a72db77ce5e3c88ca648d9e192c8ddec4c5e",
+          "mode": 420
+        },
+        "pr-18/head/workflows/bug-rca.md": {
+          "sha256": "3a0cf3438d3313e53a60e62f13cc141e89433ca96b91fc263ab622c26858710e",
+          "mode": 420
+        },
+        "pr-18/head/workflows/create.md": {
+          "sha256": "1482bc9a49230da7fa587ec0afa78371364fd9baf436d781833a078953db7013",
+          "mode": 420
+        },
+        "pr-18/head/workflows/implement.md": {
+          "sha256": "de8fe1f0964d27102eb7b4405fc8419b5beff4396963abf6096ea9798de31cf3",
+          "mode": 420
+        },
+        "pr-18/head/workflows/publish.md": {
+          "sha256": "e1f06b7d39edd8e291aa2b09e340debc1b0e4d82629fa198e49fedcca425b3a3",
+          "mode": 420
+        },
+        "pr-18/head/workflows/review.md": {
+          "sha256": "4648c7e9d3670223142909c9a4fda2f722c7df7291d705558bb7b1b1d30abfed",
+          "mode": 420
+        },
+        "pr-18/head/workflows/scope.md": {
+          "sha256": "b555ed0bf4d305a44b66113c0a4fa88cd668c7b3261ad1eea31fee105170804e",
+          "mode": 420
+        },
+        "pr-18/head-control-initial-setup.log": {
+          "sha256": "12b74670ae6d29c25b177e7af91322432b7a5a57a50560ff3f7e2dcb331dcb73",
+          "mode": 420
+        },
+        "pr-18/head-control.log": {
+          "sha256": "746205d76638a83c7bbd29954c78d5c5f952cd0dfbc4e308a4acda1470d2f9b0",
+          "mode": 420
+        },
+        "pr-18/provenance.json": {
+          "sha256": "96f0dea738615cf4fd9428b8ac6c9a5cd30e97045c6428ded0b33bfa567c8073",
+          "mode": 420
+        },
+        "pr-18/reference/.github/workflows/ci.yml": {
+          "sha256": "2cb386a24b1cb6252ac12bcb69bef26d3f0e8c107f99f22d29f6daf25f4166f0",
+          "mode": 420
+        },
+        "pr-18/reference/.gitignore": {
+          "sha256": "1180e510a75b49e24ec888196d6a405e447ab7f9679270f03deffa7bee54a95c",
+          "mode": 420
+        },
+        "pr-18/reference/README.md": {
+          "sha256": "9eb6c509a7ae39b31966c33d28ed01c783a5de906443ce28f82e5533fe73dc6e",
+          "mode": 420
+        },
+        "pr-18/reference/bonaparte": {
+          "sha256": "41cb5c8038d51184b2a7c87b34bb3d363a20f8fc52150f85c137242c775fc235",
+          "mode": 493
+        },
+        "pr-18/reference/bonaparte-launcher": {
+          "sha256": "b1ad7792b6e82dd494ab1a3e0f5fac0a640029a45134d5a380747f89ef84c414",
+          "mode": 493
+        },
+        "pr-18/reference/install": {
+          "sha256": "1af4784ee7566f118a7507d41cd14137d3ec81b7d1c2e9617e668a6585800158",
+          "mode": 493
+        },
+        "pr-18/reference/skills/use-bonaparte/SKILL.md": {
+          "sha256": "bf663162a2bea2739ad0165476e66483057ff13a335a977e4f0d47732956b3c8",
+          "mode": 420
+        },
+        "pr-18/reference/skills/use-bonaparte/agents/openai.yaml": {
+          "sha256": "defa44077cc3cf53c9e2d313980b9b5f40e8b3ec580bdcfaf0a2290a9a0c31a7",
+          "mode": 420
+        },
+        "pr-18/reference/tests/test_bonaparte.py": {
+          "sha256": "1c184a875bbc3dea07b4bb314b89393b9c82daa9c7ab7e8eaf185e9c1f66b520",
+          "mode": 420
+        },
+        "pr-18/reference/tests/test_handoff.py": {
+          "sha256": "638411e243afada874d9a6d31f8ccfc56064863940e7b1961d5a7ed5e1de23f0",
+          "mode": 420
+        },
+        "pr-18/reference/tests/test_installation.py": {
+          "sha256": "d9085f0b1e0d0a7525581c5939f9c7c37a1e064d72f49a78dcb01daab31a00f8",
+          "mode": 420
+        },
+        "pr-18/reference/workflows/bug-rca.md": {
+          "sha256": "3a0cf3438d3313e53a60e62f13cc141e89433ca96b91fc263ab622c26858710e",
+          "mode": 420
+        },
+        "pr-18/reference/workflows/create.md": {
+          "sha256": "1482bc9a49230da7fa587ec0afa78371364fd9baf436d781833a078953db7013",
+          "mode": 420
+        },
+        "pr-18/reference/workflows/implement.md": {
+          "sha256": "de8fe1f0964d27102eb7b4405fc8419b5beff4396963abf6096ea9798de31cf3",
+          "mode": 420
+        },
+        "pr-18/reference/workflows/publish.md": {
+          "sha256": "e1f06b7d39edd8e291aa2b09e340debc1b0e4d82629fa198e49fedcca425b3a3",
+          "mode": 420
+        },
+        "pr-18/reference/workflows/review.md": {
+          "sha256": "4648c7e9d3670223142909c9a4fda2f722c7df7291d705558bb7b1b1d30abfed",
+          "mode": 420
+        },
+        "pr-18/reference/workflows/scope.md": {
+          "sha256": "b555ed0bf4d305a44b66113c0a4fa88cd668c7b3261ad1eea31fee105170804e",
+          "mode": 420
+        },
+        "pr-18/reference-actual-prefix-amended-control.log": {
+          "sha256": "1b58d52e9fac5aea075bb809b62873bdd88b303eefb9779af845ed36393765de",
+          "mode": 420
+        },
+        "pr-18/reference-control.log": {
+          "sha256": "7fc65b229a6825e952824a5e56fd7a7dc594e3dbafef380264058ca841d03b74",
+          "mode": 420
+        },
+        "pr-18/reference-final-control.log": {
+          "sha256": "301013c5f958350e9f71e8a1b0ba3decaeac2389c7b0b11f1feb8df7c3315105",
+          "mode": 420
+        },
+        "pr-26/base/.github/workflows/ci.yml": {
+          "sha256": "2cb386a24b1cb6252ac12bcb69bef26d3f0e8c107f99f22d29f6daf25f4166f0",
+          "mode": 420
+        },
+        "pr-26/base/.gitignore": {
+          "sha256": "1180e510a75b49e24ec888196d6a405e447ab7f9679270f03deffa7bee54a95c",
+          "mode": 420
+        },
+        "pr-26/base/README.md": {
+          "sha256": "501ce915410f29ae93dddce2fdcbc0b16a8cf4c1429794002761a6affa1bff4e",
+          "mode": 420
+        },
+        "pr-26/base/bonaparte": {
+          "sha256": "421171eb73f11cc8960a56800657e981266d355a483ed4986267e320e88cb87b",
+          "mode": 493
+        },
+        "pr-26/base/bonaparte-launcher": {
+          "sha256": "50a56e44c1cf4f4e6ad3c0a64844358ac803ec669f188d93b5bb2717c9d35aaa",
+          "mode": 493
+        },
+        "pr-26/base/bonaparte_checkpoint.py": {
+          "sha256": "31d93277879f8b3f24ef14ed37eed8b351a17f82b33fc318ba3a3ee58bac7300",
+          "mode": 420
+        },
+        "pr-26/base/install": {
+          "sha256": "22506fee2ecbc6dd32861d52351805c2c55f6285a655ced201ced3614d396223",
+          "mode": 493
+        },
+        "pr-26/base/skills/use-bonaparte/SKILL.md": {
+          "sha256": "9a05fd0f564e03c94111093fe1e84d82d3a41f28cdee5fb2febe2e8cc18d01c4",
+          "mode": 420
+        },
+        "pr-26/base/skills/use-bonaparte/agents/openai.yaml": {
+          "sha256": "defa44077cc3cf53c9e2d313980b9b5f40e8b3ec580bdcfaf0a2290a9a0c31a7",
+          "mode": 420
+        },
+        "pr-26/base/tests/test_bonaparte.py": {
+          "sha256": "7dba61f3ce0048f500124f4f48672bca313b8cfe7d8ae5f7ebfa8d50b79c9610",
+          "mode": 420
+        },
+        "pr-26/base/tests/test_checkpoint.py": {
+          "sha256": "e97fa48c0981f287b102d96f43c161f9b80bb76e5270431c91af4ecea5ab6801",
+          "mode": 420
+        },
+        "pr-26/base/tests/test_handoff.py": {
+          "sha256": "0136a04480cba0d36bb15432213e3d1a99f06d6dbee71a2ed4abed2d0ad91ca0",
+          "mode": 420
+        },
+        "pr-26/base/tests/test_installation.py": {
+          "sha256": "f648b5e9264db1fd1869e20332c2cb82e1a00ce2acb26bd73b3eef6a21ecc645",
+          "mode": 420
+        },
+        "pr-26/base/workflows/bug-rca.md": {
+          "sha256": "52bf0050d8deee304601b8af14618fc327170da8f0ef50aa9c54db186ed6c0de",
+          "mode": 420
+        },
+        "pr-26/base/workflows/create.md": {
+          "sha256": "fb6bb1cf96acf0d0be73fac342171250dc3aa1f9bbbeb1f19fe8518e1d61bd42",
+          "mode": 420
+        },
+        "pr-26/base/workflows/implement.md": {
+          "sha256": "55a70cfb60bd7f41f3a7b90d493b1d4a744c7c7984e6f0f8abe44cf0f6cc3bfd",
+          "mode": 420
+        },
+        "pr-26/base/workflows/publish.md": {
+          "sha256": "96b07dbfefdd1a700be1667ec717ace4c93fd8127b381c55304a059e9ab605bc",
+          "mode": 420
+        },
+        "pr-26/base/workflows/review.md": {
+          "sha256": "d6df5c62110ccea86735090c5497d09ed24f57c8d7d4640cc249b03249015d67",
+          "mode": 420
+        },
+        "pr-26/base/workflows/scope.md": {
+          "sha256": "5862ceb7b3ab8920c30bd1b9342a144803204b567c2f5002d91681b4c61b0e05",
+          "mode": 420
+        },
+        "pr-26/base-actual-prefix-amended-control.log": {
+          "sha256": "6031c39d1338a8a766823a1eb3829659eef9c89a29997e3c3c8b6ff5b43258af",
+          "mode": 420
+        },
+        "pr-26/base-control-initial-setup.log": {
+          "sha256": "12b74670ae6d29c25b177e7af91322432b7a5a57a50560ff3f7e2dcb331dcb73",
+          "mode": 420
+        },
+        "pr-26/base-control.log": {
+          "sha256": "d1c9775ea004d5cffc7d6aa4624b76cf38187a31d8c728b44e0420eee9774acb",
+          "mode": 420
+        },
+        "pr-26/base-final-control.log": {
+          "sha256": "33326a32bba0ba6b1390da240acf06f2d71e40ebb0407367caedb29b8f6e18ce",
+          "mode": 420
+        },
+        "pr-26/head/.github/workflows/ci.yml": {
+          "sha256": "2cb386a24b1cb6252ac12bcb69bef26d3f0e8c107f99f22d29f6daf25f4166f0",
+          "mode": 420
+        },
+        "pr-26/head/.gitignore": {
+          "sha256": "1180e510a75b49e24ec888196d6a405e447ab7f9679270f03deffa7bee54a95c",
+          "mode": 420
+        },
+        "pr-26/head/README.md": {
+          "sha256": "6cedb349faf61abeefeb8274d615cfc5f4062a80d593aef69bbdbdb08611b487",
+          "mode": 420
+        },
+        "pr-26/head/bonaparte": {
+          "sha256": "940bee4c4cf8c626fbe12cf3085f8d176fb60a424919195ca19970ef5612f1c7",
+          "mode": 493
+        },
+        "pr-26/head/bonaparte-launcher": {
+          "sha256": "50a56e44c1cf4f4e6ad3c0a64844358ac803ec669f188d93b5bb2717c9d35aaa",
+          "mode": 493
+        },
+        "pr-26/head/bonaparte_checkpoint.py": {
+          "sha256": "0c84b092336e60cf61f6b344c27cc8a7a7979ae2b9d95c5bf8d807c3a69077a4",
+          "mode": 420
+        },
+        "pr-26/head/install": {
+          "sha256": "22506fee2ecbc6dd32861d52351805c2c55f6285a655ced201ced3614d396223",
+          "mode": 493
+        },
+        "pr-26/head/skills/use-bonaparte/SKILL.md": {
+          "sha256": "a4cc5ed9d5e593be313da92948dd7f376ea749b02cfadcb11e8ff967c70c328d",
+          "mode": 420
+        },
+        "pr-26/head/skills/use-bonaparte/agents/openai.yaml": {
+          "sha256": "defa44077cc3cf53c9e2d313980b9b5f40e8b3ec580bdcfaf0a2290a9a0c31a7",
+          "mode": 420
+        },
+        "pr-26/head/tests/test_bonaparte.py": {
+          "sha256": "ecb4bef5275f0c6edf3e0f3f3647ddcb17560a39f7574ec1c9d52b0cb59476d1",
+          "mode": 420
+        },
+        "pr-26/head/tests/test_checkpoint.py": {
+          "sha256": "05fe2c04a456926c2fe25e3b8bc90f559de0ac66c671f28761d9ff25e438c0c2",
+          "mode": 420
+        },
+        "pr-26/head/tests/test_handoff.py": {
+          "sha256": "0136a04480cba0d36bb15432213e3d1a99f06d6dbee71a2ed4abed2d0ad91ca0",
+          "mode": 420
+        },
+        "pr-26/head/tests/test_installation.py": {
+          "sha256": "8de9ef26dff165fbb0be203a36a3c4f9f7853f92f523aca3ddf792eb5f3e0900",
+          "mode": 420
+        },
+        "pr-26/head/workflows/bug-rca.md": {
+          "sha256": "52bf0050d8deee304601b8af14618fc327170da8f0ef50aa9c54db186ed6c0de",
+          "mode": 420
+        },
+        "pr-26/head/workflows/create.md": {
+          "sha256": "fb6bb1cf96acf0d0be73fac342171250dc3aa1f9bbbeb1f19fe8518e1d61bd42",
+          "mode": 420
+        },
+        "pr-26/head/workflows/implement.md": {
+          "sha256": "55a70cfb60bd7f41f3a7b90d493b1d4a744c7c7984e6f0f8abe44cf0f6cc3bfd",
+          "mode": 420
+        },
+        "pr-26/head/workflows/publish.md": {
+          "sha256": "96b07dbfefdd1a700be1667ec717ace4c93fd8127b381c55304a059e9ab605bc",
+          "mode": 420
+        },
+        "pr-26/head/workflows/review.md": {
+          "sha256": "d6df5c62110ccea86735090c5497d09ed24f57c8d7d4640cc249b03249015d67",
+          "mode": 420
+        },
+        "pr-26/head/workflows/scope.md": {
+          "sha256": "5862ceb7b3ab8920c30bd1b9342a144803204b567c2f5002d91681b4c61b0e05",
+          "mode": 420
+        },
+        "pr-26/head-control-initial-setup.log": {
+          "sha256": "12b74670ae6d29c25b177e7af91322432b7a5a57a50560ff3f7e2dcb331dcb73",
+          "mode": 420
+        },
+        "pr-26/head-control.log": {
+          "sha256": "52981a6420f77859b289cf46eb02ccd8be2ebfa45a052d3b4ead11745e36367f",
+          "mode": 420
+        },
+        "pr-26/provenance.json": {
+          "sha256": "8269aeb8ac3d30718df85800d387b28f96294e4903047c8ef3083526507e7c8f",
+          "mode": 420
+        },
+        "pr-26/reference/.github/workflows/ci.yml": {
+          "sha256": "2cb386a24b1cb6252ac12bcb69bef26d3f0e8c107f99f22d29f6daf25f4166f0",
+          "mode": 420
+        },
+        "pr-26/reference/.gitignore": {
+          "sha256": "1180e510a75b49e24ec888196d6a405e447ab7f9679270f03deffa7bee54a95c",
+          "mode": 420
+        },
+        "pr-26/reference/README.md": {
+          "sha256": "501ce915410f29ae93dddce2fdcbc0b16a8cf4c1429794002761a6affa1bff4e",
+          "mode": 420
+        },
+        "pr-26/reference/bonaparte": {
+          "sha256": "940bee4c4cf8c626fbe12cf3085f8d176fb60a424919195ca19970ef5612f1c7",
+          "mode": 493
+        },
+        "pr-26/reference/bonaparte-launcher": {
+          "sha256": "50a56e44c1cf4f4e6ad3c0a64844358ac803ec669f188d93b5bb2717c9d35aaa",
+          "mode": 493
+        },
+        "pr-26/reference/bonaparte_checkpoint.py": {
+          "sha256": "31d93277879f8b3f24ef14ed37eed8b351a17f82b33fc318ba3a3ee58bac7300",
+          "mode": 420
+        },
+        "pr-26/reference/install": {
+          "sha256": "22506fee2ecbc6dd32861d52351805c2c55f6285a655ced201ced3614d396223",
+          "mode": 493
+        },
+        "pr-26/reference/skills/use-bonaparte/SKILL.md": {
+          "sha256": "9a05fd0f564e03c94111093fe1e84d82d3a41f28cdee5fb2febe2e8cc18d01c4",
+          "mode": 420
+        },
+        "pr-26/reference/skills/use-bonaparte/agents/openai.yaml": {
+          "sha256": "defa44077cc3cf53c9e2d313980b9b5f40e8b3ec580bdcfaf0a2290a9a0c31a7",
+          "mode": 420
+        },
+        "pr-26/reference/tests/test_bonaparte.py": {
+          "sha256": "7dba61f3ce0048f500124f4f48672bca313b8cfe7d8ae5f7ebfa8d50b79c9610",
+          "mode": 420
+        },
+        "pr-26/reference/tests/test_checkpoint.py": {
+          "sha256": "e97fa48c0981f287b102d96f43c161f9b80bb76e5270431c91af4ecea5ab6801",
+          "mode": 420
+        },
+        "pr-26/reference/tests/test_handoff.py": {
+          "sha256": "0136a04480cba0d36bb15432213e3d1a99f06d6dbee71a2ed4abed2d0ad91ca0",
+          "mode": 420
+        },
+        "pr-26/reference/tests/test_installation.py": {
+          "sha256": "f648b5e9264db1fd1869e20332c2cb82e1a00ce2acb26bd73b3eef6a21ecc645",
+          "mode": 420
+        },
+        "pr-26/reference/workflows/bug-rca.md": {
+          "sha256": "52bf0050d8deee304601b8af14618fc327170da8f0ef50aa9c54db186ed6c0de",
+          "mode": 420
+        },
+        "pr-26/reference/workflows/create.md": {
+          "sha256": "fb6bb1cf96acf0d0be73fac342171250dc3aa1f9bbbeb1f19fe8518e1d61bd42",
+          "mode": 420
+        },
+        "pr-26/reference/workflows/implement.md": {
+          "sha256": "55a70cfb60bd7f41f3a7b90d493b1d4a744c7c7984e6f0f8abe44cf0f6cc3bfd",
+          "mode": 420
+        },
+        "pr-26/reference/workflows/publish.md": {
+          "sha256": "96b07dbfefdd1a700be1667ec717ace4c93fd8127b381c55304a059e9ab605bc",
+          "mode": 420
+        },
+        "pr-26/reference/workflows/review.md": {
+          "sha256": "d6df5c62110ccea86735090c5497d09ed24f57c8d7d4640cc249b03249015d67",
+          "mode": 420
+        },
+        "pr-26/reference/workflows/scope.md": {
+          "sha256": "5862ceb7b3ab8920c30bd1b9342a144803204b567c2f5002d91681b4c61b0e05",
+          "mode": 420
+        },
+        "pr-26/reference-actual-prefix-amended-control.log": {
+          "sha256": "9bebdccb07e9f5f08726bbb69225e0408ebc176634d7b4cbdfc553a18ae5316c",
+          "mode": 420
+        },
+        "pr-26/reference-control.log": {
+          "sha256": "f0c3ec491c5b6c5e53bd45a4eebdf660250d669135a9f701d6d5a103a098f991",
+          "mode": 420
+        },
+        "pr-26/reference-final-control.log": {
+          "sha256": "71853c8be5f907c5632b178229d159f17a0077180e1349da0345d999c1dbf71c",
+          "mode": 420
+        },
+        "pr-45/base/.codex-plugin/plugin.json": {
+          "sha256": "b638fde35c6aae564e1cdf67544c9c3efeb85f76e71680e33ae94b82199cd527",
+          "mode": 420
+        },
+        "pr-45/base/CHANGELOG.md": {
+          "sha256": "fcb57716f70dad88c84ad49322a7565286ee2c813e50d0243a42db5d530ba54e",
+          "mode": 420
+        },
+        "pr-45/base/README.md": {
+          "sha256": "f0e1efb752021ca3252ae1bf3ce50fe396a779b236dd88a14abeefcb83cad958",
+          "mode": 420
+        },
+        "pr-45/base/skills/confidence-protocol/SKILL.md": {
+          "sha256": "cdc4fa1eb8cf1266aa4a8ea5f66e2b93cd6e4418d8a10f4d919cdc3662cc4816",
+          "mode": 420
+        },
+        "pr-45/base/skills/confidence-protocol/assets/contract.example.json": {
+          "sha256": "85066dbfebe8310b5414a02f8d7cc73f925987cda69ffcb508975ee0fe738112",
+          "mode": 420
+        },
+        "pr-45/base/skills/confidence-protocol/assets/report.example.json": {
+          "sha256": "52c267f1e7c280e16fbf4ccd34254625e93892faf59b41703e87fdaf3a67e59d",
+          "mode": 420
+        },
+        "pr-45/base/skills/confidence-protocol/assets/runs/invitation-authorization.json": {
+          "sha256": "676de57ab147634eefa21c7251b1385500b375bb271dca0168de867b34e5283d",
+          "mode": 420
+        },
+        "pr-45/base/skills/confidence-protocol/assets/runs/invitation-authorization.log": {
+          "sha256": "ec5ce487789f0bf1b922299cf02b3e3633d037e37a94d17df2b3bbbe3ed5fcc6",
+          "mode": 420
+        },
+        "pr-45/base/skills/confidence-protocol/assets/runs/invitation-e2e.json": {
+          "sha256": "e1d88a4c7d16e31afc9caa23bdc5576c6d758c3fbc3435d81f198eacbf156802",
+          "mode": 420
+        },
+        "pr-45/base/skills/confidence-protocol/assets/runs/invitation-e2e.log": {
+          "sha256": "a92b7fdcb45e1d22fc2af4c80adc6e7fc1389ff8a694010cf5e6ff0b5ffbf1f6",
+          "mode": 420
+        },
+        "pr-45/base/skills/confidence-protocol/references/modes.md": {
+          "sha256": "b6bdee625758d6a680b827b2ff4e4896f2d1206580556a4e0f97504f4cc7eb84",
+          "mode": 420
+        },
+        "pr-45/base/skills/confidence-protocol/references/report-rules.md": {
+          "sha256": "427aca23d635d7fa2a13fbb6d08f7022f8b1f905577726cbd117f073e43b8a93",
+          "mode": 420
+        },
+        "pr-45/base/skills/confidence-protocol/references/task-profiles.md": {
+          "sha256": "864f7ddc73868dde6172c51e998f24c4e275f9d85f61ac7da2b20062c1cc15e7",
+          "mode": 420
+        },
+        "pr-45/base/skills/confidence-protocol/scripts/confidence.py": {
+          "sha256": "e7f6cb873da47feb280fece64b190673bdd2017b423fe4c5cf40e52dda7c73bd",
+          "mode": 420
+        },
+        "pr-45/base/skills/confidence-protocol/scripts/diagnostics.py": {
+          "sha256": "0fa92a96e52f6809f58539ebd582d846935db10932c9d7b406b245e51655c76c",
+          "mode": 420
+        },
+        "pr-45/base/skills/confidence-protocol/tests/check_release.py": {
+          "sha256": "14dc4c2ccf8a0c0e329dda0ef58f1064aeabc8e461143cfeacee2d90b2a68923",
+          "mode": 420
+        },
+        "pr-45/base/skills/confidence-protocol/tests/test_confidence.py": {
+          "sha256": "ebefad4ed6b9a31c3dcd7354239b690e7c4b70b5fab7734bcf46f0a483b5f2de",
+          "mode": 420
+        },
+        "pr-45/base/skills/confidence-protocol/tests/test_diagnostics.py": {
+          "sha256": "87109b26eb2deadc34a653c03e4a315ae58f39a618c9b55a488b0dcc4de5eea5",
+          "mode": 420
+        },
+        "pr-45/base-actual-prefix-amended-control.log": {
+          "sha256": "171f7d2fc710376b4a79da7b463817352cb1bb196c9a75ff044abb1947bca4aa",
+          "mode": 420
+        },
+        "pr-45/base-control-initial-setup.log": {
+          "sha256": "12b74670ae6d29c25b177e7af91322432b7a5a57a50560ff3f7e2dcb331dcb73",
+          "mode": 420
+        },
+        "pr-45/base-control.log": {
+          "sha256": "15b062edef612e9261941b221fbbc90ba3ffe6ef133ffcdb88ccc67edadf4a67",
+          "mode": 420
+        },
+        "pr-45/base-final-control.log": {
+          "sha256": "b6417eb7cbce3dc3ec4049b0ef90244d938064d59d6ba7cbe0bd3d2610b110d4",
+          "mode": 420
+        },
+        "pr-45/head/.codex-plugin/plugin.json": {
+          "sha256": "2cbfe79fc0e78feaeef7f81f5bbd8f73a1f214952a66f90d75bf4152adbb1e09",
+          "mode": 420
+        },
+        "pr-45/head/CHANGELOG.md": {
+          "sha256": "1c1e213222c6e4741dc185c88987fe5e757f8abd003772d566913e6e619e1535",
+          "mode": 420
+        },
+        "pr-45/head/README.md": {
+          "sha256": "457667cb355cc9d25a4d9c4ebd75a95dce616886a6cbe2eef0fe1ef49c9b340b",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/SKILL.md": {
+          "sha256": "5476886c8da6e11d89d7d1111b080ec0e2c9b87f6ccfe69d9169846cbec72473",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/assets/contract.example.json": {
+          "sha256": "85066dbfebe8310b5414a02f8d7cc73f925987cda69ffcb508975ee0fe738112",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/assets/report.example.json": {
+          "sha256": "d76fa00db14f903c423133b3a84d763b95d9dfb5e3c3170f160708e66dc8ec47",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/assets/runs/invitation-authorization.json": {
+          "sha256": "676de57ab147634eefa21c7251b1385500b375bb271dca0168de867b34e5283d",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/assets/runs/invitation-authorization.log": {
+          "sha256": "ec5ce487789f0bf1b922299cf02b3e3633d037e37a94d17df2b3bbbe3ed5fcc6",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/assets/runs/invitation-e2e.json": {
+          "sha256": "e1d88a4c7d16e31afc9caa23bdc5576c6d758c3fbc3435d81f198eacbf156802",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/assets/runs/invitation-e2e.log": {
+          "sha256": "a92b7fdcb45e1d22fc2af4c80adc6e7fc1389ff8a694010cf5e6ff0b5ffbf1f6",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/references/evidence.md": {
+          "sha256": "54676acece46cc72af279db155f9d3f525e0d68f0e533c1db970e50a4b526237",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/references/modes.md": {
+          "sha256": "58bdefb0a2be2a6093bd4c599e139eaf39e41c009b07aa913a51274ae90708f6",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/references/report-rules.md": {
+          "sha256": "99795301c0ab71922e924b921f4c47a7a32b6c8b5acb9726fe6a9a8af6f9a210",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/references/task-profiles.md": {
+          "sha256": "864f7ddc73868dde6172c51e998f24c4e275f9d85f61ac7da2b20062c1cc15e7",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/scripts/confidence.py": {
+          "sha256": "533938005ec983707479d203787d1c2831c671b99d0bba785d6107fa43a8f2bd",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/scripts/diagnostics.py": {
+          "sha256": "4cad6f009b0de9534c285c0057704bd38f7b03b8e053f6088d0e5a256ff81114",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/tests/check_release.py": {
+          "sha256": "d0a190e30fdbdbaaa337d13aaa87af4669dfb14927cc9fe0eaada07bba7e0622",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/tests/support.py": {
+          "sha256": "2ff46f81cb02720fadc665d125d211cabeae8b771604c0888322fa00c304b5b7",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/tests/test_cancellation.py": {
+          "sha256": "6aa8dcce7fc2f62029ed0144eb838d5f0213869c9123d3cfa23cd890970ac7ed",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/tests/test_capture_io.py": {
+          "sha256": "2d24d630769553b8c8c31a8bac5566cb38cba9aa73d779ea935c78dd78a702df",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/tests/test_cli_recovery.py": {
+          "sha256": "18c5de2ead4e7675ad41a3acc93ed90b45f9bea0ad91ed259592e5d0a203cd42",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/tests/test_confidence.py": {
+          "sha256": "cce4c1a13d4ec28538bf13fe225c23e78a9d07b3b9a65498667e98d832767528",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/tests/test_content_binding.py": {
+          "sha256": "da7b19f7742156993e6d4dc7edefd0c7f0b81dbf7c8d4d31ec57c8fd0d10ad2b",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/tests/test_diagnostics.py": {
+          "sha256": "87109b26eb2deadc34a653c03e4a315ae58f39a618c9b55a488b0dcc4de5eea5",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/tests/test_dirty_submodule.py": {
+          "sha256": "1e6ffdac6d4075552ae6139f58de593cb823122d61b9150dfdf82aab019e5e3b",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/tests/test_evidence_root.py": {
+          "sha256": "63dfb21de5cc1949e6c1d06394dff02e1fd22595041d97f2244c57f56d551a26",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/tests/test_evidence_subtree.py": {
+          "sha256": "9f5a5dcb0d4d8e5568ecf0ebfe87513ea5b2107106e3542738aa3a6397d347eb",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/tests/test_git_availability.py": {
+          "sha256": "544ac46da0aa9130ff2cc1db467efc7df94c52a9b026fb1b9f1d1260cea67410",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/tests/test_init_recovery.py": {
+          "sha256": "b925247ed89abdcce8b9f0ca6b6b24b6951195591cddfad27fb1b6126ab60f7b",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/tests/test_integrity.py": {
+          "sha256": "0eb3e66279ed490673a0ef6e8a60a0f1d80f3a63cde3dc2edbcea540864f636c",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/tests/test_launch_cancellation.py": {
+          "sha256": "147d49689fe3d0f4162589667eb4accf4232265ce79d74103d2d368abb168fc2",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/tests/test_limits.py": {
+          "sha256": "959c99c96b6d4cab56d172dcfdcfe65f548f422205156ba40b2872521067ac9d",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/tests/test_log_inputs.py": {
+          "sha256": "97b7750150c585b4698ca9b890cf93f3f0918f7b93a2182955a47f56bede5d57",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/tests/test_parallel_capture.py": {
+          "sha256": "d2faa51758fec174caa59775b0b6c9199bfe11ca98256361278069832916f95d",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/tests/test_record.py": {
+          "sha256": "58482fbbdab686af9aa20a5b7d6760d07ec000e6b8c17acb432ffe1507e5a8ba",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/tests/test_release_archive.py": {
+          "sha256": "0b3849d5b2c80a47131e4ca14d6fea6beead131d2183b8579e6e4217443dff73",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/tests/test_reporting_scope.py": {
+          "sha256": "e17bfb0aa8bbdc6020a4806f0d73f4cc23bb5669d3e7875957453878d4d63e81",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/tests/test_run_receipt.py": {
+          "sha256": "19bfc866454d48c22097d03cbb798354c3327c03f654802863d91c4e3c6053f3",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/tests/test_source_scope_output.py": {
+          "sha256": "2755f5a0c663ae60a1d03c8bdeba2a454d69c42e4db9c851738170ecaddb11ac",
+          "mode": 420
+        },
+        "pr-45/head/skills/confidence-protocol/tests/test_validation_cache.py": {
+          "sha256": "5aa413a27a8d715e1aadda8bcaa793ff10928c50f68fe79fc82237b5e67cb8c0",
+          "mode": 420
+        },
+        "pr-45/head-control-initial-setup.log": {
+          "sha256": "12b74670ae6d29c25b177e7af91322432b7a5a57a50560ff3f7e2dcb331dcb73",
+          "mode": 420
+        },
+        "pr-45/head-control.log": {
+          "sha256": "afc075baa884a0a40196a343295b3c853979e04a4b0ad86413266c6454d451b9",
+          "mode": 420
+        },
+        "pr-45/provenance.json": {
+          "sha256": "db1cc640e5651df6de4565f33bcf4a1bc06bac59a5aa556932b1dc0596ddeed8",
+          "mode": 420
+        },
+        "pr-45/reference/.codex-plugin/plugin.json": {
+          "sha256": "b638fde35c6aae564e1cdf67544c9c3efeb85f76e71680e33ae94b82199cd527",
+          "mode": 420
+        },
+        "pr-45/reference/CHANGELOG.md": {
+          "sha256": "fcb57716f70dad88c84ad49322a7565286ee2c813e50d0243a42db5d530ba54e",
+          "mode": 420
+        },
+        "pr-45/reference/README.md": {
+          "sha256": "f0e1efb752021ca3252ae1bf3ce50fe396a779b236dd88a14abeefcb83cad958",
+          "mode": 420
+        },
+        "pr-45/reference/skills/confidence-protocol/SKILL.md": {
+          "sha256": "cdc4fa1eb8cf1266aa4a8ea5f66e2b93cd6e4418d8a10f4d919cdc3662cc4816",
+          "mode": 420
+        },
+        "pr-45/reference/skills/confidence-protocol/assets/contract.example.json": {
+          "sha256": "85066dbfebe8310b5414a02f8d7cc73f925987cda69ffcb508975ee0fe738112",
+          "mode": 420
+        },
+        "pr-45/reference/skills/confidence-protocol/assets/report.example.json": {
+          "sha256": "52c267f1e7c280e16fbf4ccd34254625e93892faf59b41703e87fdaf3a67e59d",
+          "mode": 420
+        },
+        "pr-45/reference/skills/confidence-protocol/assets/runs/invitation-authorization.json": {
+          "sha256": "676de57ab147634eefa21c7251b1385500b375bb271dca0168de867b34e5283d",
+          "mode": 420
+        },
+        "pr-45/reference/skills/confidence-protocol/assets/runs/invitation-authorization.log": {
+          "sha256": "ec5ce487789f0bf1b922299cf02b3e3633d037e37a94d17df2b3bbbe3ed5fcc6",
+          "mode": 420
+        },
+        "pr-45/reference/skills/confidence-protocol/assets/runs/invitation-e2e.json": {
+          "sha256": "e1d88a4c7d16e31afc9caa23bdc5576c6d758c3fbc3435d81f198eacbf156802",
+          "mode": 420
+        },
+        "pr-45/reference/skills/confidence-protocol/assets/runs/invitation-e2e.log": {
+          "sha256": "a92b7fdcb45e1d22fc2af4c80adc6e7fc1389ff8a694010cf5e6ff0b5ffbf1f6",
+          "mode": 420
+        },
+        "pr-45/reference/skills/confidence-protocol/references/modes.md": {
+          "sha256": "b6bdee625758d6a680b827b2ff4e4896f2d1206580556a4e0f97504f4cc7eb84",
+          "mode": 420
+        },
+        "pr-45/reference/skills/confidence-protocol/references/report-rules.md": {
+          "sha256": "427aca23d635d7fa2a13fbb6d08f7022f8b1f905577726cbd117f073e43b8a93",
+          "mode": 420
+        },
+        "pr-45/reference/skills/confidence-protocol/references/task-profiles.md": {
+          "sha256": "864f7ddc73868dde6172c51e998f24c4e275f9d85f61ac7da2b20062c1cc15e7",
+          "mode": 420
+        },
+        "pr-45/reference/skills/confidence-protocol/scripts/confidence.py": {
+          "sha256": "533938005ec983707479d203787d1c2831c671b99d0bba785d6107fa43a8f2bd",
+          "mode": 420
+        },
+        "pr-45/reference/skills/confidence-protocol/scripts/diagnostics.py": {
+          "sha256": "0fa92a96e52f6809f58539ebd582d846935db10932c9d7b406b245e51655c76c",
+          "mode": 420
+        },
+        "pr-45/reference/skills/confidence-protocol/tests/check_release.py": {
+          "sha256": "14dc4c2ccf8a0c0e329dda0ef58f1064aeabc8e461143cfeacee2d90b2a68923",
+          "mode": 420
+        },
+        "pr-45/reference/skills/confidence-protocol/tests/test_confidence.py": {
+          "sha256": "ebefad4ed6b9a31c3dcd7354239b690e7c4b70b5fab7734bcf46f0a483b5f2de",
+          "mode": 420
+        },
+        "pr-45/reference/skills/confidence-protocol/tests/test_diagnostics.py": {
+          "sha256": "87109b26eb2deadc34a653c03e4a315ae58f39a618c9b55a488b0dcc4de5eea5",
+          "mode": 420
+        },
+        "pr-45/reference-actual-prefix-amended-control.log": {
+          "sha256": "e5f9ded5f7a54d981bb9fd8f04d2961c219545b4f9881da8a9e37d2093a8f8e3",
+          "mode": 420
+        },
+        "pr-45/reference-control.log": {
+          "sha256": "1d8f9539c6119e18f73e1e16369f9063b7922c62573618202fe085e6da5eb25a",
+          "mode": 420
+        },
+        "pr-45/reference-final-control.log": {
+          "sha256": "a804049d08e2d19faecea6a5c8723cd9295db4d889bfed2f8a147dd21a01e333",
+          "mode": 420
+        },
+        "pre-baseline-preflight.json": {
+          "sha256": "ab1c8fbdf7301e09e3cacf966217b661267bbe7b8e2beded9039a65c8e40fe36",
+          "mode": 420
+        }
+      },
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/oracles/pr-45/base": {
+        ".codex-plugin/plugin.json": {
+          "sha256": "b638fde35c6aae564e1cdf67544c9c3efeb85f76e71680e33ae94b82199cd527",
+          "mode": 420
+        },
+        "CHANGELOG.md": {
+          "sha256": "fcb57716f70dad88c84ad49322a7565286ee2c813e50d0243a42db5d530ba54e",
+          "mode": 420
+        },
+        "README.md": {
+          "sha256": "f0e1efb752021ca3252ae1bf3ce50fe396a779b236dd88a14abeefcb83cad958",
+          "mode": 420
+        },
+        "skills/confidence-protocol/SKILL.md": {
+          "sha256": "cdc4fa1eb8cf1266aa4a8ea5f66e2b93cd6e4418d8a10f4d919cdc3662cc4816",
+          "mode": 420
+        },
+        "skills/confidence-protocol/assets/contract.example.json": {
+          "sha256": "85066dbfebe8310b5414a02f8d7cc73f925987cda69ffcb508975ee0fe738112",
+          "mode": 420
+        },
+        "skills/confidence-protocol/assets/report.example.json": {
+          "sha256": "52c267f1e7c280e16fbf4ccd34254625e93892faf59b41703e87fdaf3a67e59d",
+          "mode": 420
+        },
+        "skills/confidence-protocol/assets/runs/invitation-authorization.json": {
+          "sha256": "676de57ab147634eefa21c7251b1385500b375bb271dca0168de867b34e5283d",
+          "mode": 420
+        },
+        "skills/confidence-protocol/assets/runs/invitation-authorization.log": {
+          "sha256": "ec5ce487789f0bf1b922299cf02b3e3633d037e37a94d17df2b3bbbe3ed5fcc6",
+          "mode": 420
+        },
+        "skills/confidence-protocol/assets/runs/invitation-e2e.json": {
+          "sha256": "e1d88a4c7d16e31afc9caa23bdc5576c6d758c3fbc3435d81f198eacbf156802",
+          "mode": 420
+        },
+        "skills/confidence-protocol/assets/runs/invitation-e2e.log": {
+          "sha256": "a92b7fdcb45e1d22fc2af4c80adc6e7fc1389ff8a694010cf5e6ff0b5ffbf1f6",
+          "mode": 420
+        },
+        "skills/confidence-protocol/references/modes.md": {
+          "sha256": "b6bdee625758d6a680b827b2ff4e4896f2d1206580556a4e0f97504f4cc7eb84",
+          "mode": 420
+        },
+        "skills/confidence-protocol/references/report-rules.md": {
+          "sha256": "427aca23d635d7fa2a13fbb6d08f7022f8b1f905577726cbd117f073e43b8a93",
+          "mode": 420
+        },
+        "skills/confidence-protocol/references/task-profiles.md": {
+          "sha256": "864f7ddc73868dde6172c51e998f24c4e275f9d85f61ac7da2b20062c1cc15e7",
+          "mode": 420
+        },
+        "skills/confidence-protocol/scripts/confidence.py": {
+          "sha256": "e7f6cb873da47feb280fece64b190673bdd2017b423fe4c5cf40e52dda7c73bd",
+          "mode": 420
+        },
+        "skills/confidence-protocol/scripts/diagnostics.py": {
+          "sha256": "0fa92a96e52f6809f58539ebd582d846935db10932c9d7b406b245e51655c76c",
+          "mode": 420
+        },
+        "skills/confidence-protocol/tests/check_release.py": {
+          "sha256": "14dc4c2ccf8a0c0e329dda0ef58f1064aeabc8e461143cfeacee2d90b2a68923",
+          "mode": 420
+        },
+        "skills/confidence-protocol/tests/test_confidence.py": {
+          "sha256": "ebefad4ed6b9a31c3dcd7354239b690e7c4b70b5fab7734bcf46f0a483b5f2de",
+          "mode": 420
+        },
+        "skills/confidence-protocol/tests/test_diagnostics.py": {
+          "sha256": "87109b26eb2deadc34a653c03e4a315ae58f39a618c9b55a488b0dcc4de5eea5",
+          "mode": 420
+        }
+      }
+    },
+    "requests_sha256": "585cea7d1528de4d24ca9afdb8e01fa36e168bb7ade12def6be1702d2a1becca",
+    "preflight_sha256": "abd762db91480470b342051b852bd64e6230635bf761b2b2a82e8d8e767df283",
+    "model": {
+      "backend": "claude",
+      "model": "claude-opus-5-5",
+      "effort": "high"
+    },
+    "budgets": {
+      "solve": [
+        150,
+        1.5
+      ],
+      "repair": [
+        90,
+        1
+      ]
+    },
+    "limits": [
+      "Small fixed task selection, not broad model/policy generalization.",
+      "At most one repair per cell, only after current-source requirement failure.",
+      "Native independent Codex review is coordinated outside the developer timers.",
+      "Source snapshots persist; arbitrary execution scratch/symlinks are not provider evidence."
+    ]
+  },
+  "payload_sha256": "4881cf48a035a377d17bf89de035f39af4cd8b67ee8f663087494d7fd9da6677"
+}
