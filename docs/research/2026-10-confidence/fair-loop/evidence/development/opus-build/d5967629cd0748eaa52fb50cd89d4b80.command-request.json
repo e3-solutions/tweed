@@ -1,0 +1,1 @@
+{"id": "d5967629cd0748eaa52fb50cd89d4b80", "argv": ["/bin/bash", "-c", "/usr/bin/sandbox-exec -p '(version 1)(allow default)' /bin/echo nested-ok; echo rc=$?; ls -la /usr/bin/python3; /usr/bin/python3 -c 'import sys;print(sys.executable,sys.version)'"], "timeout": 90.0}

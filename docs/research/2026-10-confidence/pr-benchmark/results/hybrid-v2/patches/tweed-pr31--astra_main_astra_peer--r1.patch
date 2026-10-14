@@ -1,0 +1,183 @@
+diff --git a/bonaparte b/bonaparte
+index 26a168f..76088ad 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -103,6 +103,16 @@ RECEIPT_SCHEMA = {
+ }
+ 
+ 
++class PhaseContinuationError(RuntimeError):
++    """A runner interruption or wrap-up guard failure in a verified session."""
++
++    def __init__(self, summary: str, session_id: str, *, exit_code: int = 1):
++        super().__init__(summary)
++        self.session_id = session_id
++        self.exit_code = exit_code
++        self.receipt = None
++
++
+ def validate_schema(value, schema: dict) -> None:
+     """Validate the JSON Schema constraints used by coordinator receipts."""
+     json_types = {
+@@ -544,6 +554,7 @@ def run_phase(
+         )
+     observer = EventObserver(_ACTIVE_PROGRESS)
+     driver = None
++    session_id = None
+     failed = True
+     try:
+         driver = AppServerPhaseDriver(repository, observer)
+@@ -571,10 +582,16 @@ def run_phase(
+         thread = thread_result.get("thread")
+         if not isinstance(thread, dict) or not isinstance(thread.get("id"), str):
+             raise RuntimeError("Codex app-server returned no thread identity")
+-        session_id = thread["id"]
+-        observer.observation["session_id"] = session_id
+-        if resume_session_id and session_id != resume_session_id:
++        native_id = thread["id"]
++        if resume_session_id and native_id != resume_session_id:
+             raise RuntimeError("Codex resumed a different session")
++        try:
++            if str(uuid.UUID(native_id)) != native_id:
++                raise ValueError
++        except ValueError as error:
++            raise RuntimeError("Codex returned an invalid session identity") from error
++        session_id = native_id
++        observer.observation["session_id"] = session_id
+         turn_params = {
+             "threadId": session_id,
+             "input": [{"type": "text", "text": prompt}],
+@@ -663,13 +680,20 @@ def run_phase(
+             if not isinstance(result, dict) or result.get("turnId") != turn_id:
+                 raise RuntimeError("Codex app-server returned an invalid steer result")
+             steer_acknowledged = True
++        if steered and terminal.get("status") == "interrupted":
++            raise PhaseContinuationError(
++                "Soft-budget wrap-up was interrupted; unfinished proof obligations remain unverified.",
++                session_id,
++            )
+         if terminal.get("status") != "completed":
+             detail = terminal.get("error")
+             raise RuntimeError(
+                 f"{phase} coordinator failed: {detail or terminal.get('status')}"
+             )
+         if post_steer_work:
+-            raise RuntimeError("coordinator started new work after soft-budget steer")
++            raise PhaseContinuationError(
++                "coordinator started new work after soft-budget steer", session_id
++            )
+         if not driver.last_agent_message:
+             items = terminal.get("items")
+             if isinstance(items, list):
+@@ -683,6 +707,12 @@ def run_phase(
+             raise RuntimeError("Codex app-server returned no final receipt")
+         receipt = json.loads(driver.last_agent_message)
+         failed = False
++    except KeyboardInterrupt as error:
++        if session_id is not None:
++            raise PhaseContinuationError(
++                "Bonaparte was interrupted.", session_id, exit_code=130
++            ) from error
++        raise
+     finally:
+         observed = observer.finish()
+         if observation is not None:
+@@ -706,18 +736,26 @@ def run_phase(
+     ):
+         raise RuntimeError(f"completed {phase} returned the wrong result")
+     if receipt["state"] == "needs-input" and not receipt["question"]:
++        if steered:
++            raise PhaseContinuationError(
++                "soft-budget wrap-up returned no question", session_id
++            )
+         raise RuntimeError("phase requested input without a question")
+     if steered:
+         if receipt["state"] != "needs-input":
+-            raise RuntimeError("soft-budget wrap-up did not request continuation")
++            raise PhaseContinuationError(
++                "soft-budget wrap-up did not request continuation", session_id
++            )
+         question = receipt["question"]
+         if question != SOFT_BUDGET_CONTINUE_QUESTION and not question.startswith(
+             "Clarification required:"
+         ):
+-            raise RuntimeError("soft-budget wrap-up returned an invalid question")
++            raise PhaseContinuationError(
++                "soft-budget wrap-up returned an invalid question", session_id
++            )
+         if "unverified" not in receipt["summary"].casefold():
+-            raise RuntimeError(
+-                "soft-budget wrap-up omitted unverified proof obligations"
++            raise PhaseContinuationError(
++                "soft-budget wrap-up omitted unverified proof obligations", session_id
+             )
+     if receipt["state"] == "needs-input":
+         receipt["resume_session_id"] = session_id
+@@ -1058,6 +1096,11 @@ def resume_checkpoint(
+             replayed_answer,
+             checkpoint["soft_phase_budget_seconds"],
+         )
++    except PhaseContinuationError as error:
++        _update_checkpoint_observation(checkpoint, observation)
++        return _checkpoint_failure(
++            checkpoint, str(error), remote_uncertain=True
++        ), error.exit_code
+     except KeyboardInterrupt:
+         _update_checkpoint_observation(checkpoint, observation)
+         return (
+@@ -1123,16 +1166,32 @@ def run_and_checkpoint(
+ ) -> dict:
+     base_git = capture_git_state(repository) if session_id is None else None
+     observation: dict = {}
+-    receipt = run_phase(
+-        repository,
+-        phase,
+-        phase_input,
+-        session_id,
+-        model,
+-        reasoning,
+-        observation=observation,
+-        soft_phase_budget_seconds=soft_phase_budget_seconds,
+-    )
++    try:
++        receipt = run_phase(
++            repository,
++            phase,
++            phase_input,
++            session_id,
++            model,
++            reasoning,
++            observation=observation,
++            soft_phase_budget_seconds=soft_phase_budget_seconds,
++        )
++    except PhaseContinuationError as error:
++        receipt = fail(str(error).replace("\n", " ")[:800])
++        receipt.update(
++            phase=phase,
++            state="needs-input",
++            question=SOFT_BUDGET_CONTINUE_QUESTION,
++            summary="Phase interrupted; unfinished proof obligations remain unverified.",
++        )
++        checkpoint = new_question_checkpoint(
++            repository, phase, receipt, error.session_id, model, reasoning,
++            observation, base_git or capture_git_state(repository),
++            soft_phase_budget_seconds,
++        )
++        error.receipt = _checkpoint_failure(checkpoint, str(error))
++        raise
+     if receipt["state"] != "needs-input":
+         return receipt
+     coordinator_session = observation.get("session_id") or session_id
+@@ -1343,6 +1402,12 @@ def main() -> int:
+             if terminal_state not in PROGRESS_TERMINAL_STATES:
+                 raise ValueError("invalid progress state")
+             serialized_receipt = serialize_receipt(result_receipt)
++        except PhaseContinuationError as error:
++            progress.stop_heartbeat()
++            progress.report("finalizing")
++            serialized_receipt = serialize_receipt(error.receipt or fail(str(error)))
++            terminal_state = "failed"
++            exit_code = error.exit_code
+         except KeyboardInterrupt:
+             progress.stop_heartbeat()
+             progress.report("finalizing")

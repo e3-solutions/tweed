@@ -1,0 +1,303 @@
+{
+  "reviewer": "independent native Codex reviewer /root/lean_repair_adversary",
+  "post_outcome": true,
+  "primary_metric_unchanged": true,
+  "registration_sha256": "e2fddcd40281f75c1863bc2a2301d02eb36946cb1ff4fdf392f503394be74948",
+  "study_closure_sha256": "50c969621490ec20c6ba747bb2496876544d1f0a748d9c682480078b51277766",
+  "controller_sha256": "7ec25f9122b6c80f5d6bcb6dd0383369d81d021eb1c633a7e31ae9bdf3ef70bc",
+  "private_audit_sha256": "187cc1e79f0eb45ad44bf7d80b72793d3bb5f6e499165207239ea7b7dda5eeeb",
+  "assigned": 6,
+  "rows": [
+    {
+      "trial_id": "tweed-pr20--revised--r1",
+      "arm": "revised",
+      "current_whole_cell_custody": true,
+      "frozen_primary_status": "completed",
+      "strict_accepted": false,
+      "recorded_primary_accepted": false,
+      "first_selected_grade_passed": true,
+      "final_selected_grade_passed": true,
+      "immutable_final_checks_passed": true,
+      "descriptive_behavior_binding_only": false,
+      "source_scope_violations": [
+        "README.md"
+      ],
+      "closure_remaining": [
+        "I haven't run a real Codex session, so it's unconfirmed that real Codex accepts `-m` after `exec resume`. The old code passed `-m` there too, so this is unchanged.",
+        "A model name starting with '-' may need the `--model=<name>` form on the command line, and Codex might also read it as a flag after `-m`. I didn't test this.",
+        "One existing test, `test_progress_fd_is_scrubbed_and_never_sent_to_children`, couldn't run here because the sandbox blocks its `os.fstat(2)` call. I couldn't confirm it fails the same way without this change, because the repository history is read-only here."
+      ],
+      "registered_rejection_reasons": [
+        "first_source_scope_violations",
+        "final_source_scope_violations",
+        "final_developer_remaining_nonempty"
+      ],
+      "actual_production_repair": false,
+      "hash_bound_observed_developer_models": {
+        "main": [
+          "claude-opus-5-5"
+        ],
+        "closure": [
+          "claude-opus-5-5"
+        ]
+      },
+      "reviewer_requested_model": "gpt-6-astra",
+      "reviewer_actual_model": null,
+      "reviewer_model_attribution": "requested_only",
+      "terminal_snippets": {
+        "main": {
+          "stream_sha256": "e5c4aba9134f72613454552e97b265a2205fa03ea0ff699bcd37d8246cf2d2a6",
+          "summary": "Implemented configurable model selection in bonaparte. --model (before the phase command) overrides BONAPARTE_MODEL, including a blank environment value. Values from either source are trimmed. A blank selected value raises \"must not be blank\" before Codex is located or run (checked in parse() and again at the start of run_phase). With neither source set, -m and the child model= field are left out, so the coordinator and default/worker/explorer children use Codex defaults; the prompt states this."
+        },
+        "closure": {
+          "stream_sha256": "b5ba5b8bf460a092c38aee6ec4cead0103c0d1939b50d139862fd8afff36e972",
+          "summary": "The model option already worked when I picked this up, and the checks back that up, so I made no edits. Testing was all offline with a mocked Codex call; no live Bonaparte run was done.\n\n**Behavior (all in `bonaparte`):**\n- **Choosing a model:** `bonaparte --model <name> ...` and the `BONAPARTE_MODEL` variable both set the model. The option wins over the variable, even when the variable is blank. Spaces around the name are removed.\n- **Blank values:** a blank option or blank variable stops the r"
+        }
+      },
+      "manifest_symlink_count": 0
+    },
+    {
+      "trial_id": "tweed-pr20--original--r1",
+      "arm": "original",
+      "current_whole_cell_custody": true,
+      "frozen_primary_status": "completed",
+      "strict_accepted": false,
+      "recorded_primary_accepted": false,
+      "first_selected_grade_passed": true,
+      "final_selected_grade_passed": true,
+      "immutable_final_checks_passed": true,
+      "descriptive_behavior_binding_only": false,
+      "source_scope_violations": [],
+      "closure_remaining": [
+        "Not tested against the real Codex CLI (all offline, Codex mocked): whether it accepts the child settings in this format, and a model name starting with '-'.",
+        "The README still says the model is fixed to gpt-5.6-sol; it is outside the allowed file and was not edited.",
+        "A set-but-empty BONAPARTE_MODEL is treated as blank and fails; the task didn't spell this case out."
+      ],
+      "registered_rejection_reasons": [
+        "final_developer_remaining_nonempty"
+      ],
+      "actual_production_repair": false,
+      "hash_bound_observed_developer_models": {
+        "main": [
+          "claude-opus-5-5"
+        ],
+        "closure": [
+          "claude-opus-5-5"
+        ]
+      },
+      "reviewer_requested_model": "gpt-6-astra",
+      "reviewer_actual_model": null,
+      "reviewer_model_attribution": "requested_only",
+      "terminal_snippets": {
+        "main": {
+          "stream_sha256": "c568d1ea3788e14c53d453d2fdd168135f049dfb61206ea18355d0094b5a8a87",
+          "summary": "Added model selection to bonaparte. --model wins over BONAPARTE_MODEL, even a blank one; the value is trimmed; a blank selection fails with a failed result before any Codex (including --version) or Linear call. When neither is set, no -m and no child model key are passed, so Codex defaults apply. An explicit model reaches the coordinator as -m and all three children (default, worker, explorer) for fresh phases and resume, with proper TOML escaping in the child settings. The coordinator prompt's "
+        },
+        "closure": {
+          "stream_sha256": "f4557cfc00bb357ef45ea77280ae6133b05d0f613a33f673b5bf15b0bfd46ea3",
+          "summary": "The `--model` option and `BONAPARTE_MODEL` now set the model for a Bonaparte phase and its resume. I checked the work again in this final stage and found nothing to fix, so I made no edits.\n\n**What it does:**\n- **Which value wins:** `--model` overrides `BONAPARTE_MODEL`, even when the environment value is blank. Surrounding whitespace is trimmed.\n- **Blank values:** a selection that is blank after trimming exits with status 1 and a failed receipt before Codex is called at all (not even `--versio"
+        }
+      },
+      "manifest_symlink_count": 0
+    },
+    {
+      "trial_id": "tweed-pr23--original--r1",
+      "arm": "original",
+      "current_whole_cell_custody": true,
+      "frozen_primary_status": "completed",
+      "strict_accepted": false,
+      "recorded_primary_accepted": false,
+      "first_selected_grade_passed": true,
+      "final_selected_grade_passed": true,
+      "immutable_final_checks_passed": true,
+      "descriptive_behavior_binding_only": false,
+      "source_scope_violations": [],
+      "closure_remaining": [
+        "test_progress_fd_is_scrubbed_and_never_sent_to_children could not be verified here because the sandbox blocks os.fstat(2); it needs a run outside the sandbox.",
+        "No formal evidence report was built with the protocol's evidence tool; the proof is the run results above.",
+        "Any non-blank reasoning value is passed through without checking it against a list of allowed values; the task only asked to reject blank values."
+      ],
+      "registered_rejection_reasons": [
+        "final_developer_remaining_nonempty"
+      ],
+      "actual_production_repair": false,
+      "hash_bound_observed_developer_models": {
+        "main": [
+          "claude-opus-5-5"
+        ],
+        "closure": [
+          "claude-opus-5-5"
+        ]
+      },
+      "reviewer_requested_model": "gpt-6-astra",
+      "reviewer_actual_model": null,
+      "reviewer_model_attribution": "requested_only",
+      "terminal_snippets": {
+        "main": {
+          "stream_sha256": "e04deb01bb29e015a6837a540e04c9c3f948fd79aeaaf95d9d67747fcb281bf6",
+          "summary": "Added a public --reasoning option to the bonaparte CLI for phases and resume (production file: bonaparte). The new resolve_reasoning() trims whitespace, rejects blank values with 'reasoning setting requires a non-empty reasoning effort', and returns COORDINATOR_EFFORT ('medium') when the option is omitted. run_phase gained a reasoning keyword and validates it before any Linear or Codex call. The selected effort is used for the coordinator's -c model_reasoning_effort setting (now JSON-quoted), fo"
+        },
+        "closure": {
+          "stream_sha256": "0902fa7a7dc3ed1705dc6df711592018848cd340b70ad64f9ed081fc7be57b84",
+          "summary": "Verified and closed with no further edits. `bonaparte` has a public `--reasoning` option for phases and resumes. If omitted it stays medium; surrounding spaces are trimmed; a blank value is rejected in parse() and in run_phase before Codex or Linear is called. The chosen effort goes to the coordinator, the default/worker/explorer children and the prompt's model-policy text. --model still works alongside it, and a resume keeps the same session ID. Offline results: the 2 visible checks pass. tests"
+        }
+      },
+      "manifest_symlink_count": 0
+    },
+    {
+      "trial_id": "tweed-pr23--revised--r1",
+      "arm": "revised",
+      "current_whole_cell_custody": true,
+      "frozen_primary_status": "completed",
+      "strict_accepted": false,
+      "recorded_primary_accepted": false,
+      "first_selected_grade_passed": true,
+      "final_selected_grade_passed": true,
+      "immutable_final_checks_passed": true,
+      "descriptive_behavior_binding_only": false,
+      "source_scope_violations": [],
+      "closure_remaining": [
+        "One test, test_progress_fd_is_scrubbed_and_never_sent_to_children, could not run because the sandbox blocks os.fstat(2) even in a bare Python process. It has not been checked in this environment.",
+        "The provider commands were only checked against a fake codex that records its arguments. No real provider was run, so it is unconfirmed whether the real provider accepts values other than the documented reasoning levels."
+      ],
+      "registered_rejection_reasons": [
+        "final_developer_remaining_nonempty"
+      ],
+      "actual_production_repair": false,
+      "hash_bound_observed_developer_models": {
+        "main": [
+          "claude-opus-5-5"
+        ],
+        "closure": [
+          "claude-opus-5-5"
+        ]
+      },
+      "reviewer_requested_model": "gpt-6-astra",
+      "reviewer_actual_model": null,
+      "reviewer_model_attribution": "requested_only",
+      "terminal_snippets": {
+        "main": {
+          "stream_sha256": "e3eee2a585241db0dedcaada77507ce1ba06a9f5bfac2501f743b05a8fb80cca",
+          "summary": "Added public --reasoning to the bonaparte CLI for phase runs and resume. Only `bonaparte` changed in production, plus new tests in tests/test_bonaparte.py. The value is trimmed and passed to the coordinator (-c model_reasoning_effort, JSON-quoted) and to the default, worker and explorer children; the prompt's model-policy text also states it. Omitting it keeps medium. A blank value is rejected before Codex is started: parse() rejects it on the CLI path (failed receipt, exit 1), and run_phase() r"
+        },
+        "closure": {
+          "stream_sha256": "c98594a76d9f05f6bba7dc6fd12ee2c8bd892ad5950ad7146f35491709ff31b8",
+          "summary": "`bonaparte` now accepts `--reasoning` for a phase and for its resume. I made no edits in this final stage: I read `.protocol/SKILL.md`, checked the existing diff and reran the tests. All 7 targeted tests pass, and the full suite passes except one test the sandbox prevents from running.\n\n**How it works:**\n- `--reasoning` is accepted on both a phase and a resume. The value has surrounding whitespace trimmed.\n- A blank value (`\"\"`, spaces, or tab/newline) is rejected with \"reasoning setting require"
+        }
+      },
+      "manifest_symlink_count": 0
+    },
+    {
+      "trial_id": "tweed-pr37--original--r1",
+      "arm": "original",
+      "current_whole_cell_custody": false,
+      "frozen_primary_status": "analysis_binding_error",
+      "strict_accepted": null,
+      "recorded_primary_accepted": false,
+      "first_selected_grade_passed": true,
+      "final_selected_grade_passed": true,
+      "immutable_final_checks_passed": true,
+      "descriptive_behavior_binding_only": true,
+      "source_scope_violations": [],
+      "closure_remaining": [
+        "I didn't run live Codex app-server or Bonaparte workflows (not allowed here), so real notification ordering has only been tested with the existing test fixtures."
+      ],
+      "registered_rejection_reasons": [
+        "whole_cell_artifact_custody_error"
+      ],
+      "actual_production_repair": false,
+      "hash_bound_observed_developer_models": {
+        "main": [
+          "claude-opus-5-5"
+        ],
+        "closure": [
+          "claude-opus-5-5"
+        ]
+      },
+      "reviewer_requested_model": "gpt-6-astra",
+      "reviewer_actual_model": null,
+      "reviewer_model_attribution": "requested_only",
+      "terminal_snippets": {
+        "main": {
+          "stream_sha256": "78587d9734f88be53453505be9933c1cae2413f93467beb34169046cd55bd9a6",
+          "summary": "Removed the check in bonaparte that failed a phase on activity notifications arriving after the turn/steer acknowledgement. The app-server can't tell queued activity apart from new work, so these notifications no longer fail an otherwise valid wrap-up. Notifications are still processed, and turn-completion and wrong-turn handling are unchanged. Wrap-up rules still apply: needs-input state, the exact continuation question or a \"Clarification required:\" prefix, and \"unverified\" in the summary. Res"
+        },
+        "closure": {
+          "stream_sha256": "a6d263372ddf45e774adc4e2fc3a05d12b8e0d79d673d15dd5795ac93e2cbb04",
+          "summary": "A soft-budget wrap-up no longer fails just because queued app-server activity notifications arrive after the turn/steer acknowledgement. The protocol gives no ordering guarantee that separates activity queued before the steer from new work, so the fix in `bonaparte` removes the post-acknowledgement root-work guard. It deletes the `post_steer_work` flag, the `item/started` classification and the \"soft-budget guard observed root work after steer acknowledgement\" error. A short comment explains why"
+        }
+      },
+      "manifest_symlink_count": 2
+    },
+    {
+      "trial_id": "tweed-pr37--revised--r1",
+      "arm": "revised",
+      "current_whole_cell_custody": false,
+      "frozen_primary_status": "analysis_binding_error",
+      "strict_accepted": null,
+      "recorded_primary_accepted": false,
+      "first_selected_grade_passed": true,
+      "final_selected_grade_passed": true,
+      "immutable_final_checks_passed": true,
+      "descriptive_behavior_binding_only": true,
+      "source_scope_violations": [],
+      "closure_remaining": [
+        "Inference, not tested: a coordinator that really does start new root work after the steer acknowledgement is no longer rejected for that work alone. Only the receipt checks still apply. This is the intended trade-off, since the protocol can't tell queued activity apart from new work.",
+        "No live Bonaparte provider or app-server run was done (the task forbids it). The protocol-boundary behavior is checked only through the existing fake app-server test setups."
+      ],
+      "registered_rejection_reasons": [
+        "whole_cell_artifact_custody_error"
+      ],
+      "actual_production_repair": false,
+      "hash_bound_observed_developer_models": {
+        "main": [
+          "claude-opus-5-5"
+        ],
+        "closure": [
+          "claude-opus-5-5"
+        ]
+      },
+      "reviewer_requested_model": "gpt-6-astra",
+      "reviewer_actual_model": null,
+      "reviewer_model_attribution": "requested_only",
+      "terminal_snippets": {
+        "main": {
+          "stream_sha256": "04ea9ec47c84beabb3fea33536fd45546433cebf8cc7ec8eae597737fca3df74",
+          "summary": "I fixed the false phase failures. In `bonaparte` (`run_phase`), I removed the soft-budget guard that failed the phase with \"soft-budget guard observed root work after steer acknowledgement\". It counted root `item/started` activity notifications that arrived after the `turn/steer` acknowledgement. The protocol can't tell earlier queued activity apart from new work, so these notifications no longer decide whether a wrap-up is valid. Everything else is unchanged: steer sending, response matching, `"
+        },
+        "closure": {
+          "stream_sha256": "079ad4c8ec7ea45929c1e960fe0a8d082420166ce1b01cf0810d25c4041d7b24",
+          "summary": "The fix is done and checked. Activity notifications that arrive after the soft-budget `turn/steer` acknowledgement no longer cause a phase to fail. I made no new edits in this stage because the existing change was already correct.\n\n**What changed in `bonaparte`:** I removed the check that failed a phase when it saw new root work (commands, tool calls, spawned agents and similar) after the steer was acknowledged. The protocol doesn't guarantee an order that would separate queued earlier activity "
+        }
+      },
+      "manifest_symlink_count": 2
+    }
+  ],
+  "by_arm": {
+    "original": {
+      "assigned": 3,
+      "verified_strict_acceptances": 0,
+      "whole_cell_custody_unknown": 1,
+      "verified_nonaccepted": 2,
+      "separately_bound_selected_final_grade_passes": 3,
+      "production_repairs_in_registered_closure": 0
+    },
+    "revised": {
+      "assigned": 3,
+      "verified_strict_acceptances": 0,
+      "whole_cell_custody_unknown": 1,
+      "verified_nonaccepted": 2,
+      "separately_bound_selected_final_grade_passes": 3,
+      "production_repairs_in_registered_closure": 0
+    }
+  },
+  "claim_limits": [
+    "Four whole-cell custody reconstructions pass; two PR37 cells retain frozen analysis binding errors from main scratch symlink artifacts.",
+    "All six selected first/final grade and immutable required check outcomes are independently current-byte bound; PR37 product evidence is descriptive only and does not repair whole-stage custody.",
+    "Every closure reported nonempty remaining, including prohibited live-provider checks and other limits. Those entries are not retrospectively reclassified to change strict acceptance.",
+    "PR20 revised retains README.md scope violation first and final. Closure feedback omitted the recorded scope error; registered acceptance also requires first scope clean, so a later correction could not recover that metric.",
+    "No production patch changed during any registered closure. There is no measured repair benefit and no population ranking from three tasks.",
+    "Reviewer actual model remains unobserved/requested-only; exact Opus models are observed in hash-bound developer streams.",
+    "Public metadata includes bounded model-authored terminal excerpts, not raw transcripts, session IDs, private paths or authentication."
+  ]
+}

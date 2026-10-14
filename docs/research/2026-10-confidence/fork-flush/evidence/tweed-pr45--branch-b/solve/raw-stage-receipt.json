@@ -1,0 +1,781 @@
+{
+  "cell_id": "tweed-pr45--branch-b",
+  "task_id": "tweed-pr45",
+  "arm_id": "branch-b",
+  "role": "solve",
+  "status": "completed",
+  "registration_sha256": "fcc60b8e99732336fca0ccfb28adf7753e22a2cf2c27c7ec324475f7308e90b5",
+  "protocol_inventory_before": {
+    "SKILL.md": {
+      "sha256": "cd0a3dff92a12203914063c19b5224699e3983ee0b488f3fe530ef7c88681210",
+      "mode": 420
+    },
+    "assets/contract.example.json": {
+      "sha256": "85066dbfebe8310b5414a02f8d7cc73f925987cda69ffcb508975ee0fe738112",
+      "mode": 420
+    },
+    "assets/report.example.json": {
+      "sha256": "d76fa00db14f903c423133b3a84d763b95d9dfb5e3c3170f160708e66dc8ec47",
+      "mode": 420
+    },
+    "assets/runs/invitation-authorization.json": {
+      "sha256": "676de57ab147634eefa21c7251b1385500b375bb271dca0168de867b34e5283d",
+      "mode": 420
+    },
+    "assets/runs/invitation-authorization.log": {
+      "sha256": "ec5ce487789f0bf1b922299cf02b3e3633d037e37a94d17df2b3bbbe3ed5fcc6",
+      "mode": 420
+    },
+    "assets/runs/invitation-e2e.json": {
+      "sha256": "e1d88a4c7d16e31afc9caa23bdc5576c6d758c3fbc3435d81f198eacbf156802",
+      "mode": 420
+    },
+    "assets/runs/invitation-e2e.log": {
+      "sha256": "a92b7fdcb45e1d22fc2af4c80adc6e7fc1389ff8a694010cf5e6ff0b5ffbf1f6",
+      "mode": 420
+    },
+    "references/complex-tasks.md": {
+      "sha256": "8c0396928105db561147b65b8f95b6a838ed9429efcbffc2b168030a77ae08c2",
+      "mode": 420
+    },
+    "references/evidence.md": {
+      "sha256": "bd097c352130c5199ee907199bfab369927cf8ee6f990e8133cb79a87ca01d02",
+      "mode": 420
+    },
+    "references/harnesses.md": {
+      "sha256": "6d05e95838f2a50931c734002f7179cdb61a981549c5f22cc4f2aa73e80c6c71",
+      "mode": 420
+    },
+    "references/intent-flows.md": {
+      "sha256": "d7b4461527b613f9607805f4ff6e2380ee87b47b68d44fa88b06661d544acbec",
+      "mode": 420
+    },
+    "references/model-routing.md": {
+      "sha256": "016d305701972280250c3938d5db2399807df93cf55962baaea53f89ee13fa61",
+      "mode": 420
+    },
+    "references/modes.md": {
+      "sha256": "58bdefb0a2be2a6093bd4c599e139eaf39e41c009b07aa913a51274ae90708f6",
+      "mode": 420
+    },
+    "references/question-patterns.md": {
+      "sha256": "d4815150b8418b5f747f909f4e141f8f42e6ee2890c70cf220a1ac8cf6973295",
+      "mode": 420
+    },
+    "references/report-rules.md": {
+      "sha256": "cd71fbb00b82a7b0c4811a929d1ceac8338708c59788b3a6e8ae3268b94dd61f",
+      "mode": 420
+    },
+    "references/task-profiles.md": {
+      "sha256": "83e4c88178608ab83b88829000be95962c294e2baa3444b77715d9a620c7a2a6",
+      "mode": 420
+    },
+    "scripts/confidence.py": {
+      "sha256": "8c898d5bf416990e520a1bb9b113f06ffd573854346ef4512ea5798e38d684be",
+      "mode": 420
+    },
+    "scripts/diagnostics.py": {
+      "sha256": "49a3f33e230b3598f212caad5e21315b89702c1fecaa0ffc6129220f41d25258",
+      "mode": 420
+    },
+    "tests/check_release.py": {
+      "sha256": "591177dc406102e3b83386ae1aadf0bf91d40452ec85a207b71181d99585a256",
+      "mode": 420
+    },
+    "tests/support.py": {
+      "sha256": "2ff46f81cb02720fadc665d125d211cabeae8b771604c0888322fa00c304b5b7",
+      "mode": 420
+    },
+    "tests/test_autonomy_integration.py": {
+      "sha256": "cea21305a7d291804c48ebaeb57b9c514ed589c9f8b5aeea3d2ad9f2d3fd4400",
+      "mode": 420
+    },
+    "tests/test_cancellation.py": {
+      "sha256": "6aa8dcce7fc2f62029ed0144eb838d5f0213869c9123d3cfa23cd890970ac7ed",
+      "mode": 420
+    },
+    "tests/test_capture_io.py": {
+      "sha256": "2d24d630769553b8c8c31a8bac5566cb38cba9aa73d779ea935c78dd78a702df",
+      "mode": 420
+    },
+    "tests/test_capture_metadata.py": {
+      "sha256": "bf6984ddc3815de07a15650b5c3e70d8eae8fe7152de7d513680dab04ac91bd9",
+      "mode": 420
+    },
+    "tests/test_cli_recovery.py": {
+      "sha256": "18c5de2ead4e7675ad41a3acc93ed90b45f9bea0ad91ed259592e5d0a203cd42",
+      "mode": 420
+    },
+    "tests/test_confidence.py": {
+      "sha256": "cce4c1a13d4ec28538bf13fe225c23e78a9d07b3b9a65498667e98d832767528",
+      "mode": 420
+    },
+    "tests/test_content_binding.py": {
+      "sha256": "da7b19f7742156993e6d4dc7edefd0c7f0b81dbf7c8d4d31ec57c8fd0d10ad2b",
+      "mode": 420
+    },
+    "tests/test_dependency_frontier.py": {
+      "sha256": "835def8f39816402227db6a5b6125a47cd9b3ec16126ee0ab2c8d404ec9549b7",
+      "mode": 420
+    },
+    "tests/test_diagnostics.py": {
+      "sha256": "87109b26eb2deadc34a653c03e4a315ae58f39a618c9b55a488b0dcc4de5eea5",
+      "mode": 420
+    },
+    "tests/test_dirty_submodule.py": {
+      "sha256": "1e6ffdac6d4075552ae6139f58de593cb823122d61b9150dfdf82aab019e5e3b",
+      "mode": 420
+    },
+    "tests/test_evidence_root.py": {
+      "sha256": "63dfb21de5cc1949e6c1d06394dff02e1fd22595041d97f2244c57f56d551a26",
+      "mode": 420
+    },
+    "tests/test_evidence_subtree.py": {
+      "sha256": "9f5a5dcb0d4d8e5568ecf0ebfe87513ea5b2107106e3542738aa3a6397d347eb",
+      "mode": 420
+    },
+    "tests/test_fingerprint_staging_retry.py": {
+      "sha256": "e8a13589fbb90a5f0dfae72ed62bae68cd8cb3448557a0465667c76c07d8e104",
+      "mode": 420
+    },
+    "tests/test_git_availability.py": {
+      "sha256": "544ac46da0aa9130ff2cc1db467efc7df94c52a9b026fb1b9f1d1260cea67410",
+      "mode": 420
+    },
+    "tests/test_init_recovery.py": {
+      "sha256": "b925247ed89abdcce8b9f0ca6b6b24b6951195591cddfad27fb1b6126ab60f7b",
+      "mode": 420
+    },
+    "tests/test_integrity.py": {
+      "sha256": "fda7cbf536e3646d2570bb023bceb4a01992bd9d6aa8d4574676f9fec8bd54ee",
+      "mode": 420
+    },
+    "tests/test_launch_cancellation.py": {
+      "sha256": "147d49689fe3d0f4162589667eb4accf4232265ce79d74103d2d368abb168fc2",
+      "mode": 420
+    },
+    "tests/test_limits.py": {
+      "sha256": "959c99c96b6d4cab56d172dcfdcfe65f548f422205156ba40b2872521067ac9d",
+      "mode": 420
+    },
+    "tests/test_log_inputs.py": {
+      "sha256": "97b7750150c585b4698ca9b890cf93f3f0918f7b93a2182955a47f56bede5d57",
+      "mode": 420
+    },
+    "tests/test_parallel_capture.py": {
+      "sha256": "d2faa51758fec174caa59775b0b6c9199bfe11ca98256361278069832916f95d",
+      "mode": 420
+    },
+    "tests/test_record.py": {
+      "sha256": "58482fbbdab686af9aa20a5b7d6760d07ec000e6b8c17acb432ffe1507e5a8ba",
+      "mode": 420
+    },
+    "tests/test_release_archive.py": {
+      "sha256": "a93e5c1d3a5a6554c5d79cbfaf477a45cb1d61b2e90acc6c0f840c22cf901057",
+      "mode": 420
+    },
+    "tests/test_reporting_scope.py": {
+      "sha256": "d21cd893379b4c3da3a694f9c73052e4b027342cf4d8b81758ce6624bdb08b60",
+      "mode": 420
+    },
+    "tests/test_review_provenance.py": {
+      "sha256": "375b9a2ebb0a48abf6107882d439a5d780af661fdba818b0c7da78ea72db6ece",
+      "mode": 420
+    },
+    "tests/test_run_receipt.py": {
+      "sha256": "19bfc866454d48c22097d03cbb798354c3327c03f654802863d91c4e3c6053f3",
+      "mode": 420
+    },
+    "tests/test_source_scope_output.py": {
+      "sha256": "b90467106cf976d5a4c9ec5b94241adc68366371e2c512762b113557516e24a5",
+      "mode": 420
+    },
+    "tests/test_validation_cache.py": {
+      "sha256": "5aa413a27a8d715e1aadda8bcaa793ff10928c50f68fe79fc82237b5e67cb8c0",
+      "mode": 420
+    }
+  },
+  "before": {
+    "source_sha256": "047803fc44611766c5041c9ad97cee4909f050255a977f66a79b756dbf385c72",
+    "production_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "production_paths": [
+      "skills/confidence-protocol/scripts/confidence.py"
+    ],
+    "scope_violations": []
+  },
+  "protocol_inventory_after": {
+    "SKILL.md": {
+      "sha256": "cd0a3dff92a12203914063c19b5224699e3983ee0b488f3fe530ef7c88681210",
+      "mode": 420
+    },
+    "assets/contract.example.json": {
+      "sha256": "85066dbfebe8310b5414a02f8d7cc73f925987cda69ffcb508975ee0fe738112",
+      "mode": 420
+    },
+    "assets/report.example.json": {
+      "sha256": "d76fa00db14f903c423133b3a84d763b95d9dfb5e3c3170f160708e66dc8ec47",
+      "mode": 420
+    },
+    "assets/runs/invitation-authorization.json": {
+      "sha256": "676de57ab147634eefa21c7251b1385500b375bb271dca0168de867b34e5283d",
+      "mode": 420
+    },
+    "assets/runs/invitation-authorization.log": {
+      "sha256": "ec5ce487789f0bf1b922299cf02b3e3633d037e37a94d17df2b3bbbe3ed5fcc6",
+      "mode": 420
+    },
+    "assets/runs/invitation-e2e.json": {
+      "sha256": "e1d88a4c7d16e31afc9caa23bdc5576c6d758c3fbc3435d81f198eacbf156802",
+      "mode": 420
+    },
+    "assets/runs/invitation-e2e.log": {
+      "sha256": "a92b7fdcb45e1d22fc2af4c80adc6e7fc1389ff8a694010cf5e6ff0b5ffbf1f6",
+      "mode": 420
+    },
+    "references/complex-tasks.md": {
+      "sha256": "8c0396928105db561147b65b8f95b6a838ed9429efcbffc2b168030a77ae08c2",
+      "mode": 420
+    },
+    "references/evidence.md": {
+      "sha256": "bd097c352130c5199ee907199bfab369927cf8ee6f990e8133cb79a87ca01d02",
+      "mode": 420
+    },
+    "references/harnesses.md": {
+      "sha256": "6d05e95838f2a50931c734002f7179cdb61a981549c5f22cc4f2aa73e80c6c71",
+      "mode": 420
+    },
+    "references/intent-flows.md": {
+      "sha256": "d7b4461527b613f9607805f4ff6e2380ee87b47b68d44fa88b06661d544acbec",
+      "mode": 420
+    },
+    "references/model-routing.md": {
+      "sha256": "016d305701972280250c3938d5db2399807df93cf55962baaea53f89ee13fa61",
+      "mode": 420
+    },
+    "references/modes.md": {
+      "sha256": "58bdefb0a2be2a6093bd4c599e139eaf39e41c009b07aa913a51274ae90708f6",
+      "mode": 420
+    },
+    "references/question-patterns.md": {
+      "sha256": "d4815150b8418b5f747f909f4e141f8f42e6ee2890c70cf220a1ac8cf6973295",
+      "mode": 420
+    },
+    "references/report-rules.md": {
+      "sha256": "cd71fbb00b82a7b0c4811a929d1ceac8338708c59788b3a6e8ae3268b94dd61f",
+      "mode": 420
+    },
+    "references/task-profiles.md": {
+      "sha256": "83e4c88178608ab83b88829000be95962c294e2baa3444b77715d9a620c7a2a6",
+      "mode": 420
+    },
+    "scripts/confidence.py": {
+      "sha256": "8c898d5bf416990e520a1bb9b113f06ffd573854346ef4512ea5798e38d684be",
+      "mode": 420
+    },
+    "scripts/diagnostics.py": {
+      "sha256": "49a3f33e230b3598f212caad5e21315b89702c1fecaa0ffc6129220f41d25258",
+      "mode": 420
+    },
+    "tests/check_release.py": {
+      "sha256": "591177dc406102e3b83386ae1aadf0bf91d40452ec85a207b71181d99585a256",
+      "mode": 420
+    },
+    "tests/support.py": {
+      "sha256": "2ff46f81cb02720fadc665d125d211cabeae8b771604c0888322fa00c304b5b7",
+      "mode": 420
+    },
+    "tests/test_autonomy_integration.py": {
+      "sha256": "cea21305a7d291804c48ebaeb57b9c514ed589c9f8b5aeea3d2ad9f2d3fd4400",
+      "mode": 420
+    },
+    "tests/test_cancellation.py": {
+      "sha256": "6aa8dcce7fc2f62029ed0144eb838d5f0213869c9123d3cfa23cd890970ac7ed",
+      "mode": 420
+    },
+    "tests/test_capture_io.py": {
+      "sha256": "2d24d630769553b8c8c31a8bac5566cb38cba9aa73d779ea935c78dd78a702df",
+      "mode": 420
+    },
+    "tests/test_capture_metadata.py": {
+      "sha256": "bf6984ddc3815de07a15650b5c3e70d8eae8fe7152de7d513680dab04ac91bd9",
+      "mode": 420
+    },
+    "tests/test_cli_recovery.py": {
+      "sha256": "18c5de2ead4e7675ad41a3acc93ed90b45f9bea0ad91ed259592e5d0a203cd42",
+      "mode": 420
+    },
+    "tests/test_confidence.py": {
+      "sha256": "cce4c1a13d4ec28538bf13fe225c23e78a9d07b3b9a65498667e98d832767528",
+      "mode": 420
+    },
+    "tests/test_content_binding.py": {
+      "sha256": "da7b19f7742156993e6d4dc7edefd0c7f0b81dbf7c8d4d31ec57c8fd0d10ad2b",
+      "mode": 420
+    },
+    "tests/test_dependency_frontier.py": {
+      "sha256": "835def8f39816402227db6a5b6125a47cd9b3ec16126ee0ab2c8d404ec9549b7",
+      "mode": 420
+    },
+    "tests/test_diagnostics.py": {
+      "sha256": "87109b26eb2deadc34a653c03e4a315ae58f39a618c9b55a488b0dcc4de5eea5",
+      "mode": 420
+    },
+    "tests/test_dirty_submodule.py": {
+      "sha256": "1e6ffdac6d4075552ae6139f58de593cb823122d61b9150dfdf82aab019e5e3b",
+      "mode": 420
+    },
+    "tests/test_evidence_root.py": {
+      "sha256": "63dfb21de5cc1949e6c1d06394dff02e1fd22595041d97f2244c57f56d551a26",
+      "mode": 420
+    },
+    "tests/test_evidence_subtree.py": {
+      "sha256": "9f5a5dcb0d4d8e5568ecf0ebfe87513ea5b2107106e3542738aa3a6397d347eb",
+      "mode": 420
+    },
+    "tests/test_fingerprint_staging_retry.py": {
+      "sha256": "e8a13589fbb90a5f0dfae72ed62bae68cd8cb3448557a0465667c76c07d8e104",
+      "mode": 420
+    },
+    "tests/test_git_availability.py": {
+      "sha256": "544ac46da0aa9130ff2cc1db467efc7df94c52a9b026fb1b9f1d1260cea67410",
+      "mode": 420
+    },
+    "tests/test_init_recovery.py": {
+      "sha256": "b925247ed89abdcce8b9f0ca6b6b24b6951195591cddfad27fb1b6126ab60f7b",
+      "mode": 420
+    },
+    "tests/test_integrity.py": {
+      "sha256": "fda7cbf536e3646d2570bb023bceb4a01992bd9d6aa8d4574676f9fec8bd54ee",
+      "mode": 420
+    },
+    "tests/test_launch_cancellation.py": {
+      "sha256": "147d49689fe3d0f4162589667eb4accf4232265ce79d74103d2d368abb168fc2",
+      "mode": 420
+    },
+    "tests/test_limits.py": {
+      "sha256": "959c99c96b6d4cab56d172dcfdcfe65f548f422205156ba40b2872521067ac9d",
+      "mode": 420
+    },
+    "tests/test_log_inputs.py": {
+      "sha256": "97b7750150c585b4698ca9b890cf93f3f0918f7b93a2182955a47f56bede5d57",
+      "mode": 420
+    },
+    "tests/test_parallel_capture.py": {
+      "sha256": "d2faa51758fec174caa59775b0b6c9199bfe11ca98256361278069832916f95d",
+      "mode": 420
+    },
+    "tests/test_record.py": {
+      "sha256": "58482fbbdab686af9aa20a5b7d6760d07ec000e6b8c17acb432ffe1507e5a8ba",
+      "mode": 420
+    },
+    "tests/test_release_archive.py": {
+      "sha256": "a93e5c1d3a5a6554c5d79cbfaf477a45cb1d61b2e90acc6c0f840c22cf901057",
+      "mode": 420
+    },
+    "tests/test_reporting_scope.py": {
+      "sha256": "d21cd893379b4c3da3a694f9c73052e4b027342cf4d8b81758ce6624bdb08b60",
+      "mode": 420
+    },
+    "tests/test_review_provenance.py": {
+      "sha256": "375b9a2ebb0a48abf6107882d439a5d780af661fdba818b0c7da78ea72db6ece",
+      "mode": 420
+    },
+    "tests/test_run_receipt.py": {
+      "sha256": "19bfc866454d48c22097d03cbb798354c3327c03f654802863d91c4e3c6053f3",
+      "mode": 420
+    },
+    "tests/test_source_scope_output.py": {
+      "sha256": "b90467106cf976d5a4c9ec5b94241adc68366371e2c512762b113557516e24a5",
+      "mode": 420
+    },
+    "tests/test_validation_cache.py": {
+      "sha256": "5aa413a27a8d715e1aadda8bcaa793ff10928c50f68fe79fc82237b5e67cb8c0",
+      "mode": 420
+    }
+  },
+  "protocol_context_unchanged": true,
+  "stage": {
+    "process_exit": 0,
+    "timed_out": false,
+    "wall_seconds": 145.5355274579997,
+    "terminal": {
+      "duration_api_ms": 94005,
+      "stop_reason": "tool_use",
+      "session_id": "d78f0af8-ad19-4506-a09b-6da96db2dcf3",
+      "total_cost_usd": 0.8179691999999998,
+      "usage": {
+        "input_tokens": 30,
+        "cache_creation_input_tokens": 63940,
+        "cache_read_input_tokens": 544346,
+        "output_tokens": 9873,
+        "output_tokens_details": {
+          "thinking_tokens": 2534
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 63940,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "inference_geo": "global",
+        "iterations": [
+          {
+            "input_tokens": 2,
+            "output_tokens": 1457,
+            "cache_read_input_tokens": 62639,
+            "cache_creation_input_tokens": 2669,
+            "cache_creation": {
+              "ephemeral_5m_input_tokens": 0,
+              "ephemeral_1h_input_tokens": 2669
+            },
+            "type": "message"
+          }
+        ],
+        "speed": "standard",
+        "fallback_credit": null
+      },
+      "modelUsage": {
+        "claude-opus-5-5": {
+          "inputTokens": 30,
+          "outputTokens": 9873,
+          "cacheReadInputTokens": 544346,
+          "cacheCreationInputTokens": 63940,
+          "webSearchRequests": 0,
+          "costUSD": 0.8179691999999998,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 2534,
+          "canonicalModel": "claude-opus-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "permission_denials": [],
+      "terminal_reason": "completed",
+      "fast_mode_state": "off",
+      "fast_mode_disabled_reason": "sdk_opt_in_required",
+      "subagent_stats": {
+        "spawned": 0,
+        "requested": {
+          "background": 0,
+          "foreground": 0,
+          "unset": 0
+        },
+        "started_in_background": 0,
+        "max_depth": 0,
+        "spawned_by_subagents": 0,
+        "completed": 0,
+        "failed": 0,
+        "killed": {
+          "parent": 0,
+          "user": 0,
+          "system": 0
+        },
+        "refused": {
+          "depth_limit": 0,
+          "concurrency_limit": 0,
+          "budget": 0
+        },
+        "by_type": {}
+      },
+      "is_error": false,
+      "num_turns": 22,
+      "subtype": "success",
+      "api_error_status": null,
+      "result": "{\"complete\":true,\"summary\":\"`run --json` now works: it prints a compact JSON receipt instead of replaying the captured output. The required visible check passes. The full suite ran 60 tests: all `test_confidence.py` and new receipt tests passed, and the 5 failures are all diagnostics tests not caused by this change.\\n\\n**Change** (`skills/confidence-protocol/scripts/confidence.py`):\\n- Added the `--json` flag to `run`.\\n- The runner now fingerprints the workspace before the child starts and saves that as `workspace_start` in the run record. The existing end-of-run fingerprint stays in `workspace`, so current stale-workspace validation is unchanged.\\n- With `--json`, the captured log is still fully read and its SHA256 recorded; it just isn't replayed. After the record is published, one line of JSON is printed: `id`, `exit_code` (signed child status), `termination_reason`, `record` (`runs/<id>.json`) and `log` (`runs/<id>.log`). Both paths are relative to the evidence directory. It also includes `workspace_binding`.\\n- `workspace_binding` is `unknown` if either fingerprint is missing (e.g. not a Git repo), `unchanged` only if the root and hash are the same before and after, and `changed` otherwise. So a source mutation can never show as `unchanged`.\\n- Without `--json`, output replay and the CLI exit code are unchanged. A signal exit is still stored as a negative number in the record and receipt, and the CLI returns 128+N.\\n\\n**Proof map:**\\n- **R1 \u2013 compact receipt:** passed. The receipt is under 1 KB, has the right fields, and its paths match the record.\\n- **R2 \u2013 full binary output and hash:** passed. A 128 KiB+ output with `\\\\xff\\\\x00` bytes was stored byte-for-byte and its SHA256 matches.\\n- **R3 \u2013 default replay unchanged:** passed (`test_run_captures_success_and_returns_child_status` and the new default-replay test).\\n- **R4 \u2013 failure status kept:** passed. Exit 7, child exit 125, SIGTERM (-15 in receipt/record, 143 from the CLI), timeout 124 with its reason, and a failed launch (125, no stdout, no record) all behave correctly. The visible check `test_run_records_failure_and_returns_child_status` passes.\\n- **R5 \u2013 mutation shows `changed`:** passed, including a mutation combined with a failing exit (3). A non-Git directory shows `unknown`.\\n\\nThese were checked by a new test file, `skills/confidence-protocol/tests/test_run_receipt.py`, adapted from `.protocol/tests/test_run_receipt.py`. I dropped its `version == 2` assertion because version-2 records belong to an excluded part of PR45.\\n\\n**About the 5 diagnostics failures:** the sandbox sets `CONFIDENCE_DISABLE_DIAGNOSTICS=1`, which turns off telemetry. With that variable unset, only `test_doctor_reports_required_health_checks` fails, and it fails the same way on an untouched copy of HEAD (extracted with `git archive`) in this sandbox.\\n\\n**Excluded (outside the receipt slice by the task statement):** version-2 records and `capture_sha256`, `git-content-v1` binding, interruption and publication recovery, and doc/changelog edits.\\n\\n**Limits and rollback:**\\n- Validation still accepts a supporting run whose source changed during the run, as long as the tree matches its end state. The receipt and record now show that change but don't block it.\\n- The fingerprint doesn't cover ignored files or a change made and then undone during the run.\\n- To roll back, revert `confidence.py` and delete the new test file.\",\"remaining\":[]}",
+      "structured_output": {
+        "complete": true,
+        "summary": "`run --json` now works: it prints a compact JSON receipt instead of replaying the captured output. The required visible check passes. The full suite ran 60 tests: all `test_confidence.py` and new receipt tests passed, and the 5 failures are all diagnostics tests not caused by this change.\n\n**Change** (`skills/confidence-protocol/scripts/confidence.py`):\n- Added the `--json` flag to `run`.\n- The runner now fingerprints the workspace before the child starts and saves that as `workspace_start` in the run record. The existing end-of-run fingerprint stays in `workspace`, so current stale-workspace validation is unchanged.\n- With `--json`, the captured log is still fully read and its SHA256 recorded; it just isn't replayed. After the record is published, one line of JSON is printed: `id`, `exit_code` (signed child status), `termination_reason`, `record` (`runs/<id>.json`) and `log` (`runs/<id>.log`). Both paths are relative to the evidence directory. It also includes `workspace_binding`.\n- `workspace_binding` is `unknown` if either fingerprint is missing (e.g. not a Git repo), `unchanged` only if the root and hash are the same before and after, and `changed` otherwise. So a source mutation can never show as `unchanged`.\n- Without `--json`, output replay and the CLI exit code are unchanged. A signal exit is still stored as a negative number in the record and receipt, and the CLI returns 128+N.\n\n**Proof map:**\n- **R1 \u2013 compact receipt:** passed. The receipt is under 1 KB, has the right fields, and its paths match the record.\n- **R2 \u2013 full binary output and hash:** passed. A 128 KiB+ output with `\\xff\\x00` bytes was stored byte-for-byte and its SHA256 matches.\n- **R3 \u2013 default replay unchanged:** passed (`test_run_captures_success_and_returns_child_status` and the new default-replay test).\n- **R4 \u2013 failure status kept:** passed. Exit 7, child exit 125, SIGTERM (-15 in receipt/record, 143 from the CLI), timeout 124 with its reason, and a failed launch (125, no stdout, no record) all behave correctly. The visible check `test_run_records_failure_and_returns_child_status` passes.\n- **R5 \u2013 mutation shows `changed`:** passed, including a mutation combined with a failing exit (3). A non-Git directory shows `unknown`.\n\nThese were checked by a new test file, `skills/confidence-protocol/tests/test_run_receipt.py`, adapted from `.protocol/tests/test_run_receipt.py`. I dropped its `version == 2` assertion because version-2 records belong to an excluded part of PR45.\n\n**About the 5 diagnostics failures:** the sandbox sets `CONFIDENCE_DISABLE_DIAGNOSTICS=1`, which turns off telemetry. With that variable unset, only `test_doctor_reports_required_health_checks` fails, and it fails the same way on an untouched copy of HEAD (extracted with `git archive`) in this sandbox.\n\n**Excluded (outside the receipt slice by the task statement):** version-2 records and `capture_sha256`, `git-content-v1` binding, interruption and publication recovery, and doc/changelog edits.\n\n**Limits and rollback:**\n- Validation still accepts a supporting run whose source changed during the run, as long as the tree matches its end state. The receipt and record now show that change but don't block it.\n- The fingerprint doesn't cover ignored files or a change made and then undone during the run.\n- To roll back, revert `confidence.py` and delete the new test file.",
+        "remaining": []
+      },
+      "ttft_ms": 1412,
+      "type": "result",
+      "duration_ms": 144848,
+      "uuid": "b6be0238-df84-45a1-8a98-95f695393288",
+      "ttft_stream_ms": 1090,
+      "time_to_request_ms": 98,
+      "first_content_frame_ms": 1090,
+      "queued_turn_count": 0,
+      "result_index": 0
+    },
+    "declared_complete": true,
+    "total_cost_usd": 0.8179691999999998,
+    "usage": {
+      "input_tokens": 30,
+      "cache_creation_input_tokens": 63940,
+      "cache_read_input_tokens": 544346,
+      "output_tokens": 9873,
+      "output_tokens_details": {
+        "thinking_tokens": 2534
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 63940,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "global",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 1457,
+          "cache_read_input_tokens": 62639,
+          "cache_creation_input_tokens": 2669,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 2669
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard",
+      "fallback_credit": null
+    },
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 30,
+        "outputTokens": 9873,
+        "cacheReadInputTokens": 544346,
+        "cacheCreationInputTokens": 63940,
+        "webSearchRequests": 0,
+        "costUSD": 0.8179691999999998,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 2534,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "permission_denials": [],
+    "request_sha256": "a1c28ec5a7fcc15b11c6103a6ec7c8927a5c0c6b60c63a4ed8a503b268abea9a",
+    "invalid_stream_lines": 0,
+    "stream_sha256": "10a6ec9935dcd0f6c98344814534086362036dc61051ec4fc4a44fea4e670c11",
+    "observed_assistant_models": [
+      "claude-opus-5-5"
+    ],
+    "harness_initialization": {
+      "model": "claude-opus-5-5",
+      "tools": [
+        "StructuredOutput",
+        "mcp__cp_trial__confidence",
+        "mcp__cp_trial__list_files",
+        "mcp__cp_trial__read_file",
+        "mcp__cp_trial__replace_text",
+        "mcp__cp_trial__request_review",
+        "mcp__cp_trial__run_tests",
+        "mcp__cp_trial__write_file"
+      ],
+      "mcp_servers": [
+        {
+          "name": "cp_trial",
+          "status": "connected",
+          "source": "dynamic"
+        }
+      ],
+      "mcp_server_errors": null,
+      "claude_code_version": "2.1.285",
+      "permissionMode": "dontAsk"
+    },
+    "requested_effort": "high",
+    "process_cleanup_scope": "original_process_group",
+    "detached_descendants_contained": false,
+    "guarded_new_session_processes": 1,
+    "process_cleanup_seconds": 2.666700311237946e-05,
+    "stream_changed_during_cleanup": false,
+    "backend": "claude",
+    "source_sha256_at_launch": "047803fc44611766c5041c9ad97cee4909f050255a977f66a79b756dbf385c72",
+    "source_sha256_after": "f1c7b424438ae0e107063a6fd83e117304a64111ef576bd8b27ac52be49e545f",
+    "qualification": {
+      "eligible": true,
+      "failures": [],
+      "inventory": {
+        "passed": true,
+        "basis": "live_claude_init",
+        "connected": true,
+        "missing_tools": [],
+        "unexpected_tools": [],
+        "effective_tools": [
+          "StructuredOutput",
+          "mcp__cp_trial__confidence",
+          "mcp__cp_trial__list_files",
+          "mcp__cp_trial__read_file",
+          "mcp__cp_trial__replace_text",
+          "mcp__cp_trial__request_review",
+          "mcp__cp_trial__run_tests",
+          "mcp__cp_trial__write_file"
+        ],
+        "schema_output_tool": "StructuredOutput",
+        "strict_seven_tool_parity": false,
+        "local": {
+          "passed": true,
+          "offline": true,
+          "hosted_inference_calls": 0,
+          "provider": "opus",
+          "actor_cwd": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-b/workspace",
+          "readonly": false,
+          "connected": true,
+          "effective_mcp_tools": [
+            "list_files",
+            "read_file",
+            "write_file",
+            "replace_text",
+            "run_tests",
+            "confidence",
+            "request_review"
+          ],
+          "expected_mcp_tools": [
+            "list_files",
+            "read_file",
+            "write_file",
+            "replace_text",
+            "run_tests",
+            "confidence",
+            "request_review"
+          ],
+          "list_files_succeeded": true,
+          "readonly_write_denied": null,
+          "exit_code": 0,
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout_sha256": "4a38b8443f98eb7625d6dc89eea19addab5cdb6d4a03447327a905ff45fbdd2d",
+          "config_argument": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-b/solve/qualification/server-config.json",
+          "config_argument_is_absolute": true
+        }
+      },
+      "model_attribution": "assistant_event_observed",
+      "actual_model": "claude-opus-5-5"
+    },
+    "artifacts": {
+      "1e16da66f14444babace6192a586c9ff.command-response.json": "ed4fee0d761649e0fb82e96834a013a7b44a93d8385ac2c766fee270da233f31",
+      "request.json": "2367eb575a167e1fee4b6a72b3e82c2ff937bfb8d1e7d944db27a906b496142f",
+      "17da0be5244a4629a7facd615f285edd.command-request.json": "f13d93b25702893b2237998296b314bdc37e5113c46de302c608f37d4577d44e",
+      "command-1e00309868ef4c569053fb086e28b8ca.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "16786c67fcbb4c489d420b4ce513cac4.command-response.json": "6d1f7fe83beb7d109957bd9a7aa3b71f933f31ec121898f1cc9103e5e1a88ad1",
+      "command-17da0be5244a4629a7facd615f285edd.stdout": "e803f3bf7bdd14482937fa3c598e56b51ab633428f3c563387e871ded29a8322",
+      "stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "c47ecd7961064967a859a1a657958f88.command-response.json": "c7d3106e17c6cdcc87c927e7f92023fc9f35f84d8f2dd58a6ea7d00b07295e68",
+      "stream.jsonl": "10a6ec9935dcd0f6c98344814534086362036dc61051ec4fc4a44fea4e670c11",
+      "command-fa47e03667114fda99c1aa346bc40e8f.stderr": "d0b09bd5a3280fd1708a2e0aacf99263209f7da64163fbfcef80908e89d5f505",
+      "command-1e16da66f14444babace6192a586c9ff.stdout": "ae8db89d5794cc7ed1fe0bf4f6e6b0cf57443770abe6e42b32d82b7c47cc75a6",
+      "command-c47ecd7961064967a859a1a657958f88.stderr": "d4bd288a7010284ac2e305712c514ba9fdcf66f34d4e9e576927b44093661eab",
+      "e0b58bc69eb2451d8dd7b4adef21815f.command-response.json": "c54f7142b5587d58e66df74653a54bb3180591e074bc687ab94af13413f9d100",
+      "1e16da66f14444babace6192a586c9ff.command-request.json": "5652945923c23e9e4a6b122835e898ed5968eb8cafd91a2d196b3210e0953ba2",
+      "command-1e16da66f14444babace6192a586c9ff.stderr": "d0b09bd5a3280fd1708a2e0aacf99263209f7da64163fbfcef80908e89d5f505",
+      "fa47e03667114fda99c1aa346bc40e8f.command-response.json": "5f8635e4b82b5692a7a0fe883464dd50e1194b223a0540044e8b3426d321359b",
+      "command-c47ecd7961064967a859a1a657958f88.stdout": "0ded63fc245614ffe5e651b4f0d8e5e0547554c0501bc291998cc2e57c0ea9ae",
+      "16786c67fcbb4c489d420b4ce513cac4.command-request.json": "fcce45a9e1ccdb3cb74154cff8b9c5de4fc663d2f6827e830c895bb0d7f5cfeb",
+      "command-fa47e03667114fda99c1aa346bc40e8f.stdout": "e51188487a2ad57b0d74b6bbae130181d753cd27f47fa9fc48f12e615042fbb2",
+      "command-17da0be5244a4629a7facd615f285edd.stderr": "6abde9200ce9e92940aacfc6f59a2daa89da9fca9dbe03f47cbdb61ac0693c64",
+      "17da0be5244a4629a7facd615f285edd.command-response.json": "6250f6b7538a50c2ecfd6e81cb855de1179a2b8c8befbcaef9362d8b93b2e6e1",
+      "server-config.json": "835554e6e9424b81efcbcf7cf13d938434d6cefa97c7a5fd3ea4adfc1fb921ac",
+      "e0b58bc69eb2451d8dd7b4adef21815f.command-request.json": "d8a07a5d355010cd5db6204257e6f234c2041e6aee08280260cfebd1a8228a45",
+      "command-1e00309868ef4c569053fb086e28b8ca.stderr": "d0b09bd5a3280fd1708a2e0aacf99263209f7da64163fbfcef80908e89d5f505",
+      "1e00309868ef4c569053fb086e28b8ca.command-request.json": "36a99dc312dd31dac1d3ed1267f5596bf7ab502b4b3c13e441a23313350756b5",
+      "command-e0b58bc69eb2451d8dd7b4adef21815f.stdout": "1ebfed41edbecce1ec5e60b13989f6a89a5ac6c6823cfa2adb9df4af200fa4f6",
+      "command-16786c67fcbb4c489d420b4ce513cac4.stderr": "f99b0fb2a889fc36cbb5f63ca49d2f31d084b011a35329bff4adb5a91a2218c3",
+      "db07528df9da4cfe8df22568bbefa7e8.command-response.json": "03fb35cd37439b0384d6503ab4d07632fd4aba961140e8355504fe1c5fae8aad",
+      "command-db07528df9da4cfe8df22568bbefa7e8.stdout": "c91d9fc25f036758b38238a38db62c3780ae62385fa8c7ec9edd2532ee0500c8",
+      "fa47e03667114fda99c1aa346bc40e8f.command-request.json": "2d1190971cd9fce37c0a9fcfd5837a153b5f589214d9e35aaee2c329e7b993e5",
+      "c47ecd7961064967a859a1a657958f88.command-request.json": "651e367a507aed799af237be3e2a00b5f77d9c5bc225d8cadfae892509a9f1f0",
+      "tool-events.jsonl": "aad0d220a5603c5e1bd9732504096f4299e7169ad3bfe49a1a3ba3fe3ac76b75",
+      "db07528df9da4cfe8df22568bbefa7e8.command-request.json": "179ba0658560a466527c2b49f4f949ff781dbb438fbc1e8f665f50fb6889d844",
+      "command-db07528df9da4cfe8df22568bbefa7e8.stderr": "d0b09bd5a3280fd1708a2e0aacf99263209f7da64163fbfcef80908e89d5f505",
+      "command-16786c67fcbb4c489d420b4ce513cac4.stdout": "eedea80e8eefd2836882a9a88383a742db7294dd2f452f2e991246c1671e7ac7",
+      "command-e0b58bc69eb2451d8dd7b4adef21815f.stderr": "d0b09bd5a3280fd1708a2e0aacf99263209f7da64163fbfcef80908e89d5f505",
+      "1e00309868ef4c569053fb086e28b8ca.command-response.json": "f892ae929193f81c92ceda51b5ec6b5d657423a9283c722c8136dbc29da595c2"
+    }
+  },
+  "after": {
+    "source_sha256": "f1c7b424438ae0e107063a6fd83e117304a64111ef576bd8b27ac52be49e545f",
+    "production_patch_sha256": "48b6234bac1814a3eddc548b4b0590d7a5d742755838affb8f69b0c1307025e7",
+    "production_paths": [
+      "skills/confidence-protocol/scripts/confidence.py"
+    ],
+    "scope_violations": [
+      "skills/confidence-protocol/tests/test_run_receipt.py"
+    ]
+  },
+  "evaluation": {
+    "process": {
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/evaluate.py",
+        "--workspace",
+        "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-b/solve/after/source",
+        "--task-id",
+        "tweed-pr45"
+      ],
+      "exit_code": 1,
+      "timed_out": false,
+      "wall_seconds": 1.3747542499986594,
+      "stdout": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-b/solve/evaluation/grader.stdout",
+      "stderr": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-b/solve/evaluation/grader.stderr",
+      "stdout_sha256": "9fbae3ee271bc076f76a4bcb84dc708822885fe9d4b73b288d298ab663752fb2",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "process_cleanup_scope": "original_process_group",
+      "detached_descendants_contained": false
+    },
+    "header": {
+      "task_id": "tweed-pr45",
+      "exit_code": 0,
+      "passed": false,
+      "oracle_passed": true,
+      "required_behavior_passed": true,
+      "negative_boundaries_passed": true,
+      "baseline_passed": true,
+      "baseline_receipts": [
+        {
+          "argv": [
+            "python3",
+            "-B",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "skills/confidence-protocol/tests",
+            "-p",
+            "test_confidence.py",
+            "-k",
+            "test_run_records_failure_and_returns_child_status"
+          ],
+          "exit_code": 0,
+          "timed_out": false,
+          "stdout": "",
+          "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.144s\n\nOK\n",
+          "wall_seconds": 0.2237909999967087,
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false
+        }
+      ],
+      "scope_violations": [
+        "skills/confidence-protocol/tests/test_run_receipt.py"
+      ],
+      "source_current": true,
+      "setup_status": "verified",
+      "failed_requirements": [
+        {
+          "requirement": "scope",
+          "paths": [
+            "skills/confidence-protocol/tests/test_run_receipt.py"
+          ]
+        }
+      ],
+      "source_before_sha256": "f1c7b424438ae0e107063a6fd83e117304a64111ef576bd8b27ac52be49e545f",
+      "source_after_sha256": "f1c7b424438ae0e107063a6fd83e117304a64111ef576bd8b27ac52be49e545f",
+      "output_sha256": "29229d6eeb65d7a789e4c6ec06c293318bd9610900c47d76a22318f54cec9069"
+    },
+    "source_sha256": "f1c7b424438ae0e107063a6fd83e117304a64111ef576bd8b27ac52be49e545f",
+    "source_unchanged": true,
+    "qualified_evaluation": true
+  },
+  "production_patch_changed_in_stage": true,
+  "full_source_changed_in_stage": true,
+  "ended_at_unix": 1791940646.4568598
+}

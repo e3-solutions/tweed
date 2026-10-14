@@ -1,0 +1,168 @@
+diff --git a/bonaparte b/bonaparte
+index 888b766..0750701 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -452,6 +452,7 @@ def run_phase(
+         for role, description in child_configs.items()
+     }
+     expected_branch = None
++    issue_branch = None
+     if resume_session_id:
+         replay_policy = (
+             "This clarification may be an at-least-once replay after an ambiguous "
+@@ -481,8 +482,9 @@ def run_phase(
+                 phase,
+                 values[1] if len(values) == 2 else None,
+             )
++            issue_branch = handoff["issue"].get("git_branch_name")
+             if phase == "implement":
+-                expected_branch = handoff["issue"]["git_branch_name"]
++                expected_branch = issue_branch
+             phase_input = json.dumps(handoff, ensure_ascii=False)
+             context_policy = (
+                 "\n\n# Context policy\n\n"
+@@ -702,6 +704,9 @@ def run_phase(
+         if not driver.last_agent_message:
+             raise RuntimeError("Codex app-server returned no final receipt")
+         receipt = json.loads(driver.last_agent_message)
++        if isinstance(receipt, dict) and receipt.get("state") != "needs-input":
++            driver.archive_root_id = session_id
++            driver.issue_branch = issue_branch
+         failed = False
+     finally:
+         observed = observer.finish()
+diff --git a/bonaparte_native.py b/bonaparte_native.py
+index e9a607c..359d530 100644
+--- a/bonaparte_native.py
++++ b/bonaparte_native.py
+@@ -45,6 +45,22 @@ def find_codex() -> str:
+     raise RuntimeError("no working local Codex CLI found")
+ 
+ 
++def _spawn_parent(thread: dict) -> str | None:
++    """Return the spawning thread of a sub-agent thread/started payload."""
++    parent = thread.get("parentThreadId")
++    if isinstance(parent, str) and parent:
++        return parent
++    source = thread.get("source")
++    sub_agent = source.get("subAgent") if isinstance(source, dict) else None
++    if not isinstance(sub_agent, dict):
++        return None
++    spawn = sub_agent.get("thread_spawn", sub_agent.get("threadSpawn"))
++    if not isinstance(spawn, dict):
++        return None
++    parent = spawn.get("parent_thread_id", spawn.get("parentThreadId"))
++    return parent if isinstance(parent, str) and parent else None
++
++
+ def child_environment() -> dict[str, str]:
+     environment = {**os.environ, PHASE_CHILD_ENV: "1"}
+     environment.pop(PROGRESS_FD_ENV, None)
+@@ -101,6 +117,10 @@ class AppServerPhaseDriver:
+     """Drive one native app-server turn without retaining its raw event stream."""
+ 
+     _EOF = object()
++    _closing = False
++    # Set by the phase owner once the root reached a terminal phase result.
++    archive_root_id: str | None = None
++    issue_branch: str | None = None
+ 
+     def __init__(self, repository: Path, observer: EventObserver):
+         self.observer = observer
+@@ -121,6 +141,7 @@ class AppServerPhaseDriver:
+         self._last_agent_message: str | None = None
+         self._receipt_thread_id: str | None = None
+         self._receipt_turn_id: str | None = None
++        self._started_threads: dict[str, str | None] = {}
+         self._reader = threading.Thread(target=self._read, daemon=True)
+         self._reader.start()
+ 
+@@ -271,12 +292,21 @@ class AppServerPhaseDriver:
+             raise RuntimeError("Codex app-server returned a malformed notification")
+         if "id" in message:
+             raise RuntimeError(f"unsupported app-server request: {method}")
++        # Teardown traffic arrives after the observer finished; keep it out.
++        closing = getattr(self, "_closing", False)
+         if method == "thread/started":
+             thread = params.get("thread")
+             if isinstance(thread, dict) and isinstance(thread.get("id"), str):
+-                self.observer.feed(
+-                    json.dumps({"type": "thread.started", "thread_id": thread["id"]})
++                # thread/started identity -> spawning parent (None if not spawned).
++                self.__dict__.setdefault("_started_threads", {}).setdefault(
++                    thread["id"], _spawn_parent(thread)
+                 )
++                if not closing:
++                    self.observer.feed(
++                        json.dumps(
++                            {"type": "thread.started", "thread_id": thread["id"]}
++                        )
++                    )
+         if method in {"item/started", "item/completed"}:
+             item = params.get("item")
+             if not isinstance(item, dict):
+@@ -290,6 +320,8 @@ class AppServerPhaseDriver:
+                 text = item.get("text")
+                 if isinstance(text, str):
+                     self._last_agent_message = text
++            if closing:
++                return method, None
+             self.observer.feed(
+                 json.dumps(
+                     {
+@@ -345,5 +377,54 @@ class AppServerPhaseDriver:
+     def last_agent_message(self) -> str | None:
+         return self._last_agent_message
+ 
++    def started_descendants(self, root_id: str) -> list[str]:
++        """Return started threads transitively spawned by a started root."""
++        if root_id not in self._started_threads:
++            return []
++        owned = {root_id}
++        descendants: list[str] = []
++        changed = True
++        while changed:
++            changed = False
++            for thread_id, parent in self._started_threads.items():
++                if thread_id not in owned and parent in owned:
++                    owned.add(thread_id)
++                    descendants.append(thread_id)
++                    changed = True
++        return descendants
++
++    def _finish_root(self) -> list[BaseException]:
++        root_id = self.archive_root_id
++        if not root_id or root_id not in self.__dict__.get("_started_threads", {}):
++            return []
++        self._closing = True
++        errors: list[BaseException] = []
++        branch = self.issue_branch
++        # Without a canonical issue branch (create, resumed sessions) there is no
++        # branch metadata to publish; never substitute a child-reported branch.
++        for thread_id in self.started_descendants(root_id) if branch else ():
++            try:
++                self.request(
++                    "thread/metadata/update",
++                    {"threadId": thread_id, "gitInfo": {"branch": branch}},
++                )
++            except Exception as error:
++                errors.append(error)
++        try:
++            self.request("thread/archive", {"threadId": root_id})
++        except Exception as error:
++            errors.append(error)
++        return errors
++
+     def close(self, *, failed: bool) -> None:
+-        terminate_and_reap(self.process)
++        errors: list[BaseException] = []
++        try:
++            if not failed:
++                errors = self._finish_root()
++        finally:
++            terminate_and_reap(self.process)
++        if errors:
++            detail = "; ".join(str(error) for error in errors)
++            raise RuntimeError(
++                f"Codex app-server session cleanup failed: {detail}"
++            ) from errors[0]

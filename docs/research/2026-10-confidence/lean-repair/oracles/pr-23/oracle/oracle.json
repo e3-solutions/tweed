@@ -1,0 +1,11 @@
+{
+  "task_id": "tweed-pr23",
+  "production_paths": [
+    "bonaparte"
+  ],
+  "test_ids": [
+    "tests.test_owner_options.PublicOptions.test_reasoning_omitted_is_medium",
+    "tests.test_owner_options.PublicOptions.test_reasoning_override_reaches_coordinator_and_every_child_on_resume",
+    "tests.test_owner_options.PublicOptions.test_reasoning_blank_fails_before_provider"
+  ]
+}

@@ -1,0 +1,148 @@
+diff --git a/bonaparte b/bonaparte
+index 888b766..4939dfe 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -481,8 +481,7 @@ def run_phase(
+                 phase,
+                 values[1] if len(values) == 2 else None,
+             )
+-            if phase == "implement":
+-                expected_branch = handoff["issue"]["git_branch_name"]
++            expected_branch = handoff["issue"]["git_branch_name"]
+             phase_input = json.dumps(handoff, ensure_ascii=False)
+             context_policy = (
+                 "\n\n# Context policy\n\n"
+@@ -557,8 +556,10 @@ def run_phase(
+     observer = EventObserver(_ACTIVE_PROGRESS)
+     driver = None
+     failed = True
++    terminal = None
+     try:
+         driver = AppServerPhaseDriver(repository, observer)
++        driver._issue_branch = expected_branch
+         driver.request(
+             "initialize", {"clientInfo": {"name": "bonaparte", "version": "1"}}
+         )
+@@ -702,17 +703,25 @@ def run_phase(
+         if not driver.last_agent_message:
+             raise RuntimeError("Codex app-server returned no final receipt")
+         receipt = json.loads(driver.last_agent_message)
++        driver._terminal_root = receipt.get("state") in {"completed", "blocked"}
++        if expected_branch is None and isinstance(receipt.get("branch"), str) and receipt["branch"]:
++            driver._issue_branch = receipt["branch"]
+         failed = False
+     finally:
+         observed = observer.finish()
+         if observation is not None:
+             observation.update(observed)
+         if driver is not None:
++            if failed and terminal is not None:
++                driver._terminal_root = True
++            coordinator_error = sys.exc_info()[1]
+             try:
+                 driver.close(failed=failed)
+-            except BaseException:
++            except BaseException as cleanup_error:
+                 if not failed:
+                     raise
++                if coordinator_error is not None:
++                    coordinator_error.add_note(f"Native session cleanup failed: {cleanup_error}")
+ 
+     validate_schema(receipt, RECEIPT_SCHEMA)
+     if receipt["phase"] != phase:
+diff --git a/bonaparte_native.py b/bonaparte_native.py
+index e9a607c..410d91f 100644
+--- a/bonaparte_native.py
++++ b/bonaparte_native.py
+@@ -121,6 +121,10 @@ class AppServerPhaseDriver:
+         self._last_agent_message: str | None = None
+         self._receipt_thread_id: str | None = None
+         self._receipt_turn_id: str | None = None
++        self._root_thread_id: str | None = None
++        self._started_threads: dict[str, str | None] = {}
++        self._issue_branch: str | None = None
++        self._terminal_root = False
+         self._reader = threading.Thread(target=self._read, daemon=True)
+         self._reader.start()
+ 
+@@ -273,7 +277,19 @@ class AppServerPhaseDriver:
+             raise RuntimeError(f"unsupported app-server request: {method}")
+         if method == "thread/started":
+             thread = params.get("thread")
+-            if isinstance(thread, dict) and isinstance(thread.get("id"), str):
++            if isinstance(thread, dict) and isinstance(thread.get("id"), str) and thread["id"]:
++                # Only native starts establish existence and ancestry. Tool-call
++                # receiver IDs can refer to unstarted or unrelated sessions.
++                parent = thread.get("parentThreadId")
++                source = thread.get("source")
++                if isinstance(source, dict):
++                    subagent = source.get("subAgent")
++                    spawn = subagent.get("thread_spawn") if isinstance(subagent, dict) else None
++                    if isinstance(spawn, dict):
++                        parent = spawn.get("parent_thread_id")
++                self._started_threads.setdefault(
++                    thread["id"], parent if isinstance(parent, str) and parent else None
++                )
+                 self.observer.feed(
+                     json.dumps({"type": "thread.started", "thread_id": thread["id"]})
+                 )
+@@ -339,6 +355,15 @@ class AppServerPhaseDriver:
+             result = message.get("result")
+             if not isinstance(result, dict):
+                 raise RuntimeError(f"Codex app-server returned no result for {method}")
++            if method in {"thread/start", "thread/resume"}:
++                thread = result.get("thread")
++                if isinstance(thread, dict) and isinstance(thread.get("id"), str):
++                    self._root_thread_id = thread["id"]
++                    git_info = thread.get("gitInfo")
++                    if self._issue_branch is None and isinstance(git_info, dict):
++                        branch = git_info.get("branch")
++                        if isinstance(branch, str) and branch:
++                            self._issue_branch = branch
+             return result
+ 
+     @property
+@@ -346,4 +371,42 @@ class AppServerPhaseDriver:
+         return self._last_agent_message
+ 
+     def close(self, *, failed: bool) -> None:
+-        terminate_and_reap(self.process)
++        errors: list[BaseException] = []
++        try:
++            root = getattr(self, "_root_thread_id", None)
++            started = getattr(self, "_started_threads", {})
++            if getattr(self, "_terminal_root", False) and root in started:
++                owned = {root}
++                # Resolve ancestry even when child notifications precede parents.
++                while True:
++                    descendants = {
++                        identifier for identifier, parent in started.items()
++                        if parent in owned
++                    }
++                    if descendants <= owned:
++                        break
++                    owned.update(descendants)
++                branch = self._issue_branch
++                if branch:
++                    for identifier in sorted(owned - {root}):
++                        try:
++                            self.request(
++                                "thread/metadata/update",
++                                {"threadId": identifier, "gitInfo": {"branch": branch}},
++                            )
++                        except BaseException as error:
++                            errors.append(error)
++                try:
++                    self.request("thread/archive", {"threadId": root})
++                except BaseException as error:
++                    errors.append(error)
++        finally:
++            try:
++                terminate_and_reap(self.process)
++            except BaseException as error:
++                errors.append(error)
++        if errors:
++            # Preserve the first failure while retaining any later cleanup errors.
++            for error in errors[1:]:
++                errors[0].add_note(f"Additional cleanup failure: {error}")
++            raise errors[0]

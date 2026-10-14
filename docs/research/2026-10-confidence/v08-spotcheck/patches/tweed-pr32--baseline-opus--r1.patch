@@ -1,0 +1,61 @@
+diff --git a/bonaparte b/bonaparte
+index 26a168f..5f1151f 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -409,6 +409,28 @@ def require_pull_request(receipt: dict, phase: str) -> None:
+         raise RuntimeError(f"completed {phase} is missing its pull request")
+ 
+ 
++def coordinator_terminal(
++    message: dict, completed_turn: dict | None, session_id: str, turn_id: str
++) -> dict | None:
++    """Return the completion only when it belongs to the active coordinator turn.
++
++    Native child threads emit their own turn/completed notifications; those must
++    not finish or replace the coordinator turn. A legacy notification without a
++    threadId is attributed to the coordinator only when it names the active turn.
++    """
++    if completed_turn is None:
++        return None
++    params = message.get("params")
++    thread_id = params.get("threadId") if isinstance(params, dict) else None
++    if thread_id is None:
++        return completed_turn if completed_turn.get("id") == turn_id else None
++    if thread_id != session_id:
++        return None
++    if completed_turn.get("id") != turn_id:
++        raise RuntimeError("Codex app-server completed the wrong turn")
++    return completed_turn
++
++
+ def run_phase(
+     repository: Path,
+     phase: str,
+@@ -609,11 +631,10 @@ def run_phase(
+                 if message is not None:
+                     if "method" in message:
+                         _method, completed_turn = driver.observe_notification(message)
++                        completed_turn = coordinator_terminal(
++                            message, completed_turn, session_id, turn_id
++                        )
+                         if completed_turn is not None:
+-                            if completed_turn.get("id") != turn_id:
+-                                raise RuntimeError(
+-                                    "Codex app-server completed the wrong turn"
+-                                )
+                             terminal = completed_turn
+                         continue
+                     raise RuntimeError("Codex app-server response correlation failed")
+@@ -648,9 +669,10 @@ def run_phase(
+                             and item.get("kind") == "started"
+                         )
+                 _method, completed_turn = driver.observe_notification(message)
++                completed_turn = coordinator_terminal(
++                    message, completed_turn, session_id, turn_id
++                )
+                 if completed_turn is not None:
+-                    if completed_turn.get("id") != turn_id:
+-                        raise RuntimeError("Codex app-server completed the wrong turn")
+                     terminal = completed_turn
+                 continue
+             if not steered or message.get("id") != steer_id:

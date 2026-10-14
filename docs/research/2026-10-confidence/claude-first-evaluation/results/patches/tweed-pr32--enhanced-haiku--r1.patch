@@ -1,0 +1,72 @@
+diff --git a/bonaparte b/bonaparte
+index 26a168f..fe737b7 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -25,6 +25,7 @@ from bonaparte_linear import call_linear
+ from bonaparte_native import (
+     PHASE_CHILD_ENV,
+     AppServerPhaseDriver,
++    coordinator_turn_completion,
+ )
+ from bonaparte_progress import (
+     MAX_COMPLETED_CHECKS,
+@@ -610,11 +611,11 @@ def run_phase(
+                     if "method" in message:
+                         _method, completed_turn = driver.observe_notification(message)
+                         if completed_turn is not None:
+-                            if completed_turn.get("id") != turn_id:
+-                                raise RuntimeError(
+-                                    "Codex app-server completed the wrong turn"
+-                                )
+-                            terminal = completed_turn
++                            owned_turn = coordinator_turn_completion(
++                                message, completed_turn, session_id, turn_id
++                            )
++                            if owned_turn is not None:
++                                terminal = owned_turn
+                         continue
+                     raise RuntimeError("Codex app-server response correlation failed")
+                 steer_id = driver.send(
+@@ -649,9 +650,11 @@ def run_phase(
+                         )
+                 _method, completed_turn = driver.observe_notification(message)
+                 if completed_turn is not None:
+-                    if completed_turn.get("id") != turn_id:
+-                        raise RuntimeError("Codex app-server completed the wrong turn")
+-                    terminal = completed_turn
++                    owned_turn = coordinator_turn_completion(
++                        message, completed_turn, session_id, turn_id
++                    )
++                    if owned_turn is not None:
++                        terminal = owned_turn
+                 continue
+             if not steered or message.get("id") != steer_id:
+                 raise RuntimeError("Codex app-server response correlation failed")
+diff --git a/bonaparte_native.py b/bonaparte_native.py
+index 8ec992a..93469e5 100644
+--- a/bonaparte_native.py
++++ b/bonaparte_native.py
+@@ -97,6 +97,23 @@ def terminate_and_reap(process: subprocess.Popen) -> None:
+                     pass
+ 
+ 
++def coordinator_turn_completion(
++    message: dict, turn: dict, thread_id: str, turn_id: str
++) -> dict | None:
++    """Return a completed turn only when it belongs to the active coordinator turn.
++
++    A completion attributed to another thread never establishes the outcome.
++    A completion without threadId (legacy) is accepted only for the active turn ID.
++    """
++    params = message.get("params")
++    event_thread = params.get("threadId") if isinstance(params, dict) else None
++    if event_thread is not None and event_thread != thread_id:
++        return None
++    if turn.get("id") != turn_id:
++        raise RuntimeError("Codex app-server completed the wrong turn")
++    return turn
++
++
+ class AppServerPhaseDriver:
+     """Drive one native app-server turn without retaining its raw event stream."""
+ 

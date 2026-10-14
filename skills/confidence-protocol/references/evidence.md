@@ -88,6 +88,16 @@ The success-dependent sequence prevents rendering after a failed gate. `render -
 
 ## Source binding and recovery
 
+New version-2 captures retain their original `evidence_directory` exclusion anchor
+and a `capture_sha256` binding over their execution metadata, source observations
+and log digest. Moving the evidence does not change that anchor; editing only the
+recorded anchor, command or status invalidates the binding. Older captures lacking
+the anchor remain readable and use the validating directory for exclusion; copying
+them can require recapture. The extra hash detects metadata drift, not authenticity:
+a trusted writer can rewrite metadata and recompute hashes. Do not edit historical
+captures to obtain a pass. Git fingerprint reads disable configured fsmonitor
+execution, so readiness inspection does not invoke that repository hook.
+
 Current proof uses `git-content-v1`: Git-enumerated working-tree names, actual bytes/modes, symlink target strings, and missing tracked files. A supporting software pass requires matching source before/after capture and at validation. For stale evidence, rerun the original verification on the current tree, then record its new ID. Do not rewrite historical records or replace verification with a no-op to obtain fresh binding. Legacy `git` binding is readable but requires recapture for current software proof.
 
 Unknown binding remains inspectable as partial evidence. Unsupported contexts include non-Git workspaces, gitlinks/submodules, conflicts, unsupported file types, repository/index/object routing environment overrides, and explicit `core.worktree` routing. Conventional linked worktrees are supported. Restore a supported context only when that preserves the task's execution meaning, then recapture; otherwise state the limitation. Research command observations can pass without claiming current software verification.

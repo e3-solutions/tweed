@@ -1,0 +1,1 @@
+{"id": "87febb2057984d558e8a3aecb37a70c4", "argv": ["/bin/bash", "-c", "git diff --stat; git diff skills/confidence-protocol/scripts/confidence.py | grep -n -i 'telemetry\\|diagnostic\\|emit' | head -40; grep -n -i 'telemetry' skills/confidence-protocol/scripts/diagnostics.py | head -30; env | grep -i -E 'confidence|telemetry|diagnos|^CI|DO_NOT' "], "timeout": 17.60878086090088}

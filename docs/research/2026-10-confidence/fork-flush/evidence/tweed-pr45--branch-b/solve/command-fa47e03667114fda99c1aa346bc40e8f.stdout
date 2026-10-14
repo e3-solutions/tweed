@@ -1,0 +1,37 @@
+90:    def test_valid_evidence_passes(self) -> None:
+97:    def test_completion_rejects_unfinished_release_gates(self) -> None:
+108:    def test_completion_rejects_partial_evidence_and_unrun_tests(self) -> None:
+121:    def test_completion_accepts_a_fully_passing_report(self) -> None:
+130:    def test_critical_completion_requires_two_distinct_review_roles(self) -> None:
+150:    def test_missing_obligation_evidence_fails(self) -> None:
+160:    def test_duplicate_obligation_id_fails(self) -> None:
+166:    def test_blank_required_list_item_fails(self) -> None:
+176:    def test_report_must_match_contract(self) -> None:
+186:    def test_pass_requires_a_captured_run(self) -> None:
+196:    def test_pass_requires_a_successful_run(self) -> None:
+204:    def test_tampered_log_fails_validation(self) -> None:
+212:    def test_supporting_run_becomes_stale_when_git_workspace_changes(self) -> None:
+261:            self.assertTrue(any("workspace changed" in error for error in errors))
+263:    def test_render_contains_claim_and_status(self) -> None:
+273:    def test_run_captures_success_and_returns_child_status(self) -> None:
+297:            self.assertEqual(result.stdout, "proof\n")
+307:    def test_run_records_failure_and_returns_child_status(self) -> None:
+332:    def test_run_times_out_and_records_the_stop_reason(self) -> None:
+359:    def test_run_stops_when_the_log_limit_is_exceeded(self) -> None:
+386:    def test_run_stops_background_children_before_hashing_the_log(self) -> None:
+423:    def test_run_rejects_path_traversal_id(self) -> None:
+446:    def test_run_refuses_to_overwrite(self) -> None:
+470:    def test_run_rejects_a_symlinked_runs_directory(self) -> None:
+496:    def test_atomic_record_write_never_replaces_existing_record(self) -> None:
+504:    def test_fail_then_pass_runs_support_one_obligation(self) -> None:
+517:    def test_pass_rejects_a_failed_supporting_run_even_with_a_success(self) -> None:
+528:    def test_run_cannot_be_supporting_and_diagnostic(self) -> None:
+538:    def test_run_id_must_match_filename(self) -> None:
+549:    def test_run_could_not_start_creates_no_record(self) -> None:
+572:    def test_run_accepts_command_when_argparse_consumes_separator(self) -> None:
+594:    def test_render_escapes_table_control_characters(self) -> None:
+604:    def test_duplicate_json_keys_are_rejected(self) -> None:
+611:    def test_report_rejects_non_string_artifacts(self) -> None:
+621:    def test_render_flattens_markdown_structure_in_text_fields(self) -> None:
+633:    def test_render_stays_inside_evidence_directory(self) -> None:
+654:    def test_render_requires_force_to_replace_existing_report(self) -> None:

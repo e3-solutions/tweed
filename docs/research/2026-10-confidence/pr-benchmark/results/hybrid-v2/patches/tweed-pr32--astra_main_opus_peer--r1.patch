@@ -1,0 +1,18 @@
+diff --git a/bonaparte_native.py b/bonaparte_native.py
+index 8ec992a..9fb8f4f 100644
+--- a/bonaparte_native.py
++++ b/bonaparte_native.py
+@@ -303,6 +303,13 @@ class AppServerPhaseDriver:
+                 )
+             )
+         if method == "turn/completed":
++            # Native child turns share this stream, but cannot end the phase.
++            # Missing threadId is legacy: run_phase still checks the turn ID.
++            if (
++                "threadId" in params
++                and params["threadId"] != getattr(self, "_receipt_thread_id", None)
++            ):
++                return method, None
+             turn = params.get("turn")
+             if not isinstance(turn, dict):
+                 raise RuntimeError("Codex app-server turn completion is malformed")

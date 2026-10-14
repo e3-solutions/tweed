@@ -1,0 +1,46 @@
+diff --git a/bonaparte b/bonaparte
+index 26a168f..1412ae0 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -614,7 +614,8 @@ def run_phase(
+                                 raise RuntimeError(
+                                     "Codex app-server completed the wrong turn"
+                                 )
+-                            terminal = completed_turn
++                            if terminal is None:
++                                terminal = completed_turn
+                         continue
+                     raise RuntimeError("Codex app-server response correlation failed")
+                 steer_id = driver.send(
+@@ -651,7 +652,8 @@ def run_phase(
+                 if completed_turn is not None:
+                     if completed_turn.get("id") != turn_id:
+                         raise RuntimeError("Codex app-server completed the wrong turn")
+-                    terminal = completed_turn
++                    if terminal is None:
++                        terminal = completed_turn
+                 continue
+             if not steered or message.get("id") != steer_id:
+                 raise RuntimeError("Codex app-server response correlation failed")
+diff --git a/bonaparte_native.py b/bonaparte_native.py
+index 8ec992a..ef21fa4 100644
+--- a/bonaparte_native.py
++++ b/bonaparte_native.py
+@@ -306,7 +306,16 @@ class AppServerPhaseDriver:
+             turn = params.get("turn")
+             if not isinstance(turn, dict):
+                 raise RuntimeError("Codex app-server turn completion is malformed")
+-            return method, turn
++            # Native child threads share this stream. Only the active coordinator
++            # thread may establish the outcome; legacy completions without
++            # threadId count only when they name the active coordinator turn.
++            thread_id = params.get("threadId")
++            if thread_id is None:
++                active_turn = getattr(self, "_receipt_turn_id", None)
++                owned = active_turn is not None and turn.get("id") == active_turn
++            else:
++                owned = thread_id == getattr(self, "_receipt_thread_id", None)
++            return method, turn if owned else None
+         return method, None
+ 
+     def request(self, method: str, params: dict) -> dict:

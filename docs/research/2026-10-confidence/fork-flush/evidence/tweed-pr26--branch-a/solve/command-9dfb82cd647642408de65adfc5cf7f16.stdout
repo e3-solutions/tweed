@@ -1,0 +1,35 @@
+def _coordinator_receipt(receipt: dict) -> dict:
+    return {name: receipt.get(name) for name in RECEIPT_SCHEMA["required"]}
+
+
+def _combine_remote(previous: bool | None, current: bool | None) -> bool | None:
+    if previous is True or current is True:
+        return True
+    if previous is None or current is None:
+        return None
+    return False
+
+
+def _update_checkpoint_observation(checkpoint: dict, observation: dict) -> None:
+    existing = checkpoint.get("checks_completed") or []
+    additions = observation.get("checks_completed") or []
+    combined = [
+        check
+        for check in [*existing, *additions]
+        if isinstance(check, dict)
+    ][:MAX_COMPLETED_CHECKS]
+    prior_total = checkpoint.get("checks_completed_total_count") or len(existing)
+    added_total = observation.get("checks_completed_total_count") or len(additions)
+    checkpoint["checks_completed"] = combined
+    checkpoint["checks_completed_total_count"] = max(
+        len(combined), prior_total + added_total
+    )
+    checkpoint["checks_completed_truncated"] = bool(
+        checkpoint.get("checks_completed_truncated")
+        or observation.get("checks_completed_truncated")
+1131:def _serialized_size(receipt: dict) -> int:
+1181:    if _serialized_size(receipt) <= RECEIPT_MAX_BYTES:
+1190:    if _serialized_size(receipt) <= RECEIPT_MAX_BYTES:
+1203:    if _serialized_size(receipt) > RECEIPT_MAX_BYTES:
+1225:    if _serialized_size(receipt) > RECEIPT_MAX_BYTES:
+1473:def fail(summary: str) -> dict:

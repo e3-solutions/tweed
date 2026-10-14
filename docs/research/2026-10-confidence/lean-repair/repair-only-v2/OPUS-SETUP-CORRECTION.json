@@ -1,0 +1,24 @@
+{
+  "exit_code": 0,
+  "timed_out": false,
+  "wall_seconds": 28.04988245900313,
+  "observed_models": [
+    "claude-opus-5-5"
+  ],
+  "tool_call_count": 7,
+  "tool_names": [
+    "Edit",
+    "Grep",
+    "Read"
+  ],
+  "stream_sha256": "836f3c2d433a09e75cb5ba05cef78d93dc412caf285d400278641d5d1f2940bc",
+  "request_sha256": "50bf2489171bd84de3c91ebce20da15647ab4862cea3e8b223e4be13e409f91e",
+  "process_cleanup_scope": "original_process_group",
+  "detached_descendants_contained": false,
+  "role": "Actual Opus correction of separate research-only setup helper",
+  "owned_file": "repair-only-v2/probe.py",
+  "source_sha256": "fb1518aa7fa17c2603c092b30ff7ae1af12f258590e8f05eae7d596b9d130055",
+  "prior_helper_sha256": "53b5788c3f2ffb3d05ef057a7f0c0a8b5499cfc57b4b459cd7a520b56dca5b93",
+  "primary_runtime_unchanged": true,
+  "receipt_sha256": "c00513769870f4fcdcc4ad0b6639ef7d82639d3fef50fea6c03a0d15cc6fe7b2"
+}

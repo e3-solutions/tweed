@@ -1,0 +1,16 @@
+--- a/README.md
++++ b/README.md
+@@ -21,8 +21,11 @@
+ Bonaparte uses your local Codex installation and its authenticated Linear MCP. The
+ implement, review, and publish phases also use your existing Git and GitHub CLI
+ authentication.
+-Every phase coordinator is pinned to `gpt-5.6-sol` with medium reasoning, and
+-every spawned subagent is pinned to `gpt-5.6-sol` with medium reasoning.
++Every phase coordinator and every spawned subagent uses medium reasoning. Select
++their model with `bonaparte --model <name> ...` or `BONAPARTE_MODEL=<name>`; the
++option overrides the variable, surrounding whitespace is trimmed, and a blank
++selection fails before Codex runs. With neither, the coordinator and subagents
++use Codex's default model. The same selection applies to `resume`.
+ 
+ Prerequisites:
+ 

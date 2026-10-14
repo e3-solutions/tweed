@@ -1,0 +1,141 @@
+{
+  "reviewer_origin": "/root/v08_pilot_preflight",
+  "role": "independent bounded prospective pilot controls review",
+  "completed_at_utc": "2026-10-13T19:58:42.676771+00:00",
+  "verdict": "PASS_WITH_LIMITS",
+  "hosted_model_calls_by_reviewer": 0,
+  "current_outcomes_present_or_inspected": false,
+  "registration_payload_sha256": "d44c180a30a14a37297b2642849ae300078e3a8b8a8f8a5cd0ce090ac4723fed",
+  "registration_file_sha256": "9686d267cf78bee4fa94e5d168fc5f8cd6ff0ba72d8fc98d148042a99deaad45",
+  "reviewed_controller_sha256": "e3dc481c48ad5e4d209042f37d939718aae154243a065f2b9e2da3035663708d",
+  "reused_runner_sha256": "ca59e94400c971ab5f426b296e8caa505247c9c16be671aebfec2d1a3757252a",
+  "reused_intake_sha256": "de0b95ed7328e8f87f061f1947ca1b4793ec670f53318907d23dcb18524edb49",
+  "controls_report_sha256": "8b0e7d186cb0ef5403677813559e7d906cb73e058209badeba9711e7dcd015db",
+  "focused_controls_sha256": "99eb4fbc78395fb8b371206849f405e16c330292d9f97f73dd9a6192ac3bd1a7",
+  "review_script_sha256": "c5267691bf3987cd081c6733947f6fac2dd75ef9e8789a3563f1a4ea7c1a6d7a",
+  "prior_registration_file_sha256": "131587ad645c6e564b2ecb4f20d04c77c8b2eb1bbca6163b2a80afa75c84e3f1",
+  "checks": [
+    {
+      "name": "prospective_custody_and_prior_lineage",
+      "passed": true,
+      "observation": {
+        "payload_sha256": "d44c180a30a14a37297b2642849ae300078e3a8b8a8f8a5cd0ce090ac4723fed",
+        "registration_sha256": "9686d267cf78bee4fa94e5d168fc5f8cd6ff0ba72d8fc98d148042a99deaad45",
+        "prior_registration_sha256": "131587ad645c6e564b2ecb4f20d04c77c8b2eb1bbca6163b2a80afa75c84e3f1"
+      }
+    },
+    {
+      "name": "exact_small_roster_and_envelope",
+      "passed": true,
+      "observation": {
+        "implementations": 8,
+        "intakes": 4,
+        "attempts_per_policy": 4
+      }
+    },
+    {
+      "name": "shared_current_runtime_selected_guidance_mount",
+      "passed": true,
+      "observation": {
+        "shared_non_guidance_files": 39,
+        "no_baseline_runtime_mounted": true
+      }
+    },
+    {
+      "name": "receipt_fail_closed_and_no_peer",
+      "passed": true,
+      "observation": {
+        "honest_incomplete_qualified": true,
+        "rejecting_corruptions": 7,
+        "peer_denial": true
+      }
+    },
+    {
+      "name": "restart_retains_all_assigned_without_retry",
+      "passed": true,
+      "observation": {
+        "all_assigned": 8,
+        "saved_receipt_retained": true,
+        "started_unknown_retained": true,
+        "per_policy_denominator": 4
+      }
+    },
+    {
+      "name": "intake_interrupt_retains_all_assigned_without_retry",
+      "passed": true,
+      "observation": {
+        "all_assigned": 4,
+        "started_unknown_retained": true,
+        "relaunch_refused_before_episode": true
+      }
+    }
+  ],
+  "actual_oracle_controls": {
+    "accepted_by_current_require_controls": true,
+    "four_base_head_controls": [
+      {
+        "task_id": "tweed-pr32",
+        "side": "base",
+        "oracle_passed": false
+      },
+      {
+        "task_id": "tweed-pr32",
+        "side": "head",
+        "oracle_passed": true
+      },
+      {
+        "task_id": "tweed-pr40",
+        "side": "base",
+        "oracle_passed": false
+      },
+      {
+        "task_id": "tweed-pr40",
+        "side": "head",
+        "oracle_passed": true
+      }
+    ],
+    "equivalence_controls": [
+      {
+        "task_id": "tweed-pr40",
+        "oracle_passed": true
+      }
+    ]
+  },
+  "actual_existing_cell_refuses_launch": true,
+  "findings": [
+    {
+      "id": "F01",
+      "severity": "blocking",
+      "status": "resolved_before_inference",
+      "mechanism": "Initial wrapper saved minimal preserved_previously_started returns directly, dropping assigned metadata and durable saved receipts; summary failed with KeyError arm_id.",
+      "red_evidence": "focused-controls-red.json",
+      "resolution": "Wrapper finally reconstructs all implementation rows from durable receipts or explicit assigned unknowns; independent restart test now passes with four assigned attempts per policy."
+    },
+    {
+      "id": "F02",
+      "severity": "control_gap",
+      "status": "resolved_before_inference",
+      "mechanism": "Initial prepare copied baseline from historical path without checking its original sealed inventory.",
+      "resolution": "Prepare checks prior seal digest and baseline inventory; historical registration raw hash is now in material seal. Independently confirmed actual baseline and source both match the original inventory including modes."
+    }
+  ],
+  "receipt_boundary_assessment": "Shared current toolkit qualifies neither arm by itself. Every implementation still performs current local transport before inference and current stage qualification after inference, including exact observed Claude model/live tool initialization, lifecycle, terminal, cleanup and scope. Honest incomplete can remain eligible, but only qualified original-oracle accepted=True contributes primary success. No peer call is launched.",
+  "timers": {
+    "implementation_inference_per_attempt_seconds": 240,
+    "implementation_per_attempt_cli_budget_usd": 2,
+    "offline_setup_outside_inference_timer": true,
+    "intake_per_round_seconds": 120,
+    "intake_per_round_cli_budget_usd": 0.6,
+    "intake_max_rounds": 3
+  },
+  "limits": [
+    "Two purposively chosen known historical weakness tasks and two repeats are a spot-check; no population effect or model ranking.",
+    "Implementation intervention is selected full guidance tree with common current 0.8 runtime/assets; this is not exact historical whole-runtime replay and cannot isolate one wording change.",
+    "Intakes expose SKILL.md plus selected intake references, use supplied facts and keyword-scripted answers, and require independent semantic transcript review; they are not answer-dependent implementation tests.",
+    "Peer delegation and external components are disabled; no full multi-provider autonomy claim.",
+    "Primary grades remain selected original oracle. Predeclared same-thread stale/active routing diagnostic is separate from those grades and its CPU execution is still pending.",
+    "Original-process-group cleanup retains explicitly disclosed setsid escape limitation; CLI cost guards/usage estimates are not subscription bills.",
+    "Prospective preflight does not certify future outcome custody, semantic transcript accuracy, or unexecuted supplemental diagnostics."
+  ],
+  "blinding_limit": "Reviewed prior independent guard audit and registration/input lineage, not historical per-cell outcome artifacts; parent supplied weakness-based task-selection rationale."
+}

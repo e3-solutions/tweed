@@ -1,0 +1,98 @@
+{
+  "passed": true,
+  "model_calls": 0,
+  "study": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection",
+  "preflight_sha256": "abd762db91480470b342051b852bd64e6230635bf761b2b2a82e8d8e767df283",
+  "cells": [
+    {
+      "cell_id": "tweed-pr26--incumbent",
+      "passed": true,
+      "effective_tools": [
+        "list_files",
+        "read_file",
+        "write_file",
+        "replace_text",
+        "run_tests",
+        "confidence",
+        "request_review"
+      ],
+      "outside_read_denied_api": true,
+      "outside_read_denied_executed_child": true
+    },
+    {
+      "cell_id": "tweed-pr26--branch-a",
+      "passed": true,
+      "effective_tools": [
+        "list_files",
+        "read_file",
+        "write_file",
+        "replace_text",
+        "run_tests",
+        "confidence",
+        "request_review"
+      ],
+      "outside_read_denied_api": true,
+      "outside_read_denied_executed_child": true
+    },
+    {
+      "cell_id": "tweed-pr26--branch-b",
+      "passed": true,
+      "effective_tools": [
+        "list_files",
+        "read_file",
+        "write_file",
+        "replace_text",
+        "run_tests",
+        "confidence",
+        "request_review"
+      ],
+      "outside_read_denied_api": true,
+      "outside_read_denied_executed_child": true
+    },
+    {
+      "cell_id": "tweed-pr45--incumbent",
+      "passed": true,
+      "effective_tools": [
+        "list_files",
+        "read_file",
+        "write_file",
+        "replace_text",
+        "run_tests",
+        "confidence",
+        "request_review"
+      ],
+      "outside_read_denied_api": true,
+      "outside_read_denied_executed_child": true
+    },
+    {
+      "cell_id": "tweed-pr45--branch-a",
+      "passed": true,
+      "effective_tools": [
+        "list_files",
+        "read_file",
+        "write_file",
+        "replace_text",
+        "run_tests",
+        "confidence",
+        "request_review"
+      ],
+      "outside_read_denied_api": true,
+      "outside_read_denied_executed_child": true
+    },
+    {
+      "cell_id": "tweed-pr45--branch-b",
+      "passed": true,
+      "effective_tools": [
+        "list_files",
+        "read_file",
+        "write_file",
+        "replace_text",
+        "run_tests",
+        "confidence",
+        "request_review"
+      ],
+      "outside_read_denied_api": true,
+      "outside_read_denied_executed_child": true
+    }
+  ]
+}

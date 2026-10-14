@@ -1,0 +1,43 @@
+{
+  "qualified_provider_delivery": false,
+  "timed_out": true,
+  "process_exit": -9,
+  "provider_terminal_present": false,
+  "wall_seconds": 260.1007831096649,
+  "observed_models": [
+    "claude-opus-5-5"
+  ],
+  "owned_group_present_after_settlement": false,
+  "original_input_hash_mismatches": [],
+  "original_input_file_count": 71,
+  "authored_source": {
+    "runtime": {
+      "README.md": {
+        "sha256": "28cb0fe24cd925eb628821b156c23b22d413f7e9ba60192b7881718ff8226397",
+        "mode": 420
+      },
+      "controller.py": {
+        "sha256": "399e3423a6140fc75da3265999da444e2006d3cd344bd45d91814f85e43ddd57",
+        "mode": 420
+      },
+      "hybrid_process_v2.py": {
+        "sha256": "631e695e36f5c000b3fef02d4f64f8c518edc31befac116db559816750d8e95f",
+        "mode": 420
+      },
+      "tests/test_controls.py": {
+        "sha256": "334f0e99404d044463db8e7b0f88fb875b5dae8282a82442c733bf2748544eaf",
+        "mode": 420
+      }
+    },
+    "candidate": {
+      "SKILL.md": {
+        "sha256": "103be278a59daea1eadca9d6fcb4bfebc88d5aa57c99d131d96367f8da86e5b8",
+        "mode": 420
+      }
+    }
+  },
+  "native_six_controls_passed": true,
+  "native_control_receipt_sha256": "e8c3c3eb46ddda972722669ba37250b2052fa00068e3864de938289370c8427f",
+  "native_adapter_role": "Mechanical reuse/bridge only; no candidate or core decision edits",
+  "benchmark_attempt": false
+}

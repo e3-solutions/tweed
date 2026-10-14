@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "hosted_calls": 0,
+  "effective_tools": [
+    "list_files",
+    "read_file",
+    "write_file",
+    "replace_text",
+    "run_tests"
+  ],
+  "immutable_source_write_denied": true,
+  "stdout_sha256": "72842394839161606706e39a13ce1f6abb097dbe4858e2262736b86048e6c2cf"
+}

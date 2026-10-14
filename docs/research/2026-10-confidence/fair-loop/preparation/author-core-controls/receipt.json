@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "-B",
+    "-W",
+    "ignore",
+    "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-final-patch/authored/runtime/tests/test_controls.py"
+  ],
+  "exit_code": 0,
+  "timed_out": false,
+  "wall_seconds": 8.169558749999851,
+  "stdout": ".confidence/fair-loop/native-preflight/author-controls-v2/control.stdout",
+  "stderr": ".confidence/fair-loop/native-preflight/author-controls-v2/control.stderr",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr_sha256": "ca2f79e13d50792b32e229448aaadfe54b2841da811e76184b09ff6ca8bfca71",
+  "hosted_calls": 0,
+  "model_repairs": false,
+  "authored_test_sha256": "334f0e99404d044463db8e7b0f88fb875b5dae8282a82442c733bf2748544eaf"
+}

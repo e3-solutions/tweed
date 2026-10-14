@@ -1,0 +1,141 @@
+{
+  "version": "0.7.1",
+  "enabled": true,
+  "archive_source_commit": "7bc8788f5c05adaba4e13aedd53386ed63dd37f0",
+  "regular_files": 21,
+  "archive_entries": 28,
+  "file_manifest_sha256": "c72106872fec25fd6f7bbf0f1d8e1cf61372b70a31cba14ad78f052cd4d51fb0",
+  "file_manifest": {
+    "CHANGELOG.md": {
+      "sha256": "9e8a0996b7bca1beb8400a9cc0eb2c7cb6d5e5f531dee124e3c3d31b2dcc2ed7",
+      "mode": 420
+    },
+    "README.md": {
+      "sha256": "5af6d4feae4c31cbab949aadc43add39c6bfd635431484cec29e21e26419e3c7",
+      "mode": 420
+    },
+    ".codex-plugin/plugin.json": {
+      "sha256": "e8e98c8b95a95270ac8bc2e60fdc3a3a3d05fafaf7192851e1e9a8037ef132b0",
+      "mode": 420
+    },
+    "skills/confidence-protocol/SKILL.md": {
+      "sha256": "c23476d8d3edbbd7f6f114443153dd5fa8ee61853abb2704d9b1c2f7b2dd0d46",
+      "mode": 420
+    },
+    "skills/confidence-protocol/references/question-patterns.md": {
+      "sha256": "bc36c8cc401e5e00b076cca33d19ed793e29ea83c2c55c721c2ebbb8bc86951e",
+      "mode": 420
+    },
+    "skills/confidence-protocol/references/evidence.md": {
+      "sha256": "bd097c352130c5199ee907199bfab369927cf8ee6f990e8133cb79a87ca01d02",
+      "mode": 420
+    },
+    "skills/confidence-protocol/references/intent-flows.md": {
+      "sha256": "6c830168c45fc83bf3eec100e134adde35219e0c8142a7cd23b39a24549f3684",
+      "mode": 420
+    },
+    "skills/confidence-protocol/references/harnesses.md": {
+      "sha256": "393a48cd50abf2c318416c0a1f477da561a8aa705032bf3cc7578caf755792a6",
+      "mode": 420
+    },
+    "skills/confidence-protocol/references/complex-tasks.md": {
+      "sha256": "8c0396928105db561147b65b8f95b6a838ed9429efcbffc2b168030a77ae08c2",
+      "mode": 420
+    },
+    "skills/confidence-protocol/references/model-routing.md": {
+      "sha256": "f7bacc217debb77807d934a2508624560b97c3b2e5631cc4c64558668e3e9d93",
+      "mode": 420
+    },
+    "skills/confidence-protocol/references/modes.md": {
+      "sha256": "58bdefb0a2be2a6093bd4c599e139eaf39e41c009b07aa913a51274ae90708f6",
+      "mode": 420
+    },
+    "skills/confidence-protocol/references/task-profiles.md": {
+      "sha256": "864f7ddc73868dde6172c51e998f24c4e275f9d85f61ac7da2b20062c1cc15e7",
+      "mode": 420
+    },
+    "skills/confidence-protocol/references/report-rules.md": {
+      "sha256": "cd71fbb00b82a7b0c4811a929d1ceac8338708c59788b3a6e8ae3268b94dd61f",
+      "mode": 420
+    },
+    "skills/confidence-protocol/scripts/confidence.py": {
+      "sha256": "8c898d5bf416990e520a1bb9b113f06ffd573854346ef4512ea5798e38d684be",
+      "mode": 420
+    },
+    "skills/confidence-protocol/scripts/diagnostics.py": {
+      "sha256": "e36cccac68890e6d4baa65915c324b84c0f070e839c4a97970b23dec766260ff",
+      "mode": 420
+    },
+    "skills/confidence-protocol/assets/contract.example.json": {
+      "sha256": "85066dbfebe8310b5414a02f8d7cc73f925987cda69ffcb508975ee0fe738112",
+      "mode": 420
+    },
+    "skills/confidence-protocol/assets/report.example.json": {
+      "sha256": "d76fa00db14f903c423133b3a84d763b95d9dfb5e3c3170f160708e66dc8ec47",
+      "mode": 420
+    },
+    "skills/confidence-protocol/assets/runs/invitation-e2e.json": {
+      "sha256": "e1d88a4c7d16e31afc9caa23bdc5576c6d758c3fbc3435d81f198eacbf156802",
+      "mode": 420
+    },
+    "skills/confidence-protocol/assets/runs/invitation-e2e.log": {
+      "sha256": "a92b7fdcb45e1d22fc2af4c80adc6e7fc1389ff8a694010cf5e6ff0b5ffbf1f6",
+      "mode": 420
+    },
+    "skills/confidence-protocol/assets/runs/invitation-authorization.log": {
+      "sha256": "ec5ce487789f0bf1b922299cf02b3e3633d037e37a94d17df2b3bbbe3ed5fcc6",
+      "mode": 420
+    },
+    "skills/confidence-protocol/assets/runs/invitation-authorization.json": {
+      "sha256": "676de57ab147634eefa21c7251b1385500b375bb271dca0168de867b34e5283d",
+      "mode": 420
+    }
+  },
+  "source_and_cache_match": true,
+  "prior_version_backup_retained": "0.7.0 and inherited 0.6.0",
+  "doctor_exit_code": 0,
+  "doctor_status": "pass",
+  "doctor_checks": [
+    {
+      "code": "PYTHON_VERSION",
+      "status": "pass"
+    },
+    {
+      "code": "PLUGIN_MANIFEST",
+      "status": "pass"
+    },
+    {
+      "code": "EVIDENCE_DIRECTORY",
+      "status": "pass"
+    },
+    {
+      "code": "ATOMIC_HARDLINK",
+      "status": "pass"
+    },
+    {
+      "code": "RUNNER_SMOKE",
+      "status": "pass"
+    },
+    {
+      "code": "GIT_AVAILABLE",
+      "status": "pass"
+    },
+    {
+      "code": "PROCESS_GROUP_CLEANUP",
+      "status": "pass"
+    },
+    {
+      "code": "LEGACY_BONAPARTE",
+      "status": "warn"
+    },
+    {
+      "code": "TELEMETRY_CONFIG",
+      "status": "pass"
+    }
+  ],
+  "limits": [
+    "File-byte/mode equivalence, not identity of Git archive headers across commits. Later changes are research-only and excluded from release.",
+    "Health ran with remote diagnostics disabled in an isolated temporary evidence directory. Legacy Bonaparte PATH warning predates this installation.",
+    "New tasks load the updated installed skill; this does not retroactively replace instructions already loaded into a running task."
+  ]
+}

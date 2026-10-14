@@ -1,0 +1,11 @@
+{
+  "recorded_at_unix": 1791948020.430075,
+  "after_adapter_sha256": "99024867cec32e7acf5771f882337aa58db6f20b836ccee2ef8a9da99c228fbb",
+  "actual_csv_composed_preflight_passed": true,
+  "new_receipt_sha256": "fb5ea756f5f4433e87868b6bac82e5581cdd9f02af887d8abb4eb46eba9112c2",
+  "original_failed_receipt_sha256": "b8920aee13edcf25b3f27c30695652c7ec15514f1ab68c5db60fe213c3308549",
+  "interpreter_changed": false,
+  "task_fixtures_changed": false,
+  "candidate_core_changed": false,
+  "mechanism": "Exact per-command stdout/stderr file-read-metadata; files remain outside source; no content read grant"
+}

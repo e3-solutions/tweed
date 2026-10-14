@@ -1,0 +1,171 @@
+diff --git a/bonaparte-launcher b/bonaparte-launcher
+index 67681b7..f95443a 100755
+--- a/bonaparte-launcher
++++ b/bonaparte-launcher
+@@ -3,7 +3,9 @@
+ 
+ from __future__ import annotations
+ 
++import hashlib
+ import os
++import stat
+ import re
+ import shutil
+ import subprocess
+@@ -17,7 +19,7 @@ REPOSITORY = os.environ.get(
+ )
+ TAG_PATTERN = re.compile(r"v(\d+)\.(\d+)\.(\d+)")
+ CHECK_INTERVAL = 24 * 60 * 60
+-REQUIRED = """bonaparte bonaparte-launcher bonaparte_checkpoint.py
++REQUIRED = """bonaparte autoresearch bonaparte-launcher bonaparte_checkpoint.py
+ bonaparte_native.py bonaparte_progress.py
+ bonaparte_linear.py
+ skills/use-bonaparte/SKILL.md
+@@ -46,8 +48,11 @@ def bonaparte_home() -> Path:
+ def atomic_link(target: str, link: Path) -> None:
+     temporary = link.with_name(f".{link.name}.{os.getpid()}")
+     temporary.unlink(missing_ok=True)
+-    temporary.symlink_to(target)
+-    os.replace(temporary, link)
++    try:
++        temporary.symlink_to(target)
++        os.replace(temporary, link)
++    finally:
++        temporary.unlink(missing_ok=True)
+ 
+ 
+ def migrate_autoresearch_link(home: Path) -> None:
+@@ -94,11 +99,23 @@ def latest_tag() -> tuple[str, str]:
+ 
+ 
+ def validate_release(release: Path) -> None:
+-    missing = [name for name in REQUIRED if not (release / name).exists()]
+-    if missing:
+-        raise RuntimeError(f"release is missing {', '.join(missing)}")
++    invalid = []
++    for name in REQUIRED:
++        path = release / name
++        # Required inputs must be regular files inside this snapshot, including
++        # their parent directories. Do not smoke-test external symlink targets.
++        components = [path, *path.parents]
++        components = components[:components.index(release) + 1]
++        if not path.is_file() or any(part.is_symlink() for part in components):
++            invalid.append(name)
++    if invalid:
++        raise RuntimeError(f"release has missing or invalid required paths: {', '.join(invalid)}")
++    for name in ("bonaparte-launcher", "autoresearch"):
++        if not os.access(release / name, os.X_OK):
++            raise RuntimeError(f"release entry point is not executable: {name}")
+     for name in (
+         "bonaparte",
++        "autoresearch",
+         "bonaparte-launcher",
+         "bonaparte_checkpoint.py",
+         "bonaparte_linear.py",
+@@ -138,11 +155,28 @@ def git(directory: Path, *arguments: str, output: bool = False):
+     )
+ 
+ 
++def snapshot_contents(release: Path) -> dict:
++    """Compare source bytes, file types and executable bits, excluding caches."""
++    contents = {}
++    for path in release.rglob("*"):
++        relative = path.relative_to(release)
++        if ".git" in relative.parts or "__pycache__" in relative.parts:
++            continue
++        mode = path.lstat().st_mode
++        if stat.S_ISLNK(mode):
++            data = os.readlink(path)
++        elif stat.S_ISREG(mode):
++            data = hashlib.sha256(path.read_bytes()).hexdigest()
++        elif stat.S_ISDIR(mode):
++            data = None
++        else:
++            raise RuntimeError(f"invalid snapshot path: {path}")
++        contents[str(relative)] = (stat.S_IFMT(mode), mode & 0o111, data)
++    return contents
++
++
+ def fetch_release(home: Path, tag: str, expected_oid: str) -> Path:
+     destination = home / "releases" / tag
+-    if destination.exists():
+-        validate_release(destination)
+-        return destination
+     staging = Path(tempfile.mkdtemp(prefix=".update-", dir=home))
+     try:
+         git(staging, "init", "-q")
+@@ -153,6 +187,13 @@ def fetch_release(home: Path, tag: str, expected_oid: str) -> Path:
+         git(staging, "checkout", "-q", "--detach", "FETCH_HEAD")
+         validate_release(staging)
+         shutil.rmtree(staging / ".git")
++        if destination.exists() or destination.is_symlink():
++            if destination.is_symlink() or not destination.is_dir():
++                raise RuntimeError(f"invalid release destination: {destination}")
++            if snapshot_contents(destination) != snapshot_contents(staging):
++                raise RuntimeError(f"existing release differs from tag {tag}")
++            validate_release(destination)
++            return destination
+         staging.rename(destination)
+         return destination
+     finally:
+@@ -160,16 +201,35 @@ def fetch_release(home: Path, tag: str, expected_oid: str) -> Path:
+             shutil.rmtree(staging)
+ 
+ 
++def is_current(release: Path, tag: str) -> bool:
++    """Retain the installer's baseline-version policy, including local builds."""
++    version = tag_version(release.name)
++    return version is not None and version >= tag_version(tag)
++
++
++def status(home: Path) -> int:
++    release = current_release(home)
++    print(f"installed: {release.name}")
++    try:
++        tag, _ = latest_tag()
++    except Exception as error:
++        print("latest: unavailable")
++        print("current: unknown")
++        print(f"bonaparte: {error}", file=sys.stderr)
++        return 1
++    print(f"latest: {tag}")
++    print(f"current: {'yes' if is_current(release, tag) else 'no'}")
++    return 0
++
++
+ def update(home: Path) -> str | None:
+     migrate_autoresearch_link(home)
+     tag, oid = latest_tag()
+     current = current_release(home)
+-    current_version = tag_version(current.name)
+-    if current_version and current_version >= tag_version(tag):
++    if is_current(current, tag):
+         return None
+     release = fetch_release(home, tag, oid)
+-    current_version = tag_version(current_release(home).name)
+-    if current_version and current_version >= tag_version(tag):
++    if is_current(current_release(home), tag):
+         return None
+     atomic_link(f"releases/{release.name}", home / "current")
+     migrate_autoresearch_link(home)
+@@ -184,14 +244,18 @@ def automatic_update(home: Path) -> None:
+         return
+     try:
+         checked.touch()
+-        update(home)
++        tag, _ = latest_tag()
++        if not is_current(current_release(home), tag):
++            print(f"bonaparte: {tag} is available; run bonaparte update.", file=sys.stderr)
+     except Exception as error:
+-        print(f"bonaparte: automatic update failed: {error}", file=sys.stderr)
++        print(f"bonaparte: update check failed: {error}", file=sys.stderr)
+ 
+ 
+ def main() -> int:
+     home = bonaparte_home()
+     try:
++        if sys.argv[1:] == ["status"]:
++            return status(home)
+         migrate_autoresearch_link(home)
+         if sys.argv[1:] == ["update"]:
+             tag = update(home)

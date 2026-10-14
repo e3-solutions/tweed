@@ -1,0 +1,1 @@
+{"id": "6c15fae2647d4279a211cc5b8f9e1ec1", "argv": ["/bin/bash", "-c", "S=../solve/call/execution-scratch; PYTHONPATH=\"$PWD\" python3 -B $S/probe.py \"$PWD\" > $S/out.txt 2>&1; echo exit=$? >> $S/out.txt; python3 -c \"print(open('$S/out.txt').read())\""], "timeout": 38.26213884353638}

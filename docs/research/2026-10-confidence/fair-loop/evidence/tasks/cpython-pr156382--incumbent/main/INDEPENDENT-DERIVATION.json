@@ -1,0 +1,100 @@
+{
+  "role": "main",
+  "artifact_complete": true,
+  "artifact_evaluation_status": "observed",
+  "delivery_valid": true,
+  "known_deadline": false,
+  "custody_qualified": true,
+  "custody_failures": [],
+  "controller_settled": true,
+  "after_source_sha256": "29313ab1352993ab7a22176cdd7943070c99f11867814376f82eb470195a6a1c",
+  "before_source_sha256": "b60349bee3b303ad5f50ebd4ec03c9138636b98c9fd066e2588787c7c844a6cf",
+  "primary_runtime_changed": true,
+  "required_gaps": [],
+  "safe_declared_completion": {
+    "complete": true,
+    "remaining": [],
+    "summary": "I fixed how ConfigParser handles explicitly configured whitespace delimiters. With `delimiters=(\" \", \"=\")`, the line `colour dark blue` now reads as option `colour` with value `dark blue`. Before the fix it came out as `{'colour dark': 'blue'}`, and I confirmed that before changing anything.\n\n**Cause:** the pattern for option names let any whitespace join words in a name, even when that whitespace was a delimiter. The match then backtracked to the last space instead of the first.\n\n**Fix:** a one-line change to the option-name pattern in `configparser.py`, applied to both the normal and the `allow_no_value` versions. Words in an option name can now only be joined by whitespace that is not a delimiter, so a whitespace delimiter splits at its first occurrence. This also fixes the tab case: with `delimiters=(\"\\t\",)`, `a\\tb\\tc` now gives `a` = `b\\tc`. Before, it would have given `a\\tb` = `c` (my reading of the old pattern; I ran the old code only on the space example).\n\n**Tests:** I added 11 tests in `tests/test_whitespace_delimiters.py`, and they all pass along with the visible check. They cover:\n- **Space and tab delimiters:** `colour dark blue`, `key = v`, `full name\\tAda` and `a\\tb\\tc` all split correctly.\n- **Whitespace inside names:** a tab can still join words in a name when only space is a delimiter. With the default delimiters, `full name = Ada` keeps its multi-word name.\n- **Rejection:** lines with no delimiter raise `ParsingError`, and repeated options raise `DuplicateOptionError` in strict mode (not with `strict=False`).\n- **Other features:** `allow_no_value`, `getint`/`getfloat`/`getboolean`, `%(base)s` interpolation, and write-then-read round trips for space, tab and space-plus-`=` delimiters.\n- **Long bad lines:** a 20,000-word line with no delimiter is rejected quickly.\n\nThe visible check (`python3.14 -B -m unittest tests.test_visible`) passes.\n\n**Not done:** no review by anyone other than me, no full CPython test suite, and no security or performance audit. The long-line test is a quick sanity check, not proof the pattern can't be slowed down by crafted input."
+  },
+  "original_evaluation_corrected": true,
+  "facts": {
+    "phase": "main",
+    "status": "settled",
+    "source_receipt_sha256": "0e9a04e03427bffacd8d6341dbb01678a3d324dd2dfbb8bfe85253226d9f1694",
+    "observed_models": [
+      "claude-opus-5-5"
+    ],
+    "session_ids": [
+      "eff471bd-8aa8-44dc-b2c0-3b4bb94fb091"
+    ],
+    "typed_terminal_observed": true,
+    "terminal_count": 1,
+    "actual_unique_tool_requests": 12,
+    "actual_unique_mcp_requests": 11,
+    "tools_by_name": {
+      "mcp__cp_trial__read_file": 3,
+      "mcp__cp_trial__list_files": 1,
+      "mcp__cp_trial__run_tests": 6,
+      "mcp__cp_trial__write_file": 1,
+      "StructuredOutput": 1
+    },
+    "invalid_stream_or_ids": [],
+    "provider_delivery_qualified_recorded": null,
+    "timed_out": false,
+    "wall_seconds": 71.62981395899988,
+    "reported_cost_usd": 0.5896434,
+    "reported_usage": {
+      "input_tokens": 18,
+      "cache_creation_input_tokens": 51117,
+      "cache_read_input_tokens": 199977,
+      "output_tokens": 7032,
+      "output_tokens_details": {
+        "thinking_tokens": 2928
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 51117,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "global",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 877,
+          "cache_read_input_tokens": 46611,
+          "cache_creation_input_tokens": 5544,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 5544
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard",
+      "fallback_credit": null
+    },
+    "reported_model_usage": {
+      "claude-opus-5-5": {
+        "inputTokens": 18,
+        "outputTokens": 7032,
+        "cacheReadInputTokens": 199977,
+        "cacheCreationInputTokens": 51117,
+        "webSearchRequests": 0,
+        "costUSD": 0.5896434,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 2928,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "source_authorship": null,
+    "model_thinking_exported": false
+  },
+  "evaluation_receipt_sha256": "161be20a2041f0f418b966c7d5fbf821a16adabd22d051b10cb9102692a8096f"
+}

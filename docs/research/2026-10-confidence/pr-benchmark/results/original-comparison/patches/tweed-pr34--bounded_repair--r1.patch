@@ -1,0 +1,42 @@
+diff --git a/bonaparte b/bonaparte
+index cdc8a50..f0896ca 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -257,6 +257,11 @@ def select_handoff(
+     context = {"existing": current} if current else {}
+     if phase == "rca" and current and issue.get("description"):
+         context["intake"] = issue["description"]
++    if phase == "publish" and current:
++        review = latest_comment(comments, PHASE_HEADERS["review"])
++        if review:
++            context["review"] = review
++    if "intake" in context or phase == "publish" and current:
+         if isinstance(current_record.get("id"), str):
+             context["existing_comment_id"] = current_record["id"]
+     key = f"scope:{kind}" if phase == "scope" else phase
+diff --git a/workflows/publish.md b/workflows/publish.md
+index 9840ecb..643b67a 100644
+--- a/workflows/publish.md
++++ b/workflows/publish.md
+@@ -2,7 +2,10 @@
+ 
+ Finalize the reviewed Bonaparte draft pull request, mark it ready for review, and
+ record it in Linear. The runner supplies only the latest review or existing
+-publish result plus issue metadata. Use authenticated `git` and `gh` for GitHub.
++publish result plus issue metadata. For an existing publish result it also
++supplies that comment's stable `existing_comment_id` and, when present, the
++latest complete review as `review`, so the same reviewed PR can be reconciled
++without writing another publish record. Use authenticated `git` and `gh` for GitHub.
+ Do not spawn subagents, change code, push commits, create another PR,
+ merge, deploy, delete branches, or mutate anything outside the existing PR's
+ metadata, readiness, and final Linear comment.
+@@ -10,7 +13,8 @@ metadata, readiness, and final Linear comment.
+ ## Preconditions
+ 
+ - Existing publish result: reverify its exact ready PR and Linear delivery
+-  comment, then return it without another write. If either is stale or missing,
++  comment (identified by `existing_comment_id`) against the supplied review's
++  branch, commit, and PR when present, then return it without another write. If either is stale or missing,
+   return `blocked` with that fact.
+ - New publish: require a complete `## Bonaparte · Implementation Review` as the
+   publish handoff.

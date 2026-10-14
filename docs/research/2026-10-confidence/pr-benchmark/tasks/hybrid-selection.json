@@ -1,0 +1,459 @@
+{
+  "schema_version": 1,
+  "repo": "e3-solutions/tweed",
+  "repository_url": "https://github.com/e3-solutions/tweed",
+  "task_ids": [
+    "tweed-pr32",
+    "tweed-pr31",
+    "tweed-pr40",
+    "tweed-pr34",
+    "tweed-pr39",
+    "tweed-pr35"
+  ],
+  "tasks": [
+    {
+      "task_id": "tweed-pr32",
+      "repo": "e3-solutions/tweed",
+      "pr_url": "https://github.com/e3-solutions/tweed/pull/32",
+      "base_sha": "e6fa6128f73e28427b124cd361855b92307b0d5a",
+      "head_sha": "2b84fec7f7ca6293747ba851f786557c999cb85d",
+      "merge_sha": "39640f88173e8d48e10d7e14c201c5c15a257dcb",
+      "requirements": "Fix coordinator event routing so a native child thread completing its turn cannot finish or replace the active coordinator turn. Only events belonging to the active coordinator thread/turn may establish its outcome. Preserve the coordinator final receipt and process cleanup behavior. For legacy notifications lacking threadId, a completion with the active turn ID remains accepted. Allowed production paths: bonaparte, bonaparte_native.py. New regular root *.py helper modules are allowed; do not shadow Python standard-library or test-framework modules.",
+      "production_paths": [
+        "bonaparte",
+        "bonaparte_native.py"
+      ],
+      "source_sha256": "1fd87ae46bbc20f89b9c2b72bcd0f56efa24ee52e0c7c8bd1dc85b9f90d5675d",
+      "head_source_sha256": "830f7a2110fac48fa872696289dbd1faf60d7a283b2e1fe6356962bdc13c568a",
+      "oracle_sha256": "6f38d7b5dc4c739761c518ca3aa09339674053e0fa6ff956b7de188d36222c0a",
+      "oracle_tests": [
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_wrong_thread_same_turn_cannot_finish_phase",
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_same_thread_wrong_turn_cannot_finish_phase",
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_wrong_thread_wrong_turn_cannot_finish_phase",
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_matching_thread_turn_finishes_phase",
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_legacy_absent_thread_matching_turn_finishes_phase",
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_foreign_messages_cannot_replace_coordinator_receipt",
+        "tests.test_workflow_audit.WorkflowRoutingAudit.test_malformed_active_transport_stops_process"
+      ],
+      "dependencies": [
+        "Python >=3.11 (historical tests use starred with contexts)",
+        "stdlib",
+        "git",
+        "POSIX shell (PR35 installation checks)"
+      ],
+      "solver_exposure": {
+        "base_code": true,
+        "baseline_tests": true,
+        "product_workflows": true,
+        "original_git_history": false,
+        "head_code": false,
+        "accepted_diff": false,
+        "heldout_oracle": false,
+        "pr_body": false
+      },
+      "controls": {
+        "base": {
+          "side": "base",
+          "exit_code": 1,
+          "log_sha256": "d7a4f2550e6afa17b54d47c4cedb45453e6fdb5943d4f735713cadf624496240"
+        },
+        "head": {
+          "side": "head",
+          "exit_code": 0,
+          "log_sha256": "d89b2911abe89038d5a0c72f77894054ca05afe901013aa6352535e987824b7a"
+        }
+      },
+      "test_commands": [
+        [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "tests.test_phase_runtime"
+        ]
+      ],
+      "solver_prompt": "Fix coordinator event routing so a native child thread completing its turn cannot finish or replace the active coordinator turn. Only events belonging to the active coordinator thread/turn may establish its outcome. Preserve the coordinator final receipt and process cleanup behavior. For legacy notifications lacking threadId, a completion with the active turn ID remains accepted. Allowed production paths: bonaparte, bonaparte_native.py. New regular root *.py helper modules are allowed; do not shadow Python standard-library or test-framework modules.\nThis is an isolated repository snapshot with baseline tests. Keep testing offline; do not fetch history, accepted solutions or external services. Do not run live Bonaparte provider workflows. Use fixture patterns. An evaluator restores original tests and applies held-out checks to declared production files; added tests do not affect grading.",
+      "oracle_script_sha256": "324b3d9eeb704584197ade4a69e0a5376fcc307e107c77f4c6b9997a035382aa",
+      "oracle_source": "Public run_phase workflow event matrix; filter-location-independent native fixture,7 selected cases",
+      "replay_scope": "Prospective hybrid PR32 public workflow slice:5 completion identity cases, foreign message preservation, malformed-transport cleanup"
+    },
+    {
+      "task_id": "tweed-pr31",
+      "repo": "e3-solutions/tweed",
+      "pr_url": "https://github.com/e3-solutions/tweed/pull/31",
+      "base_sha": "e6fa6128f73e28427b124cd361855b92307b0d5a",
+      "head_sha": "fd2c98dbbdc89ba15925a97a8cd36bb67d5db7df",
+      "merge_sha": "dcf6021b478c04dea88d32f8b815612b5a3ed087",
+      "requirements": "A soft time-budget interruption or post-steer guard failure after a native session exists must return a bounded failure receipt with a durable usable continuation token and saved question. Resuming that token must reuse the same native session. Bootstrap failures, ordinary protocol errors and session mismatches must not create misleading continuation checkpoints. Allowed production paths: bonaparte. New regular root *.py helper modules are allowed; do not shadow Python standard-library or test-framework modules.",
+      "production_paths": [
+        "bonaparte"
+      ],
+      "source_sha256": "1fd87ae46bbc20f89b9c2b72bcd0f56efa24ee52e0c7c8bd1dc85b9f90d5675d",
+      "head_source_sha256": "0db039bbf9eed7fce0467793030a4dd65e6da645b6bedfc9729f2ff315d07585",
+      "oracle_sha256": "f222464a71f5edcf3d4fb3fe0164ec8ccefd4b1e5856967c5f2f2f25ab2d8fe6",
+      "oracle_tests": [
+        "tests.test_resumability.ResumabilityCLIEdges.test_soft_guard_failure_has_durable_cli_continuation",
+        "tests.test_resumability.ResumabilityCLIEdges.test_interrupt_has_exit130_receipt_and_durable_continuation",
+        "tests.test_resumability.ResumabilityCLIEdges.test_unrelated_transport_failure_does_not_claim_continuation"
+      ],
+      "dependencies": [
+        "Python >=3.11 (historical tests use starred with contexts)",
+        "stdlib",
+        "git",
+        "POSIX shell (PR35 installation checks)"
+      ],
+      "solver_exposure": {
+        "base_code": true,
+        "baseline_tests": true,
+        "product_workflows": true,
+        "original_git_history": false,
+        "head_code": false,
+        "accepted_diff": false,
+        "heldout_oracle": false,
+        "pr_body": false
+      },
+      "controls": {
+        "base": {
+          "exit_code": 1,
+          "log_sha256": "7b07d81598be3e1aa0ffb5fecf8ee080eb5338aa1d6e626f7eb163e4961d01d3"
+        },
+        "head": {
+          "exit_code": 0,
+          "log_sha256": "162e4563d7bfebc575541011a5d5aefebfe55ece62c6a0ec0e66dc92ef3422a5"
+        }
+      },
+      "test_commands": [
+        [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "tests.test_bonaparte"
+        ]
+      ],
+      "solver_prompt": "A soft time-budget interruption or post-steer guard failure after a native session exists must return a bounded failure receipt with a durable usable continuation token and saved question. Resuming that token must reuse the same native session. Bootstrap failures, ordinary protocol errors and session mismatches must not create misleading continuation checkpoints. Allowed production paths: bonaparte. New regular root *.py helper modules are allowed; do not shadow Python standard-library or test-framework modules.\nThis is an isolated repository snapshot with baseline tests. Keep testing offline; do not fetch history, accepted solutions or external services. Do not run live Bonaparte provider workflows. Use fixture patterns. An evaluator restores original tests and applies held-out checks to declared production files; added tests do not affect grading."
+    },
+    {
+      "task_id": "tweed-pr40",
+      "repo": "e3-solutions/tweed",
+      "pr_url": "https://github.com/e3-solutions/tweed/pull/40",
+      "base_sha": "80289b8e2bfc5bcbf025114983e7639c56c63fd9",
+      "head_sha": "deab1ca6ece0622aeee5ee92e909386c57f5d2d5",
+      "merge_sha": "19591990d7a75d4961a2fe8e09bad552f69b1341",
+      "requirements": "Allow operators to disable the soft phase time budget explicitly, including on resume. Disabled budgets must wait for normal provider completion without sending budget steering. Persist the disabled choice in checkpoints. Preserve defaults and positive finite numeric budgets, and reject invalid inputs before invoking a provider. The public CLI flag is --no-soft-phase-budget; retain --soft-phase-budget-seconds for positive finite numbers. Null/None in a persisted soft_phase_budget_seconds field means disabled. run_phase(..., soft_phase_budget_seconds=None) must support disabled execution. BONAPARTE_SOFT_PHASE_BUDGET=off disables the default; a positive numeric --soft-phase-budget-seconds overrides that environment setting. The two CLI budget flags are mutually exclusive. Allowed production paths: bonaparte, bonaparte_checkpoint.py. New regular root *.py helper modules are allowed; do not shadow Python standard-library or test-framework modules.",
+      "production_paths": [
+        "bonaparte",
+        "bonaparte_checkpoint.py"
+      ],
+      "source_sha256": "214297cc438dd04400ff45d147856cae3321a2e3306c3f2405039460d8c37d81",
+      "head_source_sha256": "261ecc1a87a151e382d351cac3301e66fd6790bd59b3b44373292649e9c805b3",
+      "oracle_sha256": "2b7145ab3eda4698a5fa135db7a38a3eff47b7de0464be4e43093f54fc0c18ab",
+      "oracle_tests": [
+        "tests.test_budget_resume_audit.BudgetResumeAudit.test_explicit_resume_disable_replaces_saved_numeric_budget",
+        "tests.test_budget_resume_audit.BudgetResumeAudit.test_explicit_resume_disable_preserves_saved_disabled_budget",
+        "tests.test_budget_resume_audit.BudgetResumeAudit.test_resume_without_override_preserves_saved_disabled_budget",
+        "tests.test_budget_resume_audit.BudgetResumeAudit.test_numeric_resume_override_replaces_saved_disabled_budget",
+        "tests.test_budget_resume_audit.BudgetResumeAudit.test_resume_without_override_preserves_saved_numeric_budget",
+        "tests.test_budget_resume_audit.BudgetResumeAudit.test_invalid_numeric_resume_inputs_never_start_provider",
+        "tests.test_budget_resume_audit.BudgetResumeAudit.test_mutually_exclusive_flags_never_start_provider",
+        "tests.test_budget_resume_audit.BudgetResumeAudit.test_environment_disabled_default_runs_real_phase_and_persists_disabled",
+        "tests.test_budget_elapsed_audit.DisabledResumeElapsedAudit.test_disabled_resume_waits_beyond_prior_budget_without_steering"
+      ],
+      "dependencies": [
+        "Python >=3.11 (historical tests use starred with contexts)",
+        "stdlib",
+        "git",
+        "POSIX shell (PR35 installation checks)"
+      ],
+      "solver_exposure": {
+        "base_code": true,
+        "baseline_tests": true,
+        "product_workflows": true,
+        "original_git_history": false,
+        "head_code": false,
+        "accepted_diff": false,
+        "heldout_oracle": false,
+        "pr_body": false
+      },
+      "controls": {
+        "base": {
+          "side": "base",
+          "exit_code": 1,
+          "log_sha256": "aed0b4395d390a11dbf5a3ad919bf49156313890f020de27a3c65e22543a051c"
+        },
+        "head": {
+          "side": "head",
+          "exit_code": 0,
+          "log_sha256": "99efcb788f1362a251b570181d58136c0801be576b22891df04cb3eaf7ba429f"
+        }
+      },
+      "test_commands": [
+        [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "tests.test_phase_runtime",
+          "tests.test_checkpoint"
+        ]
+      ],
+      "solver_prompt": "Allow operators to disable the soft phase time budget explicitly, including on resume. Disabled budgets must wait for normal provider completion without sending budget steering. Persist the disabled choice in checkpoints. Preserve defaults and positive finite numeric budgets, and reject invalid inputs before invoking a provider. The public CLI flag is --no-soft-phase-budget; retain --soft-phase-budget-seconds for positive finite numbers. Null/None in a persisted soft_phase_budget_seconds field means disabled. run_phase(..., soft_phase_budget_seconds=None) must support disabled execution. BONAPARTE_SOFT_PHASE_BUDGET=off disables the default; a positive numeric --soft-phase-budget-seconds overrides that environment setting. The two CLI budget flags are mutually exclusive. Allowed production paths: bonaparte, bonaparte_checkpoint.py. New regular root *.py helper modules are allowed; do not shadow Python standard-library or test-framework modules.\nThis is an isolated repository snapshot with baseline tests. Keep testing offline; do not fetch history, accepted solutions or external services. Do not run live Bonaparte provider workflows. Use fixture patterns. An evaluator restores original tests and applies held-out checks to declared production files; added tests do not affect grading.",
+      "oracle_script_sha256": "324b3d9eeb704584197ade4a69e0a5376fcc307e107c77f4c6b9997a035382aa",
+      "oracle_source": "Public main/resume CLI + real native driver/checkpoint persistence:8 API cases plus real elapsed former-budget/no-steering case; no parse-token/helper-call-shape constraint",
+      "replay_scope": "Prospective hybrid PR40 public budget workflow slice:9 selected CLI/persistence/deadline cases"
+    },
+    {
+      "task_id": "tweed-pr34",
+      "repo": "e3-solutions/tweed",
+      "pr_url": "https://github.com/e3-solutions/tweed/pull/34",
+      "base_sha": "319ea8e611d994ad47c3b217ac369be678de5cb0",
+      "head_sha": "c13fb47067bb8d1c86d00fb5df5bba02d5d3bae7",
+      "merge_sha": "8b75b707dce819bab5aeeea5f90ae482495d5ce9",
+      "requirements": "When reconciling an existing publish handoff, retain the latest complete review alongside the existing publish and its stable comment ID. This lets callers reconcile the same reviewed PR without duplicating the publish record. Preserve the existing behavior for missing, ambiguous and non-publish handoffs. Allowed production paths: bonaparte, workflows/publish.md. New regular root *.py helper modules are allowed; do not shadow Python standard-library or test-framework modules.",
+      "production_paths": [
+        "bonaparte",
+        "workflows/publish.md"
+      ],
+      "source_sha256": "24e8daad647d6dcd86ff5f04eb6028f4a4cd977c901d4103738659a977aa39b5",
+      "head_source_sha256": "632958fb29de95354189888554fad3743dd44c50f1c750fc7294f039db0cd0a7",
+      "oracle_sha256": "89d07124f55d394db9c0835d34b8947a7ca62bd0a7d5607d6dc88ca3f8f17700",
+      "oracle_tests": [
+        "tests.test_handoff.HandoffTests.test_existing_publish_keeps_latest_review_for_safe_reconciliation",
+        "tests.test_handoff.HandoffTests.test_missing_or_ambiguous_input_fails_closed"
+      ],
+      "dependencies": [
+        "Python >=3.11 (historical tests use starred with contexts)",
+        "stdlib",
+        "git",
+        "POSIX shell (PR35 installation checks)"
+      ],
+      "solver_exposure": {
+        "base_code": true,
+        "baseline_tests": true,
+        "product_workflows": true,
+        "original_git_history": false,
+        "head_code": false,
+        "accepted_diff": false,
+        "heldout_oracle": false,
+        "pr_body": false
+      },
+      "controls": {
+        "base": {
+          "exit_code": 1,
+          "log_sha256": "7c6c5cf02b821ddce0171f7172e475f262f44b2dfe8b461f132f75019672c993"
+        },
+        "head": {
+          "exit_code": 0,
+          "log_sha256": "fbf58b7623e2fb1c51ac584211b60a2038bce54d926961828afd4a0ab2bf62aa"
+        }
+      },
+      "test_commands": [
+        [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "tests.test_handoff"
+        ]
+      ],
+      "solver_prompt": "When reconciling an existing publish handoff, retain the latest complete review alongside the existing publish and its stable comment ID. This lets callers reconcile the same reviewed PR without duplicating the publish record. Preserve the existing behavior for missing, ambiguous and non-publish handoffs. Allowed production paths: bonaparte, workflows/publish.md. New regular root *.py helper modules are allowed; do not shadow Python standard-library or test-framework modules.\nThis is an isolated repository snapshot with baseline tests. Keep testing offline; do not fetch history, accepted solutions or external services. Do not run live Bonaparte provider workflows. Use fixture patterns. An evaluator restores original tests and applies held-out checks to declared production files; added tests do not affect grading."
+    },
+    {
+      "task_id": "tweed-pr39",
+      "repo": "e3-solutions/tweed",
+      "pr_url": "https://github.com/e3-solutions/tweed/pull/39",
+      "base_sha": "e2b5d20fe78ae2bf39baba7d69e5366708ae0416",
+      "head_sha": "27db02237a3db0ab649f111224cb1948a34b8cd0",
+      "merge_sha": "80289b8e2bfc5bcbf025114983e7639c56c63fd9",
+      "requirements": "Replay scope: native lifecycle behavior from a larger change. Fix native terminal-session teardown. Track root and child ownership from actual thread-started events. When a root finishes, update metadata only for started owned descendants and archive the terminal root. A descendant cleanup failure must not prevent the root archive attempt or process reaping; surface the failure after attempting cleanup. Do not touch unstarted or unrelated threads. Child metadata must use the canonical issue branch. Allowed production paths: bonaparte, bonaparte_linear.py, bonaparte_native.py, workflows/implement.md, workflows/review.md. New regular root *.py helper modules are allowed; do not shadow Python standard-library or test-framework modules.",
+      "production_paths": [
+        "bonaparte",
+        "bonaparte_linear.py",
+        "bonaparte_native.py",
+        "workflows/implement.md",
+        "workflows/review.md"
+      ],
+      "source_sha256": "e11e216c0e81eae365bb202523a705fb5dea162689c3494203e937406546de2b",
+      "head_source_sha256": "214297cc438dd04400ff45d147856cae3321a2e3306c3f2405039460d8c37d81",
+      "oracle_sha256": "25ad608919b7b49e95a7faaa51df91fd0503022f702d763ba7e45bfbd065dac4",
+      "oracle_tests": [
+        "tests.test_lifecycle.NativeLifecycleEdges.test_terminal_phase_updates_owned_children_and_archives_root",
+        "tests.test_lifecycle.NativeLifecycleEdges.test_child_cleanup_failure_still_attempts_root_archive_and_reaps"
+      ],
+      "dependencies": [
+        "Python >=3.11 (historical tests use starred with contexts)",
+        "stdlib",
+        "git",
+        "POSIX shell (PR35 installation checks)"
+      ],
+      "solver_exposure": {
+        "base_code": true,
+        "baseline_tests": true,
+        "product_workflows": true,
+        "original_git_history": false,
+        "head_code": false,
+        "accepted_diff": false,
+        "heldout_oracle": false,
+        "pr_body": false
+      },
+      "controls": {
+        "base": {
+          "exit_code": 1,
+          "log_sha256": "ee408a2b88a43e346836c89613894fba20e112a05aee5d02eff8d846b12b8167"
+        },
+        "head": {
+          "exit_code": 0,
+          "log_sha256": "1c4ce117dabf9b588c786b2197a71c85b3d52183a14bcf14e4b258a61b863e1f"
+        }
+      },
+      "replay_scope": "behavioral slice: native event ownership and terminal teardown, not the entire PR",
+      "test_commands": [
+        [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "tests.test_phase_runtime"
+        ]
+      ],
+      "solver_prompt": "Replay scope: native lifecycle behavior from a larger change. Fix native terminal-session teardown. Track root and child ownership from actual thread-started events. When a root finishes, update metadata only for started owned descendants and archive the terminal root. A descendant cleanup failure must not prevent the root archive attempt or process reaping; surface the failure after attempting cleanup. Do not touch unstarted or unrelated threads. Child metadata must use the canonical issue branch. Allowed production paths: bonaparte, bonaparte_linear.py, bonaparte_native.py, workflows/implement.md, workflows/review.md. New regular root *.py helper modules are allowed; do not shadow Python standard-library or test-framework modules.\nThis is an isolated repository snapshot with baseline tests. Keep testing offline; do not fetch history, accepted solutions or external services. Do not run live Bonaparte provider workflows. Use fixture patterns. An evaluator restores original tests and applies held-out checks to declared production files; added tests do not affect grading."
+    },
+    {
+      "task_id": "tweed-pr35",
+      "repo": "e3-solutions/tweed",
+      "pr_url": "https://github.com/e3-solutions/tweed/pull/35",
+      "base_sha": "3ce3d5f50f3224adbbc6e1b6208f752a747cd4a1",
+      "head_sha": "2e22b11ecd7d8c568e8820e4d785a23c551fb7eb",
+      "merge_sha": "e2b5d20fe78ae2bf39baba7d69e5366708ae0416",
+      "requirements": "Add installed-version status and explicit atomic self-update for the launcher. Stable tags determine latest availability; offline status must be truthful. Activate only a complete validated release snapshot. A moved tag, invalid required path or failing smoke check must leave the current release usable and clean staging. Ordinary status/check behavior must not silently install a release. The user-facing commands are bonaparte status and bonaparte update. Status prints three lines: installed: <release-id>, latest: <stable-tag or unavailable>, and current: yes|no. Stable tags follow vMAJOR.MINOR.PATCH. Preserve the existing install layout and launcher invocation. When latest cannot be resolved, status prints latest: unavailable and current: unknown and exits nonzero without changing installed state. Allowed production paths: bonaparte-launcher, workflows/scope.md. New regular root *.py helper modules are allowed; do not shadow Python standard-library or test-framework modules.",
+      "production_paths": [
+        "bonaparte-launcher",
+        "workflows/scope.md"
+      ],
+      "source_sha256": "bb44917db13a1dc0a3cbe9aa9a4a032309f0d4427cb1e067ce6719b1dcb194df",
+      "head_source_sha256": "e11e216c0e81eae365bb202523a705fb5dea162689c3494203e937406546de2b",
+      "oracle_sha256": "935ea132bcb1392c1426ac27afcb75367fcd45ae1b7c86b1246c9058bbbdd1c4",
+      "oracle_tests": [
+        "tests.test_installation.InstallationTests.test_status_reports_installed_latest_and_current",
+        "tests.test_installation.InstallationTests.test_status_ignores_nonstable_tags_and_reports_offline",
+        "tests.test_installation.InstallationTests.test_explicit_update_switches_to_a_complete_snapshot",
+        "tests.test_installation.InstallationTests.test_moved_tag_is_rejected_and_staging_is_cleaned",
+        "tests.test_installation.InstallationTests.test_required_symlink_is_rejected_and_current_remains_usable",
+        "tests.test_installation.InstallationTests.test_smoke_failure_keeps_old_release_and_cleans_staging"
+      ],
+      "dependencies": [
+        "Python >=3.11 (historical tests use starred with contexts)",
+        "stdlib",
+        "git",
+        "POSIX shell (PR35 installation checks)"
+      ],
+      "solver_exposure": {
+        "base_code": true,
+        "baseline_tests": true,
+        "product_workflows": true,
+        "original_git_history": false,
+        "head_code": false,
+        "accepted_diff": false,
+        "heldout_oracle": false,
+        "pr_body": false
+      },
+      "controls": {
+        "base": {
+          "exit_code": 1,
+          "log_sha256": "d51d01f91268b950268fafe441f0403bf9b31ab2b9f3c778245cfa157a2a7bea"
+        },
+        "head": {
+          "exit_code": 0,
+          "log_sha256": "99199667041e0b7305138ceafa8bd06117699e32d8baaf57038cfd530f99019a"
+        }
+      },
+      "test_commands": [
+        [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "tests.test_installation.InstallationTests.test_install_is_independent_of_the_checkout",
+          "tests.test_installation.InstallationTests.test_install_refuses_a_non_symlink_autoresearch_target"
+        ]
+      ],
+      "solver_prompt": "Add installed-version status and explicit atomic self-update for the launcher. Stable tags determine latest availability; offline status must be truthful. Activate only a complete validated release snapshot. A moved tag, invalid required path or failing smoke check must leave the current release usable and clean staging. Ordinary status/check behavior must not silently install a release. The user-facing commands are bonaparte status and bonaparte update. Status prints three lines: installed: <release-id>, latest: <stable-tag or unavailable>, and current: yes|no. Stable tags follow vMAJOR.MINOR.PATCH. Preserve the existing install layout and launcher invocation. When latest cannot be resolved, status prints latest: unavailable and current: unknown and exits nonzero without changing installed state. Allowed production paths: bonaparte-launcher, workflows/scope.md. New regular root *.py helper modules are allowed; do not shadow Python standard-library or test-framework modules.\nThis is an isolated repository snapshot with baseline tests. Keep testing offline; do not fetch history, accepted solutions or external services. Do not run live Bonaparte provider workflows. Use fixture patterns. An evaluator restores original tests and applies held-out checks to declared production files; added tests do not affect grading.",
+      "replay_scope": "behavioral slice: six selected status/update/integrity cases, not the full PR contract"
+    }
+  ],
+  "snapshot_policy": {
+    "remove_autoload": [
+      ".git",
+      ".claude",
+      ".codex",
+      ".agents",
+      "AGENTS.md",
+      "CLAUDE.md"
+    ],
+    "keep_product_workflows_and_packaged_product_skills": true,
+    "original_history": false,
+    "head_oracles_visible_to_solver": false
+  },
+  "builder_python": "3.14.7",
+  "equivalent_controls": [
+    {
+      "task_id": "tweed-pr40",
+      "change": "DISABLE_SOFT_PHASE_BUDGET => UNBOUNDED_CHOICE",
+      "production_files": [
+        "bonaparte"
+      ],
+      "exit_code": 0,
+      "log_sha256": "9713b81452951e8042a309503cda40e647b9007b23846b84e8f2c43422adfb27"
+    },
+    {
+      "task_id": "tweed-pr39",
+      "change": "_started_thread_ids => _observed_children",
+      "production_files": [
+        "bonaparte",
+        "bonaparte_native.py"
+      ],
+      "exit_code": 0,
+      "log_sha256": "1c4ce117dabf9b588c786b2197a71c85b3d52183a14bcf14e4b258a61b863e1f"
+    }
+  ],
+  "boundary_controls": {
+    "outside_read": true,
+    "symlink_read": true,
+    "outside_write": true,
+    "immutable_test": true,
+    "immutable_entry": true,
+    "network": true,
+    "no_auth_env": true,
+    "scratch_write": true,
+    "symlink_submission_refused": true
+  },
+  "artifact_controls": {
+    "altered_visible_tests_ignored": true,
+    "base_with_all_tests_replaced_exit_code": 1,
+    "log_sha256": "b9cb977f40a290dc18f7d0b739a260273e9aff5745997c68f9d8c547073acde4"
+  },
+  "source_hash_algorithm": "sha256(sorted relative path + NUL + mode + NUL + sha256(file bytes)); symlink target tagged",
+  "visible_commands_policy": "focused baseline modules; intentionally excludes historical Git checkout integration requiring original release history",
+  "cohort_scope": "Separate prospective hybrid cohort; PR32 public routing and PR40 public CLI budget oracles validated by adaptive retrospective audits; original84 inputs unchanged",
+  "pr32_workflow_oracle_registration": {
+    "source_sha256": "ac0db6bfc98b52b4a9aeb06330de5af521880f41a26bd688ce28860f264bd141",
+    "oracle_sha256": "6f38d7b5dc4c739761c518ca3aa09339674053e0fa6ff956b7de188d36222c0a",
+    "sealed_at_utc": "2026-10-12T15:04:24.672375+00:00",
+    "requirements_unchanged": true,
+    "remaining_five_oracles_unchanged": true,
+    "adaptation_disclosure": "Chosen after original84 first3 outcomes; prospective only for new solver cohort, no original rescoring"
+  },
+  "adaptation_sequence": [
+    "PR32-only selection: remaining5 original oracle dictionaries unchanged at its recorded seal.",
+    "PR40 adaptation: preserves PR32 replacement and leaves remaining4 original oracle dictionaries unchanged."
+  ],
+  "pr40_budget_oracle_registration": {
+    "source_sha256": "2b6bdda7402b35958cd762ced0c7271d26c70ccf898591f711974409ad4ca403",
+    "elapsed_source_sha256": "d6dd845d20f518f28ac5bdd6f4d4dac5fc7ef3583382e4797b10d5659956e3b2",
+    "oracle_sha256": "2b7145ab3eda4698a5fa135db7a38a3eff47b7de0464be4e43093f54fc0c18ab",
+    "sealed_at_utc": "2026-10-12T15:23:57.532989+00:00",
+    "requirements_unchanged": true,
+    "remaining_four_original_oracles_unchanged": true,
+    "adaptation_disclosure": "Chosen after original84 PR40 observations and before hybrid outcomes; original84 primary unchanged; final8secondary unchanged; ninth prospective case real saved0.001s budget crossed by0.05s delayed provider receipt"
+  }
+}

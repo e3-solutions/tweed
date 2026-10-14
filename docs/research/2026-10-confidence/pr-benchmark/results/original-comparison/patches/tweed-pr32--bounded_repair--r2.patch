@@ -1,0 +1,95 @@
+diff --git a/bonaparte b/bonaparte
+index 26a168f..c067250 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -25,6 +25,7 @@ from bonaparte_linear import call_linear
+ from bonaparte_native import (
+     PHASE_CHILD_ENV,
+     AppServerPhaseDriver,
++    active_turn_completion,
+ )
+ from bonaparte_progress import (
+     MAX_COMPLETED_CHECKS,
+@@ -608,13 +609,11 @@ def run_phase(
+                     message = None
+                 if message is not None:
+                     if "method" in message:
+-                        _method, completed_turn = driver.observe_notification(message)
+-                        if completed_turn is not None:
+-                            if completed_turn.get("id") != turn_id:
+-                                raise RuntimeError(
+-                                    "Codex app-server completed the wrong turn"
+-                                )
+-                            terminal = completed_turn
++                        driver.observe_notification(message)
++                        if terminal is None:
++                            terminal = active_turn_completion(
++                                message, session_id, turn_id
++                            )
+                         continue
+                     raise RuntimeError("Codex app-server response correlation failed")
+                 steer_id = driver.send(
+@@ -647,11 +646,11 @@ def run_phase(
+                             item_type == "subAgentActivity"
+                             and item.get("kind") == "started"
+                         )
+-                _method, completed_turn = driver.observe_notification(message)
+-                if completed_turn is not None:
+-                    if completed_turn.get("id") != turn_id:
+-                        raise RuntimeError("Codex app-server completed the wrong turn")
+-                    terminal = completed_turn
++                driver.observe_notification(message)
++                # Child threads share this connection; only the active
++                # coordinator thread/turn may establish the phase outcome.
++                if terminal is None:
++                    terminal = active_turn_completion(message, session_id, turn_id)
+                 continue
+             if not steered or message.get("id") != steer_id:
+                 raise RuntimeError("Codex app-server response correlation failed")
+diff --git a/bonaparte_native.py b/bonaparte_native.py
+index 8ec992a..3379aca 100644
+--- a/bonaparte_native.py
++++ b/bonaparte_native.py
+@@ -97,6 +97,29 @@ def terminate_and_reap(process: subprocess.Popen) -> None:
+                     pass
+ 
+ 
++def active_turn_completion(
++    message: dict, thread_id: str | None, turn_id: str | None
++) -> dict | None:
++    """Return the completed turn only when it belongs to the active coordinator turn.
++
++    Native child threads emit their own ``turn/completed`` notifications on the
++    same connection; those must never finish or replace the coordinator turn.
++    Legacy notifications without a ``threadId`` are accepted only by turn ID.
++    """
++    if message.get("method") != "turn/completed" or not turn_id:
++        return None
++    params = message.get("params")
++    if not isinstance(params, dict):
++        return None
++    turn = params.get("turn")
++    if not isinstance(turn, dict) or turn.get("id") != turn_id:
++        return None
++    for owner in (params.get("threadId"), turn.get("threadId")):
++        if owner is not None and owner != thread_id:
++            return None
++    return turn
++
++
+ class AppServerPhaseDriver:
+     """Drive one native app-server turn without retaining its raw event stream."""
+ 
+@@ -306,7 +329,11 @@ class AppServerPhaseDriver:
+             turn = params.get("turn")
+             if not isinstance(turn, dict):
+                 raise RuntimeError("Codex app-server turn completion is malformed")
+-            return method, turn
++            return method, active_turn_completion(
++                message,
++                getattr(self, "_receipt_thread_id", None),
++                getattr(self, "_receipt_turn_id", None),
++            )
+         return method, None
+ 
+     def request(self, method: str, params: dict) -> dict:

@@ -1,0 +1,11 @@
+{
+  "task_id": "tweed-pr37",
+  "production_paths": [
+    "bonaparte"
+  ],
+  "test_ids": [
+    "tests.test_owner_queued.QueuedWrapup.test_queued_activity_after_ack_keeps_valid_continuation",
+    "tests.test_owner_queued.QueuedWrapup.test_no_queued_activity_and_clarification_remain_valid",
+    "tests.test_owner_queued.QueuedWrapup.test_queued_activity_cannot_make_invalid_receipt_valid"
+  ]
+}

@@ -1,0 +1,382 @@
+diff --git a/bonaparte-launcher b/bonaparte-launcher
+index 67681b7..bf28b25 100755
+--- a/bonaparte-launcher
++++ b/bonaparte-launcher
+@@ -1,5 +1,10 @@
+ #!/usr/bin/env python3
+-"""Launch the installed Bonaparte runtime and update it from stable Git tags."""
++"""Launch the installed Bonaparte runtime; report and explicitly apply updates.
++
++``bonaparte status`` is read-only. ``bonaparte update`` is the only command that
++installs a release; it activates a release only after the fetched tag matches
++the advertised object and the complete snapshot validates.
++"""
+ 
+ from __future__ import annotations
+ 
+@@ -15,9 +20,13 @@ from pathlib import Path
+ REPOSITORY = os.environ.get(
+     "BONAPARTE_REPOSITORY", "https://github.com/e3-solutions/tweed.git"
+ )
+-TAG_PATTERN = re.compile(r"v(\d+)\.(\d+)\.(\d+)")
++TAG_PATTERN = re.compile(r"v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)")
++RELEASE_PATTERN = re.compile(
++    r"(?:local-)?v(\d+)\.(\d+)\.(\d+)(?:-[0-9a-f]+)?"
++)
++OID_PATTERN = re.compile(r"[0-9a-f]{40}|[0-9a-f]{64}")
+ CHECK_INTERVAL = 24 * 60 * 60
+-REQUIRED = """bonaparte bonaparte-launcher bonaparte_checkpoint.py
++REQUIRED = """bonaparte bonaparte-launcher autoresearch bonaparte_checkpoint.py
+ bonaparte_native.py bonaparte_progress.py
+ bonaparte_linear.py
+ skills/use-bonaparte/SKILL.md
+@@ -25,6 +34,19 @@ skills/use-bonaparte/agents/openai.yaml workflows/create.md workflows/bug-rca.md
+ workflows/scope.md workflows/implement.md workflows/review.md workflows/publish.md
+ workflows/autoresearch-setup.md workflows/autoresearch-worker.md
+ workflows/autoresearch-critic.md""".split()
++PYTHON_SOURCES = (
++    "bonaparte",
++    "bonaparte-launcher",
++    "autoresearch",
++    "bonaparte_checkpoint.py",
++    "bonaparte_linear.py",
++    "bonaparte_native.py",
++    "bonaparte_progress.py",
++)
++
++
++class LatestUnavailable(RuntimeError):
++    """The latest stable tag could not be determined."""
+ 
+ 
+ def updater_environment() -> dict[str, str]:
+@@ -43,18 +65,30 @@ def bonaparte_home() -> Path:
+     return Path(os.environ.get("BONAPARTE_HOME", data_home / "bonaparte"))
+ 
+ 
++def bin_directory() -> Path:
++    return Path(os.environ.get("BONAPARTE_BIN_DIR", Path.home() / ".local/bin"))
++
++
+ def atomic_link(target: str, link: Path) -> None:
+     temporary = link.with_name(f".{link.name}.{os.getpid()}")
+     temporary.unlink(missing_ok=True)
+-    temporary.symlink_to(target)
+-    os.replace(temporary, link)
++    try:
++        temporary.symlink_to(target)
++        os.replace(temporary, link)
++    finally:
++        if temporary.is_symlink():
++            temporary.unlink()
+ 
+ 
+-def migrate_autoresearch_link(home: Path) -> None:
+-    bin_dir = Path(os.environ.get("BONAPARTE_BIN_DIR", Path.home() / ".local/bin"))
+-    link = bin_dir / "autoresearch"
+-    if link.exists() and not link.is_symlink():
++def refuse_regular_autoresearch_target() -> Path:
++    link = bin_directory() / "autoresearch"
++    if (link.exists() or link.is_symlink()) and not link.is_symlink():
+         raise RuntimeError(f"refusing to replace non-symlink: {link}")
++    return link
++
++
++def migrate_autoresearch_link(home: Path) -> None:
++    link = refuse_regular_autoresearch_target()
+     if not (current_release(home) / "autoresearch").is_file():
+         return
+     atomic_link(str(home / "current" / "autoresearch"), link)
+@@ -71,112 +105,190 @@ def current_release(home: Path) -> Path:
+ 
+ 
+ def tag_version(tag: str) -> tuple[int, int, int] | None:
+-    match = TAG_PATTERN.search(tag)
++    match = TAG_PATTERN.fullmatch(tag)
+     return tuple(map(int, match.groups())) if match else None
+ 
+ 
++def release_version(release_id: str) -> tuple[int, int, int] | None:
++    """Version of an installed release id: vX.Y.Z or local-vX.Y.Z-<commit>."""
++
++    match = RELEASE_PATTERN.fullmatch(release_id)
++    return tuple(map(int, match.groups())) if match else None
++
++
++def is_current(release_id: str, tag: str) -> bool:
++    installed = release_version(release_id)
++    return installed is not None and installed >= tag_version(tag)
++
++
+ def latest_tag() -> tuple[str, str]:
+-    output = subprocess.check_output(
+-        ["git", "ls-remote", "--tags", "--refs", REPOSITORY],
+-        env=updater_environment(),
+-        text=True,
+-        timeout=15,
+-    )
+-    refs = [line.split() for line in output.splitlines()]
+-    tags = [(oid, ref.removeprefix("refs/tags/")) for oid, ref in refs]
+-    stable = [
+-        (tag_version(tag), tag, oid) for oid, tag in tags if TAG_PATTERN.fullmatch(tag)
+-    ]
++    """Return the highest stable tag and its advertised object id."""
++
++    try:
++        output = subprocess.run(
++            ["git", "ls-remote", "--tags", "--refs", REPOSITORY],
++            check=True,
++            capture_output=True,
++            env=updater_environment(),
++            stdin=subprocess.DEVNULL,
++            text=True,
++            timeout=15,
++        ).stdout
++    except (OSError, subprocess.SubprocessError) as error:
++        raise LatestUnavailable(f"cannot list release tags: {error}") from error
++    stable = []
++    for line in output.splitlines():
++        fields = line.split()
++        if (
++            len(fields) != 2
++            or not OID_PATTERN.fullmatch(fields[0])
++            or not fields[1].startswith("refs/tags/")
++        ):
++            raise LatestUnavailable(f"unexpected tag listing line: {line!r}")
++        tag = fields[1].removeprefix("refs/tags/")
++        version = tag_version(tag)
++        if version:
++            stable.append((version, tag, fields[0]))
+     if not stable:
+-        raise RuntimeError("no stable vX.Y.Z tag is published")
++        raise LatestUnavailable("no stable vX.Y.Z tag is published")
+     _, tag, oid = max(stable)
+     return tag, oid
+ 
+ 
++def validate_required_path(release: Path, name: str) -> None:
++    """Require an ordinary file reached without any symlinked component."""
++
++    path = release
++    for part in Path(name).parts:
++        path = path / part
++        if path.is_symlink():
++            raise RuntimeError(f"release path is a symlink: {name}")
++    if not path.is_file():
++        raise RuntimeError(f"release is missing {name}")
++
++
+ def validate_release(release: Path) -> None:
+-    missing = [name for name in REQUIRED if not (release / name).exists()]
++    missing = []
++    for name in REQUIRED:
++        try:
++            validate_required_path(release, name)
++        except RuntimeError as error:
++            missing.append(str(error))
+     if missing:
+-        raise RuntimeError(f"release is missing {', '.join(missing)}")
+-    for name in (
+-        "bonaparte",
+-        "bonaparte-launcher",
+-        "bonaparte_checkpoint.py",
+-        "bonaparte_linear.py",
+-        "bonaparte_native.py",
+-        "bonaparte_progress.py",
+-    ):
++        raise RuntimeError("; ".join(missing))
++    for name in PYTHON_SOURCES:
+         source = release / name
+-        compile(source.read_text(), str(source), "exec")
++        try:
++            compile(source.read_text(), str(source), "exec")
++        except (SyntaxError, ValueError, UnicodeDecodeError) as error:
++            raise RuntimeError(f"release file {name} is invalid: {error}") from error
+     environment = updater_environment()
+     environment["BONAPARTE_AUTO_UPDATE"] = "0"
+-    subprocess.run(
+-        [sys.executable, str(release / "bonaparte"), "--help"],
+-        check=True,
+-        stdout=subprocess.DEVNULL,
+-        stderr=subprocess.PIPE,
+-        env=environment,
+-        timeout=10,
+-    )
+-    subprocess.run(
+-        [sys.executable, str(release / "autoresearch"), "--help"],
+-        check=True,
+-        stdout=subprocess.DEVNULL,
+-        stderr=subprocess.PIPE,
+-        env=environment,
+-        timeout=10,
+-    )
++    environment["PYTHONDONTWRITEBYTECODE"] = "1"
++    for name in ("bonaparte", "autoresearch"):
++        try:
++            subprocess.run(
++                [sys.executable, str(release / name), "--help"],
++                check=True,
++                stdin=subprocess.DEVNULL,
++                stdout=subprocess.DEVNULL,
++                stderr=subprocess.PIPE,
++                env=environment,
++                timeout=10,
++            )
++        except (OSError, subprocess.SubprocessError) as error:
++            raise RuntimeError(f"release smoke check {name} --help failed") from error
+ 
+ 
+ def git(directory: Path, *arguments: str, output: bool = False):
+     return subprocess.run(
+-        ["git", "-C", directory, *arguments],
++        ["git", "-C", str(directory), *arguments],
+         check=True,
+-        capture_output=output,
++        capture_output=True,
+         env=updater_environment(),
+-        text=output,
+-        timeout=30,
++        stdin=subprocess.DEVNULL,
++        text=True,
++        timeout=60,
+     )
+ 
+ 
+ def fetch_release(home: Path, tag: str, expected_oid: str) -> Path:
+-    destination = home / "releases" / tag
+-    if destination.exists():
+-        validate_release(destination)
+-        return destination
++    """Fetch, verify and validate ``tag`` into releases/<tag>.
++
++    An existing releases/<tag> directory is never trusted: the release is always
++    fetched again, compared with the advertised object, validated, and only then
++    swapped into place.
++    """
++
++    releases = home / "releases"
++    releases.mkdir(parents=True, exist_ok=True)
++    destination = releases / tag
+     staging = Path(tempfile.mkdtemp(prefix=".update-", dir=home))
++    discarded = None
+     try:
+-        git(staging, "init", "-q")
+-        git(staging, "fetch", "-q", "--depth=1", REPOSITORY, f"refs/tags/{tag}")
+-        actual_oid = git(staging, "rev-parse", "FETCH_HEAD", output=True).stdout.strip()
++        snapshot = staging / "snapshot"
++        snapshot.mkdir()
++        git(snapshot, "init", "-q")
++        git(snapshot, "fetch", "-q", "--no-tags", "--depth=1", REPOSITORY,
++            f"refs/tags/{tag}")
++        actual_oid = git(snapshot, "rev-parse", "FETCH_HEAD", output=True).stdout.strip()
+         if actual_oid != expected_oid:
+             raise RuntimeError(f"tag {tag} moved while updating")
+-        git(staging, "checkout", "-q", "--detach", "FETCH_HEAD")
+-        validate_release(staging)
+-        shutil.rmtree(staging / ".git")
+-        staging.rename(destination)
++        git(snapshot, "checkout", "-q", "--detach", "FETCH_HEAD")
++        shutil.rmtree(snapshot / ".git")
++        validate_release(snapshot)
++        if destination.is_symlink() or destination.is_file():
++            destination.unlink()
++        elif destination.exists():
++            discarded = staging / "discarded"
++            destination.rename(discarded)
++        snapshot.rename(destination)
+         return destination
+     finally:
+-        if staging.exists():
+-            shutil.rmtree(staging)
++        shutil.rmtree(staging, ignore_errors=True)
+ 
+ 
+ def update(home: Path) -> str | None:
+-    migrate_autoresearch_link(home)
++    refuse_regular_autoresearch_target()
++    previous = current_release(home)
+     tag, oid = latest_tag()
+-    current = current_release(home)
+-    current_version = tag_version(current.name)
+-    if current_version and current_version >= tag_version(tag):
++    if is_current(previous.name, tag):
+         return None
++    previous_target = os.readlink(home / "current")
+     release = fetch_release(home, tag, oid)
+-    current_version = tag_version(current_release(home).name)
+-    if current_version and current_version >= tag_version(tag):
+-        return None
+-    atomic_link(f"releases/{release.name}", home / "current")
+-    migrate_autoresearch_link(home)
++    try:
++        atomic_link(f"releases/{release.name}", home / "current")
++        migrate_autoresearch_link(home)
++    except BaseException:
++        atomic_link(previous_target, home / "current")
++        raise
+     return tag
+ 
+ 
+-def automatic_update(home: Path) -> None:
++def status(home: Path) -> int:
++    """Print installed/latest/current without changing installed state."""
++
++    try:
++        installed = current_release(home).name
++    except RuntimeError as error:
++        print(f"bonaparte: {error}", file=sys.stderr)
++        installed = None
++    print(f"installed: {installed or 'none'}", flush=True)
++    try:
++        tag, _ = latest_tag()
++    except LatestUnavailable as error:
++        print("latest: unavailable")
++        print("current: unknown")
++        print(f"bonaparte: {error}", file=sys.stderr)
++        return 1
++    print(f"latest: {tag}")
++    print(f"current: {'yes' if installed and is_current(installed, tag) else 'no'}")
++    return 0 if installed is not None else 1
++
++
++def automatic_check(home: Path) -> None:
++    """Periodically report a newer stable release; never install it."""
++
+     if os.environ.get("BONAPARTE_AUTO_UPDATE") == "0":
+         return
+     checked = home / "last-check"
+@@ -184,15 +296,21 @@ def automatic_update(home: Path) -> None:
+         return
+     try:
+         checked.touch()
+-        update(home)
++        tag, _ = latest_tag()
++        if not is_current(current_release(home).name, tag):
++            print(
++                f"bonaparte: {tag} is available; run `bonaparte update` to install it",
++                file=sys.stderr,
++            )
+     except Exception as error:
+-        print(f"bonaparte: automatic update failed: {error}", file=sys.stderr)
++        print(f"bonaparte: update check failed: {error}", file=sys.stderr)
+ 
+ 
+ def main() -> int:
+     home = bonaparte_home()
+     try:
+-        migrate_autoresearch_link(home)
++        if sys.argv[1:] == ["status"]:
++            return status(home)
+         if sys.argv[1:] == ["update"]:
+             tag = update(home)
+             print(
+@@ -201,7 +319,8 @@ def main() -> int:
+                 else "Bonaparte is already current."
+             )
+             return 0
+-        automatic_update(home)
++        migrate_autoresearch_link(home)
++        automatic_check(home)
+         runner = current_release(home) / "bonaparte"
+         os.execv(sys.executable, [sys.executable, str(runner), *sys.argv[1:]])
+     except Exception as error:

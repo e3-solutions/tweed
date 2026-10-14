@@ -1,0 +1,410 @@
+{
+  "schema_version": 1,
+  "classification": "Result-informed illustrative triage qualification, not real-PR efficacy or cost comparison",
+  "registration_sha256": "1d62c706295c10999bebdfd7030c76002156e3c528302554406089d808b0caa5",
+  "packet_sha256": "b43f0740407689b3342d8515d2ff46204485db4c04ad41bc3bff7078e0984cef",
+  "schema_sha256": "7d18ea445887515974be913e4ed413eea4df162b34b9e16cd15eefa355bacedb",
+  "sealed_expected_sha256": "be79012f7072346d0de65cc2e980ff6455e8ff0e3b65c8ca7be12f27ba1185c9",
+  "routes": [
+    {
+      "requested_model": "gpt-6-luna",
+      "requested_effort": "low",
+      "attempts": 1,
+      "attribution": "native-configured",
+      "observed_model_ids": null,
+      "answer_sha256": "8cd232367cc1ff0c83a321f15411546076433b2da35af8a390e0da1c394872d3",
+      "private_receipt_sha256": null,
+      "labels_matched": 8,
+      "cases": 8,
+      "grounding_fields_valid": true,
+      "case_assessments": [
+        {
+          "case_id": "missing-source",
+          "label_matches_sealed_expected": true,
+          "pointer_fields_exist": true,
+          "evidence_paths": [
+            "/source_sha256_at_launch",
+            "/source_sha256_after"
+          ]
+        },
+        {
+          "case_id": "timeout-terminal",
+          "label_matches_sealed_expected": true,
+          "pointer_fields_exist": true,
+          "evidence_paths": [
+            "/timed_out",
+            "/terminal/complete",
+            "/terminal/remaining"
+          ]
+        },
+        {
+          "case_id": "peer-drift",
+          "label_matches_sealed_expected": true,
+          "pointer_fields_exist": true,
+          "evidence_paths": [
+            "/source_sha256_at_launch",
+            "/source_sha256_after",
+            "/readonly"
+          ]
+        },
+        {
+          "case_id": "healthy-workflow",
+          "label_matches_sealed_expected": true,
+          "pointer_fields_exist": true,
+          "evidence_paths": [
+            "/qualification_passed",
+            "/source_bound",
+            "/visible_check_exit_code",
+            "/stages/0/role",
+            "/stages/0/complete",
+            "/stages/1/role",
+            "/stages/1/complete",
+            "/stages/2/role",
+            "/stages/2/complete",
+            "/stages/3/role",
+            "/stages/3/complete"
+          ]
+        },
+        {
+          "case_id": "missing-tools",
+          "label_matches_sealed_expected": true,
+          "pointer_fields_exist": true,
+          "evidence_paths": [
+            "/server_status",
+            "/effective_tools",
+            "/expected_operational_tools"
+          ]
+        },
+        {
+          "case_id": "legitimate-intermediate-gap",
+          "label_matches_sealed_expected": true,
+          "pointer_fields_exist": true,
+          "evidence_paths": [
+            "/stages/0/role",
+            "/stages/0/complete",
+            "/stages/2/role",
+            "/stages/2/complete",
+            "/stages/3/role",
+            "/stages/3/complete"
+          ]
+        },
+        {
+          "case_id": "unknown-cost",
+          "label_matches_sealed_expected": true,
+          "pointer_fields_exist": true,
+          "evidence_paths": [
+            "/total_cost_usd",
+            "/known_cost_subtotal",
+            "/providers"
+          ]
+        },
+        {
+          "case_id": "unchecked-patch",
+          "label_matches_sealed_expected": true,
+          "pointer_fields_exist": true,
+          "evidence_paths": [
+            "/git_apply_exit_code",
+            "/candidate_patch_bytes",
+            "/projection_comparison"
+          ]
+        }
+      ],
+      "usage": null,
+      "model_usage": null,
+      "wall_seconds": null,
+      "cli_reported_cost_usd": null,
+      "charged_cost_usd": null,
+      "confinement": "read-only instructions; no mechanical filesystem confinement asserted"
+    },
+    {
+      "requested_model": "gpt-5.6-terra",
+      "requested_effort": "low",
+      "attempts": 1,
+      "attribution": "native-configured",
+      "observed_model_ids": null,
+      "answer_sha256": "cdc093240753915aa704f63b6e86c428c61de0dc24ba635fac35973aa4a548a7",
+      "private_receipt_sha256": null,
+      "labels_matched": 8,
+      "cases": 8,
+      "grounding_fields_valid": true,
+      "case_assessments": [
+        {
+          "case_id": "missing-source",
+          "label_matches_sealed_expected": true,
+          "pointer_fields_exist": true,
+          "evidence_paths": [
+            "/source_sha256_at_launch",
+            "/source_sha256_after"
+          ]
+        },
+        {
+          "case_id": "timeout-terminal",
+          "label_matches_sealed_expected": true,
+          "pointer_fields_exist": true,
+          "evidence_paths": [
+            "/timed_out",
+            "/terminal/complete"
+          ]
+        },
+        {
+          "case_id": "peer-drift",
+          "label_matches_sealed_expected": true,
+          "pointer_fields_exist": true,
+          "evidence_paths": [
+            "/source_sha256_at_launch",
+            "/source_sha256_after",
+            "/readonly"
+          ]
+        },
+        {
+          "case_id": "healthy-workflow",
+          "label_matches_sealed_expected": true,
+          "pointer_fields_exist": true,
+          "evidence_paths": [
+            "/qualification_passed",
+            "/source_bound",
+            "/visible_check_exit_code",
+            "/stages/0/complete",
+            "/stages/1/complete",
+            "/stages/2/complete",
+            "/stages/3/complete"
+          ]
+        },
+        {
+          "case_id": "missing-tools",
+          "label_matches_sealed_expected": true,
+          "pointer_fields_exist": true,
+          "evidence_paths": [
+            "/server_status",
+            "/effective_tools",
+            "/expected_operational_tools"
+          ]
+        },
+        {
+          "case_id": "legitimate-intermediate-gap",
+          "label_matches_sealed_expected": true,
+          "pointer_fields_exist": true,
+          "evidence_paths": [
+            "/qualification_passed",
+            "/source_bound",
+            "/visible_check_exit_code",
+            "/stages/2/complete",
+            "/stages/3/complete"
+          ]
+        },
+        {
+          "case_id": "unknown-cost",
+          "label_matches_sealed_expected": true,
+          "pointer_fields_exist": true,
+          "evidence_paths": [
+            "/total_cost_usd",
+            "/known_cost_subtotal"
+          ]
+        },
+        {
+          "case_id": "unchecked-patch",
+          "label_matches_sealed_expected": true,
+          "pointer_fields_exist": true,
+          "evidence_paths": [
+            "/git_apply_exit_code",
+            "/allow_empty",
+            "/projection_comparison"
+          ]
+        }
+      ],
+      "usage": null,
+      "model_usage": null,
+      "wall_seconds": null,
+      "cli_reported_cost_usd": null,
+      "charged_cost_usd": null,
+      "confinement": "read-only instructions; no mechanical filesystem confinement asserted"
+    },
+    {
+      "requested_model": "claude-haiku-5-5",
+      "requested_effort": "low",
+      "attempts": 1,
+      "attribution": "runtime-observed",
+      "observed_model_ids": [
+        "claude-haiku-5-5"
+      ],
+      "answer_sha256": "8b8785ae9e499c179223381c5118232fa38acd26f9caa7b84e0064f81512d25c",
+      "private_receipt_sha256": "f0235a4e5cc845100b08b9f6194c164f34098191b482b5ed0022dd198cc8f34f",
+      "labels_matched": 8,
+      "cases": 8,
+      "grounding_fields_valid": true,
+      "case_assessments": [
+        {
+          "case_id": "missing-source",
+          "label_matches_sealed_expected": true,
+          "pointer_fields_exist": true,
+          "evidence_paths": [
+            "/source_sha256_at_launch",
+            "/source_sha256_after"
+          ]
+        },
+        {
+          "case_id": "timeout-terminal",
+          "label_matches_sealed_expected": true,
+          "pointer_fields_exist": true,
+          "evidence_paths": [
+            "/timed_out"
+          ]
+        },
+        {
+          "case_id": "peer-drift",
+          "label_matches_sealed_expected": true,
+          "pointer_fields_exist": true,
+          "evidence_paths": [
+            "/source_sha256_at_launch",
+            "/source_sha256_after"
+          ]
+        },
+        {
+          "case_id": "healthy-workflow",
+          "label_matches_sealed_expected": true,
+          "pointer_fields_exist": true,
+          "evidence_paths": [
+            "/qualification_passed",
+            "/source_bound",
+            "/visible_check_exit_code",
+            "/stages/0/complete",
+            "/stages/1/complete",
+            "/stages/2/complete",
+            "/stages/3/complete"
+          ]
+        },
+        {
+          "case_id": "missing-tools",
+          "label_matches_sealed_expected": true,
+          "pointer_fields_exist": true,
+          "evidence_paths": [
+            "/server_status",
+            "/effective_tools",
+            "/expected_operational_tools"
+          ]
+        },
+        {
+          "case_id": "legitimate-intermediate-gap",
+          "label_matches_sealed_expected": true,
+          "pointer_fields_exist": true,
+          "evidence_paths": [
+            "/stages/2/complete",
+            "/stages/3/complete"
+          ]
+        },
+        {
+          "case_id": "unknown-cost",
+          "label_matches_sealed_expected": true,
+          "pointer_fields_exist": true,
+          "evidence_paths": [
+            "/total_cost_usd",
+            "/known_cost_subtotal"
+          ]
+        },
+        {
+          "case_id": "unchecked-patch",
+          "label_matches_sealed_expected": true,
+          "pointer_fields_exist": true,
+          "evidence_paths": [
+            "/git_apply_exit_code",
+            "/projection_comparison"
+          ]
+        }
+      ],
+      "usage": {
+        "input_tokens": 2,
+        "cache_creation_input_tokens": 2728,
+        "cache_read_input_tokens": 0,
+        "output_tokens": 1397,
+        "output_tokens_details": {
+          "thinking_tokens": 901
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 2728,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "inference_geo": "global",
+        "iterations": [
+          {
+            "input_tokens": 2,
+            "output_tokens": 1397,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 2728,
+            "cache_creation": {
+              "ephemeral_5m_input_tokens": 0,
+              "ephemeral_1h_input_tokens": 2728
+            },
+            "type": "message"
+          }
+        ],
+        "speed": "standard",
+        "fallback_credit": null
+      },
+      "model_usage": {
+        "claude-haiku-5-5": {
+          "inputTokens": 2,
+          "outputTokens": 1397,
+          "cacheReadInputTokens": 0,
+          "cacheCreationInputTokens": 2728,
+          "webSearchRequests": 0,
+          "costUSD": 0.049772,
+          "contextWindow": 200000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 901,
+          "canonicalModel": "claude-haiku-5-5",
+          "provider": "firstParty",
+          "costBasis": "unknown"
+        }
+      },
+      "wall_seconds": 6.515750915999888,
+      "cli_reported_cost_usd": 0.049772,
+      "charged_cost_usd": null,
+      "confinement": "empty operational tools, structured terminal; original process group only"
+    }
+  ],
+  "verifier_negative_controls": [
+    {
+      "control": "duplicate-case",
+      "rejected": true
+    },
+    {
+      "control": "missing-case",
+      "rejected": true
+    },
+    {
+      "control": "invented-evidence-pointer",
+      "rejected": true
+    },
+    {
+      "control": "malformed-label",
+      "rejected": true
+    },
+    {
+      "control": "well-shaped-wrong-label",
+      "rejected_by_expected_label_comparison": true
+    }
+  ],
+  "owner_semantic_assessment": {
+    "missing-source": "Two null hashes cannot establish source integrity; absence leaves this positive claim unknown.",
+    "timeout-terminal": "A known timeout contradicts an eligible completed episode even with exit0 and complete=true.",
+    "peer-drift": "Different valid launch/after digests contradict unchanged source.",
+    "healthy-workflow": "The explicit assigned peer and final-repair flags establish this stated workflow closure; no software semantic claim is made.",
+    "missing-tools": "Failed server plus absent required tools contradict availability.",
+    "legitimate-intermediate-gap": "The earlier implementation correctly reports future work; required peers and final repair later close the stated staged assignment.",
+    "unknown-cost": "A known component subtotal cannot establish an absent total.",
+    "unchecked-patch": "Zero exit under allow-empty cannot establish reconstruction without a projection comparison."
+  },
+  "limits": [
+    "Eight result-informed synthetic cases, one attempt per route; not a representative holdout",
+    "JSON pointers prove field existence, not semantic support; owner reasoning checked the explicit claims separately",
+    "Native configured routes lack observed response model, token and dollar telemetry",
+    "Claude CLI costBasis is unknown and runtime context catalog200k differs from advertised1M; no billing or capacity conclusion",
+    "No matched cost/effort/harness baseline; no demonstrated cost saving or improved complex-task accuracy",
+    "This policy addition is outside the frozen CP9f package used by the live48 historical-PR study"
+  ]
+}

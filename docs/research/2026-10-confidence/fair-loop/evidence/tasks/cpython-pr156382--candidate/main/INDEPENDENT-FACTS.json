@@ -1,0 +1,80 @@
+{
+  "phase": "main",
+  "status": "settled",
+  "source_receipt_sha256": "27a89ae26da3943bf2370c8af31a824e11a970146edd3cb4708a61c114dd2a29",
+  "observed_models": [
+    "claude-opus-5-5"
+  ],
+  "session_ids": [
+    "3cec00de-91f0-41b8-8afb-d2cfe1accf4d"
+  ],
+  "typed_terminal_observed": true,
+  "terminal_count": 1,
+  "actual_unique_tool_requests": 13,
+  "actual_unique_mcp_requests": 12,
+  "tools_by_name": {
+    "mcp__cp_trial__read_file": 3,
+    "mcp__cp_trial__list_files": 1,
+    "mcp__cp_trial__run_tests": 5,
+    "mcp__cp_trial__write_file": 1,
+    "mcp__cp_trial__replace_text": 2,
+    "StructuredOutput": 1
+  },
+  "invalid_stream_or_ids": [],
+  "provider_delivery_qualified_recorded": null,
+  "timed_out": false,
+  "wall_seconds": 66.78709966699535,
+  "reported_cost_usd": 0.5261796,
+  "reported_usage": {
+    "input_tokens": 16,
+    "cache_creation_input_tokens": 44283,
+    "cache_read_input_tokens": 154058,
+    "output_tokens": 7052,
+    "output_tokens_details": {
+      "thinking_tokens": 1977
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 44283,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 1422,
+        "cache_read_input_tokens": 39865,
+        "cache_creation_input_tokens": 6293,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 6293
+        },
+        "type": "message"
+      }
+    ],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "reported_model_usage": {
+    "claude-opus-5-5": {
+      "inputTokens": 16,
+      "outputTokens": 7052,
+      "cacheReadInputTokens": 154058,
+      "cacheCreationInputTokens": 44283,
+      "webSearchRequests": 0,
+      "costUSD": 0.5261796,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 1977,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "source_authorship": null,
+  "model_thinking_exported": false
+}

@@ -1,0 +1,22 @@
+{"name": "read_file", "arguments_sha256": "8da3d5b6b3efc443a38a8c613cde961fc3de8da9483932fef5610f63d4b705c9", "ok": true, "wall_seconds": 0.0005104169977130368}
+{"name": "list_files", "arguments_sha256": "4ae486c3a48f8dc732af672b138b438a1d96960304cc334d46bbc2687d169cbb", "ok": true, "wall_seconds": 0.009401584000443108}
+{"name": "read_file", "arguments_sha256": "5749ae9199e35d684b59c3e909e296568716cf58324f22e9af28843a56969838", "ok": true, "wall_seconds": 0.0014389580028364435}
+{"name": "run_tests", "arguments_sha256": "54018f387eca19aab609222ddc9eae33d22904e8682d90a13d476f9ca13e990b", "ok": false, "error": "ValueError: Use python3, git, bash, or sh; confinement covers descendants", "error_kind": "tool_input"}
+{"name": "run_tests", "arguments_sha256": "54dabf0655dff49d3b75d05abd2cb3b6dc6fee512ab925e28c3dca3ac530a86f", "ok": true, "wall_seconds": 0.10747841599368257, "command_exit_code": 0, "command_timed_out": false}
+{"name": "replace_text", "arguments_sha256": "7db51f3d049bfd24ce968526801e028cf1d1559d864ba66f6264e2e9bd4e9fd5", "ok": true, "wall_seconds": 0.0014296660010586493}
+{"name": "replace_text", "arguments_sha256": "32c7537c3882e3d5a5ba5962bc3d6dc192b7f8dd1cf5356076f5b21ea22a5b23", "ok": true, "wall_seconds": 0.000948333996348083}
+{"name": "replace_text", "arguments_sha256": "442aad3b7ef61088ffafb7f709af3ffa8c8a2d9b35e8754848a8cc13348da443", "ok": true, "wall_seconds": 0.0007745830007479526}
+{"name": "replace_text", "arguments_sha256": "ba65d6fabfc1e58521b66c844568215b9a204f0dbfd3055539dc70477c31a79d", "ok": true, "wall_seconds": 0.0005149999997229315}
+{"name": "replace_text", "arguments_sha256": "36af37c84b9123151e02d0c0efbf43a02d7800e7e02b3208957d4ad87e6dee7b", "ok": true, "wall_seconds": 0.0006536250002682209}
+{"name": "replace_text", "arguments_sha256": "6538c89a9cdd8b60b1a1df6a7fd343e400f484fd8aaa5da46570507ace75fc07", "ok": true, "wall_seconds": 0.0011712080013239756}
+{"name": "replace_text", "arguments_sha256": "6b9bd83624331cd8cced2969c9d82ae55d755c72653e2decc868f5fc881e2be6", "ok": true, "wall_seconds": 0.0006854579987702891}
+{"name": "run_tests", "arguments_sha256": "0b447c26296d110e464d8ca266d84e9cee847e8861026cdf4b2d27a6a68e1a2c", "ok": true, "wall_seconds": 1.240568749999511, "command_exit_code": 0, "command_timed_out": false}
+{"name": "run_tests", "arguments_sha256": "3d8bf10380dfa574cae15138100427d16593fbdc1767af444e4c3a75be48577d", "ok": true, "wall_seconds": 6.0202204160013935, "command_exit_code": 0, "command_timed_out": false}
+{"name": "run_tests", "arguments_sha256": "255a7c70c112dd9372006ce728a7f022525ea46e280b53f4f593a29959160afe", "ok": true, "wall_seconds": 1.2531951249984559, "command_exit_code": 0, "command_timed_out": false}
+{"name": "run_tests", "arguments_sha256": "03a467e4bdc3fad5ea8a3aabc675dd96aeb64f3e7e9ebb9211bf1f9941edf4cd", "ok": true, "wall_seconds": 6.532370291999541, "command_exit_code": 0, "command_timed_out": false}
+{"name": "replace_text", "arguments_sha256": "efe1c5e861ec95cb8cc760284e6a4636664e1d299ade7e6f8f28fed7f1be8053", "ok": true, "wall_seconds": 0.0004954159958288074}
+{"name": "run_tests", "arguments_sha256": "2e51301af78e6ef72686aae85a27e1c8d7c8764eb248c61593c9713c6cecf05c", "ok": true, "wall_seconds": 21.962614542004303, "command_exit_code": 0, "command_timed_out": false}
+{"name": "run_tests", "arguments_sha256": "51e97f19b1e302bf2f6a77952ceeaeff3cf24d2bf5eb918e8a1ed1e5b348dede", "ok": true, "wall_seconds": 0.10288225000113016, "command_exit_code": 0, "command_timed_out": false}
+{"name": "run_tests", "arguments_sha256": "57ac0561802736f8a284681b9d91b9a7f9f0589e2254a55e060104fe49f1ce3a", "ok": true, "wall_seconds": 13.908021625000401, "command_exit_code": 0, "command_timed_out": false}
+{"name": "run_tests", "arguments_sha256": "6e6fee0f0f80630275b9b29348854f7982188a4f3288d65897eab41af90bd7d5", "ok": true, "wall_seconds": 6.338925583004311, "command_exit_code": 0, "command_timed_out": false}
+{"name": "run_tests", "arguments_sha256": "c3660cd026141c8eba94d79666785c3e5f96f4d3235765ea562353bbbce782a9", "ok": true, "wall_seconds": 0.5179474579999805, "command_exit_code": 0, "command_timed_out": false}

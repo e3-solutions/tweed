@@ -1,0 +1,1022 @@
+{
+  "schema_version": 1,
+  "kind": "independent_synthetic_harness_controls_not_model_trials",
+  "created_at_utc": "2026-10-12T17:39:28.975180+00:00",
+  "model_calls": 0,
+  "synthetic_provider_metadata": true,
+  "all_controls_passed": true,
+  "code_stable_during_controls": true,
+  "code_sha256": {
+    "hybrid_v2_grader.py": "48bf6aa09a4bd34d718f6f2761b8b631c2af5b48716df27ca7f5b62a1205481a",
+    "hybrid_v2.py": "926a1fde84379ebd591939ad10706bdbfb7cb64503d75d7c8bf5e39a9a1ad7d6",
+    "hybrid_runtime_v2.py": "7b5c3bbabe03f7bd3b2ce3fa8b1dc049e8ee4659cd567590a42fcbe5617c76e6",
+    "hybrid_process_v2.py": "631e695e36f5c000b3fef02d4f64f8c518edc31befac116db559816750d8e95f",
+    "hybrid_grader.py": "28f49892a059f4cd628618a4aff0e347b55946bb14159a606629261184cd4932",
+    "hybrid_runner.py": "2e560c9300d16adba435048f45383293aea6ace3b7749ae17a0aea6652657a8d",
+    "hybrid_process.py": "c1f1da477c8d13e1824e604fc83a0e64483d52208cede728ac80439b88c11b96",
+    "test_hybrid_v2_grader.py": "86c0a7ac6d2cfe2f6d37c22b04afe1ce04daf5f47648c7780099f4b790e0bcae",
+    "cross_backend.py": "a4c94f220d66be06c40c88fdbb65578d45ce61a46b07e11c607f3aab50281739",
+    "grading_adapter.py": "bcec860d709ddbe3c3566fb7bcdc86805b4a3e5c69131167b7743c91cbb2a007",
+    "runner.py": "1f5e9ab2e5f0823a34c8f637ae08b4b3e7e1d1ac7bbbf5aab64ab79c95288fb8"
+  },
+  "control_helper_sha256": "d11aaf952baf84fd77bac8229dad0cf1d8bd9cf31776374651f8b9e369521b5d",
+  "private_control_receipt_sha256": "b2a3383572850200061062077be43e4f1d9ffb4b4f1a0e534cb1a0ad4f0859a5",
+  "manifest_sha256": "d975e71aaf733d7594c0455f8362cf80a5b5b6c1942797c7448e5df317824472",
+  "controls": [
+    {
+      "task_id": "tweed-pr32",
+      "variant": "base",
+      "synthetic_backend_terminal_format": "astra",
+      "expected_oracle_passed": false,
+      "oracle_passed": false,
+      "harness_invalid": false,
+      "harness_invalid_reasons": [],
+      "control_passed": true,
+      "source_sha256": "2e59722b4acf123136dfae4500c17a8189752819e2876380af7c62b33022d426",
+      "projected_result_sha256": "2e59722b4acf123136dfae4500c17a8189752819e2876380af7c62b33022d426",
+      "oracle_script_sha256": "324b3d9eeb704584197ade4a69e0a5376fcc307e107c77f4c6b9997a035382aa",
+      "oracle_material_sha256": "6f38d7b5dc4c739761c518ca3aa09339674053e0fa6ff956b7de188d36222c0a",
+      "grader_receipt": {
+        "oracle_passed": false,
+        "exit_code": 1,
+        "timed_out": false,
+        "wall_seconds": 0.23747895900032745,
+        "header": {
+          "task_id": "tweed-pr32",
+          "exit_code": 1,
+          "passed": false,
+          "tests": [
+            "tests.test_workflow_audit.WorkflowRoutingAudit.test_wrong_thread_same_turn_cannot_finish_phase",
+            "tests.test_workflow_audit.WorkflowRoutingAudit.test_same_thread_wrong_turn_cannot_finish_phase",
+            "tests.test_workflow_audit.WorkflowRoutingAudit.test_wrong_thread_wrong_turn_cannot_finish_phase",
+            "tests.test_workflow_audit.WorkflowRoutingAudit.test_matching_thread_turn_finishes_phase",
+            "tests.test_workflow_audit.WorkflowRoutingAudit.test_legacy_absent_thread_matching_turn_finishes_phase",
+            "tests.test_workflow_audit.WorkflowRoutingAudit.test_foreign_messages_cannot_replace_coordinator_receipt",
+            "tests.test_workflow_audit.WorkflowRoutingAudit.test_malformed_active_transport_stops_process"
+          ],
+          "production_scope": [
+            "bonaparte",
+            "bonaparte_native.py"
+          ],
+          "output_sha256": "25dbb663c57d3227223eb9d5f847e227c2a4c1ab908efe4dd23a88f0f41a83f9"
+        },
+        "stdout_sha256": "39ffb38c624214dabb6f2b91e3245010a333ac0c14080d008d9912c4ffadd985",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "raw_synthetic_control_sha256": "accc76eb9f2f677b466436bce0f9abdfb028d93abb1ab42a13350adc2049bde0"
+    },
+    {
+      "task_id": "tweed-pr32",
+      "variant": "head",
+      "synthetic_backend_terminal_format": "astra",
+      "expected_oracle_passed": true,
+      "oracle_passed": true,
+      "harness_invalid": false,
+      "harness_invalid_reasons": [],
+      "control_passed": true,
+      "source_sha256": "2e59722b4acf123136dfae4500c17a8189752819e2876380af7c62b33022d426",
+      "projected_result_sha256": "14cf93a86b380589e388d6761249f713e91e1ec01c21deea49351431c6117b4d",
+      "oracle_script_sha256": "324b3d9eeb704584197ade4a69e0a5376fcc307e107c77f4c6b9997a035382aa",
+      "oracle_material_sha256": "6f38d7b5dc4c739761c518ca3aa09339674053e0fa6ff956b7de188d36222c0a",
+      "grader_receipt": {
+        "oracle_passed": true,
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 0.2332699160001539,
+        "header": {
+          "task_id": "tweed-pr32",
+          "exit_code": 0,
+          "passed": true,
+          "tests": [
+            "tests.test_workflow_audit.WorkflowRoutingAudit.test_wrong_thread_same_turn_cannot_finish_phase",
+            "tests.test_workflow_audit.WorkflowRoutingAudit.test_same_thread_wrong_turn_cannot_finish_phase",
+            "tests.test_workflow_audit.WorkflowRoutingAudit.test_wrong_thread_wrong_turn_cannot_finish_phase",
+            "tests.test_workflow_audit.WorkflowRoutingAudit.test_matching_thread_turn_finishes_phase",
+            "tests.test_workflow_audit.WorkflowRoutingAudit.test_legacy_absent_thread_matching_turn_finishes_phase",
+            "tests.test_workflow_audit.WorkflowRoutingAudit.test_foreign_messages_cannot_replace_coordinator_receipt",
+            "tests.test_workflow_audit.WorkflowRoutingAudit.test_malformed_active_transport_stops_process"
+          ],
+          "production_scope": [
+            "bonaparte",
+            "bonaparte_native.py"
+          ],
+          "output_sha256": "97deaea3df842d7ded53cda12f7a08facb7185c5b13f1d7db8b94e97eaec0b2c"
+        },
+        "stdout_sha256": "d89b2911abe89038d5a0c72f77894054ca05afe901013aa6352535e987824b7a",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "raw_synthetic_control_sha256": "cd0c2894c02c2e428a9951080457fbc9be3ac8f6552423f7d4fad60b8ff2581b"
+    },
+    {
+      "task_id": "tweed-pr31",
+      "variant": "base",
+      "synthetic_backend_terminal_format": "astra",
+      "expected_oracle_passed": false,
+      "oracle_passed": false,
+      "harness_invalid": false,
+      "harness_invalid_reasons": [],
+      "control_passed": true,
+      "source_sha256": "2e59722b4acf123136dfae4500c17a8189752819e2876380af7c62b33022d426",
+      "projected_result_sha256": "2e59722b4acf123136dfae4500c17a8189752819e2876380af7c62b33022d426",
+      "oracle_script_sha256": "324b3d9eeb704584197ade4a69e0a5376fcc307e107c77f4c6b9997a035382aa",
+      "oracle_material_sha256": "f222464a71f5edcf3d4fb3fe0164ec8ccefd4b1e5856967c5f2f2f25ab2d8fe6",
+      "grader_receipt": {
+        "oracle_passed": false,
+        "exit_code": 1,
+        "timed_out": false,
+        "wall_seconds": 0.34229991700021856,
+        "header": {
+          "task_id": "tweed-pr31",
+          "exit_code": 1,
+          "passed": false,
+          "tests": [
+            "tests.test_resumability.ResumabilityCLIEdges.test_soft_guard_failure_has_durable_cli_continuation",
+            "tests.test_resumability.ResumabilityCLIEdges.test_interrupt_has_exit130_receipt_and_durable_continuation",
+            "tests.test_resumability.ResumabilityCLIEdges.test_unrelated_transport_failure_does_not_claim_continuation"
+          ],
+          "production_scope": [
+            "bonaparte"
+          ],
+          "output_sha256": "be1349169a2d8366f33877e5b05bf587925f675ccc490b433978dd83e568b608"
+        },
+        "stdout_sha256": "069a73feba6b64533e0b1818abd509a3f3bbe9788cc03e729afead82dbb0f6df",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "raw_synthetic_control_sha256": "3f9c4fc0aa9a9fc1d98d06fcbfbe99546a8f79d5707a3a0cdf1d98afc3581e48"
+    },
+    {
+      "task_id": "tweed-pr31",
+      "variant": "head",
+      "synthetic_backend_terminal_format": "astra",
+      "expected_oracle_passed": true,
+      "oracle_passed": true,
+      "harness_invalid": false,
+      "harness_invalid_reasons": [],
+      "control_passed": true,
+      "source_sha256": "2e59722b4acf123136dfae4500c17a8189752819e2876380af7c62b33022d426",
+      "projected_result_sha256": "664e31d6dbc76eff4a7a837a186d27c6288cfd8474cddd410a0dc0e48d455c30",
+      "oracle_script_sha256": "324b3d9eeb704584197ade4a69e0a5376fcc307e107c77f4c6b9997a035382aa",
+      "oracle_material_sha256": "f222464a71f5edcf3d4fb3fe0164ec8ccefd4b1e5856967c5f2f2f25ab2d8fe6",
+      "grader_receipt": {
+        "oracle_passed": true,
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 0.44663683399994625,
+        "header": {
+          "task_id": "tweed-pr31",
+          "exit_code": 0,
+          "passed": true,
+          "tests": [
+            "tests.test_resumability.ResumabilityCLIEdges.test_soft_guard_failure_has_durable_cli_continuation",
+            "tests.test_resumability.ResumabilityCLIEdges.test_interrupt_has_exit130_receipt_and_durable_continuation",
+            "tests.test_resumability.ResumabilityCLIEdges.test_unrelated_transport_failure_does_not_claim_continuation"
+          ],
+          "production_scope": [
+            "bonaparte"
+          ],
+          "output_sha256": "637af37724552363255411ee88a291a724b8affd82d9b6010fb984771f9cfd4c"
+        },
+        "stdout_sha256": "eca7dccc6096d29208387fbdc2e1de4d1e3b931fab64904b2b67d9b8bb479d13",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "raw_synthetic_control_sha256": "477293f1cc67839d105500ffc125b3cef0a45c62fa6baaefe27c0110db9ddf6d"
+    },
+    {
+      "task_id": "tweed-pr40",
+      "variant": "base",
+      "synthetic_backend_terminal_format": "astra",
+      "expected_oracle_passed": false,
+      "oracle_passed": false,
+      "harness_invalid": false,
+      "harness_invalid_reasons": [],
+      "control_passed": true,
+      "source_sha256": "7d287539e41cc468194d34f7f2baf90240cf29f1e4e9204df2847246a1848f5e",
+      "projected_result_sha256": "7d287539e41cc468194d34f7f2baf90240cf29f1e4e9204df2847246a1848f5e",
+      "oracle_script_sha256": "324b3d9eeb704584197ade4a69e0a5376fcc307e107c77f4c6b9997a035382aa",
+      "oracle_material_sha256": "2b7145ab3eda4698a5fa135db7a38a3eff47b7de0464be4e43093f54fc0c18ab",
+      "grader_receipt": {
+        "oracle_passed": false,
+        "exit_code": 1,
+        "timed_out": false,
+        "wall_seconds": 0.726141041000119,
+        "header": {
+          "task_id": "tweed-pr40",
+          "exit_code": 1,
+          "passed": false,
+          "tests": [
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_explicit_resume_disable_replaces_saved_numeric_budget",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_explicit_resume_disable_preserves_saved_disabled_budget",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_resume_without_override_preserves_saved_disabled_budget",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_numeric_resume_override_replaces_saved_disabled_budget",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_resume_without_override_preserves_saved_numeric_budget",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_invalid_numeric_resume_inputs_never_start_provider",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_mutually_exclusive_flags_never_start_provider",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_environment_disabled_default_runs_real_phase_and_persists_disabled",
+            "tests.test_budget_elapsed_audit.DisabledResumeElapsedAudit.test_disabled_resume_waits_beyond_prior_budget_without_steering"
+          ],
+          "production_scope": [
+            "bonaparte",
+            "bonaparte_checkpoint.py"
+          ],
+          "output_sha256": "834db3b4e43fb59d5396c1b1fe9da458080cd83563d877b645c8144c0f34c357"
+        },
+        "stdout_sha256": "ab5ab79d10dee12fc88a1ba925c0902f2cff07b5de4d422f7e4f371bb834ccc6",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "raw_synthetic_control_sha256": "672cd928ccfe753af20879a11125b061033ce28ea2e476589558083139e3bb63"
+    },
+    {
+      "task_id": "tweed-pr40",
+      "variant": "head",
+      "synthetic_backend_terminal_format": "astra",
+      "expected_oracle_passed": true,
+      "oracle_passed": true,
+      "harness_invalid": false,
+      "harness_invalid_reasons": [],
+      "control_passed": true,
+      "source_sha256": "7d287539e41cc468194d34f7f2baf90240cf29f1e4e9204df2847246a1848f5e",
+      "projected_result_sha256": "cc78ef8769d2af211385cb4bcbc5af6c6f2d7d5dada964cd9789fee07621c43f",
+      "oracle_script_sha256": "324b3d9eeb704584197ade4a69e0a5376fcc307e107c77f4c6b9997a035382aa",
+      "oracle_material_sha256": "2b7145ab3eda4698a5fa135db7a38a3eff47b7de0464be4e43093f54fc0c18ab",
+      "grader_receipt": {
+        "oracle_passed": true,
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 0.9306142079999518,
+        "header": {
+          "task_id": "tweed-pr40",
+          "exit_code": 0,
+          "passed": true,
+          "tests": [
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_explicit_resume_disable_replaces_saved_numeric_budget",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_explicit_resume_disable_preserves_saved_disabled_budget",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_resume_without_override_preserves_saved_disabled_budget",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_numeric_resume_override_replaces_saved_disabled_budget",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_resume_without_override_preserves_saved_numeric_budget",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_invalid_numeric_resume_inputs_never_start_provider",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_mutually_exclusive_flags_never_start_provider",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_environment_disabled_default_runs_real_phase_and_persists_disabled",
+            "tests.test_budget_elapsed_audit.DisabledResumeElapsedAudit.test_disabled_resume_waits_beyond_prior_budget_without_steering"
+          ],
+          "production_scope": [
+            "bonaparte",
+            "bonaparte_checkpoint.py"
+          ],
+          "output_sha256": "c0c84aca04a45ea553939429757f6be2068b8f8825a99f5a26050fd96bde3a08"
+        },
+        "stdout_sha256": "3ed4956d144e6d9b5b3574eb289c73b21495c7149e6ef6660afc653e76b884f9",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "raw_synthetic_control_sha256": "ad45f6158d5ee61ca01dcbf7822d04d902b02990afa17c9e75206101d8b86e72"
+    },
+    {
+      "task_id": "tweed-pr34",
+      "variant": "base",
+      "synthetic_backend_terminal_format": "astra",
+      "expected_oracle_passed": false,
+      "oracle_passed": false,
+      "harness_invalid": false,
+      "harness_invalid_reasons": [],
+      "control_passed": true,
+      "source_sha256": "afe1423cf5915ca2102f89602c6a18cee2a2479d36358d923c40e3262ca94585",
+      "projected_result_sha256": "afe1423cf5915ca2102f89602c6a18cee2a2479d36358d923c40e3262ca94585",
+      "oracle_script_sha256": "324b3d9eeb704584197ade4a69e0a5376fcc307e107c77f4c6b9997a035382aa",
+      "oracle_material_sha256": "89d07124f55d394db9c0835d34b8947a7ca62bd0a7d5607d6dc88ca3f8f17700",
+      "grader_receipt": {
+        "oracle_passed": false,
+        "exit_code": 1,
+        "timed_out": false,
+        "wall_seconds": 0.18661987499990573,
+        "header": {
+          "task_id": "tweed-pr34",
+          "exit_code": 1,
+          "passed": false,
+          "tests": [
+            "tests.test_handoff.HandoffTests.test_existing_publish_keeps_latest_review_for_safe_reconciliation",
+            "tests.test_handoff.HandoffTests.test_missing_or_ambiguous_input_fails_closed"
+          ],
+          "production_scope": [
+            "bonaparte",
+            "workflows/publish.md"
+          ],
+          "output_sha256": "ff01a24a35fbebdce05035ad05b6b89d8fabdcb1c399fafa3fecc1082a43340c"
+        },
+        "stdout_sha256": "fbd8fff9dce3b2ad28f89051610506abe524e359b9f4d5a7dddb11b6043aa3c7",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "raw_synthetic_control_sha256": "b0818a235ea9bf9dcdabd824cb34408f8dd5105ed9a82c4f34b41d22cd1cdddf"
+    },
+    {
+      "task_id": "tweed-pr34",
+      "variant": "head",
+      "synthetic_backend_terminal_format": "astra",
+      "expected_oracle_passed": true,
+      "oracle_passed": true,
+      "harness_invalid": false,
+      "harness_invalid_reasons": [],
+      "control_passed": true,
+      "source_sha256": "afe1423cf5915ca2102f89602c6a18cee2a2479d36358d923c40e3262ca94585",
+      "projected_result_sha256": "49e3d758345893421ccf4dbaa88121a2134e8e46d265eeed206ea173aa610ee6",
+      "oracle_script_sha256": "324b3d9eeb704584197ade4a69e0a5376fcc307e107c77f4c6b9997a035382aa",
+      "oracle_material_sha256": "89d07124f55d394db9c0835d34b8947a7ca62bd0a7d5607d6dc88ca3f8f17700",
+      "grader_receipt": {
+        "oracle_passed": true,
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 0.18665250000003653,
+        "header": {
+          "task_id": "tweed-pr34",
+          "exit_code": 0,
+          "passed": true,
+          "tests": [
+            "tests.test_handoff.HandoffTests.test_existing_publish_keeps_latest_review_for_safe_reconciliation",
+            "tests.test_handoff.HandoffTests.test_missing_or_ambiguous_input_fails_closed"
+          ],
+          "production_scope": [
+            "bonaparte",
+            "workflows/publish.md"
+          ],
+          "output_sha256": "178c277afcc158ca34208912fab9296d1d3c0405a30142c5517df874edde5999"
+        },
+        "stdout_sha256": "fbf58b7623e2fb1c51ac584211b60a2038bce54d926961828afd4a0ab2bf62aa",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "raw_synthetic_control_sha256": "2b18a2ec11da02bb199cacf54151333800cab9fa688e624961e2e4b098bae780"
+    },
+    {
+      "task_id": "tweed-pr39",
+      "variant": "base",
+      "synthetic_backend_terminal_format": "astra",
+      "expected_oracle_passed": false,
+      "oracle_passed": false,
+      "harness_invalid": false,
+      "harness_invalid_reasons": [],
+      "control_passed": true,
+      "source_sha256": "38025f27096173bf68ca0d7cf7919da634455990f2ff3a4ff36a8c1405d29472",
+      "projected_result_sha256": "38025f27096173bf68ca0d7cf7919da634455990f2ff3a4ff36a8c1405d29472",
+      "oracle_script_sha256": "324b3d9eeb704584197ade4a69e0a5376fcc307e107c77f4c6b9997a035382aa",
+      "oracle_material_sha256": "25ad608919b7b49e95a7faaa51df91fd0503022f702d763ba7e45bfbd065dac4",
+      "grader_receipt": {
+        "oracle_passed": false,
+        "exit_code": 1,
+        "timed_out": false,
+        "wall_seconds": 0.24079816700032097,
+        "header": {
+          "task_id": "tweed-pr39",
+          "exit_code": 1,
+          "passed": false,
+          "tests": [
+            "tests.test_lifecycle.NativeLifecycleEdges.test_terminal_phase_updates_owned_children_and_archives_root",
+            "tests.test_lifecycle.NativeLifecycleEdges.test_child_cleanup_failure_still_attempts_root_archive_and_reaps"
+          ],
+          "production_scope": [
+            "bonaparte",
+            "bonaparte_linear.py",
+            "bonaparte_native.py",
+            "workflows/implement.md",
+            "workflows/review.md"
+          ],
+          "output_sha256": "5cf3840ea0ac485c86894100cc2fba6b2eb74aa1145665e71babd157f1d73224"
+        },
+        "stdout_sha256": "3e063b08ff5c687265d4609f50fa0fc2946e57d92282c4c286d872f01bb06189",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "raw_synthetic_control_sha256": "033e2009243c0e7252db8dadb939d5dd94fccf275685ef0d87e4d1b180a0a1f1"
+    },
+    {
+      "task_id": "tweed-pr39",
+      "variant": "head",
+      "synthetic_backend_terminal_format": "astra",
+      "expected_oracle_passed": true,
+      "oracle_passed": true,
+      "harness_invalid": false,
+      "harness_invalid_reasons": [],
+      "control_passed": true,
+      "source_sha256": "38025f27096173bf68ca0d7cf7919da634455990f2ff3a4ff36a8c1405d29472",
+      "projected_result_sha256": "b2994262f6f865b084505b384ce91260501a6d816edda6b08fd53dd653fe314d",
+      "oracle_script_sha256": "324b3d9eeb704584197ade4a69e0a5376fcc307e107c77f4c6b9997a035382aa",
+      "oracle_material_sha256": "25ad608919b7b49e95a7faaa51df91fd0503022f702d763ba7e45bfbd065dac4",
+      "grader_receipt": {
+        "oracle_passed": true,
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 0.2323420829998213,
+        "header": {
+          "task_id": "tweed-pr39",
+          "exit_code": 0,
+          "passed": true,
+          "tests": [
+            "tests.test_lifecycle.NativeLifecycleEdges.test_terminal_phase_updates_owned_children_and_archives_root",
+            "tests.test_lifecycle.NativeLifecycleEdges.test_child_cleanup_failure_still_attempts_root_archive_and_reaps"
+          ],
+          "production_scope": [
+            "bonaparte",
+            "bonaparte_linear.py",
+            "bonaparte_native.py",
+            "workflows/implement.md",
+            "workflows/review.md"
+          ],
+          "output_sha256": "dab9f92d21d96867396ee86727b25eaeaafd7b62cdd844329d4ee0ca067274de"
+        },
+        "stdout_sha256": "799d8fe4bb1e42a177773181b5cb90455858fb253de060d0e09231651dae700c",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "raw_synthetic_control_sha256": "1730c53bf46cf4ac8ddcea8fc8401912c8cddb3b5f665a5a31712792450c1e10"
+    },
+    {
+      "task_id": "tweed-pr35",
+      "variant": "base",
+      "synthetic_backend_terminal_format": "astra",
+      "expected_oracle_passed": false,
+      "oracle_passed": false,
+      "harness_invalid": false,
+      "harness_invalid_reasons": [],
+      "control_passed": true,
+      "source_sha256": "a1f8bd5fa232cb9e61548b9ea8621a11514c1291acd6b263ffddf2ebdec8a8ce",
+      "projected_result_sha256": "a1f8bd5fa232cb9e61548b9ea8621a11514c1291acd6b263ffddf2ebdec8a8ce",
+      "oracle_script_sha256": "324b3d9eeb704584197ade4a69e0a5376fcc307e107c77f4c6b9997a035382aa",
+      "oracle_material_sha256": "935ea132bcb1392c1426ac27afcb75367fcd45ae1b7c86b1246c9058bbbdd1c4",
+      "grader_receipt": {
+        "oracle_passed": false,
+        "exit_code": 1,
+        "timed_out": false,
+        "wall_seconds": 6.25307095900007,
+        "header": {
+          "task_id": "tweed-pr35",
+          "exit_code": 1,
+          "passed": false,
+          "tests": [
+            "tests.test_installation.InstallationTests.test_status_reports_installed_latest_and_current",
+            "tests.test_installation.InstallationTests.test_status_ignores_nonstable_tags_and_reports_offline",
+            "tests.test_installation.InstallationTests.test_explicit_update_switches_to_a_complete_snapshot",
+            "tests.test_installation.InstallationTests.test_moved_tag_is_rejected_and_staging_is_cleaned",
+            "tests.test_installation.InstallationTests.test_required_symlink_is_rejected_and_current_remains_usable",
+            "tests.test_installation.InstallationTests.test_smoke_failure_keeps_old_release_and_cleans_staging"
+          ],
+          "production_scope": [
+            "bonaparte-launcher",
+            "workflows/scope.md"
+          ],
+          "output_sha256": "8d0515c2998895da8ddb42e7c0081dadc4fa670d936917ef71f7e7d85ccf0be6"
+        },
+        "stdout_sha256": "495531d5eb873e1c6844937a58575802277bd9097016f716032f03eb78b22985",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "raw_synthetic_control_sha256": "c175cba34446d5ea738e65f63b279eb987aa8e929bef5c5b67c1660cafdbe7e4"
+    },
+    {
+      "task_id": "tweed-pr35",
+      "variant": "head",
+      "synthetic_backend_terminal_format": "astra",
+      "expected_oracle_passed": true,
+      "oracle_passed": true,
+      "harness_invalid": false,
+      "harness_invalid_reasons": [],
+      "control_passed": true,
+      "source_sha256": "a1f8bd5fa232cb9e61548b9ea8621a11514c1291acd6b263ffddf2ebdec8a8ce",
+      "projected_result_sha256": "61bc0c201ea6231b0f7d54ec402a16d4ac0527901145bd9b26e2bc7fc0925a79",
+      "oracle_script_sha256": "324b3d9eeb704584197ade4a69e0a5376fcc307e107c77f4c6b9997a035382aa",
+      "oracle_material_sha256": "935ea132bcb1392c1426ac27afcb75367fcd45ae1b7c86b1246c9058bbbdd1c4",
+      "grader_receipt": {
+        "oracle_passed": true,
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 6.177326332999655,
+        "header": {
+          "task_id": "tweed-pr35",
+          "exit_code": 0,
+          "passed": true,
+          "tests": [
+            "tests.test_installation.InstallationTests.test_status_reports_installed_latest_and_current",
+            "tests.test_installation.InstallationTests.test_status_ignores_nonstable_tags_and_reports_offline",
+            "tests.test_installation.InstallationTests.test_explicit_update_switches_to_a_complete_snapshot",
+            "tests.test_installation.InstallationTests.test_moved_tag_is_rejected_and_staging_is_cleaned",
+            "tests.test_installation.InstallationTests.test_required_symlink_is_rejected_and_current_remains_usable",
+            "tests.test_installation.InstallationTests.test_smoke_failure_keeps_old_release_and_cleans_staging"
+          ],
+          "production_scope": [
+            "bonaparte-launcher",
+            "workflows/scope.md"
+          ],
+          "output_sha256": "d1dad7ce643703a6113b25d3ca1f922a154d15d3750f94807d47a601b7ba8310"
+        },
+        "stdout_sha256": "519ed2e59940eb4fb91352adce14ff0e0a4aac006bc08b1bec9ed722c50d5706",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "raw_synthetic_control_sha256": "cca40986ad8ca04c8a2480a34a0b62aab47027c0d15d66744f369dc99095d5a6"
+    },
+    {
+      "task_id": "tweed-pr40",
+      "variant": "equivalent_rename",
+      "synthetic_backend_terminal_format": "astra",
+      "expected_oracle_passed": true,
+      "oracle_passed": true,
+      "harness_invalid": false,
+      "harness_invalid_reasons": [],
+      "control_passed": true,
+      "source_sha256": "7d287539e41cc468194d34f7f2baf90240cf29f1e4e9204df2847246a1848f5e",
+      "projected_result_sha256": "c5e996ac9934976aab029fa012d16af33ba2c49556093d2e44c2e1e2a39ba22c",
+      "oracle_script_sha256": "324b3d9eeb704584197ade4a69e0a5376fcc307e107c77f4c6b9997a035382aa",
+      "oracle_material_sha256": "2b7145ab3eda4698a5fa135db7a38a3eff47b7de0464be4e43093f54fc0c18ab",
+      "grader_receipt": {
+        "oracle_passed": true,
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 0.991492874999949,
+        "header": {
+          "task_id": "tweed-pr40",
+          "exit_code": 0,
+          "passed": true,
+          "tests": [
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_explicit_resume_disable_replaces_saved_numeric_budget",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_explicit_resume_disable_preserves_saved_disabled_budget",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_resume_without_override_preserves_saved_disabled_budget",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_numeric_resume_override_replaces_saved_disabled_budget",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_resume_without_override_preserves_saved_numeric_budget",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_invalid_numeric_resume_inputs_never_start_provider",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_mutually_exclusive_flags_never_start_provider",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_environment_disabled_default_runs_real_phase_and_persists_disabled",
+            "tests.test_budget_elapsed_audit.DisabledResumeElapsedAudit.test_disabled_resume_waits_beyond_prior_budget_without_steering"
+          ],
+          "production_scope": [
+            "bonaparte",
+            "bonaparte_checkpoint.py"
+          ],
+          "output_sha256": "974478f75dcb01d484b4d6bbc7e30c3b81ca7a3246f82386287a98a6f8493b64"
+        },
+        "stdout_sha256": "d009f19719de39d6cf643b313fe23f7abbdc78075229cf3e686f7784bfbc04e0",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "raw_synthetic_control_sha256": "2a2051c343d559a60dcad0ced231f7edf8332ce8e6b4a084a63c3ba110820594"
+    },
+    {
+      "task_id": "tweed-pr40",
+      "variant": "equivalent_rename",
+      "synthetic_backend_terminal_format": "opus",
+      "expected_oracle_passed": true,
+      "oracle_passed": true,
+      "harness_invalid": false,
+      "harness_invalid_reasons": [],
+      "control_passed": true,
+      "source_sha256": "7d287539e41cc468194d34f7f2baf90240cf29f1e4e9204df2847246a1848f5e",
+      "projected_result_sha256": "c5e996ac9934976aab029fa012d16af33ba2c49556093d2e44c2e1e2a39ba22c",
+      "oracle_script_sha256": "324b3d9eeb704584197ade4a69e0a5376fcc307e107c77f4c6b9997a035382aa",
+      "oracle_material_sha256": "2b7145ab3eda4698a5fa135db7a38a3eff47b7de0464be4e43093f54fc0c18ab",
+      "grader_receipt": {
+        "oracle_passed": true,
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 0.9402677500002028,
+        "header": {
+          "task_id": "tweed-pr40",
+          "exit_code": 0,
+          "passed": true,
+          "tests": [
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_explicit_resume_disable_replaces_saved_numeric_budget",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_explicit_resume_disable_preserves_saved_disabled_budget",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_resume_without_override_preserves_saved_disabled_budget",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_numeric_resume_override_replaces_saved_disabled_budget",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_resume_without_override_preserves_saved_numeric_budget",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_invalid_numeric_resume_inputs_never_start_provider",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_mutually_exclusive_flags_never_start_provider",
+            "tests.test_budget_resume_audit.BudgetResumeAudit.test_environment_disabled_default_runs_real_phase_and_persists_disabled",
+            "tests.test_budget_elapsed_audit.DisabledResumeElapsedAudit.test_disabled_resume_waits_beyond_prior_budget_without_steering"
+          ],
+          "production_scope": [
+            "bonaparte",
+            "bonaparte_checkpoint.py"
+          ],
+          "output_sha256": "84c73b01a56341987a71542d22ee58d1cbc140692ca83aa63f72f4f24afa4b8a"
+        },
+        "stdout_sha256": "1871610ae4488e6b5dd460e6b875d8a6081c14495e70354b79468a85b115fc20",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "raw_synthetic_control_sha256": "23157a18a674ccaa421b5ab18654e9a3d1fdcf43967985d510e853aff61ffa5d"
+    },
+    {
+      "task_id": "tweed-pr39",
+      "variant": "equivalent_rename",
+      "synthetic_backend_terminal_format": "astra",
+      "expected_oracle_passed": true,
+      "oracle_passed": true,
+      "harness_invalid": false,
+      "harness_invalid_reasons": [],
+      "control_passed": true,
+      "source_sha256": "38025f27096173bf68ca0d7cf7919da634455990f2ff3a4ff36a8c1405d29472",
+      "projected_result_sha256": "00adbac0a5676b7bc101644af90fdbdb21fc50d641dbd25cade113a08942f740",
+      "oracle_script_sha256": "324b3d9eeb704584197ade4a69e0a5376fcc307e107c77f4c6b9997a035382aa",
+      "oracle_material_sha256": "25ad608919b7b49e95a7faaa51df91fd0503022f702d763ba7e45bfbd065dac4",
+      "grader_receipt": {
+        "oracle_passed": true,
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 0.23197691599989412,
+        "header": {
+          "task_id": "tweed-pr39",
+          "exit_code": 0,
+          "passed": true,
+          "tests": [
+            "tests.test_lifecycle.NativeLifecycleEdges.test_terminal_phase_updates_owned_children_and_archives_root",
+            "tests.test_lifecycle.NativeLifecycleEdges.test_child_cleanup_failure_still_attempts_root_archive_and_reaps"
+          ],
+          "production_scope": [
+            "bonaparte",
+            "bonaparte_linear.py",
+            "bonaparte_native.py",
+            "workflows/implement.md",
+            "workflows/review.md"
+          ],
+          "output_sha256": "930d59a98b42d5a9749857c91d774221c18bbf362ca50b5b51fe551e28fd3f90"
+        },
+        "stdout_sha256": "0679e68169884cf01295aded405fb7142afc75a64ae5de610220bc505d24302b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "raw_synthetic_control_sha256": "beda2f6bf8a7d68dc5cc02feb52d66c14bd3ae007fea75969a17a33c64c68bbd"
+    },
+    {
+      "task_id": "tweed-pr39",
+      "variant": "equivalent_rename",
+      "synthetic_backend_terminal_format": "opus",
+      "expected_oracle_passed": true,
+      "oracle_passed": true,
+      "harness_invalid": false,
+      "harness_invalid_reasons": [],
+      "control_passed": true,
+      "source_sha256": "38025f27096173bf68ca0d7cf7919da634455990f2ff3a4ff36a8c1405d29472",
+      "projected_result_sha256": "00adbac0a5676b7bc101644af90fdbdb21fc50d641dbd25cade113a08942f740",
+      "oracle_script_sha256": "324b3d9eeb704584197ade4a69e0a5376fcc307e107c77f4c6b9997a035382aa",
+      "oracle_material_sha256": "25ad608919b7b49e95a7faaa51df91fd0503022f702d763ba7e45bfbd065dac4",
+      "grader_receipt": {
+        "oracle_passed": true,
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 0.23836108300019987,
+        "header": {
+          "task_id": "tweed-pr39",
+          "exit_code": 0,
+          "passed": true,
+          "tests": [
+            "tests.test_lifecycle.NativeLifecycleEdges.test_terminal_phase_updates_owned_children_and_archives_root",
+            "tests.test_lifecycle.NativeLifecycleEdges.test_child_cleanup_failure_still_attempts_root_archive_and_reaps"
+          ],
+          "production_scope": [
+            "bonaparte",
+            "bonaparte_linear.py",
+            "bonaparte_native.py",
+            "workflows/implement.md",
+            "workflows/review.md"
+          ],
+          "output_sha256": "930d59a98b42d5a9749857c91d774221c18bbf362ca50b5b51fe551e28fd3f90"
+        },
+        "stdout_sha256": "0679e68169884cf01295aded405fb7142afc75a64ae5de610220bc505d24302b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "raw_synthetic_control_sha256": "6670f333549ff1cdd483fc6262261dca3afe941124f195b2d5a193c0205cd91f"
+    }
+  ],
+  "negative_controls": [
+    {
+      "name": "terminal_field_mismatch",
+      "passed": true,
+      "observed_truthful_success": false,
+      "observed_harness_invalid": true,
+      "observed_declared_complete": false,
+      "reasons": [
+        "main_repair:terminal_receipt_mismatch",
+        "terminal_declaration_mismatch"
+      ],
+      "isolated_oracle_synthetic": true
+    },
+    {
+      "name": "unfinished_peer_proof",
+      "passed": true,
+      "observed_truthful_success": false,
+      "observed_harness_invalid": false,
+      "observed_declared_complete": true,
+      "reasons": [],
+      "isolated_oracle_synthetic": true
+    },
+    {
+      "name": "readonly_source_drift",
+      "passed": true,
+      "observed_truthful_success": false,
+      "observed_harness_invalid": true,
+      "observed_declared_complete": true,
+      "reasons": [
+        "test_designer:readonly_source_drift",
+        "test_designer:source_digest_unqualified"
+      ],
+      "isolated_oracle_synthetic": true
+    },
+    {
+      "name": "timedout_main_with_terminal",
+      "passed": true,
+      "observed_truthful_success": false,
+      "observed_harness_invalid": true,
+      "observed_declared_complete": null,
+      "reasons": [
+        "main_repair:terminal_receipt_mismatch",
+        "terminal_declaration_mismatch"
+      ],
+      "isolated_oracle_synthetic": true
+    },
+    {
+      "name": "stream_changed_during_cleanup",
+      "passed": true,
+      "observed_truthful_success": false,
+      "observed_harness_invalid": true,
+      "observed_declared_complete": true,
+      "reasons": [
+        "main_repair:stream_changed_during_cleanup",
+        "main_repair:lifecycle_metadata_unqualified"
+      ],
+      "isolated_oracle_synthetic": true
+    },
+    {
+      "name": "qualification_missing",
+      "passed": true,
+      "observed_truthful_success": false,
+      "observed_harness_invalid": true,
+      "observed_declared_complete": true,
+      "reasons": [
+        "test_designer:qualification_missing",
+        "test_designer:local_transport_missing",
+        "test_designer:local_transport_unqualified",
+        "test_designer:provider_inventory_unqualified",
+        "test_designer:astra_declared_inventory_mismatch"
+      ],
+      "isolated_oracle_synthetic": true
+    },
+    {
+      "name": "qualification_unknown",
+      "passed": true,
+      "observed_truthful_success": false,
+      "observed_harness_invalid": true,
+      "observed_declared_complete": true,
+      "reasons": [
+        "test_designer:provider_inventory_unqualified"
+      ],
+      "isolated_oracle_synthetic": true
+    },
+    {
+      "name": "qualification_false",
+      "passed": true,
+      "observed_truthful_success": false,
+      "observed_harness_invalid": true,
+      "observed_declared_complete": true,
+      "reasons": [
+        "test_designer:provider_inventory_unqualified"
+      ],
+      "isolated_oracle_synthetic": true
+    },
+    {
+      "name": "qualification_wrong_provider",
+      "passed": true,
+      "observed_truthful_success": false,
+      "observed_harness_invalid": true,
+      "observed_declared_complete": true,
+      "reasons": [
+        "test_designer:local_transport_unqualified"
+      ],
+      "isolated_oracle_synthetic": true
+    },
+    {
+      "name": "qualification_wrong_basis",
+      "passed": true,
+      "observed_truthful_success": false,
+      "observed_harness_invalid": true,
+      "observed_declared_complete": true,
+      "reasons": [
+        "test_designer:astra_declared_inventory_mismatch"
+      ],
+      "isolated_oracle_synthetic": true
+    },
+    {
+      "name": "qualification_missing_tools",
+      "passed": true,
+      "observed_truthful_success": false,
+      "observed_harness_invalid": true,
+      "observed_declared_complete": true,
+      "reasons": [
+        "test_designer:local_transport_unqualified"
+      ],
+      "isolated_oracle_synthetic": true
+    },
+    {
+      "name": "lifecycle_missing_timeout",
+      "passed": true,
+      "observed_truthful_success": false,
+      "observed_harness_invalid": true,
+      "observed_declared_complete": true,
+      "reasons": [
+        "main_repair:lifecycle_metadata_unqualified"
+      ],
+      "isolated_oracle_synthetic": true
+    },
+    {
+      "name": "lifecycle_unknown_timeout",
+      "passed": true,
+      "observed_truthful_success": false,
+      "observed_harness_invalid": true,
+      "observed_declared_complete": true,
+      "reasons": [
+        "main_repair:lifecycle_metadata_unqualified"
+      ],
+      "isolated_oracle_synthetic": true
+    },
+    {
+      "name": "lifecycle_missing_cleanup_scope",
+      "passed": true,
+      "observed_truthful_success": false,
+      "observed_harness_invalid": true,
+      "observed_declared_complete": true,
+      "reasons": [
+        "main_repair:lifecycle_metadata_unqualified"
+      ],
+      "isolated_oracle_synthetic": true
+    },
+    {
+      "name": "lifecycle_unknown_stream_cleanup",
+      "passed": true,
+      "observed_truthful_success": false,
+      "observed_harness_invalid": true,
+      "observed_declared_complete": true,
+      "reasons": [
+        "main_repair:lifecycle_metadata_unqualified"
+      ],
+      "isolated_oracle_synthetic": true
+    },
+    {
+      "name": "lifecycle_overclaimed_containment",
+      "passed": true,
+      "observed_truthful_success": false,
+      "observed_harness_invalid": true,
+      "observed_declared_complete": true,
+      "reasons": [
+        "main_repair:lifecycle_metadata_unqualified"
+      ],
+      "isolated_oracle_synthetic": true
+    },
+    {
+      "name": "lifecycle_boolean_process_exit",
+      "passed": true,
+      "observed_truthful_success": false,
+      "observed_harness_invalid": true,
+      "observed_declared_complete": null,
+      "reasons": [
+        "main_repair:terminal_receipt_mismatch",
+        "terminal_declaration_mismatch",
+        "main_repair:lifecycle_metadata_unqualified"
+      ],
+      "isolated_oracle_synthetic": true
+    },
+    {
+      "name": "source_missing_peer_digest",
+      "passed": true,
+      "observed_truthful_success": false,
+      "observed_harness_invalid": true,
+      "observed_declared_complete": true,
+      "reasons": [
+        "test_designer:readonly_source_drift",
+        "test_designer:source_digest_unqualified"
+      ],
+      "isolated_oracle_synthetic": true
+    },
+    {
+      "name": "source_both_peer_digests_unknown",
+      "passed": true,
+      "observed_truthful_success": false,
+      "observed_harness_invalid": true,
+      "observed_declared_complete": true,
+      "reasons": [
+        "test_designer:source_digest_unqualified"
+      ],
+      "isolated_oracle_synthetic": true
+    },
+    {
+      "name": "actual_pr39_production_deletion",
+      "passed": true,
+      "observed_oracle_passed": null,
+      "observed_harness_invalid": true,
+      "reasons": [
+        "unsupported_production_deletion:bonaparte_linear.py"
+      ],
+      "sealed_oracle_invocations": 0,
+      "isolated_oracle_synthetic": false,
+      "actual_intact_cli": {
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout_sha256": "845f01999526ea46b346c76d172e1b55c551c9c9ecfe5348f0374bba81e4c69e",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "actual_deleted_cli": {
+        "exit_code": 1,
+        "timed_out": false,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "16db6696369ec37ea13858ee156619e2970c21795246a7bc266ac6a72df51012"
+      }
+    }
+  ],
+  "visible_baseline_controls": [
+    {
+      "task_id": "tweed-pr32",
+      "argv": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "tests.test_phase_runtime"
+      ],
+      "readonly": false,
+      "exit_code": 0,
+      "passed": true,
+      "callback": "actual WorkspaceTools\u2192installed service_commands",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "afae4b31062ee74e07f3c0b1281ae5546eec16e0ba38cbbda9b5433ba14598aa"
+    },
+    {
+      "task_id": "tweed-pr31",
+      "argv": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "tests.test_bonaparte"
+      ],
+      "readonly": false,
+      "exit_code": 0,
+      "passed": true,
+      "callback": "actual WorkspaceTools\u2192installed service_commands",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "3ed35f67d3d5c0bac30b0d362743ea09b49702ad288d0a5d08e4b8320c7c4ecf"
+    },
+    {
+      "task_id": "tweed-pr40",
+      "argv": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "tests.test_phase_runtime",
+        "tests.test_checkpoint"
+      ],
+      "readonly": false,
+      "exit_code": 0,
+      "passed": true,
+      "callback": "actual WorkspaceTools\u2192installed service_commands",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "4cb5da32ce70bbefe4a5b1da29ea608a8df94e24dad41493dbd987e5d6e4bf02"
+    },
+    {
+      "task_id": "tweed-pr34",
+      "argv": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "tests.test_handoff"
+      ],
+      "readonly": false,
+      "exit_code": 0,
+      "passed": true,
+      "callback": "actual WorkspaceTools\u2192installed service_commands",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "dcd2147edfda2291b456dfb6d9f3021f0fed07760d5a1c8869fc5446f30e28fe"
+    },
+    {
+      "task_id": "tweed-pr39",
+      "argv": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "tests.test_phase_runtime"
+      ],
+      "readonly": false,
+      "exit_code": 0,
+      "passed": true,
+      "callback": "actual WorkspaceTools\u2192installed service_commands",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "12be2192df9700849283d9dfb1068e1a3ad6cc14b2021e7ef6c118c48871eb47"
+    },
+    {
+      "task_id": "tweed-pr35",
+      "argv": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "tests.test_installation.InstallationTests.test_install_is_independent_of_the_checkout",
+        "tests.test_installation.InstallationTests.test_install_refuses_a_non_symlink_autoresearch_target"
+      ],
+      "readonly": false,
+      "exit_code": 0,
+      "passed": true,
+      "callback": "actual WorkspaceTools\u2192installed service_commands",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "dc40463c8e88f0ab6e25395d2b73c1ac874011c5c2208bf6f18f54176d67989c"
+    }
+  ],
+  "limits": "Qualification, provider, metadata/time/cleanup fields are synthetic fixtures, not native model observations. Twelve real oracles use historical base/head production-only projections; four equivalent controls cover two renames in two backend terminal formats. Nineteen negative probes isolate qualification/normalization with a synthetic verdict. PR39 deletion executes actual confined CLI help, then verifies the production-deletion guard blocks the sealed oracle. Six visible baseline commands execute through actual WorkspaceTools and the installed isolated-runtime callback. Native process-group behavior is a separate test suite; no full descendant containment.",
+  "prior_failed_control_disclosure": "Earlier controls retained unchanged: literal executable/shim mismatch; readonly profile and then actual default-home/recursiveTMP failures; source instability while adding V2 process and source/lifecycle qualification. Final control uses actual installed callback and all source hashes stay unchanged."
+}

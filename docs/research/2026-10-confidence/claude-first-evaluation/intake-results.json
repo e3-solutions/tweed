@@ -1,0 +1,2358 @@
+{
+  "schema_version": "1.0",
+  "assigned": 12,
+  "registration_sha256": "dcae3d5cd516b699895e22136ca9ee7e00fe36006b7057002c0ebef1f6c3112f",
+  "registration_payload_sha256": "1747ad58b48de4db226013849b4bb056f9d12ee2729ab4e65cc42f6df61f769f",
+  "results_sha256": "3627751abe420aa8c2829fdd2cd841cbd955c53058d8285b3d5ae16f0a8628f2",
+  "analyzer_sha256": "3293e044e9b73c9273ff0a7f3046176b85b17a63c108882ed5203a6b42c317db",
+  "analyzer_tests_sha256": "cff7b7dd7e9712d88b5767959edb37018e4ccd0628e85112656c79514c97c805",
+  "closure_sha256": "70600cde6325f31aa921a1e9e4dc596c2d3562bf40255898e2d6d2b327d2d306",
+  "winner": null,
+  "analyst_blinded": false,
+  "rows": [
+    {
+      "id": "I01",
+      "episode_id": "notification-ownership--baseline--r2",
+      "case": "notification-ownership",
+      "policy": "baseline",
+      "repeat": 2,
+      "eligible": true,
+      "rounds": 3,
+      "question_count": 9,
+      "required_decision_count": 3,
+      "lexically_matched_decisions": [
+        "active-owner",
+        "legacy"
+      ],
+      "actual_answered_decisions": [
+        "active-owner",
+        "legacy"
+      ],
+      "answered_before_terminal": [
+        "active-owner",
+        "legacy"
+      ],
+      "missing_decisions_before_terminal": [
+        "progress"
+      ],
+      "missing_decisions_after_final_scripted_reply": [
+        "progress"
+      ],
+      "repeat_decision_questions": 2,
+      "keyword_premature_ready": false,
+      "final_ready": false,
+      "bindings": {
+        "result_sha256": "071e9f646b694e2b9d7a32b540937873ce06adfc6ecd9c19bd3a924aaf55d3b4",
+        "started_sha256": "edf5e4837b70416fe55a985c156480a5870dad4d8baaa81bcda0bcf43bccb960",
+        "history_sha256": "421001a07e32357747517a83cf582d95121ed99d372555628a3b998f0879602c",
+        "anonymous_packet_row_sha256": "2fdc678695c6786e854ceb83a1abf9f7741d4096c8d222b2b9ae9e3d8027ae58",
+        "mapping_entry_sha256": "43d39115a5d3d430a4c2b00b0797a7098ef675b5a8ebcf6bfa163112b7e43a72"
+      },
+      "jury": {
+        "question_assessments": {
+          "active-owner": "partial",
+          "legacy": "substantive",
+          "progress": "partial"
+        },
+        "latest_settled_follows_answers": true,
+        "issue_categories": [],
+        "additional_unanswered_ambiguity_count": 1,
+        "genuine_additional_unanswered_ambiguity_count": 1,
+        "explicit_missing_authoritative_decisions": [
+          "progress"
+        ],
+        "unsupported_final_ready": false,
+        "already_answered_preference_reasked": false,
+        "supplied_source_fact_requested": false,
+        "substantive_question_without_keyword_answer_decisions": [],
+        "ledger_covered_but_not_ready": false,
+        "judgment_sha256": "fd2492ff9a9e70b4774ea8bc5016beea24f211f0cfc8c70cda815331001294ec",
+        "quote_fidelity": []
+      },
+      "round_evidence": [
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 7.937443875000099,
+          "cost_estimate_usd": 0.0168266,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 687,
+            "cache_creation_input_tokens": 238,
+            "cache_read_input_tokens": 5873
+          },
+          "bindings": {
+            "request_json_sha256": "eccb8f8a3527760455e40f176ee56b05944c261a15164fe17f8cd62413e87cac",
+            "input_txt_sha256": "c63296d7af3435d9561bc351b27842a2898e2d1e1a9a4630301319f913421713",
+            "stream_jsonl_sha256": "1ee8ac0c7fd1a5bc4659328364412cdd4e9d981479f67925f9a7a083af30b254",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "dbf3527a8784e57b46161d2cddf717b9b27378b53a042749baad3f5a9bedd022"
+          },
+          "answered_before_assistant": [],
+          "matched_question_decisions": [
+            "legacy",
+            "active-owner"
+          ],
+          "ready": false
+        },
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 10.712341374999596,
+          "cost_estimate_usd": 0.0659034,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 907,
+            "cache_creation_input_tokens": 5954,
+            "cache_read_input_tokens": 617
+          },
+          "bindings": {
+            "request_json_sha256": "9f20a4d21f9d9e220cb3e1df83d00936aa604a99f5b01dc88475c4714aabc97c",
+            "input_txt_sha256": "7f3995e93239a5391e156011534be50e527a9c9a2375b85272e5d6bc85905e29",
+            "stream_jsonl_sha256": "1cb5830574663d266d71f757e5e764e1e9d0dcc8a5016bd74aecbee4d1aea2f1",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "85d92832d015fdbe631ffad98036462949ef21599d428a98c9871a728fe63248"
+          },
+          "answered_before_assistant": [
+            "active-owner",
+            "legacy"
+          ],
+          "matched_question_decisions": [
+            "active-owner"
+          ],
+          "ready": false
+        },
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 7.728104207999422,
+          "cost_estimate_usd": 0.06637939999999999,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 752,
+            "cache_creation_input_tokens": 6401,
+            "cache_read_input_tokens": 617
+          },
+          "bindings": {
+            "request_json_sha256": "0564119ba1073730ec790f986fb717925bed596ecdf2f1ea203d7b46ba8bf7c4",
+            "input_txt_sha256": "0884f960b3c19f651aba0477993562e3be8af7b5bb5f5d9fa676b7b10226bd69",
+            "stream_jsonl_sha256": "f61309bda8e2fede13d151d8ba84a9b547c1cdf999b6250c88d97af7119a2bc7",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "2b97d6bfe0fbfa03506e62c7a9fa0b08c0b25169a21f88264ed42725a703fe8f"
+          },
+          "answered_before_assistant": [
+            "active-owner",
+            "legacy"
+          ],
+          "matched_question_decisions": [
+            "active-owner"
+          ],
+          "ready": false
+        }
+      ]
+    },
+    {
+      "id": "I02",
+      "episode_id": "resume-precedence--enhanced--r1",
+      "case": "resume-precedence",
+      "policy": "enhanced",
+      "repeat": 1,
+      "eligible": true,
+      "rounds": 3,
+      "question_count": 13,
+      "required_decision_count": 3,
+      "lexically_matched_decisions": [
+        "env-versus-saved",
+        "omitted-preserves"
+      ],
+      "actual_answered_decisions": [
+        "env-versus-saved",
+        "omitted-preserves"
+      ],
+      "answered_before_terminal": [
+        "env-versus-saved",
+        "omitted-preserves"
+      ],
+      "missing_decisions_before_terminal": [
+        "numeric-over-saved"
+      ],
+      "missing_decisions_after_final_scripted_reply": [
+        "numeric-over-saved"
+      ],
+      "repeat_decision_questions": 2,
+      "keyword_premature_ready": false,
+      "final_ready": false,
+      "bindings": {
+        "result_sha256": "356716ddc7d7804e445707e9d1277d14ca15447b41da07564ce307eebbbe9788",
+        "started_sha256": "58c71e7f76b8ebb3068953795bbf467a86914e71a485562b5836bfce9acb99ee",
+        "history_sha256": "9031f1b4257fc428d9ea118dbd1e0c98a9d788dcb59963c6b2cfebfb074cc796",
+        "anonymous_packet_row_sha256": "17b2a062b18f9395259d5bb20255f2d5307ff1ec4c115872d1f52374c4f907ca",
+        "mapping_entry_sha256": "0a2e04781d35e78a7432a0aaee49f36cdf950db8a5cee735f45ef075f289d0c7"
+      },
+      "jury": {
+        "question_assessments": {
+          "env-versus-saved": "substantive",
+          "numeric-over-saved": "substantive",
+          "omitted-preserves": "substantive"
+        },
+        "latest_settled_follows_answers": true,
+        "issue_categories": [
+          "unsupported_constraint_and_conflicting_option"
+        ],
+        "additional_unanswered_ambiguity_count": 2,
+        "genuine_additional_unanswered_ambiguity_count": 2,
+        "explicit_missing_authoritative_decisions": [
+          "numeric-over-saved"
+        ],
+        "unsupported_final_ready": false,
+        "already_answered_preference_reasked": false,
+        "supplied_source_fact_requested": false,
+        "substantive_question_without_keyword_answer_decisions": [
+          "numeric-over-saved"
+        ],
+        "ledger_covered_but_not_ready": false,
+        "judgment_sha256": "bc931e2a77f427203e781780d63fd2cf499e48ce73c43e094e16cbd238ba54cf",
+        "quote_fidelity": [
+          {
+            "issue_category": "unsupported_constraint_and_conflicting_option",
+            "matched_reference": "A3.Q1",
+            "quote_verbatim": true,
+            "typographic_normalization_used": false,
+            "quote_value_sha256": "4ebec5a706b6c52918dfbc51f5f32b004e4d90752c7127bf18a87cc60b38d823",
+            "referenced_value_sha256": "fe59d807a191b3ce3ea39e8f7629f4af3d066bc278674d7860ba31c868203504"
+          }
+        ]
+      },
+      "round_evidence": [
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 9.683227624999745,
+          "cost_estimate_usd": 0.08819540000000001,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 904,
+            "cache_creation_input_tokens": 8748,
+            "cache_read_input_tokens": 617
+          },
+          "bindings": {
+            "request_json_sha256": "6ad45201389821c54b9bbe02fd1cd6a61e3b64f9d2c3a81c75cafa16e9dcce02",
+            "input_txt_sha256": "b690953b66d4758183a800f67241d9cdb577df958f52f727906390194014ae37",
+            "stream_jsonl_sha256": "38fed33c8ecdbcfe1a883f28ae9cb552a90e240733397c20b31fa474c3b1fc09",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "05cdbc472f4c3ff101d2bdb71b07bfc366a374b4218a10de1baae5703ab63ad2"
+          },
+          "answered_before_assistant": [],
+          "matched_question_decisions": [
+            "omitted-preserves",
+            "env-versus-saved"
+          ],
+          "ready": false
+        },
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 10.968698499999846,
+          "cost_estimate_usd": 0.0977274,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 1103,
+            "cache_creation_input_tokens": 9442,
+            "cache_read_input_tokens": 617
+          },
+          "bindings": {
+            "request_json_sha256": "3622ab07c8b405f4ba3dca2458eb3b4577f65058b7830af9d038304cdf84d7f4",
+            "input_txt_sha256": "8313a0ccea9b5c9626141713479d2eccfbe00af60ef984ef30385bdbadebe564",
+            "stream_jsonl_sha256": "ecab1c7dccc368586e091f55937cdcc747a9947db72ac7e31d5030b0d20315a3",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "c55f5a27c6cda605d51f099d8662f07e7e40e3942ee5970e0188bf50d58cf154"
+          },
+          "answered_before_assistant": [
+            "env-versus-saved",
+            "omitted-preserves"
+          ],
+          "matched_question_decisions": [
+            "env-versus-saved"
+          ],
+          "ready": false
+        },
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 8.033186124999702,
+          "cost_estimate_usd": 0.0987194,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 881,
+            "cache_creation_input_tokens": 10121,
+            "cache_read_input_tokens": 617
+          },
+          "bindings": {
+            "request_json_sha256": "bf5947083b9ee97b29f2dbf3ef7d7eed42f0a25d0b2a9d6ca2de9596b282408c",
+            "input_txt_sha256": "491eae34695d2654d8bef0351127aaae0ca0f8c1e3f018e5744acd74ac19a1c9",
+            "stream_jsonl_sha256": "f4a222c7c0fb8fae0267d8e1adb5c4812f2adc8ffbc0912245d01dcb773cb3bf",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "dc5f716346b3696e449638ecf402a21121856abce4996ec57887dd37df4b4626"
+          },
+          "answered_before_assistant": [
+            "env-versus-saved",
+            "omitted-preserves"
+          ],
+          "matched_question_decisions": [
+            "env-versus-saved"
+          ],
+          "ready": false
+        }
+      ]
+    },
+    {
+      "id": "I03",
+      "episode_id": "publish-identity--enhanced--r2",
+      "case": "publish-identity",
+      "policy": "enhanced",
+      "repeat": 2,
+      "eligible": true,
+      "rounds": 3,
+      "question_count": 11,
+      "required_decision_count": 3,
+      "lexically_matched_decisions": [
+        "ambiguous-publish",
+        "incomplete-review",
+        "reuse-publish"
+      ],
+      "actual_answered_decisions": [
+        "ambiguous-publish",
+        "incomplete-review",
+        "reuse-publish"
+      ],
+      "answered_before_terminal": [
+        "ambiguous-publish",
+        "incomplete-review",
+        "reuse-publish"
+      ],
+      "missing_decisions_before_terminal": [],
+      "missing_decisions_after_final_scripted_reply": [],
+      "repeat_decision_questions": 4,
+      "keyword_premature_ready": false,
+      "final_ready": false,
+      "bindings": {
+        "result_sha256": "ef8b899a2ddbbae9aa8e7e60ea9c4cbcbbdbb49ffcc65881d57374f5843a280c",
+        "started_sha256": "bb790a65d3008ccb56d3d2922c050c06e895850ec1191a754fd54b74fe5047f3",
+        "history_sha256": "a198e88d2fc499100ce8332f400b1b2642ad2bba25ad0e384ae43ce875231c25",
+        "anonymous_packet_row_sha256": "ce18c4ba69bbe77c49fb6ae74835490612690594aff7cd0c664a971b0d0bf500",
+        "mapping_entry_sha256": "cb4f659ae675a3fefa05c9eabbb951055079efd5bbea81ea1b09312e88682fda"
+      },
+      "jury": {
+        "question_assessments": {
+          "ambiguous-publish": "substantive",
+          "incomplete-review": "substantive",
+          "reuse-publish": "substantive"
+        },
+        "latest_settled_follows_answers": true,
+        "issue_categories": [],
+        "additional_unanswered_ambiguity_count": 2,
+        "genuine_additional_unanswered_ambiguity_count": 2,
+        "explicit_missing_authoritative_decisions": [],
+        "unsupported_final_ready": false,
+        "already_answered_preference_reasked": false,
+        "supplied_source_fact_requested": false,
+        "substantive_question_without_keyword_answer_decisions": [],
+        "ledger_covered_but_not_ready": true,
+        "judgment_sha256": "29c527112a20c6e22042d9facf0d285e5eff6fe45f6f20e85d9e02e8d410e997",
+        "quote_fidelity": []
+      },
+      "round_evidence": [
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 10.694605624999895,
+          "cost_estimate_usd": 0.0199052,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 807,
+            "cache_creation_input_tokens": 242,
+            "cache_read_input_tokens": 9106
+          },
+          "bindings": {
+            "request_json_sha256": "a77858374c2c28a90315b74a83e7fb2ae481abcb0a0ddce7cd9f1593b55b194a",
+            "input_txt_sha256": "81e2de0ffb31a2b95827178c93b60453ecc040a30ddbcb3a8eb4e69bd879b790",
+            "stream_jsonl_sha256": "5d42a4005cfc218229dfad7dafbe2501b9bbe1b3189d93f382d53ac51176faf6",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "787d0d5b1d7264528c15a92431ce015ab11618091eb36d14afa58c5eca5c89e8"
+          },
+          "answered_before_assistant": [],
+          "matched_question_decisions": [
+            "reuse-publish",
+            "incomplete-review"
+          ],
+          "ready": false
+        },
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 7.898360458999377,
+          "cost_estimate_usd": 0.0907034,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 799,
+            "cache_creation_input_tokens": 9324,
+            "cache_read_input_tokens": 617
+          },
+          "bindings": {
+            "request_json_sha256": "9e86f2f19af2fe82e26e7af8cc87bc7d8765dddc6cb4b360a2612ff9e97699fd",
+            "input_txt_sha256": "c20350cecad6888b71b4f475be5a9b1b7b223025268c5f2c3a4440287392beca",
+            "stream_jsonl_sha256": "652101336ee9d18f5c673601b3405d38300ae6d4b442b8b602d35fa194806902",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "c872b44cabf1fbff66d6fa5ddc3569f7c9ec094cfbb0b22fd17dfd81e6aef24a"
+          },
+          "answered_before_assistant": [
+            "incomplete-review",
+            "reuse-publish"
+          ],
+          "matched_question_decisions": [
+            "reuse-publish",
+            "ambiguous-publish",
+            "incomplete-review"
+          ],
+          "ready": false
+        },
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 7.071104999999989,
+          "cost_estimate_usd": 0.0929954,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 652,
+            "cache_creation_input_tokens": 9978,
+            "cache_read_input_tokens": 617
+          },
+          "bindings": {
+            "request_json_sha256": "14074f468c193202e470e13206460695a0c8d2526aea368e42a5d1a994ead74e",
+            "input_txt_sha256": "2b15968feec83b6a4c01bce7b36c06f406356709ea75fa5e36426648cad2e981",
+            "stream_jsonl_sha256": "2587596b021292d098c42b895e6e0001d17df53fb026c1de9a9ee3b5a4e7f07d",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "f0ee2899f193e9001d606a510542fb9eb1bebc80778418ba8e4888c7629c9a1c"
+          },
+          "answered_before_assistant": [
+            "ambiguous-publish",
+            "incomplete-review",
+            "reuse-publish"
+          ],
+          "matched_question_decisions": [
+            "reuse-publish",
+            "incomplete-review"
+          ],
+          "ready": false
+        }
+      ]
+    },
+    {
+      "id": "I04",
+      "episode_id": "resume-precedence--enhanced--r2",
+      "case": "resume-precedence",
+      "policy": "enhanced",
+      "repeat": 2,
+      "eligible": true,
+      "rounds": 3,
+      "question_count": 18,
+      "required_decision_count": 3,
+      "lexically_matched_decisions": [
+        "env-versus-saved",
+        "numeric-over-saved",
+        "omitted-preserves"
+      ],
+      "actual_answered_decisions": [
+        "env-versus-saved",
+        "numeric-over-saved",
+        "omitted-preserves"
+      ],
+      "answered_before_terminal": [
+        "env-versus-saved",
+        "numeric-over-saved",
+        "omitted-preserves"
+      ],
+      "missing_decisions_before_terminal": [],
+      "missing_decisions_after_final_scripted_reply": [],
+      "repeat_decision_questions": 6,
+      "keyword_premature_ready": false,
+      "final_ready": false,
+      "bindings": {
+        "result_sha256": "00640a0d185a3b5e854b6c4246bbd986e8ad0719726daff624fa781abc7b4491",
+        "started_sha256": "70c4da9141dcb64df132b0a327a92ce61b52a9996d967f31814c108f220ca2e5",
+        "history_sha256": "24b3bf58433f70ed34fd109d53a1660adbdc2ebb511f4890b85c58b15f441e55",
+        "anonymous_packet_row_sha256": "f8971e237b2c95ca4d30cc8ea3d4af453aa8e26cc070f808273ce2d45fba289b",
+        "mapping_entry_sha256": "dbd01774b0c9a0aea3af1e54724b4eab97c0276ac826dadb36e162ce67eddb3c"
+      },
+      "jury": {
+        "question_assessments": {
+          "env-versus-saved": "substantive",
+          "numeric-over-saved": "substantive",
+          "omitted-preserves": "substantive"
+        },
+        "latest_settled_follows_answers": true,
+        "issue_categories": [
+          "conflicting_option"
+        ],
+        "additional_unanswered_ambiguity_count": 3,
+        "genuine_additional_unanswered_ambiguity_count": 3,
+        "explicit_missing_authoritative_decisions": [],
+        "unsupported_final_ready": false,
+        "already_answered_preference_reasked": false,
+        "supplied_source_fact_requested": false,
+        "substantive_question_without_keyword_answer_decisions": [],
+        "ledger_covered_but_not_ready": true,
+        "judgment_sha256": "e4b0718a34a35ed6c4551618ec35e57de4cbfb9e41592bca46de1333b7647e51",
+        "quote_fidelity": [
+          {
+            "issue_category": "conflicting_option",
+            "matched_reference": "A3.Q3",
+            "quote_verbatim": true,
+            "typographic_normalization_used": false,
+            "quote_value_sha256": "cf1c102776d856daab1ae7afe071cfaa0948de6ef07eba83d9625b9eb9b1d789",
+            "referenced_value_sha256": "b88c0e63f05f4f43f05d4a84bc0214c5135e5687f8e92c095162ec5ff2ceaea3"
+          }
+        ]
+      },
+      "round_evidence": [
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 9.751175625000542,
+          "cost_estimate_usd": 0.021813000000000003,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 903,
+            "cache_creation_input_tokens": 240,
+            "cache_read_input_tokens": 9125
+          },
+          "bindings": {
+            "request_json_sha256": "6ad45201389821c54b9bbe02fd1cd6a61e3b64f9d2c3a81c75cafa16e9dcce02",
+            "input_txt_sha256": "b690953b66d4758183a800f67241d9cdb577df958f52f727906390194014ae37",
+            "stream_jsonl_sha256": "0871b9d4a990670631146cb78e19762d72857395f4253501c6ed602b0e73e0df",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "ede8796e44cc427e296a1576a1b04931d2a85f8dfded2d0d0ba41c4a980f7a22"
+          },
+          "answered_before_assistant": [],
+          "matched_question_decisions": [
+            "numeric-over-saved",
+            "omitted-preserves",
+            "env-versus-saved"
+          ],
+          "ready": false
+        },
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 14.590080542000578,
+          "cost_estimate_usd": 0.1064514,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 1502,
+            "cache_creation_input_tokens": 9535,
+            "cache_read_input_tokens": 617
+          },
+          "bindings": {
+            "request_json_sha256": "caea667de41f41306eff1fa3b5c09331f17f2744c0595acc5661d2187687632a",
+            "input_txt_sha256": "45ff2f0693c767984ae17f579358425446450279dbf52d766d50d06525fdb847",
+            "stream_jsonl_sha256": "9327db2565dd85411f9477afe73365762f408dfa5ac5674d07974985bb4ab173",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "0839a66753ec476d9994d3bf0bdf18a905a97b2168d3e96fdb509976f5b83b0f"
+          },
+          "answered_before_assistant": [
+            "env-versus-saved",
+            "numeric-over-saved",
+            "omitted-preserves"
+          ],
+          "matched_question_decisions": [
+            "numeric-over-saved",
+            "omitted-preserves",
+            "env-versus-saved"
+          ],
+          "ready": false
+        },
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 10.57880466700044,
+          "cost_estimate_usd": 0.1068794,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 1119,
+            "cache_creation_input_tokens": 10546,
+            "cache_read_input_tokens": 617
+          },
+          "bindings": {
+            "request_json_sha256": "27eba6b69ac55939c6d1cf2cdbf559e82a11c1aed2a65c8b65fb9efd113d168e",
+            "input_txt_sha256": "7b790e32a597687316b32143e2838a003e268d5c397b34753ec740f0de36c264",
+            "stream_jsonl_sha256": "74f50c76ef893305c3bc9eee7f482d6c575ea91af9e1cd28d418c4194464a790",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "e79de1b00ca5370f803446ecc4098d06829514279a77f3f07b818f81d5eb90d4"
+          },
+          "answered_before_assistant": [
+            "env-versus-saved",
+            "numeric-over-saved",
+            "omitted-preserves"
+          ],
+          "matched_question_decisions": [
+            "numeric-over-saved",
+            "omitted-preserves",
+            "env-versus-saved"
+          ],
+          "ready": false
+        }
+      ]
+    },
+    {
+      "id": "I05",
+      "episode_id": "publish-identity--baseline--r2",
+      "case": "publish-identity",
+      "policy": "baseline",
+      "repeat": 2,
+      "eligible": true,
+      "rounds": 3,
+      "question_count": 14,
+      "required_decision_count": 3,
+      "lexically_matched_decisions": [
+        "ambiguous-publish",
+        "incomplete-review",
+        "reuse-publish"
+      ],
+      "actual_answered_decisions": [
+        "ambiguous-publish",
+        "incomplete-review",
+        "reuse-publish"
+      ],
+      "answered_before_terminal": [
+        "ambiguous-publish",
+        "incomplete-review",
+        "reuse-publish"
+      ],
+      "missing_decisions_before_terminal": [],
+      "missing_decisions_after_final_scripted_reply": [],
+      "repeat_decision_questions": 2,
+      "keyword_premature_ready": false,
+      "final_ready": false,
+      "bindings": {
+        "result_sha256": "24812f51665d87aa9b3619d791cdf8b76585bf93b4a52362dcfa28241d71d5b8",
+        "started_sha256": "642610aba7381a5397a82385b988011afa28a3221a03cc85b751115458016113",
+        "history_sha256": "6268d406cd90b48a22a5e3018d6f85e4a9b3d1ddf7e5d0a8239c0c0f5f8c046e",
+        "anonymous_packet_row_sha256": "f543b7082d7a3dca4b253b30277c1a0bff4763e4568053af6445e628966b1222",
+        "mapping_entry_sha256": "beb2ba1f01a3b4b311b7caa7dd6fd36796c55b9ce0dbc9a35d273040b2388956"
+      },
+      "jury": {
+        "question_assessments": {
+          "ambiguous-publish": "substantive",
+          "incomplete-review": "substantive",
+          "reuse-publish": "substantive"
+        },
+        "latest_settled_follows_answers": true,
+        "issue_categories": [],
+        "additional_unanswered_ambiguity_count": 2,
+        "genuine_additional_unanswered_ambiguity_count": 2,
+        "explicit_missing_authoritative_decisions": [],
+        "unsupported_final_ready": false,
+        "already_answered_preference_reasked": false,
+        "supplied_source_fact_requested": false,
+        "substantive_question_without_keyword_answer_decisions": [],
+        "ledger_covered_but_not_ready": true,
+        "judgment_sha256": "90b4a3e40d702fc86e8c379f2522a6227463b7b31275722b5550548d6aa6338c",
+        "quote_fidelity": []
+      },
+      "round_evidence": [
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 7.411933667000085,
+          "cost_estimate_usd": 0.061739999999999996,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 645,
+            "cache_creation_input_tokens": 6104,
+            "cache_read_input_tokens": 0
+          },
+          "bindings": {
+            "request_json_sha256": "325dc3468ac46afcde0b9617bff2b7852deaeafdb1bd98d55eda23d112fb7b4f",
+            "input_txt_sha256": "f3841c59bfe9716ff1407cb562cf57cbfea8c2218737a57460306277a50daa81",
+            "stream_jsonl_sha256": "59af028f4c512105c8f8b0013abc3344ae63b283fd9682e005755f9130f15c07",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "4ebf20d53f75f276d7b277a8dbccdbcc6a23463267e29af23c1171caed38617f"
+          },
+          "answered_before_assistant": [],
+          "matched_question_decisions": [
+            "reuse-publish",
+            "incomplete-review"
+          ],
+          "ready": false
+        },
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 7.4354319999993095,
+          "cost_estimate_usd": 0.0628794,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 753,
+            "cache_creation_input_tokens": 5961,
+            "cache_read_input_tokens": 617
+          },
+          "bindings": {
+            "request_json_sha256": "09304450af0a306478fbc493a4d6fb34a9a2f866c9683170bc13c41b4db71a58",
+            "input_txt_sha256": "9c53a4f315c321e9f9a9be8ef89ca3ce28a03017182c31e73d62c029519469dc",
+            "stream_jsonl_sha256": "96d5a29d579d27232cf6b31857e67ed70b1487379e75804c022e5f992c9a5039",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "0cf4f44318050a50f033593716682301acfee562246f8e06efbecd628bd362b1"
+          },
+          "answered_before_assistant": [
+            "incomplete-review",
+            "reuse-publish"
+          ],
+          "matched_question_decisions": [
+            "reuse-publish",
+            "ambiguous-publish"
+          ],
+          "ready": false
+        },
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 6.183236916999704,
+          "cost_estimate_usd": 0.0645034,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 609,
+            "cache_creation_input_tokens": 6524,
+            "cache_read_input_tokens": 617
+          },
+          "bindings": {
+            "request_json_sha256": "661033e1e243282be3efcfa0551fc7857cfc13508a6a9e5cf4a4629099009b32",
+            "input_txt_sha256": "b9502e529957d3231519266db13dd7e26cff11afcf35cd64ef4fb97591819388",
+            "stream_jsonl_sha256": "e7fd801bdc01236c895816bfd64ae76952c4322dd8ec48d3d5a977b0a2673d15",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "824bfedd4493161340541b77b89228a981759189e38fb523b16dd7e41ae22bfc"
+          },
+          "answered_before_assistant": [
+            "ambiguous-publish",
+            "incomplete-review",
+            "reuse-publish"
+          ],
+          "matched_question_decisions": [
+            "reuse-publish"
+          ],
+          "ready": false
+        }
+      ]
+    },
+    {
+      "id": "I06",
+      "episode_id": "resume-precedence--baseline--r2",
+      "case": "resume-precedence",
+      "policy": "baseline",
+      "repeat": 2,
+      "eligible": true,
+      "rounds": 3,
+      "question_count": 17,
+      "required_decision_count": 3,
+      "lexically_matched_decisions": [
+        "env-versus-saved",
+        "numeric-over-saved",
+        "omitted-preserves"
+      ],
+      "actual_answered_decisions": [
+        "env-versus-saved",
+        "numeric-over-saved",
+        "omitted-preserves"
+      ],
+      "answered_before_terminal": [
+        "env-versus-saved",
+        "numeric-over-saved",
+        "omitted-preserves"
+      ],
+      "missing_decisions_before_terminal": [],
+      "missing_decisions_after_final_scripted_reply": [],
+      "repeat_decision_questions": 6,
+      "keyword_premature_ready": false,
+      "final_ready": false,
+      "bindings": {
+        "result_sha256": "59e7d91ec9a7589470ad89e1fcc4e79c66babe2dc32a0e471d7d9d3dff2a6b87",
+        "started_sha256": "07ec5142c9c8a269336fa0e5da0f34f4d9ebbe7ecda718a146f2a16cc154db2e",
+        "history_sha256": "02b37a9ab5baea6757ed8fa92f42f4a31f216f2ab1e813b56d3953c673ec7588",
+        "anonymous_packet_row_sha256": "359be38374ee6d0aee7263e6fcd328b67a7b01d7395c677ce6eb973b658e7eb8",
+        "mapping_entry_sha256": "b52b3adc06ccd054beb4e390845ae99951f2c5cf121084e0aef24f9fdd9ded35"
+      },
+      "jury": {
+        "question_assessments": {
+          "env-versus-saved": "substantive",
+          "numeric-over-saved": "substantive",
+          "omitted-preserves": "substantive"
+        },
+        "latest_settled_follows_answers": true,
+        "issue_categories": [],
+        "additional_unanswered_ambiguity_count": 3,
+        "genuine_additional_unanswered_ambiguity_count": 3,
+        "explicit_missing_authoritative_decisions": [],
+        "unsupported_final_ready": false,
+        "already_answered_preference_reasked": false,
+        "supplied_source_fact_requested": false,
+        "substantive_question_without_keyword_answer_decisions": [],
+        "ledger_covered_but_not_ready": true,
+        "judgment_sha256": "a9b7b3890535c1e8a790e432b3ce8601073e10910277dd7d48af1ae6564a67cc",
+        "quote_fidelity": []
+      },
+      "round_evidence": [
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 10.059211333000349,
+          "cost_estimate_usd": 0.0211802,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 903,
+            "cache_creation_input_tokens": 242,
+            "cache_read_input_tokens": 5881
+          },
+          "bindings": {
+            "request_json_sha256": "c4c48c9ca92743e20378acbd583aec17094fd11b5f99cef059c97029f22787b3",
+            "input_txt_sha256": "cc47ac2df51337f7836b6a8655f7488a02a1173a38132a3070345de8c6377eba",
+            "stream_jsonl_sha256": "48adf14fba1b5e7d27de92b0d4ad41b4bcb823a7011c94cb9b1eb17adf422a88",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "5a0d59692e57bfca4c137598f4cafff47b6330b6d0da1dff3b52e85cf1a318cc"
+          },
+          "answered_before_assistant": [],
+          "matched_question_decisions": [
+            "numeric-over-saved",
+            "omitted-preserves",
+            "env-versus-saved"
+          ],
+          "ready": false
+        },
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 12.851801333999902,
+          "cost_estimate_usd": 0.0754514,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 1262,
+            "cache_creation_input_tokens": 6260,
+            "cache_read_input_tokens": 617
+          },
+          "bindings": {
+            "request_json_sha256": "d513315ab75040d70aa337344b696527de94356068d029799ccb0fe6184cf3c3",
+            "input_txt_sha256": "be441aeeeddc525edcfc0d775be96caea2648ed128c05fe325e3c10172f81712",
+            "stream_jsonl_sha256": "d1b18f14506df81f529be24ab6ba2953418efa615e4de1bb6af3c95324e12c25",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "538f63c048ac38782791d57cb965a176210d84867537e58b080ec8dea1ae4fa7"
+          },
+          "answered_before_assistant": [
+            "env-versus-saved",
+            "numeric-over-saved",
+            "omitted-preserves"
+          ],
+          "matched_question_decisions": [
+            "numeric-over-saved",
+            "omitted-preserves",
+            "env-versus-saved"
+          ],
+          "ready": false
+        },
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 9.414790249999896,
+          "cost_estimate_usd": 0.0795434,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 1073,
+            "cache_creation_input_tokens": 7244,
+            "cache_read_input_tokens": 617
+          },
+          "bindings": {
+            "request_json_sha256": "0b03f701dc37d7c7e6be8e71a3325dddafde0293c5d78a94612f3d4394e82b60",
+            "input_txt_sha256": "ad9c730849aacc1e6e23094c397d6962118c0261c01c9b0ab883da44a27e51cb",
+            "stream_jsonl_sha256": "078605151950599487410f46d568e3e1cf4f5036a9fe8d5b038bc595ac87a98b",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "3b2282aff84e51e430a63fa15bbb8a2d4dd0cdbd7b40b65034425d392073ee3b"
+          },
+          "answered_before_assistant": [
+            "env-versus-saved",
+            "numeric-over-saved",
+            "omitted-preserves"
+          ],
+          "matched_question_decisions": [
+            "numeric-over-saved",
+            "omitted-preserves",
+            "env-versus-saved"
+          ],
+          "ready": false
+        }
+      ]
+    },
+    {
+      "id": "I07",
+      "episode_id": "notification-ownership--baseline--r1",
+      "case": "notification-ownership",
+      "policy": "baseline",
+      "repeat": 1,
+      "eligible": true,
+      "rounds": 3,
+      "question_count": 5,
+      "required_decision_count": 3,
+      "lexically_matched_decisions": [
+        "active-owner",
+        "legacy",
+        "progress"
+      ],
+      "actual_answered_decisions": [
+        "active-owner",
+        "legacy",
+        "progress"
+      ],
+      "answered_before_terminal": [
+        "active-owner",
+        "legacy",
+        "progress"
+      ],
+      "missing_decisions_before_terminal": [],
+      "missing_decisions_after_final_scripted_reply": [],
+      "repeat_decision_questions": 1,
+      "keyword_premature_ready": false,
+      "final_ready": true,
+      "bindings": {
+        "result_sha256": "54037171d33426b3f0bbf3f774bf4f4368da33bad37c2588d16f8d3da214d7f5",
+        "started_sha256": "6d71628d37dbf762b827796dcc72cb22612fc3675d1a5acd555396c0330c9d9e",
+        "history_sha256": "65572355abc04450175756d9ba774eb5c20a12112163ae25d166410afeb91c23",
+        "anonymous_packet_row_sha256": "ad1aedee7b87cdb4f0dad6dd3831b97e5c1fbcf92640085da26c1475eb6bcdfa",
+        "mapping_entry_sha256": "849af1bca0c6c1efe319f266722fcb6feec37ed455c35f1acdb081fa1a25607f"
+      },
+      "jury": {
+        "question_assessments": {
+          "active-owner": "partial",
+          "legacy": "substantive",
+          "progress": "substantive"
+        },
+        "latest_settled_follows_answers": false,
+        "issue_categories": [
+          "unsupported_source_assertion",
+          "unsupported_extension_and_premature_readiness",
+          "unanswered_choice_dropped"
+        ],
+        "additional_unanswered_ambiguity_count": 2,
+        "genuine_additional_unanswered_ambiguity_count": 2,
+        "explicit_missing_authoritative_decisions": [],
+        "unsupported_final_ready": true,
+        "already_answered_preference_reasked": false,
+        "supplied_source_fact_requested": false,
+        "substantive_question_without_keyword_answer_decisions": [],
+        "ledger_covered_but_not_ready": false,
+        "judgment_sha256": "4469716f5f5cf2feb67b40f0a324eb34fa247098feddfa50b1f44d2a17c78845",
+        "quote_fidelity": [
+          {
+            "issue_category": "unsupported_source_assertion",
+            "matched_reference": "A1.Q3",
+            "quote_verbatim": true,
+            "typographic_normalization_used": false,
+            "quote_value_sha256": "5c2cad8c41dd6939f3dd1d3cde166a087b261ca4cddfddb1a6d77e2abf2e4ceb",
+            "referenced_value_sha256": "663360ca9df98272f46c3058284b9d2de2423e2ce8e63003ba11c86ca5042a4a"
+          }
+        ]
+      },
+      "round_evidence": [
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 8.129637208000531,
+          "cost_estimate_usd": 0.0581914,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 705,
+            "cache_creation_input_tokens": 5495,
+            "cache_read_input_tokens": 617
+          },
+          "bindings": {
+            "request_json_sha256": "eccb8f8a3527760455e40f176ee56b05944c261a15164fe17f8cd62413e87cac",
+            "input_txt_sha256": "c63296d7af3435d9561bc351b27842a2898e2d1e1a9a4630301319f913421713",
+            "stream_jsonl_sha256": "a617b6a9e47574faf92317b761550a25b5cff20faf6cd017484c5f4585dd33a3",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "31cfe00aa8926850df48c6c35526c40078ccd38c0f1a668f00e879807ca2c114"
+          },
+          "answered_before_assistant": [],
+          "matched_question_decisions": [
+            "legacy",
+            "progress",
+            "active-owner"
+          ],
+          "ready": false
+        },
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 10.310940833000132,
+          "cost_estimate_usd": 0.0673754,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 927,
+            "cache_creation_input_tokens": 6088,
+            "cache_read_input_tokens": 617
+          },
+          "bindings": {
+            "request_json_sha256": "03ead2f371134fde517819ffcdeb162ff7b888ab937bc1a6d6777701a2ffe834",
+            "input_txt_sha256": "78258588e03a7a01013d6c4357aa0891d84f0b0cdd6813b89d1e26bbfacc3231",
+            "stream_jsonl_sha256": "88d4bb1eb26269d23f7d3d47cc38ebfcb397027cc12685874a330e103eee2bc2",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "8b46b78b663feb5f154bcdf355396572f3d551ff696d436670570ef67fed408d"
+          },
+          "answered_before_assistant": [
+            "active-owner",
+            "legacy",
+            "progress"
+          ],
+          "matched_question_decisions": [
+            "progress"
+          ],
+          "ready": false
+        },
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 11.882214041000225,
+          "cost_estimate_usd": 0.0759874,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 1174,
+            "cache_creation_input_tokens": 6547,
+            "cache_read_input_tokens": 617
+          },
+          "bindings": {
+            "request_json_sha256": "e5fb97c27b2b6497cbca613b0ecf1d96319e0c56328b7e9cec9c94271cd8a719",
+            "input_txt_sha256": "f154162d130f71a373af55c2b6f6cf70afd6df5a4465d8ff1e1eef511494790b",
+            "stream_jsonl_sha256": "86487177983ca33ee4df72000cb2d8c622b8f8dbcd056e2bff9fd8895e8761bf",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "0825ce713bc6720fa8c83b12adcbef1069b55e9626dcb1267890c501a0cceda3"
+          },
+          "answered_before_assistant": [
+            "active-owner",
+            "legacy",
+            "progress"
+          ],
+          "matched_question_decisions": [],
+          "ready": true
+        }
+      ]
+    },
+    {
+      "id": "I08",
+      "episode_id": "publish-identity--enhanced--r1",
+      "case": "publish-identity",
+      "policy": "enhanced",
+      "repeat": 1,
+      "eligible": true,
+      "rounds": 3,
+      "question_count": 11,
+      "required_decision_count": 3,
+      "lexically_matched_decisions": [
+        "ambiguous-publish",
+        "incomplete-review",
+        "reuse-publish"
+      ],
+      "actual_answered_decisions": [
+        "ambiguous-publish",
+        "incomplete-review",
+        "reuse-publish"
+      ],
+      "answered_before_terminal": [
+        "ambiguous-publish",
+        "incomplete-review",
+        "reuse-publish"
+      ],
+      "missing_decisions_before_terminal": [],
+      "missing_decisions_after_final_scripted_reply": [],
+      "repeat_decision_questions": 3,
+      "keyword_premature_ready": false,
+      "final_ready": false,
+      "bindings": {
+        "result_sha256": "dbee79cb677be1485d537b7ec59b04421fe823bf30206b625c8ba8f752054c7c",
+        "started_sha256": "a5ad25b90869b1926e8fa9705918a9524f37661574722a47f4afee14ad4a4fd3",
+        "history_sha256": "c22e44f8a508dc731da14b6a4b80bd387d889ea11a990c801dffc0424f1407d9",
+        "anonymous_packet_row_sha256": "10dc449db5866ff4e02f46c7396658d2e72d73163815efd009a4f19dc91d23b8",
+        "mapping_entry_sha256": "554d3360727b1d985924e378d17721499ba2bafa838aff9676eabefa6737f14b"
+      },
+      "jury": {
+        "question_assessments": {
+          "ambiguous-publish": "substantive",
+          "incomplete-review": "substantive",
+          "reuse-publish": "substantive"
+        },
+        "latest_settled_follows_answers": true,
+        "issue_categories": [
+          "transient_overstatement",
+          "source_generalization"
+        ],
+        "additional_unanswered_ambiguity_count": 3,
+        "genuine_additional_unanswered_ambiguity_count": 3,
+        "explicit_missing_authoritative_decisions": [],
+        "unsupported_final_ready": false,
+        "already_answered_preference_reasked": false,
+        "supplied_source_fact_requested": false,
+        "substantive_question_without_keyword_answer_decisions": [],
+        "ledger_covered_but_not_ready": true,
+        "judgment_sha256": "13ed5d79df51b71c5cabf4ddb42fcd057f9ef77aefbd91ed36b5e4a0f3ad6867",
+        "quote_fidelity": [
+          {
+            "issue_category": "transient_overstatement",
+            "matched_reference": "A1.settled[0]",
+            "quote_verbatim": true,
+            "typographic_normalization_used": false,
+            "quote_value_sha256": "a02fd3f5a348b30a06d48a2f8e54d736a916cff8d6b9f86ee52934b0a60aa852",
+            "referenced_value_sha256": "77fb0861afc6db5c259b011fc608911928409970565cffeda51c6e0fe54a4b3a"
+          },
+          {
+            "issue_category": "source_generalization",
+            "matched_reference": "A1.settled[2]",
+            "quote_verbatim": true,
+            "typographic_normalization_used": false,
+            "quote_value_sha256": "bc41112f78582cc48728ec1f91e81bd295580594113e5a92255355e0bcae3bf5",
+            "referenced_value_sha256": "6612552be7c479caa68a33a72fb22f73d4f9a0dad666636a728d3ac72d8a340b"
+          }
+        ]
+      },
+      "round_evidence": [
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 11.676541708000514,
+          "cost_estimate_usd": 0.08871939999999999,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 937,
+            "cache_creation_input_tokens": 8731,
+            "cache_read_input_tokens": 617
+          },
+          "bindings": {
+            "request_json_sha256": "a77858374c2c28a90315b74a83e7fb2ae481abcb0a0ddce7cd9f1593b55b194a",
+            "input_txt_sha256": "81e2de0ffb31a2b95827178c93b60453ecc040a30ddbcb3a8eb4e69bd879b790",
+            "stream_jsonl_sha256": "4cc37e95abd53196a181b265a07a39d2aa10951cf0561db301edf730326119da",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "ca9d98e11fdfe7ad5effbe41809be9626b24d9ef8749083001e3d0dda02c010d"
+          },
+          "answered_before_assistant": [],
+          "matched_question_decisions": [
+            "reuse-publish",
+            "incomplete-review"
+          ],
+          "ready": false
+        },
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 9.659086749999915,
+          "cost_estimate_usd": 0.0946554,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 979,
+            "cache_creation_input_tokens": 9368,
+            "cache_read_input_tokens": 617
+          },
+          "bindings": {
+            "request_json_sha256": "599ccba3df660f95fa2a2e515697d4e97ccc7f2361f97cec40677046df549cf6",
+            "input_txt_sha256": "65feeaa5b5902e4c3c2be0fddf36744f454561de00d485f663308f76ce741d95",
+            "stream_jsonl_sha256": "ee6090e235f9eea1448ad52611a2dd0d73d3349a92cf4b2245e91a513edee611",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "722d12ce7f98bbfe3445062c58340c6b79a9aeb720ac8f3640f21af21b110c6e"
+          },
+          "answered_before_assistant": [
+            "incomplete-review",
+            "reuse-publish"
+          ],
+          "matched_question_decisions": [
+            "reuse-publish",
+            "ambiguous-publish",
+            "incomplete-review"
+          ],
+          "ready": false
+        },
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 6.925949166999999,
+          "cost_estimate_usd": 0.09427540000000001,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 700,
+            "cache_creation_input_tokens": 10018,
+            "cache_read_input_tokens": 617
+          },
+          "bindings": {
+            "request_json_sha256": "3b76defb928415013cdfc85c78df4f03886eeadb5fc079a2944f3fa432d51896",
+            "input_txt_sha256": "be729ad1c402d890986585bf6f4a24a5a3f6f3cc1493405e8d99cb5acc35d4d2",
+            "stream_jsonl_sha256": "28ee78af2f3f8b9ac6b45c8df21cd7685f3610649812e0b8b13c49ca867f904d",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "8380acbf80164b42b0c5de57014a2d0122175119087d6c721ce6246baeaabb75"
+          },
+          "answered_before_assistant": [
+            "ambiguous-publish",
+            "incomplete-review",
+            "reuse-publish"
+          ],
+          "matched_question_decisions": [
+            "incomplete-review"
+          ],
+          "ready": false
+        }
+      ]
+    },
+    {
+      "id": "I09",
+      "episode_id": "resume-precedence--baseline--r1",
+      "case": "resume-precedence",
+      "policy": "baseline",
+      "repeat": 1,
+      "eligible": true,
+      "rounds": 3,
+      "question_count": 26,
+      "required_decision_count": 3,
+      "lexically_matched_decisions": [
+        "env-versus-saved",
+        "numeric-over-saved",
+        "omitted-preserves"
+      ],
+      "actual_answered_decisions": [
+        "env-versus-saved",
+        "numeric-over-saved",
+        "omitted-preserves"
+      ],
+      "answered_before_terminal": [
+        "env-versus-saved",
+        "numeric-over-saved",
+        "omitted-preserves"
+      ],
+      "missing_decisions_before_terminal": [],
+      "missing_decisions_after_final_scripted_reply": [],
+      "repeat_decision_questions": 3,
+      "keyword_premature_ready": false,
+      "final_ready": false,
+      "bindings": {
+        "result_sha256": "a1f5e270446783cfd310525d719f00920e2193e3acbf21d797fff8566293ca07",
+        "started_sha256": "0cbeaec2241d9b73d94867e41504f75afb0fc56343651525492fba3562b38b85",
+        "history_sha256": "8849ee32fba56525feb3d541f0a6622a5075ffc0747714bc74babfb8a86d83f0",
+        "anonymous_packet_row_sha256": "9cae26307a22d7024cded4789792793a57b6ce92a32f551f9283a16acc30a176",
+        "mapping_entry_sha256": "427f425148c8aaa33dc14c41a91fb96b0573198c3e98524fb8940ed973fb34b0"
+      },
+      "jury": {
+        "question_assessments": {
+          "env-versus-saved": "substantive",
+          "numeric-over-saved": "substantive",
+          "omitted-preserves": "substantive"
+        },
+        "latest_settled_follows_answers": false,
+        "issue_categories": [
+          "contradictory_open_choice"
+        ],
+        "additional_unanswered_ambiguity_count": 2,
+        "genuine_additional_unanswered_ambiguity_count": 2,
+        "explicit_missing_authoritative_decisions": [],
+        "unsupported_final_ready": false,
+        "already_answered_preference_reasked": false,
+        "supplied_source_fact_requested": false,
+        "substantive_question_without_keyword_answer_decisions": [],
+        "ledger_covered_but_not_ready": true,
+        "judgment_sha256": "7499b683335d682eb33c1b008905bf2405c9316f45782edad6756ac83c6bd33f",
+        "quote_fidelity": [
+          {
+            "issue_category": "contradictory_open_choice",
+            "matched_reference": "A3.settled[3]",
+            "quote_verbatim": true,
+            "typographic_normalization_used": false,
+            "quote_value_sha256": "b443c9e2677cc1227488b06bced29d7b1b3c847ee8976ef67a3ca8e4e1ad06e8",
+            "referenced_value_sha256": "717ebb5d40adf1d1aac09e875b95da98edc4f7b982258c4dcbeb94fe12f3fd71"
+          }
+        ]
+      },
+      "round_evidence": [
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 10.454743792000045,
+          "cost_estimate_usd": 0.06812399999999999,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 957,
+            "cache_creation_input_tokens": 6122,
+            "cache_read_input_tokens": 0
+          },
+          "bindings": {
+            "request_json_sha256": "c4c48c9ca92743e20378acbd583aec17094fd11b5f99cef059c97029f22787b3",
+            "input_txt_sha256": "cc47ac2df51337f7836b6a8655f7488a02a1173a38132a3070345de8c6377eba",
+            "stream_jsonl_sha256": "61cc7f28ffe9039bd2a725eb7e479132ffa5f58d60bb99188f01070e7834b2af",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "e4bd5da4571932661dbe1e0f3d4684f5ecc7f8b8a2a59f825d8e19cc1d9e1be1"
+          },
+          "answered_before_assistant": [],
+          "matched_question_decisions": [
+            "env-versus-saved"
+          ],
+          "ready": false
+        },
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 12.274411749999672,
+          "cost_estimate_usd": 0.07527539999999999,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 1254,
+            "cache_creation_input_tokens": 6258,
+            "cache_read_input_tokens": 617
+          },
+          "bindings": {
+            "request_json_sha256": "61174643a661fd7bf0f671232d207a1810262b4107eb43bf2828ab45431c468d",
+            "input_txt_sha256": "e7e76f9c488125cdf867a5c1de10c0a67de9e9e2e38d65079d6ce86f6ec381b0",
+            "stream_jsonl_sha256": "c662d82d2e8505ee5e3242919d98f6c05454f7015d2f52e32a297d927072675e",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "13175ff1919752501e7957d76cb440eba63cd6998b0da8c866c3ccc1917c8321"
+          },
+          "answered_before_assistant": [
+            "env-versus-saved"
+          ],
+          "matched_question_decisions": [
+            "numeric-over-saved",
+            "omitted-preserves",
+            "env-versus-saved"
+          ],
+          "ready": false
+        },
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 14.781328375000157,
+          "cost_estimate_usd": 0.08476739999999999,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 1307,
+            "cache_creation_input_tokens": 7312,
+            "cache_read_input_tokens": 617
+          },
+          "bindings": {
+            "request_json_sha256": "6ebd4a8c470ad52038d3ed929185625328c3bfd4b47f7338c554970d124b5c79",
+            "input_txt_sha256": "e1c103fc75fa7337f9ba2f5cb4598551f1f06587c4c9b0968aa3c6e716751969",
+            "stream_jsonl_sha256": "fff9b2be61aa9eada8cb1ecf1c02b05473d8557e832308f059cc2ac04c2559b9",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "414a8e15d3ac40ea3e43c95773b911281df26975d82b4b84e58bc6b9c4816420"
+          },
+          "answered_before_assistant": [
+            "env-versus-saved",
+            "numeric-over-saved",
+            "omitted-preserves"
+          ],
+          "matched_question_decisions": [
+            "omitted-preserves",
+            "env-versus-saved"
+          ],
+          "ready": false
+        }
+      ]
+    },
+    {
+      "id": "I10",
+      "episode_id": "publish-identity--baseline--r1",
+      "case": "publish-identity",
+      "policy": "baseline",
+      "repeat": 1,
+      "eligible": true,
+      "rounds": 3,
+      "question_count": 13,
+      "required_decision_count": 3,
+      "lexically_matched_decisions": [
+        "ambiguous-publish",
+        "incomplete-review",
+        "reuse-publish"
+      ],
+      "actual_answered_decisions": [
+        "ambiguous-publish",
+        "incomplete-review",
+        "reuse-publish"
+      ],
+      "answered_before_terminal": [
+        "ambiguous-publish",
+        "incomplete-review",
+        "reuse-publish"
+      ],
+      "missing_decisions_before_terminal": [],
+      "missing_decisions_after_final_scripted_reply": [],
+      "repeat_decision_questions": 4,
+      "keyword_premature_ready": false,
+      "final_ready": false,
+      "bindings": {
+        "result_sha256": "d444f5b3a644ec2a1352aebd73f690a99be1c02afc45586c770affa650d0b5f1",
+        "started_sha256": "86da955402e5ff48a788659831579307d1c16a8b6e3cee218f3666f73bb053f5",
+        "history_sha256": "6efdde119ab1da68bf92596406cf7bf639efb60680b433432036493b1431f94d",
+        "anonymous_packet_row_sha256": "09aa9995d19f27bcd08752aa37f849d967bc0b11829b2ae7c3d69e80d8ddb6f2",
+        "mapping_entry_sha256": "c115cdcfef70b42a42881c4804260dfec2a60b5945a76b0105c9160cd687cf36"
+      },
+      "jury": {
+        "question_assessments": {
+          "ambiguous-publish": "substantive",
+          "incomplete-review": "substantive",
+          "reuse-publish": "substantive"
+        },
+        "latest_settled_follows_answers": true,
+        "issue_categories": [],
+        "additional_unanswered_ambiguity_count": 1,
+        "genuine_additional_unanswered_ambiguity_count": 1,
+        "explicit_missing_authoritative_decisions": [],
+        "unsupported_final_ready": false,
+        "already_answered_preference_reasked": false,
+        "supplied_source_fact_requested": false,
+        "substantive_question_without_keyword_answer_decisions": [],
+        "ledger_covered_but_not_ready": true,
+        "judgment_sha256": "c49de634cbe223243561235bb55c2e1389433a48e26a9327571553a4aa7b8f23",
+        "quote_fidelity": []
+      },
+      "round_evidence": [
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 8.721540500000629,
+          "cost_estimate_usd": 0.0180124,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 746,
+            "cache_creation_input_tokens": 239,
+            "cache_read_input_tokens": 5862
+          },
+          "bindings": {
+            "request_json_sha256": "325dc3468ac46afcde0b9617bff2b7852deaeafdb1bd98d55eda23d112fb7b4f",
+            "input_txt_sha256": "f3841c59bfe9716ff1407cb562cf57cbfea8c2218737a57460306277a50daa81",
+            "stream_jsonl_sha256": "f519724b0feb0736f6addf1f6d796d48ef198e245648c526889409be8e0901e1",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "6bd1ae8ec14bb31ceda45e8eb8361717d0c53b1b9c6f4142a5fceb12fbf87d59"
+          },
+          "answered_before_assistant": [],
+          "matched_question_decisions": [
+            "reuse-publish",
+            "incomplete-review"
+          ],
+          "ready": false
+        },
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 7.789345082999716,
+          "cost_estimate_usd": 0.0642954,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 777,
+            "cache_creation_input_tokens": 6078,
+            "cache_read_input_tokens": 617
+          },
+          "bindings": {
+            "request_json_sha256": "3fc5ad660ad846aae97f966ad5090bec8de063b5a7af7898f537157246e1f5ac",
+            "input_txt_sha256": "c711eb12cdc30f593d5082ad5998dabd2b720e65f290bd258c0baebf60d9056a",
+            "stream_jsonl_sha256": "bcbeb96ffa40d343a6901226055b7ce6ac2678ecf85e7fea27208858e891d8a4",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "5bfa4cf4d606e84e972e4195599b061221134ab7dbf4ce934ea90f2504b3773d"
+          },
+          "answered_before_assistant": [
+            "incomplete-review",
+            "reuse-publish"
+          ],
+          "matched_question_decisions": [
+            "reuse-publish",
+            "ambiguous-publish",
+            "incomplete-review"
+          ],
+          "ready": false
+        },
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 6.651609375000589,
+          "cost_estimate_usd": 0.0679994,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 721,
+            "cache_creation_input_tokens": 6681,
+            "cache_read_input_tokens": 617
+          },
+          "bindings": {
+            "request_json_sha256": "3c833637a0335149cb2f9518f0c6f282c5439b75c1a9d6caa5ea3b5f135e8b78",
+            "input_txt_sha256": "2c1cd69111e1c8394d57a7073052b82e9b181bf3dd04eec530e923070babf7b9",
+            "stream_jsonl_sha256": "d5109b039c022010494b188c9b71e5347cbec3c1ee8ad9347f4bedc9c3ccf9ef",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "a7714112a3d7729748c0d198565a7a95af2921fe9fee8bef0d309ed3bad3482b"
+          },
+          "answered_before_assistant": [
+            "ambiguous-publish",
+            "incomplete-review",
+            "reuse-publish"
+          ],
+          "matched_question_decisions": [
+            "reuse-publish",
+            "incomplete-review"
+          ],
+          "ready": false
+        }
+      ]
+    },
+    {
+      "id": "I11",
+      "episode_id": "notification-ownership--enhanced--r2",
+      "case": "notification-ownership",
+      "policy": "enhanced",
+      "repeat": 2,
+      "eligible": true,
+      "rounds": 3,
+      "question_count": 6,
+      "required_decision_count": 3,
+      "lexically_matched_decisions": [
+        "active-owner",
+        "legacy",
+        "progress"
+      ],
+      "actual_answered_decisions": [
+        "active-owner",
+        "legacy",
+        "progress"
+      ],
+      "answered_before_terminal": [
+        "active-owner",
+        "legacy",
+        "progress"
+      ],
+      "missing_decisions_before_terminal": [],
+      "missing_decisions_after_final_scripted_reply": [],
+      "repeat_decision_questions": 4,
+      "keyword_premature_ready": false,
+      "final_ready": false,
+      "bindings": {
+        "result_sha256": "d131f284a91e4e628dbc7652fe139cd723139c29454c7818dcabc3a6c3462442",
+        "started_sha256": "e0efa319e2c8ce450f4d15ae007a745cd0c1b07eb285ecbbb8b2903b404b8991",
+        "history_sha256": "efeb45d83988cfab03bee3b3ff4386f69ac3fdcc1a2ce04cd4906891f3edfe0b",
+        "anonymous_packet_row_sha256": "51c58696df6818e907ed8d22556a52d47dbf2b4457feec0c5046350a15fe0f3c",
+        "mapping_entry_sha256": "0bf0b6f8fdea3a4b145a7dceab429f8d3a5b0b7cf641730f5d0a75346afc23c8"
+      },
+      "jury": {
+        "question_assessments": {
+          "active-owner": "substantive",
+          "legacy": "substantive",
+          "progress": "partial"
+        },
+        "latest_settled_follows_answers": true,
+        "issue_categories": [],
+        "additional_unanswered_ambiguity_count": 1,
+        "genuine_additional_unanswered_ambiguity_count": 1,
+        "explicit_missing_authoritative_decisions": [],
+        "unsupported_final_ready": false,
+        "already_answered_preference_reasked": false,
+        "supplied_source_fact_requested": false,
+        "substantive_question_without_keyword_answer_decisions": [],
+        "ledger_covered_but_not_ready": true,
+        "judgment_sha256": "159f1b2dec7d48a1038258972808d7350212cdee2fb61adcddf983f24b27e193",
+        "quote_fidelity": []
+      },
+      "round_evidence": [
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 9.038683332999426,
+          "cost_estimate_usd": 0.0202074,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 822,
+            "cache_creation_input_tokens": 242,
+            "cache_read_input_tokens": 9117
+          },
+          "bindings": {
+            "request_json_sha256": "e0ebda870ca0b0aa68cddd584de18c6950f664968f27d798339b7507b8884494",
+            "input_txt_sha256": "aeeb11ce6c3a503c5787489e0137232efe5999276f4667c09b2d8efa056f94a0",
+            "stream_jsonl_sha256": "3135e59444301d1214bf23f2c89d6425793137c3a2b07958ff67475b9e9365f3",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "333ce2b875cd6a9690881a644e01044362996198d9486e50849d5075c0c3529b"
+          },
+          "answered_before_assistant": [],
+          "matched_question_decisions": [
+            "legacy",
+            "progress",
+            "active-owner"
+          ],
+          "ready": false
+        },
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 11.612214542000402,
+          "cost_estimate_usd": 0.0949234,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 1008,
+            "cache_creation_input_tokens": 9329,
+            "cache_read_input_tokens": 617
+          },
+          "bindings": {
+            "request_json_sha256": "f6fd1e91698652e3be73b9ca4249d51a193ce960d740d3b6c91f21a9bcc97eb7",
+            "input_txt_sha256": "94c5180518542640c54732daa19f26200d338ce50ce84e6746220e85b62c6f94",
+            "stream_jsonl_sha256": "70b3cedddadcc6693369a88fd7be2c5f3ac2c516cfbfdfc3fe8355da5cf0ed42",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "c5293363dad78df070d8881a23bc0b45d9f3aaad413fd552c6a1d14602da99eb"
+          },
+          "answered_before_assistant": [
+            "active-owner",
+            "legacy",
+            "progress"
+          ],
+          "matched_question_decisions": [
+            "legacy",
+            "active-owner"
+          ],
+          "ready": false
+        },
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 7.496261457999935,
+          "cost_estimate_usd": 0.0937714,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 738,
+            "cache_creation_input_tokens": 9860,
+            "cache_read_input_tokens": 617
+          },
+          "bindings": {
+            "request_json_sha256": "f307ac3e524f7e1fe123f393e1d8e80cd87ac2cfeae6d0b6c86528eae365e404",
+            "input_txt_sha256": "c3b77d02646c2919320a4a8edcf95161c815a7e2a6c8f1335a29afef95591879",
+            "stream_jsonl_sha256": "822ffb9f895d3c493de9e14a9b4baacf28866e1cc0d2fc65a936085ae45de612",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "d24893e4bfdbd5d06944c3339480da541008fbd843df440a059de3c2b1441f7c"
+          },
+          "answered_before_assistant": [
+            "active-owner",
+            "legacy",
+            "progress"
+          ],
+          "matched_question_decisions": [
+            "legacy",
+            "active-owner"
+          ],
+          "ready": false
+        }
+      ]
+    },
+    {
+      "id": "I12",
+      "episode_id": "notification-ownership--enhanced--r1",
+      "case": "notification-ownership",
+      "policy": "enhanced",
+      "repeat": 1,
+      "eligible": true,
+      "rounds": 2,
+      "question_count": 3,
+      "required_decision_count": 3,
+      "lexically_matched_decisions": [
+        "active-owner",
+        "legacy",
+        "progress"
+      ],
+      "actual_answered_decisions": [
+        "active-owner",
+        "legacy",
+        "progress"
+      ],
+      "answered_before_terminal": [
+        "active-owner",
+        "legacy",
+        "progress"
+      ],
+      "missing_decisions_before_terminal": [],
+      "missing_decisions_after_final_scripted_reply": [],
+      "repeat_decision_questions": 0,
+      "keyword_premature_ready": false,
+      "final_ready": true,
+      "bindings": {
+        "result_sha256": "7e377c51a6bccbde3615605a1083650a8951c5d65fe0fdd40836cc62142a5993",
+        "started_sha256": "94b5fcd18336228774cce0d761ae8819ffbed66ed4c7a7820a45a4a5077ba332",
+        "history_sha256": "180f04e74c36d9180470955e008830fd958eaa1a870b425a8b7e24585c557ae3",
+        "anonymous_packet_row_sha256": "26f372b9d27e5e814caa74fd08cc201bbc14182eeca446aaf070c18f85fe0557",
+        "mapping_entry_sha256": "0d895ca9a206c8e3e3cd14424a16a04c736c090832e5be84a9678be302172781"
+      },
+      "jury": {
+        "question_assessments": {
+          "active-owner": "not_directly_sought",
+          "legacy": "substantive",
+          "progress": "partial"
+        },
+        "latest_settled_follows_answers": false,
+        "issue_categories": [
+          "invented_choice_and_premature_readiness"
+        ],
+        "additional_unanswered_ambiguity_count": 1,
+        "genuine_additional_unanswered_ambiguity_count": 1,
+        "explicit_missing_authoritative_decisions": [],
+        "unsupported_final_ready": true,
+        "already_answered_preference_reasked": false,
+        "supplied_source_fact_requested": false,
+        "substantive_question_without_keyword_answer_decisions": [],
+        "ledger_covered_but_not_ready": false,
+        "judgment_sha256": "6e71f918a93149e091b0a606f3c4fad173b14c791652b5966e7be7bde3237a39",
+        "quote_fidelity": [
+          {
+            "issue_category": "invented_choice_and_premature_readiness",
+            "matched_reference": "A2.settled[-1]",
+            "quote_verbatim": false,
+            "typographic_normalization_used": true,
+            "quote_value_sha256": "92f32dd8bcd335a342b41fd9a9b76d5574b8e919400360856733ce2cdb89cd43",
+            "referenced_value_sha256": "e6ee8bbc880c82c15a3ed4f51e3ad29cc4769fbd19a7438fb12791e7d8769b21"
+          }
+        ]
+      },
+      "round_evidence": [
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 11.10238974999993,
+          "cost_estimate_usd": 0.0882594,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 910,
+            "cache_creation_input_tokens": 8741,
+            "cache_read_input_tokens": 617
+          },
+          "bindings": {
+            "request_json_sha256": "e0ebda870ca0b0aa68cddd584de18c6950f664968f27d798339b7507b8884494",
+            "input_txt_sha256": "aeeb11ce6c3a503c5787489e0137232efe5999276f4667c09b2d8efa056f94a0",
+            "stream_jsonl_sha256": "060a704cf2ab67491f7a86802bd0eded425d625ef11b19456b704a75946d650e",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "1d20e384619a7ad6767f4ac0f2ab571334d001ca221a8a49b343263e72fb08e0"
+          },
+          "answered_before_assistant": [],
+          "matched_question_decisions": [
+            "legacy",
+            "progress",
+            "active-owner"
+          ],
+          "ready": false
+        },
+        {
+          "eligible": true,
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "requested_effort": "medium",
+          "observed_effort": null,
+          "requested_timeout_seconds": 120,
+          "requested_budget_usd": 0.6,
+          "operational_tools_observed": [],
+          "structured_output_tool_allowed": true,
+          "timeout": false,
+          "exit_code": 0,
+          "wall_seconds": 8.315249332999883,
+          "cost_estimate_usd": 0.0896474,
+          "cost_basis": "list",
+          "observed_subscription_charge_usd": null,
+          "usage": {
+            "input_tokens": 2,
+            "output_tokens": 733,
+            "cache_creation_input_tokens": 9357,
+            "cache_read_input_tokens": 617
+          },
+          "bindings": {
+            "request_json_sha256": "3c5932cb159e83a72d9f63b7d45cdac5e94779d7a16b04628351bbda9495f6bc",
+            "input_txt_sha256": "d4d628158571214b0925ad6621e277518feb8f2eccc59db11511e6a39e94080b",
+            "stream_jsonl_sha256": "f2f3b04f6a1d32a1b545e16fd29cc6c9a3f600ba7701e27cde49bee822a60e3c",
+            "stderr_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "receipt_json_sha256": "35fe3fc2c8ca5f84a3459139491af10450e10d263e6a66644b3c050dad8c60ee"
+          },
+          "answered_before_assistant": [
+            "active-owner",
+            "legacy",
+            "progress"
+          ],
+          "matched_question_decisions": [],
+          "ready": true
+        }
+      ]
+    }
+  ],
+  "jury_bindings": {
+    "packet_sha256": "df345fcf4e205ec432a6b6e610e92a70283db5ad1c3a73acd80a9406d8a4f73c",
+    "mapping_sha256": "0cedb9dde91ca8ab3afce1af1eb55efe1e76d59ef18358cee5ad0d49d67cabf9",
+    "primary_jury_sha256": "c543ceafb7ad41ed1a3ed57cb91c6ecef6e5c5f31a9ebc3bfc00585ee39051ed"
+  },
+  "policies": {
+    "baseline": {
+      "assigned": 6,
+      "eligible": 6,
+      "rounds": 18,
+      "questions": 84,
+      "ledger_covered_before_terminal": 5,
+      "final_ready": 1,
+      "keyword_premature_ready": 0,
+      "jury_unsupported_final_ready": 1,
+      "jury_typographic_quote_normalizations": 0,
+      "ledger_covered_but_not_ready": 4,
+      "substantive_question_without_keyword_answer_count": 0,
+      "requested_models": [
+        "claude-opus-5-5"
+      ],
+      "observed_models": [
+        "claude-opus-5-5"
+      ],
+      "requested_effort": "medium",
+      "cost_estimate_usd_total": 1.0944354,
+      "observed_effort": null,
+      "known_cost_estimate_usd_subtotal": 1.0944354,
+      "unknown_cost_rounds": 0,
+      "cost_basis": "list",
+      "observed_subscription_charge_usd": null,
+      "usage": {
+        "input_tokens": {
+          "total": 36,
+          "unknown_rounds": 0
+        },
+        "output_tokens": {
+          "total": 16159,
+          "unknown_rounds": 0
+        },
+        "cache_creation_input_tokens": {
+          "total": 95748,
+          "unknown_rounds": 0
+        },
+        "cache_read_input_tokens": {
+          "total": 25637,
+          "unknown_rounds": 0
+        }
+      }
+    },
+    "enhanced": {
+      "assigned": 6,
+      "eligible": 6,
+      "rounds": 17,
+      "questions": 62,
+      "ledger_covered_before_terminal": 5,
+      "final_ready": 1,
+      "keyword_premature_ready": 0,
+      "jury_unsupported_final_ready": 1,
+      "jury_typographic_quote_normalizations": 1,
+      "ledger_covered_but_not_ready": 4,
+      "substantive_question_without_keyword_answer_count": 1,
+      "requested_models": [
+        "claude-opus-5-5"
+      ],
+      "observed_models": [
+        "claude-opus-5-5"
+      ],
+      "requested_effort": "medium",
+      "cost_estimate_usd_total": 1.3878492,
+      "observed_effort": null,
+      "known_cost_estimate_usd_subtotal": 1.3878492,
+      "unknown_cost_rounds": 0,
+      "cost_basis": "list",
+      "observed_subscription_charge_usd": null,
+      "usage": {
+        "input_tokens": {
+          "total": 34,
+          "unknown_rounds": 0
+        },
+        "output_tokens": {
+          "total": 15497,
+          "unknown_rounds": 0
+        },
+        "cache_creation_input_tokens": {
+          "total": 133822,
+          "unknown_rounds": 0
+        },
+        "cache_read_input_tokens": {
+          "total": 35986,
+          "unknown_rounds": 0
+        }
+      }
+    }
+  },
+  "limitations": [
+    "Twelve scripted-user interviews, three familiar cases, two repeats per policy; not real-user satisfaction or implemented software.",
+    "Frozen keyword matching determines actual scripted answers. Semantic question coverage is a separate retained jury judgment.",
+    "Readiness is evaluated before the subsequent scripted answer; ledger coverage does not settle extra consequential choices.",
+    "The primary anonymous transcript review predates this unmasked analysis; the analyst has read mappings and outcomes and makes no new blinding claim.",
+    "Semantic classifications are inspectable reviewer judgments, not authenticated ground truth; future disagreements must remain separate from this primary review.",
+    "After outcome access, the analyzer was corrected for a disclosed quote typography mismatch. Literal checks remain first; only curly/straight apostrophes may normalize, and every use is recorded. The primary jury and transcripts are unchanged.",
+    "Current-byte hashes bind retained evidence at analysis time, not absolute historical immutability. Input and stderr lack pre-existing receipt digests.",
+    "The registered intake runtime is retained after execution and also matched to historical Git bytes; its copy is not a prelaunch snapshot.",
+    "CLI list-price estimates are not observed subscription charges. Unknown usage or cost remains unknown; equal effort labels do not establish equal compute.",
+    "No model weights, superiority, autonomous completion, maintainability or verified-outcome cost improvement is established by these interviews.",
+    "This measurement tool does not rerun inference, install a dispatcher or change the shipped protocol runtime."
+  ],
+  "material_bindings": {
+    "registered_files": {
+      "intake.py": "a562f057f8b8bf34abc2598c21346d3f740319e8683fafe36c57fae1c2947b94",
+      "runner.py": "ca59e94400c971ab5f426b296e8caa505247c9c16be671aebfec2d1a3757252a",
+      "hybrid_process_v2.py": "631e695e36f5c000b3fef02d4f64f8c518edc31befac116db559816750d8e95f"
+    },
+    "policy_files": {
+      "baseline": {
+        "SKILL.md": "06ef7346f592752d445dba92a1f7256e585f061d7da549a3f5ca92226c98d45e",
+        "references/intent-flows.md": "3b12a9d5648cd81b783d6de22634f1809aa3dcc19f55d6f3b8ffa8f07702e86f"
+      },
+      "enhanced": {
+        "SKILL.md": "c23476d8d3edbbd7f6f114443153dd5fa8ee61853abb2704d9b1c2f7b2dd0d46",
+        "references/intent-flows.md": "6c830168c45fc83bf3eec100e134adde35219e0c8142a7cd23b39a24549f3684",
+        "references/question-patterns.md": "4a5798f3af7759dd927a3f64681e7a63699da5198a016644655d3c67994f3d0d"
+      }
+    },
+    "config_sha256": "a75e1c941ae710cf2e6e432c9d962327c3b358aba2590b7039e3e507dc41ba81",
+    "adoption_sha256": "67346ae76a4f219bf45ec0962c75cc9d8755eeb9903ca87bac23fca7f53366b4",
+    "previous_unexecuted_preparation_registration_sha256": "406b330d5ba12aec07bf982aa8a30ebd9bc4063528c9593ef67db59ac4a8be36",
+    "retained_after_execution_runtime_sha256": "a562f057f8b8bf34abc2598c21346d3f740319e8683fafe36c57fae1c2947b94",
+    "cosmetic_revision": {
+      "note_sha256": "3cc4b8bf97d19a3a464450b01f93ef9fb4be7f64e78d75ddf0e7863520816cc2",
+      "registered_runtime_sha256": "a562f057f8b8bf34abc2598c21346d3f740319e8683fafe36c57fae1c2947b94",
+      "current_runtime_sha256": "de0b95ed7328e8f87f061f1947ca1b4793ec670f53318907d23dcb18524edb49",
+      "retained_after_execution_copy_sha256": "a562f057f8b8bf34abc2598c21346d3f740319e8683fafe36c57fae1c2947b94",
+      "historical_commit": "b662d71",
+      "only_trailing_whitespace": true,
+      "copy_is_prelaunch_snapshot": false
+    }
+  },
+  "projection_sha256": "1b1e3353adf25756d25c78ccba8015b7177cf9c07811575643304af27e91d8b8"
+}

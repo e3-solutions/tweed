@@ -1,0 +1,1028 @@
+{
+  "status": "pass",
+  "model_calls": 0,
+  "task_manifest_sha256": "2495f12cc27d6f5c1ed349db1d72d5bcc01f5799e868fc119c16215509b04d22",
+  "evaluator_sha256": "dc532891b39d239f545302e87cb033bcb61e9a150672d9b15511371b1192e080",
+  "controls": [
+    {
+      "control": "authentic-base",
+      "task_id": "cpython-pr156382",
+      "expected_product_passed": false,
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/evaluate.py",
+        "--workspace",
+        "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/oracles/cpython-pr156382/base",
+        "--task-id",
+        "cpython-pr156382"
+      ],
+      "exit_code": 1,
+      "grade": {
+        "task_id": "cpython-pr156382",
+        "product_passed": false,
+        "positive_passed": false,
+        "negative_passed": true,
+        "regression_passed": true,
+        "scope_valid": true,
+        "scope_violations": [],
+        "source_current": true,
+        "evaluation_status": "observed",
+        "local_module_binding": {
+          "local_module": "/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-zyt0x8tt/source/configparser.py",
+          "local_module_sha256": "de8ddb6cdaa3bb51885ff47a768a81cb32bd279dd5a5eaf5388cde48b7f264a9",
+          "binding_errors": [],
+          "source_load_error": null
+        },
+        "failed_requirements": [
+          {
+            "id": "positive",
+            "claim": "Configured requested behavior",
+            "observed": [
+              "tests.test_owner.Owner.test_positive_configured_whitespace_delimiters",
+              "tests.test_owner.Owner.test_positive_values_and_no_value_options"
+            ],
+            "expected": "All registered cases pass"
+          }
+        ],
+        "execution_receipts": {
+          "owner": {
+            "exit_code": 1,
+            "timed_out": false,
+            "stdout": "{\"local_module\": \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-zyt0x8tt/source/configparser.py\", \"local_module_sha256\": \"de8ddb6cdaa3bb51885ff47a768a81cb32bd279dd5a5eaf5388cde48b7f264a9\", \"binding_errors\": [], \"source_load_error\": null}\n{\"failed\": [\"tests.test_owner.Owner.test_positive_configured_whitespace_delimiters\", \"tests.test_owner.Owner.test_positive_values_and_no_value_options\"], \"run\": 5, \"skipped\": 0}\n",
+            "stderr": "test_positive_configured_whitespace_delimiters (tests.test_owner.Owner.test_positive_configured_whitespace_delimiters) ... \n  test_positive_configured_whitespace_delimiters (tests.test_owner.Owner.test_positive_configured_whitespace_delimiters) (delimiter=\"' '\", key='colour') ... ERROR\ntest_positive_values_and_no_value_options (tests.test_owner.Owner.test_positive_values_and_no_value_options) ... ERROR\ntest_negative_non_delimiter_whitespace_keeps_key_meaning (tests.test_owner.Owner.test_negative_non_delimiter_whitespace_keeps_key_meaning) ... ok\ntest_negative_malformed_and_duplicate_still_rejected (tests.test_owner.Owner.test_negative_malformed_and_duplicate_still_rejected) ... ok\ntest_regression_default_interpolation_comments_and_roundtrip (tests.test_owner.Owner.test_regression_default_interpolation_comments_and_roundtrip) ... ok\n\n======================================================================\nERROR: test_positive_configured_whitespace_delimiters (tests.test_owner.Owner.test_positive_configured_whitespace_delimiters) (delimiter=\"' '\", key='colour')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-zyt0x8tt/source/configparser.py\", line 845, in get\n    value = d[option]\n            ~^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/collections/__init__.py\", line 1028, in __getitem__\n    return self.__missing__(key)            # support subclasses that define __missing__\n           ~~~~~~~~~~~~~~~~^^^^^\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/collections/__init__.py\", line 1020, in __missing__\n    raise KeyError(key)\nKeyError: 'colour'\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-zyt0x8tt/source/tests/test_owner.py\", line 13, in test_positive_configured_whitespace_delimiters\n    self.assertEqual(parser.get('settings',key),value)\n                     ~~~~~~~~~~^^^^^^^^^^^^^^^^\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-zyt0x8tt/source/configparser.py\", line 848, in get\n    raise NoOptionError(option, section)\nproduct_under_test.NoOptionError: No option 'colour' in section: 'settings'\n\n======================================================================\nERROR: test_positive_values_and_no_value_options (tests.test_owner.Owner.test_positive_values_and_no_value_options)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-zyt0x8tt/source/tests/test_owner.py\", line 18, in test_positive_values_and_no_value_options\n    self.assertEqual(p['s']['mode'],'fast safe');self.assertEqual(p.getint('s','count'),27);self.assertIsNone(p['s']['flag'])\n                     ~~~~~~^^^^^^^^\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-zyt0x8tt/source/configparser.py\", line 1315, in __getitem__\n    raise KeyError(key)\nKeyError: 'mode'\n\n----------------------------------------------------------------------\nRan 5 tests in 0.002s\n\nFAILED (errors=2)\n",
+            "wall_seconds": 0.05711741700361017,
+            "process_cleanup_scope": "original_process_group",
+            "detached_descendants_contained": false
+          },
+          "baseline": [
+            {
+              "argv": [
+                "/opt/homebrew/opt/python@3.14/bin/python3.14",
+                "-B",
+                "-m",
+                "unittest",
+                "tests.test_visible"
+              ],
+              "exit_code": 0,
+              "timed_out": false,
+              "stdout": "ACTOR_LOCAL_SOURCE configparser.py de8ddb6cdaa3bb51885ff47a768a81cb32bd279dd5a5eaf5388cde48b7f264a9\n",
+              "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n",
+              "wall_seconds": 0.05445958400378004,
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false
+            }
+          ]
+        },
+        "source_before_sha256": "e113b1a919674b4ec1091a48d5c2f375275868ace9070e875ea19f02469a04c8",
+        "source_after_sha256": "e113b1a919674b4ec1091a48d5c2f375275868ace9070e875ea19f02469a04c8",
+        "owner_stdout_sha256": "565ea0ae31f2202daed6d0f128728ab4c5cbbf515868288529ba214da44cb09d",
+        "owner_stderr_sha256": "997ccd54be1d1410194a4df746675c9b0a1f3e11d210ee8e2c574b8d73a4c046"
+      }
+    },
+    {
+      "control": "accepted-reference",
+      "task_id": "cpython-pr156382",
+      "expected_product_passed": true,
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/evaluate.py",
+        "--workspace",
+        "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/oracles/cpython-pr156382/head",
+        "--task-id",
+        "cpython-pr156382"
+      ],
+      "exit_code": 0,
+      "grade": {
+        "task_id": "cpython-pr156382",
+        "product_passed": true,
+        "positive_passed": true,
+        "negative_passed": true,
+        "regression_passed": true,
+        "scope_valid": true,
+        "scope_violations": [],
+        "source_current": true,
+        "evaluation_status": "observed",
+        "local_module_binding": {
+          "local_module": "/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-tgmhhegz/source/configparser.py",
+          "local_module_sha256": "503e39c7a2f2e7594791d2908fbeb2ee2546d05f97b675ab666c836714ce9215",
+          "binding_errors": [],
+          "source_load_error": null
+        },
+        "failed_requirements": [],
+        "execution_receipts": {
+          "owner": {
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "{\"local_module\": \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-tgmhhegz/source/configparser.py\", \"local_module_sha256\": \"503e39c7a2f2e7594791d2908fbeb2ee2546d05f97b675ab666c836714ce9215\", \"binding_errors\": [], \"source_load_error\": null}\n{\"failed\": [], \"run\": 5, \"skipped\": 0}\n",
+            "stderr": "test_positive_configured_whitespace_delimiters (tests.test_owner.Owner.test_positive_configured_whitespace_delimiters) ... ok\ntest_positive_values_and_no_value_options (tests.test_owner.Owner.test_positive_values_and_no_value_options) ... ok\ntest_negative_non_delimiter_whitespace_keeps_key_meaning (tests.test_owner.Owner.test_negative_non_delimiter_whitespace_keeps_key_meaning) ... ok\ntest_negative_malformed_and_duplicate_still_rejected (tests.test_owner.Owner.test_negative_malformed_and_duplicate_still_rejected) ... ok\ntest_regression_default_interpolation_comments_and_roundtrip (tests.test_owner.Owner.test_regression_default_interpolation_comments_and_roundtrip) ... ok\n\n----------------------------------------------------------------------\nRan 5 tests in 0.001s\n\nOK\n",
+            "wall_seconds": 0.055017541999404784,
+            "process_cleanup_scope": "original_process_group",
+            "detached_descendants_contained": false
+          },
+          "baseline": [
+            {
+              "argv": [
+                "/opt/homebrew/opt/python@3.14/bin/python3.14",
+                "-B",
+                "-m",
+                "unittest",
+                "tests.test_visible"
+              ],
+              "exit_code": 0,
+              "timed_out": false,
+              "stdout": "ACTOR_LOCAL_SOURCE configparser.py 503e39c7a2f2e7594791d2908fbeb2ee2546d05f97b675ab666c836714ce9215\n",
+              "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n",
+              "wall_seconds": 0.05550195899559185,
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false
+            }
+          ]
+        },
+        "source_before_sha256": "09b083ec29ca8ebbc0fc277b89125889c845ba9b4d296aa793933ed21ef2d36c",
+        "source_after_sha256": "09b083ec29ca8ebbc0fc277b89125889c845ba9b4d296aa793933ed21ef2d36c",
+        "owner_stdout_sha256": "d1ec01c465cc3130d6aef2131bb55ab13f55100e89a55916559d3ad4cfe99af4",
+        "owner_stderr_sha256": "86700953eb321e9f672ad4de31b6260d900f9bf3af619d823255feb9b417f85a"
+      }
+    },
+    {
+      "control": "deliberate-wrong-fix",
+      "task_id": "cpython-pr156382",
+      "expected_product_passed": false,
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/evaluate.py",
+        "--workspace",
+        "/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-controls-0qqa7i3u/wrong-fix",
+        "--task-id",
+        "cpython-pr156382"
+      ],
+      "exit_code": 1,
+      "grade": {
+        "task_id": "cpython-pr156382",
+        "product_passed": false,
+        "positive_passed": true,
+        "negative_passed": true,
+        "regression_passed": false,
+        "scope_valid": true,
+        "scope_violations": [],
+        "source_current": true,
+        "evaluation_status": "observed",
+        "local_module_binding": {
+          "local_module": "/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-p1o3zc8w/source/configparser.py",
+          "local_module_sha256": "1dc1c7b38d13a7a05137a7a32762a8ee27b48f0bed5b34f2bf24bc485709a707",
+          "binding_errors": [],
+          "source_load_error": null
+        },
+        "failed_requirements": [
+          {
+            "id": "regression",
+            "claim": "Preserved existing public behavior",
+            "observed": [
+              "tests.test_owner.Owner.test_regression_default_interpolation_comments_and_roundtrip",
+              "visible-command:['/opt/homebrew/opt/python@3.14/bin/python3.14', '-B', '-m', 'unittest', 'tests.test_visible']"
+            ],
+            "expected": "All registered cases pass"
+          }
+        ],
+        "execution_receipts": {
+          "owner": {
+            "exit_code": 1,
+            "timed_out": false,
+            "stdout": "{\"local_module\": \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-p1o3zc8w/source/configparser.py\", \"local_module_sha256\": \"1dc1c7b38d13a7a05137a7a32762a8ee27b48f0bed5b34f2bf24bc485709a707\", \"binding_errors\": [], \"source_load_error\": null}\n{\"failed\": [\"tests.test_owner.Owner.test_regression_default_interpolation_comments_and_roundtrip\"], \"run\": 5, \"skipped\": 0}\n",
+            "stderr": "test_positive_configured_whitespace_delimiters (tests.test_owner.Owner.test_positive_configured_whitespace_delimiters) ... ok\ntest_positive_values_and_no_value_options (tests.test_owner.Owner.test_positive_values_and_no_value_options) ... ok\ntest_negative_non_delimiter_whitespace_keeps_key_meaning (tests.test_owner.Owner.test_negative_non_delimiter_whitespace_keeps_key_meaning) ... ok\ntest_negative_malformed_and_duplicate_still_rejected (tests.test_owner.Owner.test_negative_malformed_and_duplicate_still_rejected) ... ok\ntest_regression_default_interpolation_comments_and_roundtrip (tests.test_owner.Owner.test_regression_default_interpolation_comments_and_roundtrip) ... ERROR\n\n======================================================================\nERROR: test_regression_default_interpolation_comments_and_roundtrip (tests.test_owner.Owner.test_regression_default_interpolation_comments_and_roundtrip)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-p1o3zc8w/source/configparser.py\", line 847, in get\n    value = d[option]\n            ~^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/collections/__init__.py\", line 1028, in __getitem__\n    return self.__missing__(key)            # support subclasses that define __missing__\n           ~~~~~~~~~~~~~~~~^^^^^\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/collections/__init__.py\", line 1020, in __missing__\n    raise KeyError(key)\nKeyError: 'full name'\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-p1o3zc8w/source/tests/test_owner.py\", line 30, in test_regression_default_interpolation_comments_and_roundtrip\n    self.assertEqual(p.get('s','path'),'/data/report');self.assertEqual(p.get('s','full name'),'Ada')\n                                                                        ~~~~~^^^^^^^^^^^^^^^^^\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-p1o3zc8w/source/configparser.py\", line 850, in get\n    raise NoOptionError(option, section)\nproduct_under_test.NoOptionError: No option 'full name' in section: 's'\n\n----------------------------------------------------------------------\nRan 5 tests in 0.002s\n\nFAILED (errors=1)\n",
+            "wall_seconds": 0.05551820800610585,
+            "process_cleanup_scope": "original_process_group",
+            "detached_descendants_contained": false
+          },
+          "baseline": [
+            {
+              "argv": [
+                "/opt/homebrew/opt/python@3.14/bin/python3.14",
+                "-B",
+                "-m",
+                "unittest",
+                "tests.test_visible"
+              ],
+              "exit_code": 1,
+              "timed_out": false,
+              "stdout": "ACTOR_LOCAL_SOURCE configparser.py 1dc1c7b38d13a7a05137a7a32762a8ee27b48f0bed5b34f2bf24bc485709a707\n",
+              "stderr": "E\n======================================================================\nERROR: test_existing_default_delimiters (tests.test_visible.Visible.test_existing_default_delimiters)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-p1o3zc8w/source/configparser.py\", line 847, in get\n    value = d[option]\n            ~^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/collections/__init__.py\", line 1028, in __getitem__\n    return self.__missing__(key)            # support subclasses that define __missing__\n           ~~~~~~~~~~~~~~~~^^^^^\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/collections/__init__.py\", line 1020, in __missing__\n    raise KeyError(key)\nKeyError: 'full name'\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-p1o3zc8w/source/tests/test_visible.py\", line 11, in test_existing_default_delimiters\n    p=M.ConfigParser();p.read_string(\"[s]\\nfull name=Ada\\ncount: 7\\n\");self.assertEqual(p.get(\"s\",\"full name\"),\"Ada\");self.assertEqual(p.getint(\"s\",\"count\"),7)\n                                                                                        ~~~~~^^^^^^^^^^^^^^^^^\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-p1o3zc8w/source/configparser.py\", line 850, in get\n    raise NoOptionError(option, section)\nactor_local.NoOptionError: No option 'full name' in section: 's'\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (errors=1)\n",
+              "wall_seconds": 0.0545370420004474,
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false
+            }
+          ]
+        },
+        "source_before_sha256": "4d46e850abd022d73fc9fedefcc2bc20605f899413346494352417cabaa762cd",
+        "source_after_sha256": "4d46e850abd022d73fc9fedefcc2bc20605f899413346494352417cabaa762cd",
+        "owner_stdout_sha256": "0e09b180ac6644c48d65ad395b8da40339583f677b4fdbe663182788964a34bd",
+        "owner_stderr_sha256": "d9e265eb6dbc8468c6a555708d4ccb6a52eae64bd06a4b80c3381e161f57048a"
+      }
+    },
+    {
+      "control": "equivalent-source-and-conventional-test-edits",
+      "task_id": "cpython-pr156382",
+      "expected_product_passed": true,
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/evaluate.py",
+        "--workspace",
+        "/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-controls-0qqa7i3u/equivalent",
+        "--task-id",
+        "cpython-pr156382"
+      ],
+      "exit_code": 0,
+      "grade": {
+        "task_id": "cpython-pr156382",
+        "product_passed": true,
+        "positive_passed": true,
+        "negative_passed": true,
+        "regression_passed": true,
+        "scope_valid": true,
+        "scope_violations": [],
+        "source_current": true,
+        "evaluation_status": "observed",
+        "local_module_binding": {
+          "local_module": "/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-ixby83a6/source/configparser.py",
+          "local_module_sha256": "67e530a1d1fee978a87d629339d88eb642002124f2813a9384010354d59c0727",
+          "binding_errors": [],
+          "source_load_error": null
+        },
+        "failed_requirements": [],
+        "execution_receipts": {
+          "owner": {
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "{\"local_module\": \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-ixby83a6/source/configparser.py\", \"local_module_sha256\": \"67e530a1d1fee978a87d629339d88eb642002124f2813a9384010354d59c0727\", \"binding_errors\": [], \"source_load_error\": null}\n{\"failed\": [], \"run\": 5, \"skipped\": 0}\n",
+            "stderr": "test_positive_configured_whitespace_delimiters (tests.test_owner.Owner.test_positive_configured_whitespace_delimiters) ... ok\ntest_positive_values_and_no_value_options (tests.test_owner.Owner.test_positive_values_and_no_value_options) ... ok\ntest_negative_non_delimiter_whitespace_keeps_key_meaning (tests.test_owner.Owner.test_negative_non_delimiter_whitespace_keeps_key_meaning) ... ok\ntest_negative_malformed_and_duplicate_still_rejected (tests.test_owner.Owner.test_negative_malformed_and_duplicate_still_rejected) ... ok\ntest_regression_default_interpolation_comments_and_roundtrip (tests.test_owner.Owner.test_regression_default_interpolation_comments_and_roundtrip) ... ok\n\n----------------------------------------------------------------------\nRan 5 tests in 0.001s\n\nOK\n",
+            "wall_seconds": 0.0518210000009276,
+            "process_cleanup_scope": "original_process_group",
+            "detached_descendants_contained": false
+          },
+          "baseline": [
+            {
+              "argv": [
+                "/opt/homebrew/opt/python@3.14/bin/python3.14",
+                "-B",
+                "-m",
+                "unittest",
+                "tests.test_visible"
+              ],
+              "exit_code": 0,
+              "timed_out": false,
+              "stdout": "ACTOR_LOCAL_SOURCE configparser.py 67e530a1d1fee978a87d629339d88eb642002124f2813a9384010354d59c0727\n",
+              "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n",
+              "wall_seconds": 0.05426287499722093,
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false
+            }
+          ]
+        },
+        "source_before_sha256": "06df036c8f361173a76d42f39b2a4e5f37d63c4e04f04c1bbf6600a0afb03180",
+        "source_after_sha256": "06df036c8f361173a76d42f39b2a4e5f37d63c4e04f04c1bbf6600a0afb03180",
+        "owner_stdout_sha256": "5fa39bf03ff77f6613042e69777bdafe5f34d56698a719cd4460c2d53b1f3dfc",
+        "owner_stderr_sha256": "86700953eb321e9f672ad4de31b6260d900f9bf3af619d823255feb9b417f85a"
+      }
+    },
+    {
+      "control": "deliberate-installed-origin-forgery",
+      "task_id": "cpython-pr156382",
+      "expected_product_passed": false,
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/evaluate.py",
+        "--workspace",
+        "/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-controls-0qqa7i3u/forged-origin",
+        "--task-id",
+        "cpython-pr156382"
+      ],
+      "exit_code": 1,
+      "grade": {
+        "task_id": "cpython-pr156382",
+        "product_passed": false,
+        "positive_passed": false,
+        "negative_passed": false,
+        "regression_passed": false,
+        "scope_valid": true,
+        "scope_violations": [],
+        "source_current": true,
+        "evaluation_status": "observed",
+        "local_module_binding": {
+          "local_module": "/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-yd1kvcih/source/configparser.py",
+          "local_module_sha256": "9522b5d39296425112bcd19bdc318d2e4891f60fb4d6f27438902be08c028e23",
+          "binding_errors": [
+            "Tested Python API code origin is outside projected local implementation: ConfigParser"
+          ],
+          "source_load_error": null
+        },
+        "failed_requirements": [
+          {
+            "id": "local-module-binding",
+            "claim": "Check the actual actor-local implementation",
+            "observed": [
+              "Tested Python API code origin is outside projected local implementation: ConfigParser"
+            ],
+            "expected": "Exact local module path/hash and local tested Python API origins"
+          }
+        ],
+        "execution_receipts": {
+          "owner": {
+            "exit_code": 1,
+            "timed_out": false,
+            "stdout": "{\"local_module\": \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-yd1kvcih/source/configparser.py\", \"local_module_sha256\": \"9522b5d39296425112bcd19bdc318d2e4891f60fb4d6f27438902be08c028e23\", \"binding_errors\": [\"Tested Python API code origin is outside projected local implementation: ConfigParser\"], \"source_load_error\": null}\n{\"failed\": [\"local-module-binding\"], \"run\": 0, \"skipped\": 0}\n",
+            "stderr": "",
+            "wall_seconds": 0.05468983399623539,
+            "process_cleanup_scope": "original_process_group",
+            "detached_descendants_contained": false
+          },
+          "baseline": [
+            {
+              "argv": [
+                "/opt/homebrew/opt/python@3.14/bin/python3.14",
+                "-B",
+                "-m",
+                "unittest",
+                "tests.test_visible"
+              ],
+              "exit_code": 0,
+              "timed_out": false,
+              "stdout": "ACTOR_LOCAL_SOURCE configparser.py 9522b5d39296425112bcd19bdc318d2e4891f60fb4d6f27438902be08c028e23\n",
+              "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n",
+              "wall_seconds": 0.06203158399875974,
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false
+            }
+          ]
+        },
+        "source_before_sha256": "841e7e24ac05f67ba60035fb617e1169aedc191ee843e8bfbb41f2610407acd8",
+        "source_after_sha256": "841e7e24ac05f67ba60035fb617e1169aedc191ee843e8bfbb41f2610407acd8",
+        "owner_stdout_sha256": "9377ddee1f6fb416a748160b9385ecd231e923c1a74bbe0ce6e00702e20e1220",
+        "owner_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "control": "deliberate-actor-local-syntax-error",
+      "task_id": "cpython-pr156382",
+      "expected_product_passed": false,
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/evaluate.py",
+        "--workspace",
+        "/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-controls-0qqa7i3u/source-syntax-error",
+        "--task-id",
+        "cpython-pr156382"
+      ],
+      "exit_code": 1,
+      "grade": {
+        "task_id": "cpython-pr156382",
+        "product_passed": false,
+        "positive_passed": false,
+        "negative_passed": false,
+        "regression_passed": false,
+        "scope_valid": true,
+        "scope_violations": [],
+        "source_current": true,
+        "evaluation_status": "observed",
+        "local_module_binding": {
+          "local_module": "/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-ux91k5w0/source/configparser.py",
+          "local_module_sha256": "e5c39b5d9e483c96898f2970978fee4d8e5a3814e685d9ab37365a5aa333b5ad",
+          "binding_errors": [],
+          "source_load_error": {
+            "kind": "SyntaxError",
+            "message": "invalid syntax",
+            "line": 1
+          }
+        },
+        "failed_requirements": [
+          {
+            "id": "source-load",
+            "claim": "Actor-local implementation loads",
+            "observed": {
+              "kind": "SyntaxError",
+              "message": "invalid syntax",
+              "line": 1
+            },
+            "expected": "Local module compiles and loads before required public API checks"
+          }
+        ],
+        "execution_receipts": {
+          "owner": {
+            "exit_code": 1,
+            "timed_out": false,
+            "stdout": "{\"local_module\": \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-ux91k5w0/source/configparser.py\", \"local_module_sha256\": \"e5c39b5d9e483c96898f2970978fee4d8e5a3814e685d9ab37365a5aa333b5ad\", \"binding_errors\": [], \"source_load_error\": {\"kind\": \"SyntaxError\", \"message\": \"invalid syntax\", \"line\": 1}}\n{\"failed\": [\"actor-source-load\"], \"run\": 0, \"skipped\": 0}\n",
+            "stderr": "",
+            "wall_seconds": 0.0480815410046489,
+            "process_cleanup_scope": "original_process_group",
+            "detached_descendants_contained": false
+          },
+          "baseline": [
+            {
+              "argv": [
+                "/opt/homebrew/opt/python@3.14/bin/python3.14",
+                "-B",
+                "-m",
+                "unittest",
+                "tests.test_visible"
+              ],
+              "exit_code": 1,
+              "timed_out": false,
+              "stdout": "",
+              "stderr": "Traceback (most recent call last):\n  File \"<frozen runpy>\", line 203, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/__main__.py\", line 18, in <module>\n    main(module=None)\n    ~~~~^^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/main.py\", line 103, in __init__\n    self.parseArgs(argv)\n    ~~~~~~~~~~~~~~^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/main.py\", line 142, in parseArgs\n    self.createTests()\n    ~~~~~~~~~~~~~~~~^^\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/main.py\", line 153, in createTests\n    self.test = self.testLoader.loadTestsFromNames(self.testNames,\n                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^\n                                                   self.module)\n                                                   ^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/loader.py\", line 214, in loadTestsFromNames\n    suites = [self.loadTestsFromName(name, module) for name in names]\n              ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/loader.py\", line 141, in loadTestsFromName\n    module = __import__(module_name)\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-ux91k5w0/source/tests/test_visible.py\", line 5, in <module>\n    s=importlib.util.spec_from_file_location(\"actor_local\",p);M=importlib.util.module_from_spec(s);s.loader.exec_module(M)\n                                                                                                   ~~~~~~~~~~~~~~~~~~~~^^^\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-ux91k5w0/source/configparser.py\", line 1\n    def broken(:\n               ^\nSyntaxError: invalid syntax\n",
+              "wall_seconds": 0.051451041996187996,
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false
+            }
+          ]
+        },
+        "source_before_sha256": "37d2320ccee44112d2605bb79a5393ce89aa3a145c5d33cf79e67f47e2dfe886",
+        "source_after_sha256": "37d2320ccee44112d2605bb79a5393ce89aa3a145c5d33cf79e67f47e2dfe886",
+        "owner_stdout_sha256": "7205e82cc83e012b8377b9ff9005a9aa0a9f6ad53c1925ed3708778940b1e34e",
+        "owner_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "control": "deliberate-installed-substitution",
+      "task_id": "cpython-pr156382",
+      "expected_product_passed": false,
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/evaluate.py",
+        "--workspace",
+        "/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-controls-0qqa7i3u/installed-substitution",
+        "--task-id",
+        "cpython-pr156382"
+      ],
+      "exit_code": 2,
+      "grade": {
+        "task_id": "cpython-pr156382",
+        "product_passed": false,
+        "positive_passed": false,
+        "negative_passed": false,
+        "regression_passed": false,
+        "scope_valid": true,
+        "scope_violations": [],
+        "source_current": true,
+        "evaluation_status": "unknown",
+        "local_module_binding": {},
+        "failed_requirements": [],
+        "execution_receipts": {
+          "owner": {
+            "exit_code": 1,
+            "timed_out": false,
+            "stdout": "",
+            "stderr": "Traceback (most recent call last):\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-s7kqgccv/source/_sealed_grading_entry.py\", line 6, in <module>\n    try:s.loader.exec_module(M)\n        ~~~~~~~~~~~~~~~~~~~~^^^\n  File \"<frozen importlib._bootstrap_external>\", line 759, in exec_module\n  File \"<frozen importlib._bootstrap>\", line 491, in _call_with_frames_removed\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-s7kqgccv/source/configparser.py\", line 4, in <module>\n    _s.loader.exec_module(_m)\n    ~~~~~~~~~~~~~~~~~~~~~^^^^\n  File \"<frozen importlib._bootstrap_external>\", line 755, in exec_module\n  File \"<frozen importlib._bootstrap_external>\", line 892, in get_code\n  File \"<frozen importlib._bootstrap_external>\", line 950, in get_data\nPermissionError: [Errno 1] Operation not permitted: '/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/configparser.py'\n",
+            "wall_seconds": 0.047914666996803135,
+            "process_cleanup_scope": "original_process_group",
+            "detached_descendants_contained": false
+          },
+          "baseline": [
+            {
+              "argv": [
+                "/opt/homebrew/opt/python@3.14/bin/python3.14",
+                "-B",
+                "-m",
+                "unittest",
+                "tests.test_visible"
+              ],
+              "exit_code": 1,
+              "timed_out": false,
+              "stdout": "",
+              "stderr": "Traceback (most recent call last):\n  File \"<frozen runpy>\", line 203, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/__main__.py\", line 18, in <module>\n    main(module=None)\n    ~~~~^^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/main.py\", line 103, in __init__\n    self.parseArgs(argv)\n    ~~~~~~~~~~~~~~^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/main.py\", line 142, in parseArgs\n    self.createTests()\n    ~~~~~~~~~~~~~~~~^^\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/main.py\", line 153, in createTests\n    self.test = self.testLoader.loadTestsFromNames(self.testNames,\n                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^\n                                                   self.module)\n                                                   ^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/loader.py\", line 214, in loadTestsFromNames\n    suites = [self.loadTestsFromName(name, module) for name in names]\n              ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/loader.py\", line 141, in loadTestsFromName\n    module = __import__(module_name)\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-s7kqgccv/source/tests/test_visible.py\", line 5, in <module>\n    s=importlib.util.spec_from_file_location(\"actor_local\",p);M=importlib.util.module_from_spec(s);s.loader.exec_module(M)\n                                                                                                   ~~~~~~~~~~~~~~~~~~~~^^^\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-s7kqgccv/source/configparser.py\", line 4, in <module>\n    _s.loader.exec_module(_m)\n    ~~~~~~~~~~~~~~~~~~~~~^^^^\n  File \"<frozen importlib._bootstrap_external>\", line 755, in exec_module\n  File \"<frozen importlib._bootstrap_external>\", line 892, in get_code\n  File \"<frozen importlib._bootstrap_external>\", line 950, in get_data\nPermissionError: [Errno 1] Operation not permitted: '/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/configparser.py'\n",
+              "wall_seconds": 0.049080666998634115,
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false
+            }
+          ]
+        },
+        "source_before_sha256": "b57b3d3b8ce07ae84bf8011fd50ef500c7f6d5827290774edefafecef4700493",
+        "source_after_sha256": "b57b3d3b8ce07ae84bf8011fd50ef500c7f6d5827290774edefafecef4700493",
+        "owner_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "owner_stderr_sha256": "e600e34f425eb37630dcb9512ccc13a437b7a4fd5470b69af7250895dc4a167e"
+      }
+    },
+    {
+      "control": "authentic-base",
+      "task_id": "cpython-pr32225",
+      "expected_product_passed": false,
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/evaluate.py",
+        "--workspace",
+        "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/oracles/cpython-pr32225/base",
+        "--task-id",
+        "cpython-pr32225"
+      ],
+      "exit_code": 1,
+      "grade": {
+        "task_id": "cpython-pr32225",
+        "product_passed": false,
+        "positive_passed": false,
+        "negative_passed": false,
+        "regression_passed": true,
+        "scope_valid": true,
+        "scope_violations": [],
+        "source_current": true,
+        "evaluation_status": "observed",
+        "local_module_binding": {
+          "local_module": "/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-jzaq2reo/source/csv.py",
+          "local_module_sha256": "6c68a5186e3b85e6e267a7ef96479327a45ae2b40bf5e9f2017e4b2282b3f5b1",
+          "binding_errors": [],
+          "source_load_error": null
+        },
+        "failed_requirements": [
+          {
+            "id": "positive",
+            "claim": "Configured requested behavior",
+            "observed": [
+              "tests.test_owner.Owner.test_positive_reader_iterator_reused_across_rows",
+              "tests.test_owner.Owner.test_positive_writer_iterator_header_and_data_roundtrip"
+            ],
+            "expected": "All registered cases pass"
+          },
+          {
+            "id": "negative",
+            "claim": "Required invalid/neighboring boundaries",
+            "observed": [
+              "tests.test_owner.Owner.test_negative_extra_key_and_invalid_argument",
+              "tests.test_owner.Owner.test_negative_extra_key_and_invalid_argument"
+            ],
+            "expected": "All registered cases pass"
+          }
+        ],
+        "execution_receipts": {
+          "owner": {
+            "exit_code": 1,
+            "timed_out": false,
+            "stdout": "{\"local_module\": \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-jzaq2reo/source/csv.py\", \"local_module_sha256\": \"6c68a5186e3b85e6e267a7ef96479327a45ae2b40bf5e9f2017e4b2282b3f5b1\", \"binding_errors\": [], \"source_load_error\": null}\n{\"failed\": [\"tests.test_owner.Owner.test_negative_extra_key_and_invalid_argument\", \"tests.test_owner.Owner.test_negative_extra_key_and_invalid_argument\", \"tests.test_owner.Owner.test_positive_reader_iterator_reused_across_rows\", \"tests.test_owner.Owner.test_positive_writer_iterator_header_and_data_roundtrip\"], \"run\": 4, \"skipped\": 0}\n",
+            "stderr": "test_positive_reader_iterator_reused_across_rows (tests.test_owner.Owner) ... ERROR\ntest_positive_writer_iterator_header_and_data_roundtrip (tests.test_owner.Owner) ... ERROR\ntest_negative_extra_key_and_invalid_argument (tests.test_owner.Owner) ... test_regression_sequences_default_header_and_ignore (tests.test_owner.Owner) ... ok\n\n======================================================================\nERROR: test_positive_reader_iterator_reused_across_rows (tests.test_owner.Owner)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-jzaq2reo/source/tests/test_owner.py\", line 8, in test_positive_reader_iterator_reused_across_rows\n    self.assertEqual(list(reader),[{'drink':'tea','cents':'120','note':'green'},{'drink':'coffee','cents':'250','note':'black','overflow':['imported']},{'drink':'water','cents':'0','note':'<missing>'}])\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-jzaq2reo/source/csv.py\", line 120, in __next__\n    lf = len(self.fieldnames)\nTypeError: object of type 'tuple_iterator' has no len()\n\n======================================================================\nERROR: test_positive_writer_iterator_header_and_data_roundtrip (tests.test_owner.Owner)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-jzaq2reo/source/tests/test_owner.py\", line 11, in test_positive_writer_iterator_header_and_data_roundtrip\n    writer=M.DictWriter(output,fieldnames=fields);writer.writeheader();writer.writerows([{'drink':'caf\u00e9','note':'a, b'},{'drink':'tea','note':'first\\nsecond'}])\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-jzaq2reo/source/csv.py\", line 143, in writeheader\n    return self.writerow(header)\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-jzaq2reo/source/csv.py\", line 154, in writerow\n    return self.writer.writerow(self._dict_to_list(rowdict))\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-jzaq2reo/source/csv.py\", line 149, in _dict_to_list\n    raise ValueError(\"dict contains fields not in fieldnames: \"\nValueError: dict contains fields not in fieldnames: 'drink'\n\n======================================================================\nFAIL: test_negative_extra_key_and_invalid_argument (tests.test_owner.Owner) (factory=<class 'product_under_test.DictReader'>)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-jzaq2reo/source/tests/test_owner.py\", line 18, in test_negative_extra_key_and_invalid_argument\n    with self.assertRaises(TypeError):factory(io.StringIO(),fieldnames=42)\nAssertionError: TypeError not raised\n\n======================================================================\nFAIL: test_negative_extra_key_and_invalid_argument (tests.test_owner.Owner) (factory=<class 'product_under_test.DictWriter'>)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-jzaq2reo/source/tests/test_owner.py\", line 18, in test_negative_extra_key_and_invalid_argument\n    with self.assertRaises(TypeError):factory(io.StringIO(),fieldnames=42)\nAssertionError: TypeError not raised\n\n----------------------------------------------------------------------\nRan 4 tests in 0.001s\n\nFAILED (failures=2, errors=2)\n",
+            "wall_seconds": 0.13801400000374997,
+            "process_cleanup_scope": "original_process_group",
+            "detached_descendants_contained": false
+          },
+          "baseline": [
+            {
+              "argv": [
+                "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+                "-B",
+                "-m",
+                "unittest",
+                "tests.test_visible"
+              ],
+              "exit_code": 0,
+              "timed_out": false,
+              "stdout": "ACTOR_LOCAL_SOURCE csv.py 6c68a5186e3b85e6e267a7ef96479327a45ae2b40bf5e9f2017e4b2282b3f5b1\n",
+              "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n",
+              "wall_seconds": 0.12428920900129015,
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false
+            }
+          ]
+        },
+        "source_before_sha256": "0a67d07b9b88eee1c4b9c8621d95f2dc1fadb66a4a79204257b22b618fc7ecc3",
+        "source_after_sha256": "0a67d07b9b88eee1c4b9c8621d95f2dc1fadb66a4a79204257b22b618fc7ecc3",
+        "owner_stdout_sha256": "bdbfad2d233c4eff63c97791630d729688dcf9b10ec39607f8884c9dc769e530",
+        "owner_stderr_sha256": "501ff5f98a0de58d30483c2c8670c8869db706fcc779a190ce83e2ceec2488a9"
+      }
+    },
+    {
+      "control": "accepted-reference",
+      "task_id": "cpython-pr32225",
+      "expected_product_passed": true,
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/evaluate.py",
+        "--workspace",
+        "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/oracles/cpython-pr32225/head",
+        "--task-id",
+        "cpython-pr32225"
+      ],
+      "exit_code": 0,
+      "grade": {
+        "task_id": "cpython-pr32225",
+        "product_passed": true,
+        "positive_passed": true,
+        "negative_passed": true,
+        "regression_passed": true,
+        "scope_valid": true,
+        "scope_violations": [],
+        "source_current": true,
+        "evaluation_status": "observed",
+        "local_module_binding": {
+          "local_module": "/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-fuenzk14/source/csv.py",
+          "local_module_sha256": "13692e3e9d5f4f4f365c35529c4df94754a03b9ec5f0a2ea8e5bbcdb606f3bc5",
+          "binding_errors": [],
+          "source_load_error": null
+        },
+        "failed_requirements": [],
+        "execution_receipts": {
+          "owner": {
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "{\"local_module\": \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-fuenzk14/source/csv.py\", \"local_module_sha256\": \"13692e3e9d5f4f4f365c35529c4df94754a03b9ec5f0a2ea8e5bbcdb606f3bc5\", \"binding_errors\": [], \"source_load_error\": null}\n{\"failed\": [], \"run\": 4, \"skipped\": 0}\n",
+            "stderr": "test_positive_reader_iterator_reused_across_rows (tests.test_owner.Owner) ... ok\ntest_positive_writer_iterator_header_and_data_roundtrip (tests.test_owner.Owner) ... ok\ntest_negative_extra_key_and_invalid_argument (tests.test_owner.Owner) ... ok\ntest_regression_sequences_default_header_and_ignore (tests.test_owner.Owner) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.000s\n\nOK\n",
+            "wall_seconds": 0.12935766700684326,
+            "process_cleanup_scope": "original_process_group",
+            "detached_descendants_contained": false
+          },
+          "baseline": [
+            {
+              "argv": [
+                "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+                "-B",
+                "-m",
+                "unittest",
+                "tests.test_visible"
+              ],
+              "exit_code": 0,
+              "timed_out": false,
+              "stdout": "ACTOR_LOCAL_SOURCE csv.py 13692e3e9d5f4f4f365c35529c4df94754a03b9ec5f0a2ea8e5bbcdb606f3bc5\n",
+              "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n",
+              "wall_seconds": 0.11908937500265893,
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false
+            }
+          ]
+        },
+        "source_before_sha256": "9a9bd0e5219fcbb062c98193a4773ea4dc423d5162f1248904cf3083ce025d4e",
+        "source_after_sha256": "9a9bd0e5219fcbb062c98193a4773ea4dc423d5162f1248904cf3083ce025d4e",
+        "owner_stdout_sha256": "76e2d46c398fbdee08efe4da80f3233995bc5d23ab14591766c72af536c04187",
+        "owner_stderr_sha256": "669d82afc034d654a025fd96ceec8ab09881b178f318612eb7bfae3792dfccf1"
+      }
+    },
+    {
+      "control": "deliberate-wrong-fix",
+      "task_id": "cpython-pr32225",
+      "expected_product_passed": false,
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/evaluate.py",
+        "--workspace",
+        "/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-controls-m3u1lbxf/wrong-fix",
+        "--task-id",
+        "cpython-pr32225"
+      ],
+      "exit_code": 1,
+      "grade": {
+        "task_id": "cpython-pr32225",
+        "product_passed": false,
+        "positive_passed": false,
+        "negative_passed": false,
+        "regression_passed": true,
+        "scope_valid": true,
+        "scope_violations": [],
+        "source_current": true,
+        "evaluation_status": "observed",
+        "local_module_binding": {
+          "local_module": "/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-y3ple2d5/source/csv.py",
+          "local_module_sha256": "605e0696b4576949e286642df148c6e74559c166aaa83eaf74e5434aa8811f2b",
+          "binding_errors": [],
+          "source_load_error": null
+        },
+        "failed_requirements": [
+          {
+            "id": "positive",
+            "claim": "Configured requested behavior",
+            "observed": [
+              "tests.test_owner.Owner.test_positive_writer_iterator_header_and_data_roundtrip"
+            ],
+            "expected": "All registered cases pass"
+          },
+          {
+            "id": "negative",
+            "claim": "Required invalid/neighboring boundaries",
+            "observed": [
+              "tests.test_owner.Owner.test_negative_extra_key_and_invalid_argument"
+            ],
+            "expected": "All registered cases pass"
+          }
+        ],
+        "execution_receipts": {
+          "owner": {
+            "exit_code": 1,
+            "timed_out": false,
+            "stdout": "{\"local_module\": \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-y3ple2d5/source/csv.py\", \"local_module_sha256\": \"605e0696b4576949e286642df148c6e74559c166aaa83eaf74e5434aa8811f2b\", \"binding_errors\": [], \"source_load_error\": null}\n{\"failed\": [\"tests.test_owner.Owner.test_negative_extra_key_and_invalid_argument\", \"tests.test_owner.Owner.test_positive_writer_iterator_header_and_data_roundtrip\"], \"run\": 4, \"skipped\": 0}\n",
+            "stderr": "test_positive_reader_iterator_reused_across_rows (tests.test_owner.Owner) ... ok\ntest_positive_writer_iterator_header_and_data_roundtrip (tests.test_owner.Owner) ... ERROR\ntest_negative_extra_key_and_invalid_argument (tests.test_owner.Owner) ... test_regression_sequences_default_header_and_ignore (tests.test_owner.Owner) ... ok\n\n======================================================================\nERROR: test_positive_writer_iterator_header_and_data_roundtrip (tests.test_owner.Owner)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-y3ple2d5/source/tests/test_owner.py\", line 11, in test_positive_writer_iterator_header_and_data_roundtrip\n    writer=M.DictWriter(output,fieldnames=fields);writer.writeheader();writer.writerows([{'drink':'caf\u00e9','note':'a, b'},{'drink':'tea','note':'first\\nsecond'}])\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-y3ple2d5/source/csv.py\", line 145, in writeheader\n    return self.writerow(header)\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-y3ple2d5/source/csv.py\", line 156, in writerow\n    return self.writer.writerow(self._dict_to_list(rowdict))\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-y3ple2d5/source/csv.py\", line 151, in _dict_to_list\n    raise ValueError(\"dict contains fields not in fieldnames: \"\nValueError: dict contains fields not in fieldnames: 'drink'\n\n======================================================================\nFAIL: test_negative_extra_key_and_invalid_argument (tests.test_owner.Owner) (factory=<class 'product_under_test.DictWriter'>)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-y3ple2d5/source/tests/test_owner.py\", line 18, in test_negative_extra_key_and_invalid_argument\n    with self.assertRaises(TypeError):factory(io.StringIO(),fieldnames=42)\nAssertionError: TypeError not raised\n\n----------------------------------------------------------------------\nRan 4 tests in 0.001s\n\nFAILED (failures=1, errors=1)\n",
+            "wall_seconds": 0.1286648330060416,
+            "process_cleanup_scope": "original_process_group",
+            "detached_descendants_contained": false
+          },
+          "baseline": [
+            {
+              "argv": [
+                "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+                "-B",
+                "-m",
+                "unittest",
+                "tests.test_visible"
+              ],
+              "exit_code": 0,
+              "timed_out": false,
+              "stdout": "ACTOR_LOCAL_SOURCE csv.py 605e0696b4576949e286642df148c6e74559c166aaa83eaf74e5434aa8811f2b\n",
+              "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n",
+              "wall_seconds": 0.12386250000417931,
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false
+            }
+          ]
+        },
+        "source_before_sha256": "a9f57365f259223c6e3fc2327038713c378b79d46cac8e50e251669a274d1515",
+        "source_after_sha256": "a9f57365f259223c6e3fc2327038713c378b79d46cac8e50e251669a274d1515",
+        "owner_stdout_sha256": "1bfabc2d3bf8dfe569f4e60aa39f441c71dc3cad7d654668311fa7bbc136d853",
+        "owner_stderr_sha256": "33c9cd238897368ea9e4aee8dd6dab1c3b214f8d88c518c36d8877f95954d8ab"
+      }
+    },
+    {
+      "control": "equivalent-source-and-conventional-test-edits",
+      "task_id": "cpython-pr32225",
+      "expected_product_passed": true,
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/evaluate.py",
+        "--workspace",
+        "/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-controls-m3u1lbxf/equivalent",
+        "--task-id",
+        "cpython-pr32225"
+      ],
+      "exit_code": 0,
+      "grade": {
+        "task_id": "cpython-pr32225",
+        "product_passed": true,
+        "positive_passed": true,
+        "negative_passed": true,
+        "regression_passed": true,
+        "scope_valid": true,
+        "scope_violations": [],
+        "source_current": true,
+        "evaluation_status": "observed",
+        "local_module_binding": {
+          "local_module": "/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-i597saih/source/csv.py",
+          "local_module_sha256": "d1b2607153d3dafff3b0edf1b9bf2faca09f85b7337974e24f41ff6e1faf3063",
+          "binding_errors": [],
+          "source_load_error": null
+        },
+        "failed_requirements": [],
+        "execution_receipts": {
+          "owner": {
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "{\"local_module\": \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-i597saih/source/csv.py\", \"local_module_sha256\": \"d1b2607153d3dafff3b0edf1b9bf2faca09f85b7337974e24f41ff6e1faf3063\", \"binding_errors\": [], \"source_load_error\": null}\n{\"failed\": [], \"run\": 4, \"skipped\": 0}\n",
+            "stderr": "test_positive_reader_iterator_reused_across_rows (tests.test_owner.Owner) ... ok\ntest_positive_writer_iterator_header_and_data_roundtrip (tests.test_owner.Owner) ... ok\ntest_negative_extra_key_and_invalid_argument (tests.test_owner.Owner) ... ok\ntest_regression_sequences_default_header_and_ignore (tests.test_owner.Owner) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.000s\n\nOK\n",
+            "wall_seconds": 0.12422062500263564,
+            "process_cleanup_scope": "original_process_group",
+            "detached_descendants_contained": false
+          },
+          "baseline": [
+            {
+              "argv": [
+                "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+                "-B",
+                "-m",
+                "unittest",
+                "tests.test_visible"
+              ],
+              "exit_code": 0,
+              "timed_out": false,
+              "stdout": "ACTOR_LOCAL_SOURCE csv.py d1b2607153d3dafff3b0edf1b9bf2faca09f85b7337974e24f41ff6e1faf3063\n",
+              "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n",
+              "wall_seconds": 0.11873299999570008,
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false
+            }
+          ]
+        },
+        "source_before_sha256": "7d6a579b5eb9a6ec560e7bb112f402888e3f56535b772cd5652e7e019d3428ba",
+        "source_after_sha256": "7d6a579b5eb9a6ec560e7bb112f402888e3f56535b772cd5652e7e019d3428ba",
+        "owner_stdout_sha256": "a64ba9297f1ec9205f1694a3cfb203ed0ac985907382c09395c2924a92202f13",
+        "owner_stderr_sha256": "669d82afc034d654a025fd96ceec8ab09881b178f318612eb7bfae3792dfccf1"
+      }
+    },
+    {
+      "control": "deliberate-installed-origin-forgery",
+      "task_id": "cpython-pr32225",
+      "expected_product_passed": false,
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/evaluate.py",
+        "--workspace",
+        "/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-controls-m3u1lbxf/forged-origin",
+        "--task-id",
+        "cpython-pr32225"
+      ],
+      "exit_code": 1,
+      "grade": {
+        "task_id": "cpython-pr32225",
+        "product_passed": false,
+        "positive_passed": false,
+        "negative_passed": false,
+        "regression_passed": false,
+        "scope_valid": true,
+        "scope_violations": [],
+        "source_current": true,
+        "evaluation_status": "observed",
+        "local_module_binding": {
+          "local_module": "/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-sl347vc0/source/csv.py",
+          "local_module_sha256": "add02059557d3faf387f4b5f987bdb8c1463cd4cb3e8784c280f44b6a060e644",
+          "binding_errors": [
+            "Tested Python API code origin is outside projected local implementation: DictReader"
+          ],
+          "source_load_error": null
+        },
+        "failed_requirements": [
+          {
+            "id": "local-module-binding",
+            "claim": "Check the actual actor-local implementation",
+            "observed": [
+              "Tested Python API code origin is outside projected local implementation: DictReader"
+            ],
+            "expected": "Exact local module path/hash and local tested Python API origins"
+          }
+        ],
+        "execution_receipts": {
+          "owner": {
+            "exit_code": 1,
+            "timed_out": false,
+            "stdout": "{\"local_module\": \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-sl347vc0/source/csv.py\", \"local_module_sha256\": \"add02059557d3faf387f4b5f987bdb8c1463cd4cb3e8784c280f44b6a060e644\", \"binding_errors\": [\"Tested Python API code origin is outside projected local implementation: DictReader\"], \"source_load_error\": null}\n{\"failed\": [\"local-module-binding\"], \"run\": 0, \"skipped\": 0}\n",
+            "stderr": "",
+            "wall_seconds": 0.12562954200257082,
+            "process_cleanup_scope": "original_process_group",
+            "detached_descendants_contained": false
+          },
+          "baseline": [
+            {
+              "argv": [
+                "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+                "-B",
+                "-m",
+                "unittest",
+                "tests.test_visible"
+              ],
+              "exit_code": 0,
+              "timed_out": false,
+              "stdout": "ACTOR_LOCAL_SOURCE csv.py add02059557d3faf387f4b5f987bdb8c1463cd4cb3e8784c280f44b6a060e644\n",
+              "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n",
+              "wall_seconds": 0.11781570900348015,
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false
+            }
+          ]
+        },
+        "source_before_sha256": "2da68c8eac269c995a39e6b860362a2ebed448adc5460a5d1932d244c6192f8b",
+        "source_after_sha256": "2da68c8eac269c995a39e6b860362a2ebed448adc5460a5d1932d244c6192f8b",
+        "owner_stdout_sha256": "99cd7175e1933de8fd402667dae55e3bb1884c25b737fd180d20e9e5eeaa6d7c",
+        "owner_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "control": "deliberate-actor-local-syntax-error",
+      "task_id": "cpython-pr32225",
+      "expected_product_passed": false,
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/evaluate.py",
+        "--workspace",
+        "/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-controls-m3u1lbxf/source-syntax-error",
+        "--task-id",
+        "cpython-pr32225"
+      ],
+      "exit_code": 1,
+      "grade": {
+        "task_id": "cpython-pr32225",
+        "product_passed": false,
+        "positive_passed": false,
+        "negative_passed": false,
+        "regression_passed": false,
+        "scope_valid": true,
+        "scope_violations": [],
+        "source_current": true,
+        "evaluation_status": "observed",
+        "local_module_binding": {
+          "local_module": "/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-ifokwx3t/source/csv.py",
+          "local_module_sha256": "e5c39b5d9e483c96898f2970978fee4d8e5a3814e685d9ab37365a5aa333b5ad",
+          "binding_errors": [],
+          "source_load_error": {
+            "kind": "SyntaxError",
+            "message": "invalid syntax",
+            "line": 1
+          }
+        },
+        "failed_requirements": [
+          {
+            "id": "source-load",
+            "claim": "Actor-local implementation loads",
+            "observed": {
+              "kind": "SyntaxError",
+              "message": "invalid syntax",
+              "line": 1
+            },
+            "expected": "Local module compiles and loads before required public API checks"
+          }
+        ],
+        "execution_receipts": {
+          "owner": {
+            "exit_code": 1,
+            "timed_out": false,
+            "stdout": "{\"local_module\": \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-ifokwx3t/source/csv.py\", \"local_module_sha256\": \"e5c39b5d9e483c96898f2970978fee4d8e5a3814e685d9ab37365a5aa333b5ad\", \"binding_errors\": [], \"source_load_error\": {\"kind\": \"SyntaxError\", \"message\": \"invalid syntax\", \"line\": 1}}\n{\"failed\": [\"actor-source-load\"], \"run\": 0, \"skipped\": 0}\n",
+            "stderr": "",
+            "wall_seconds": 0.11566258400125662,
+            "process_cleanup_scope": "original_process_group",
+            "detached_descendants_contained": false
+          },
+          "baseline": [
+            {
+              "argv": [
+                "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+                "-B",
+                "-m",
+                "unittest",
+                "tests.test_visible"
+              ],
+              "exit_code": 1,
+              "timed_out": false,
+              "stdout": "",
+              "stderr": "Traceback (most recent call last):\n  File \"/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py\", line 197, in _run_module_as_main\n    return _run_code(code, main_globals, None,\n  File \"/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py\", line 87, in _run_code\n    exec(code, run_globals)\n  File \"/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/__main__.py\", line 18, in <module>\n    main(module=None)\n  File \"/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/main.py\", line 100, in __init__\n    self.parseArgs(argv)\n  File \"/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/main.py\", line 147, in parseArgs\n    self.createTests()\n  File \"/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/main.py\", line 158, in createTests\n    self.test = self.testLoader.loadTestsFromNames(self.testNames,\n  File \"/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/loader.py\", line 220, in loadTestsFromNames\n    suites = [self.loadTestsFromName(name, module) for name in names]\n  File \"/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/loader.py\", line 220, in <listcomp>\n    suites = [self.loadTestsFromName(name, module) for name in names]\n  File \"/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/loader.py\", line 154, in loadTestsFromName\n    module = __import__(module_name)\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-ifokwx3t/source/tests/test_visible.py\", line 5, in <module>\n    s=importlib.util.spec_from_file_location(\"actor_local\",p);M=importlib.util.module_from_spec(s);s.loader.exec_module(M)\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-ifokwx3t/source/csv.py\", line 1\n    def broken(:\n               ^\nSyntaxError: invalid syntax\n",
+              "wall_seconds": 0.11045445799391018,
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false
+            }
+          ]
+        },
+        "source_before_sha256": "0d80b9bc5e8d800291470e29703749cd04ad5549f469f541b74347c5a03427f8",
+        "source_after_sha256": "0d80b9bc5e8d800291470e29703749cd04ad5549f469f541b74347c5a03427f8",
+        "owner_stdout_sha256": "a0ab5e13bb357fb26f2859c7d14d2571f03fa649d10ddcbbc87baf87dfcf0b48",
+        "owner_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "control": "deliberate-installed-substitution",
+      "task_id": "cpython-pr32225",
+      "expected_product_passed": false,
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/evaluate.py",
+        "--workspace",
+        "/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-controls-m3u1lbxf/installed-substitution",
+        "--task-id",
+        "cpython-pr32225"
+      ],
+      "exit_code": 2,
+      "grade": {
+        "task_id": "cpython-pr32225",
+        "product_passed": false,
+        "positive_passed": false,
+        "negative_passed": false,
+        "regression_passed": false,
+        "scope_valid": true,
+        "scope_violations": [],
+        "source_current": true,
+        "evaluation_status": "unknown",
+        "local_module_binding": {},
+        "failed_requirements": [],
+        "execution_receipts": {
+          "owner": {
+            "exit_code": 1,
+            "timed_out": false,
+            "stdout": "",
+            "stderr": "Traceback (most recent call last):\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-ttos3903/source/_sealed_grading_entry.py\", line 6, in <module>\n    try:s.loader.exec_module(M)\n  File \"<frozen importlib._bootstrap_external>\", line 850, in exec_module\n  File \"<frozen importlib._bootstrap>\", line 228, in _call_with_frames_removed\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-ttos3903/source/csv.py\", line 4, in <module>\n    _s.loader.exec_module(_m)\n  File \"<frozen importlib._bootstrap_external>\", line 846, in exec_module\n  File \"<frozen importlib._bootstrap_external>\", line 982, in get_code\n  File \"<frozen importlib._bootstrap_external>\", line 1039, in get_data\nPermissionError: [Errno 1] Operation not permitted: '/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/csv.py'\n",
+            "wall_seconds": 0.11529575000167824,
+            "process_cleanup_scope": "original_process_group",
+            "detached_descendants_contained": false
+          },
+          "baseline": [
+            {
+              "argv": [
+                "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+                "-B",
+                "-m",
+                "unittest",
+                "tests.test_visible"
+              ],
+              "exit_code": 1,
+              "timed_out": false,
+              "stdout": "",
+              "stderr": "Traceback (most recent call last):\n  File \"/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py\", line 197, in _run_module_as_main\n    return _run_code(code, main_globals, None,\n  File \"/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py\", line 87, in _run_code\n    exec(code, run_globals)\n  File \"/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/__main__.py\", line 18, in <module>\n    main(module=None)\n  File \"/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/main.py\", line 100, in __init__\n    self.parseArgs(argv)\n  File \"/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/main.py\", line 147, in parseArgs\n    self.createTests()\n  File \"/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/main.py\", line 158, in createTests\n    self.test = self.testLoader.loadTestsFromNames(self.testNames,\n  File \"/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/loader.py\", line 220, in loadTestsFromNames\n    suites = [self.loadTestsFromName(name, module) for name in names]\n  File \"/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/loader.py\", line 220, in <listcomp>\n    suites = [self.loadTestsFromName(name, module) for name in names]\n  File \"/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/loader.py\", line 154, in loadTestsFromName\n    module = __import__(module_name)\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-ttos3903/source/tests/test_visible.py\", line 5, in <module>\n    s=importlib.util.spec_from_file_location(\"actor_local\",p);M=importlib.util.module_from_spec(s);s.loader.exec_module(M)\n  File \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-ttos3903/source/csv.py\", line 4, in <module>\n    _s.loader.exec_module(_m)\n  File \"<frozen importlib._bootstrap_external>\", line 846, in exec_module\n  File \"<frozen importlib._bootstrap_external>\", line 982, in get_code\n  File \"<frozen importlib._bootstrap_external>\", line 1039, in get_data\nPermissionError: [Errno 1] Operation not permitted: '/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/csv.py'\n",
+              "wall_seconds": 0.1321925000011106,
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false
+            }
+          ]
+        },
+        "source_before_sha256": "d0c3243d1db9200b55bff4ab28aac61e4491f542c5a7b85c8be1e65d83b85468",
+        "source_after_sha256": "d0c3243d1db9200b55bff4ab28aac61e4491f542c5a7b85c8be1e65d83b85468",
+        "owner_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "owner_stderr_sha256": "08acda6a43ed8fac593b9d73918d59d96680cb717fd0dc999354458bf2bbd772"
+      }
+    }
+  ],
+  "meaning": "Design/calibration, not measured solving efficacy. Unknown installed-substitution result is deliberate sandbox refusal, not behavioral failure.",
+  "evaluator_spec_sha256": "1193f012a4c43bcdc44e496afdf54d17652027031686c6271a19e44463353eff",
+  "runtime_qualification": "Native owner sandbox verified; actual actor MCP route still requires independent runner prefix receipts before inference.",
+  "prelaunch_binding_amendment": {
+    "source": "Independent adversary review before task inference",
+    "changes": [
+      "Tested Python public API origins must be in projected local source/helpers.",
+      "Deny target source/pyc across all three available shared runtimes, including predicted standard bytecode cache paths.",
+      "Classify bound actor-local SyntaxError as observed source-load failure; other unidentified import/setup remains unknown without required binding rows."
+    ],
+    "task_outcomes_known": false
+  }
+}

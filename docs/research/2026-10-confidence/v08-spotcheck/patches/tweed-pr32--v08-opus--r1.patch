@@ -1,0 +1,50 @@
+diff --git a/bonaparte_native.py b/bonaparte_native.py
+index 8ec992a..d8a6e93 100644
+--- a/bonaparte_native.py
++++ b/bonaparte_native.py
+@@ -97,6 +97,23 @@ def terminate_and_reap(process: subprocess.Popen) -> None:
+                     pass
+ 
+ 
++def owns_coordinator_event(driver: object, thread_id: object, turn_id: object) -> bool:
++    """Return whether an event may establish the active coordinator outcome.
++
++    Events from another thread (such as a native child agent) never qualify.
++    Legacy events lacking threadId qualify only with the active turn ID.
++    Events on the coordinator thread qualify so the caller can reject a
++    mismatched coordinator turn explicitly.
++    """
++    active_thread = getattr(driver, "_receipt_thread_id", None)
++    active_turn = getattr(driver, "_receipt_turn_id", None)
++    if active_thread is None or active_turn is None:
++        return False
++    if thread_id is None:
++        return turn_id == active_turn
++    return thread_id == active_thread
++
++
+ class AppServerPhaseDriver:
+     """Drive one native app-server turn without retaining its raw event stream."""
+ 
+@@ -284,8 +301,10 @@ class AppServerPhaseDriver:
+             if (
+                 method == "item/completed"
+                 and item.get("type") == "agentMessage"
+-                and params.get("threadId") == self._receipt_thread_id
+-                and params.get("turnId") == self._receipt_turn_id
++                and params.get("turnId") == getattr(self, "_receipt_turn_id", None)
++                and owns_coordinator_event(
++                    self, params.get("threadId"), params.get("turnId")
++                )
+             ):
+                 text = item.get("text")
+                 if isinstance(text, str):
+@@ -306,6 +325,8 @@ class AppServerPhaseDriver:
+             turn = params.get("turn")
+             if not isinstance(turn, dict):
+                 raise RuntimeError("Codex app-server turn completion is malformed")
++            if not owns_coordinator_event(self, params.get("threadId"), turn.get("id")):
++                return method, None
+             return method, turn
+         return method, None
+ 

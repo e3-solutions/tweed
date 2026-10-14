@@ -16,6 +16,7 @@ FORBIDDEN_PREFIXES = (
     "skills/use-bonaparte/",
     "skills/confidence-protocol/tests/",
     ".confidence/",
+    "docs/research/",
 )
 REQUIRED = {
     ".codex-plugin/plugin.json",
@@ -24,6 +25,11 @@ REQUIRED = {
     "skills/confidence-protocol/SKILL.md",
     "skills/confidence-protocol/scripts/confidence.py",
     "skills/confidence-protocol/scripts/diagnostics.py",
+    "skills/confidence-protocol/references/complex-tasks.md",
+    "skills/confidence-protocol/references/harnesses.md",
+    "skills/confidence-protocol/references/model-routing.md",
+    "skills/confidence-protocol/references/intent-flows.md",
+    "skills/confidence-protocol/references/question-patterns.md",
 }
 
 
@@ -41,10 +47,12 @@ def validate_archive(archive: bytes) -> int:
         if missing:
             raise ValueError("release is missing: " + ", ".join(missing))
 
+        for name in sorted(REQUIRED):
+            if not bundle.getmember(name).isfile():
+                raise ValueError("release requires a regular file: " + name)
+
         def read(name: str) -> bytes:
             member = bundle.getmember(name)
-            if not member.isfile():
-                raise ValueError("release requires a regular file: " + name)
             with bundle.extractfile(member) as source:
                 return source.read()
 

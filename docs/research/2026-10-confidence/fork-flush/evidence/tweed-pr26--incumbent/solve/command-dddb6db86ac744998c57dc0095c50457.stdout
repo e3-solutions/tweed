@@ -1,0 +1,6 @@
+rc=0
+import importlib.machinery, importlib.util, io, json, sys, contextlib
+loader = importlib.machinery.SourceFileLoader('bp', 'bonaparte')
+spec = importlib.util.spec_from_loader('bp', loader)
+bp = importlib.util.module_from_spec(spec); loader.exec_module(bp)
+def sized(n, ch):

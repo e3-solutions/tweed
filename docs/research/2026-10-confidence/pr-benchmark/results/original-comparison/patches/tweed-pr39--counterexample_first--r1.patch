@@ -1,0 +1,192 @@
+diff --git a/bonaparte b/bonaparte
+index 888b766..a21deea 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -25,6 +25,7 @@ from bonaparte_linear import call_linear
+ from bonaparte_native import (
+     PHASE_CHILD_ENV,
+     AppServerPhaseDriver,
++    finish_root,
+ )
+ from bonaparte_progress import (
+     MAX_COMPLETED_CHECKS,
+@@ -452,6 +453,7 @@ def run_phase(
+         for role, description in child_configs.items()
+     }
+     expected_branch = None
++    canonical_branch = None
+     if resume_session_id:
+         replay_policy = (
+             "This clarification may be an at-least-once replay after an ambiguous "
+@@ -481,6 +483,9 @@ def run_phase(
+                 phase,
+                 values[1] if len(values) == 2 else None,
+             )
++            issue_branch = handoff["issue"].get("git_branch_name")
++            if isinstance(issue_branch, str) and issue_branch:
++                canonical_branch = issue_branch
+             if phase == "implement":
+                 expected_branch = handoff["issue"]["git_branch_name"]
+             phase_input = json.dumps(handoff, ensure_ascii=False)
+@@ -557,6 +562,7 @@ def run_phase(
+     observer = EventObserver(_ACTIVE_PROGRESS)
+     driver = None
+     failed = True
++    cleanup_error = None
+     try:
+         driver = AppServerPhaseDriver(repository, observer)
+         driver.request(
+@@ -702,7 +708,19 @@ def run_phase(
+         if not driver.last_agent_message:
+             raise RuntimeError("Codex app-server returned no final receipt")
+         receipt = json.loads(driver.last_agent_message)
+-        failed = False
++        try:
++            finish_root(
++                driver,
++                session_id,
++                branch=canonical_branch,
++                archive=not (
++                    isinstance(receipt, dict) and receipt.get("state") == "needs-input"
++                ),
++            )
++        except RuntimeError as error:
++            cleanup_error = error
++        else:
++            failed = False
+     finally:
+         observed = observer.finish()
+         if observation is not None:
+@@ -713,6 +731,8 @@ def run_phase(
+             except BaseException:
+                 if not failed:
+                     raise
++    if cleanup_error is not None:
++        raise cleanup_error
+ 
+     validate_schema(receipt, RECEIPT_SCHEMA)
+     if receipt["phase"] != phase:
+diff --git a/bonaparte_native.py b/bonaparte_native.py
+index e9a607c..44c0f66 100644
+--- a/bonaparte_native.py
++++ b/bonaparte_native.py
+@@ -97,6 +97,73 @@ def terminate_and_reap(process: subprocess.Popen) -> None:
+                     pass
+ 
+ 
++def _lifecycle(driver) -> dict:
++    """Return thread lifecycle facts observed from this driver's notifications."""
++    return driver.__dict__.setdefault(
++        "_thread_lifecycle", {"started": [], "parents": {}, "spawned": {}}
++    )
++
++
++def _declared_parent(value, depth: int = 0) -> str | None:
++    if depth > 4 or not isinstance(value, dict):
++        return None
++    for key in ("parent_thread_id", "parentThreadId"):
++        if isinstance(value.get(key), str) and value[key]:
++            return value[key]
++    for nested in value.values():
++        parent = _declared_parent(nested, depth + 1)
++        if parent:
++            return parent
++    return None
++
++
++def owned_started_descendants(driver, root_id: str) -> list[str]:
++    """Started threads whose spawn chain leads back to the root, in start order."""
++    state = _lifecycle(driver)
++    owned = {root_id}
++    descendants: list[str] = []
++    changed = True
++    while changed:
++        changed = False
++        for thread_id in state["started"]:
++            if thread_id in owned:
++                continue
++            parent = state["parents"].get(thread_id)
++            parents = {parent} if parent else state["spawned"].get(thread_id, set())
++            if parents & owned:
++                owned.add(thread_id)
++                descendants.append(thread_id)
++                changed = True
++    order = {thread_id: index for index, thread_id in enumerate(state["started"])}
++    return sorted(descendants, key=order.__getitem__)
++
++
++def finish_root(driver, root_id: str, *, branch: str | None, archive: bool) -> None:
++    """Update started owned descendants, then archive the started root.
++
++    Every cleanup step is attempted; failures are raised together afterward.
++    """
++    errors: list[BaseException] = []
++    if branch:
++        for thread_id in owned_started_descendants(driver, root_id):
++            try:
++                driver.request(
++                    "thread/metadata/update",
++                    {"threadId": thread_id, "gitInfo": {"branch": branch}},
++                )
++            except Exception as error:
++                errors.append(error)
++    if archive and root_id in _lifecycle(driver)["started"]:
++        try:
++            driver.request("thread/archive", {"threadId": root_id})
++        except Exception as error:
++            errors.append(error)
++    if errors:
++        raise RuntimeError(
++            "native thread cleanup failed: " + "; ".join(map(str, errors))
++        ) from errors[0]
++
++
+ class AppServerPhaseDriver:
+     """Drive one native app-server turn without retaining its raw event stream."""
+ 
+@@ -274,6 +341,14 @@ class AppServerPhaseDriver:
+         if method == "thread/started":
+             thread = params.get("thread")
+             if isinstance(thread, dict) and isinstance(thread.get("id"), str):
++                state = _lifecycle(self)
++                if thread["id"] not in state["started"]:
++                    state["started"].append(thread["id"])
++                parent = _declared_parent(thread.get("source")) or _declared_parent(
++                    {"parentThreadId": thread.get("parentThreadId")}
++                )
++                if parent:
++                    state["parents"][thread["id"]] = parent
+                 self.observer.feed(
+                     json.dumps({"type": "thread.started", "thread_id": thread["id"]})
+                 )
+@@ -290,6 +365,21 @@ class AppServerPhaseDriver:
+                 text = item.get("text")
+                 if isinstance(text, str):
+                     self._last_agent_message = text
++            legacy = self._legacy_item(item)
++            sender = params.get("threadId") or item.get("senderThreadId")
++            if isinstance(sender, str) and (
++                (
++                    legacy["type"] == "collab_tool_call"
++                    and legacy["tool"] == "spawn_agent"
++                )
++                or (
++                    legacy["type"] == "subagent_activity"
++                    and item.get("kind") == "started"
++                )
++            ):
++                spawned = _lifecycle(self)["spawned"]
++                for receiver in legacy["receiver_thread_ids"]:
++                    spawned.setdefault(receiver, set()).add(sender)
+             self.observer.feed(
+                 json.dumps(
+                     {
+@@ -298,7 +388,7 @@ class AppServerPhaseDriver:
+                             if method == "item/started"
+                             else "item.completed"
+                         ),
+-                        "item": self._legacy_item(item),
++                        "item": legacy,
+                     }
+                 )
+             )

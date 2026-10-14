@@ -1,0 +1,14 @@
+F
+======================================================================
+FAIL: test_non_review_receipt_limit_covers_emitted_line (tests.test_bonaparte.BonaparteRunnerTests.test_non_review_receipt_limit_covers_emitted_line)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-a/workspace/tests/test_bonaparte.py", line 1526, in test_non_review_receipt_limit_covers_emitted_line
+    with self.assertRaisesRegex(RuntimeError, "receipt exceeded 4 KiB"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: RuntimeError not raised
+
+----------------------------------------------------------------------
+Ran 1 test in 0.001s
+
+FAILED (failures=1)

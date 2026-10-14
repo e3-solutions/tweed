@@ -1,0 +1,236 @@
+{
+  "schema_version": 1,
+  "incumbent_commit": "4758787015f05a95ea38896f57a462316b3d9d80",
+  "selection_task_ids": [
+    "tweed-pr26",
+    "tweed-pr45"
+  ],
+  "confirmation_task_id": "tweed-pr18",
+  "previously_used_excluded": [
+    "tweed-pr20",
+    "tweed-pr23",
+    "tweed-pr31",
+    "tweed-pr32",
+    "tweed-pr34",
+    "tweed-pr35",
+    "tweed-pr37",
+    "tweed-pr39",
+    "tweed-pr40"
+  ],
+  "related_same_head_excluded": [
+    "tweed-pr19"
+  ],
+  "tasks": [
+    {
+      "task_id": "tweed-pr26",
+      "role": "selection",
+      "repo": "e3-solutions/tweed",
+      "pr_url": "https://github.com/e3-solutions/tweed/pull/26",
+      "base_sha": "9a8f1a2960b8ea5c9cefd88e05d19f6a5b39b694",
+      "base_commit": "9a8f1a2960b8ea5c9cefd88e05d19f6a5b39b694",
+      "head_sha": "1936e624f8a64d920de390afffdbb444e3593305",
+      "requirements": "Ensure the non-review Bonaparte public receipt emitter applies the existing 4 KiB limit to the entire emitted UTF-8 line, including its trailing newline. Preserve JSON values, UTF-8 output and ordinary within-limit emission. Reject oversized output before emitting any receipt bytes. This is only the emitted receipt size slice of PR26; native progress streaming and the remainder of that PR are excluded.",
+      "prompt": "Ensure the non-review Bonaparte public receipt emitter applies the existing 4 KiB limit to the entire emitted UTF-8 line, including its trailing newline. Preserve JSON values, UTF-8 output and ordinary within-limit emission. Reject oversized output before emitting any receipt bytes. This is only the emitted receipt size slice of PR26; native progress streaming and the remainder of that PR are excluded.\nAllowed production paths: bonaparte. New regular root Python helpers are allowed under the existing grading rules. Keep baseline tests intact; test edits do not influence grading. Standard focused offline task. Follow the supplied .protocol/SKILL.md. An independent final checker will execute the selected behavior, negative, scope and current-proof checks. Do not run live providers, fetch Git history or accepted solutions, or change unrelated documentation. Use focused author checks; no product-protocol certificates outside this contract are required.",
+      "production_paths": [
+        "bonaparte"
+      ],
+      "base_snapshot": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/oracles/pr-26/base",
+      "source_directory": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/oracles/pr-26/base",
+      "head_snapshot": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/oracles/pr-26/head",
+      "source_sha256": "34edfca821c900b9b6741293f3f3b0bafda637f8e50d1cdad57b4bb5c6b9c589",
+      "head_source_sha256": "cc7e4eaa0c6b9023b829bd2e2f5efcaa5a0f55a3dcf7c10a8dc2d1cc98cba446",
+      "test_commands": [
+        [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex"
+        ]
+      ],
+      "visible_commands": [
+        [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex"
+        ]
+      ],
+      "discovery_paths": [
+        "bonaparte"
+      ],
+      "positive_tests": [
+        "tests.test_fork_owner.Owner.test_positive_boundary_and_unicode"
+      ],
+      "negative_tests": [
+        "tests.test_fork_owner.Owner.test_negative_overflow_is_not_emitted"
+      ],
+      "oracle_tests": [
+        "tests.test_fork_owner.Owner.test_positive_boundary_and_unicode",
+        "tests.test_fork_owner.Owner.test_negative_overflow_is_not_emitted"
+      ],
+      "private_module": "oracles/owner26.py",
+      "oracle_script": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/evaluate.py",
+      "oracle_argv": [
+        "python3",
+        "-B",
+        "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/evaluate.py",
+        "--task-id",
+        "tweed-pr26",
+        "--workspace",
+        "{workspace}"
+      ],
+      "provenance_sha256": "8269aeb8ac3d30718df85800d387b28f96294e4903047c8ef3083526507e7c8f",
+      "reference_snapshot": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/oracles/pr-26/reference"
+    },
+    {
+      "task_id": "tweed-pr45",
+      "role": "selection",
+      "repo": "e3-solutions/tweed",
+      "pr_url": "https://github.com/e3-solutions/tweed/pull/45",
+      "base_sha": "190af227d3cb180263e7fbf9563055ffb06f20a0",
+      "base_commit": "190af227d3cb180263e7fbf9563055ffb06f20a0",
+      "head_sha": "951ca774d1f5a6b4c37b027a7f982b1e0d5ebcea",
+      "requirements": "Add the public run --json option so captured commands emit a compact JSON receipt instead of replaying child output. The receipt must expose id, exit_code, record and log paths relative to the evidence directory, and workspace_binding as unchanged/changed/unknown. Preserve full binary captured output and its recorded SHA256. Preserve default non-JSON output replay. A child failure must retain its nonzero status in CLI exit and receipt/record; source mutation must be reported changed, never unchanged. This is only the compact run receipt slice of PR45; other recovery/recording/release changes are excluded.",
+      "prompt": "Add the public run --json option so captured commands emit a compact JSON receipt instead of replaying child output. The receipt must expose id, exit_code, record and log paths relative to the evidence directory, and workspace_binding as unchanged/changed/unknown. Preserve full binary captured output and its recorded SHA256. Preserve default non-JSON output replay. A child failure must retain its nonzero status in CLI exit and receipt/record; source mutation must be reported changed, never unchanged. This is only the compact run receipt slice of PR45; other recovery/recording/release changes are excluded.\nAllowed production paths: skills/confidence-protocol/scripts/confidence.py. New regular root Python helpers are allowed under the existing grading rules. Keep baseline tests intact; test edits do not influence grading. Standard focused offline task. Follow the supplied .protocol/SKILL.md. An independent final checker will execute the selected behavior, negative, scope and current-proof checks. Do not run live providers, fetch Git history or accepted solutions, or change unrelated documentation. Use focused author checks; no product-protocol certificates outside this contract are required.",
+      "production_paths": [
+        "skills/confidence-protocol/scripts/confidence.py"
+      ],
+      "base_snapshot": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/oracles/pr-45/base",
+      "source_directory": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/oracles/pr-45/base",
+      "head_snapshot": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/oracles/pr-45/head",
+      "source_sha256": "9a4efa00c0ce114da707f756f5418492a3fab3db8376548994a9d10296f6061c",
+      "head_source_sha256": "015f508a4a71779c2c3c6dae9796e531ad4d9aeff2b779c16f2b6f47ceb1699f",
+      "test_commands": [
+        [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "skills/confidence-protocol/tests",
+          "-p",
+          "test_confidence.py",
+          "-k",
+          "test_run_records_failure_and_returns_child_status"
+        ]
+      ],
+      "visible_commands": [
+        [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "skills/confidence-protocol/tests",
+          "-p",
+          "test_confidence.py",
+          "-k",
+          "test_run_records_failure_and_returns_child_status"
+        ]
+      ],
+      "discovery_paths": [
+        "skills/confidence-protocol/scripts/confidence.py"
+      ],
+      "positive_tests": [
+        "tests.test_fork_owner.Owner.test_positive_compact_capture_and_default_output"
+      ],
+      "negative_tests": [
+        "tests.test_fork_owner.Owner.test_negative_failed_child_stays_failed",
+        "tests.test_fork_owner.Owner.test_negative_mutated_source_is_not_unchanged"
+      ],
+      "oracle_tests": [
+        "tests.test_fork_owner.Owner.test_positive_compact_capture_and_default_output",
+        "tests.test_fork_owner.Owner.test_negative_failed_child_stays_failed",
+        "tests.test_fork_owner.Owner.test_negative_mutated_source_is_not_unchanged"
+      ],
+      "private_module": "oracles/owner45.py",
+      "oracle_script": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/evaluate.py",
+      "oracle_argv": [
+        "python3",
+        "-B",
+        "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/evaluate.py",
+        "--task-id",
+        "tweed-pr45",
+        "--workspace",
+        "{workspace}"
+      ],
+      "provenance_sha256": "db1cc640e5651df6de4565f33bcf4a1bc06bac59a5aa556932b1dc0596ddeed8",
+      "reference_snapshot": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/oracles/pr-45/reference"
+    },
+    {
+      "task_id": "tweed-pr18",
+      "role": "confirmation",
+      "repo": "e3-solutions/tweed",
+      "pr_url": "https://github.com/e3-solutions/tweed/pull/18",
+      "base_sha": "77ff001ed7dbf42a756ddd4ac030b093ce5e0758",
+      "base_commit": "77ff001ed7dbf42a756ddd4ac030b093ce5e0758",
+      "head_sha": "1eb50570b1b635e8070bfd7cb5cfc45d048d208c",
+      "requirements": "When a resumed review coordinator fails, return a nonempty failure diagnostic without exposing its stderr content. Preserve ordinary non-review phase diagnostics: retain the final stderr line bounded to 800 characters. Failed providers must remain failures. This is only the failure-diagnostics slice of PR18; progress ABI, launchers, live providers and the remainder of the PR are excluded.",
+      "prompt": "When a resumed review coordinator fails, return a nonempty failure diagnostic without exposing its stderr content. Preserve ordinary non-review phase diagnostics: retain the final stderr line bounded to 800 characters. Failed providers must remain failures. This is only the failure-diagnostics slice of PR18; progress ABI, launchers, live providers and the remainder of the PR are excluded.\nAllowed production paths: bonaparte. New regular root Python helpers are allowed under the existing grading rules. Keep baseline tests intact; test edits do not influence grading. Standard focused offline task. Follow the supplied .protocol/SKILL.md. An independent final checker will execute the selected behavior, negative, scope and current-proof checks. Do not run live providers, fetch Git history or accepted solutions, or change unrelated documentation. Use focused author checks; no product-protocol certificates outside this contract are required.",
+      "production_paths": [
+        "bonaparte"
+      ],
+      "base_snapshot": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/oracles/pr-18/base",
+      "source_directory": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/oracles/pr-18/base",
+      "head_snapshot": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/oracles/pr-18/head",
+      "source_sha256": "a6e54094eed57a0a34aaedd9d6b8976058b113ac67c094c72487eadfd0da2b26",
+      "head_source_sha256": "f6d792aaf987df4cca1703b96359aff09e22b5d0740e61b471892fbd39a9a75e",
+      "test_commands": [
+        [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "tests.test_bonaparte.BonaparteRunnerTests.test_coordinator_reasoning_is_medium"
+        ]
+      ],
+      "visible_commands": [
+        [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "tests.test_bonaparte.BonaparteRunnerTests.test_coordinator_reasoning_is_medium"
+        ]
+      ],
+      "discovery_paths": [
+        "bonaparte"
+      ],
+      "positive_tests": [
+        "tests.test_fork_owner.Owner.test_positive_review_failure_does_not_surface_stderr"
+      ],
+      "negative_tests": [
+        "tests.test_fork_owner.Owner.test_negative_ordinary_phase_keeps_bounded_last_line"
+      ],
+      "oracle_tests": [
+        "tests.test_fork_owner.Owner.test_positive_review_failure_does_not_surface_stderr",
+        "tests.test_fork_owner.Owner.test_negative_ordinary_phase_keeps_bounded_last_line"
+      ],
+      "private_module": "oracles/owner18.py",
+      "oracle_script": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/evaluate.py",
+      "oracle_argv": [
+        "python3",
+        "-B",
+        "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/evaluate.py",
+        "--task-id",
+        "tweed-pr18",
+        "--workspace",
+        "{workspace}"
+      ],
+      "provenance_sha256": "96f0dea738615cf4fd9428b8ac6c9a5cd30e97045c6428ded0b33bfa567c8073",
+      "reference_snapshot": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/oracles/pr-18/reference"
+    }
+  ],
+  "evaluator_sha256": "f2c56d851b5d0dc196d511f122812000225cca968211b3b3e66352871e131b38",
+  "evaluator_spec_sha256": "e82b81fd7f479aecdca8ccc28b1aabc0285b58c4a30bdbb72065ef1807ff1194",
+  "private_module_sha256": {
+    "oracles/owner26.py": "a64fdbed6ab6a3f175ab826cf33092f1b6537f3d6b3b762e02edba687a08a20c",
+    "oracles/owner45.py": "385aba6802aaa640f8f6632328068ecdc1d15d87d94ceb48d1cae0f902152820",
+    "oracles/owner18.py": "150922f1cb6ab84e7c89c51aced0aec68592f2be6decba38d06f1f52616fe1ca"
+  },
+  "task_freshness": "Not previously solver-replayed in located dossiers; historical public source and related mechanisms can be familiar."
+}

@@ -1,0 +1,116 @@
+diff --git a/bonaparte-launcher b/bonaparte-launcher
+index 67681b7..5a0cb3e 100755
+--- a/bonaparte-launcher
++++ b/bonaparte-launcher
+@@ -93,10 +93,26 @@ def latest_tag() -> tuple[str, str]:
+     return tag, oid
+ 
+ 
++def invalid_required_paths(release: Path) -> list[str]:
++    """Return required names that are absent, not regular files, or escape the release."""
++
++    root = release.resolve()
++    invalid = []
++    for name in (*REQUIRED, "autoresearch"):
++        path = release / name
++        try:
++            inside = path.resolve().is_relative_to(root)
++        except (OSError, RuntimeError):
++            inside = False
++        if path.is_symlink() or not path.is_file() or not inside:
++            invalid.append(name)
++    return invalid
++
++
+ def validate_release(release: Path) -> None:
+-    missing = [name for name in REQUIRED if not (release / name).exists()]
+-    if missing:
+-        raise RuntimeError(f"release is missing {', '.join(missing)}")
++    invalid = invalid_required_paths(release)
++    if invalid:
++        raise RuntimeError(f"release has missing or invalid {', '.join(invalid)}")
+     for name in (
+         "bonaparte",
+         "bonaparte-launcher",
+@@ -109,6 +125,7 @@ def validate_release(release: Path) -> None:
+         compile(source.read_text(), str(source), "exec")
+     environment = updater_environment()
+     environment["BONAPARTE_AUTO_UPDATE"] = "0"
++    environment["PYTHONDONTWRITEBYTECODE"] = "1"
+     subprocess.run(
+         [sys.executable, str(release / "bonaparte"), "--help"],
+         check=True,
+@@ -153,6 +170,7 @@ def fetch_release(home: Path, tag: str, expected_oid: str) -> Path:
+         git(staging, "checkout", "-q", "--detach", "FETCH_HEAD")
+         validate_release(staging)
+         shutil.rmtree(staging / ".git")
++        shutil.rmtree(staging / "__pycache__", ignore_errors=True)
+         staging.rename(destination)
+         return destination
+     finally:
+@@ -176,7 +194,31 @@ def update(home: Path) -> str | None:
+     return tag
+ 
+ 
+-def automatic_update(home: Path) -> None:
++def is_current(release_id: str, tag: str) -> bool:
++    installed = tag_version(release_id)
++    return installed is not None and installed >= tag_version(tag)
++
++
++def status(home: Path) -> int:
++    """Report installed and latest releases without changing installed state."""
++
++    installed = current_release(home).name
++    print(f"installed: {installed}", flush=True)
++    try:
++        tag, _ = latest_tag()
++    except Exception as error:
++        print("latest: unavailable")
++        print("current: unknown")
++        print(f"bonaparte: cannot resolve the latest release: {error}", file=sys.stderr)
++        return 1
++    print(f"latest: {tag}")
++    print(f"current: {'yes' if is_current(installed, tag) else 'no'}")
++    return 0
++
++
++def automatic_check(home: Path) -> None:
++    """Daily availability notice; installing always requires `bonaparte update`."""
++
+     if os.environ.get("BONAPARTE_AUTO_UPDATE") == "0":
+         return
+     checked = home / "last-check"
+@@ -184,14 +226,21 @@ def automatic_update(home: Path) -> None:
+         return
+     try:
+         checked.touch()
+-        update(home)
++        tag, _ = latest_tag()
++        if not is_current(current_release(home).name, tag):
++            print(
++                f"bonaparte: {tag} is available; run `bonaparte update` to install it",
++                file=sys.stderr,
++            )
+     except Exception as error:
+-        print(f"bonaparte: automatic update failed: {error}", file=sys.stderr)
++        print(f"bonaparte: update check failed: {error}", file=sys.stderr)
+ 
+ 
+ def main() -> int:
+     home = bonaparte_home()
+     try:
++        if sys.argv[1:] == ["status"]:
++            return status(home)
+         migrate_autoresearch_link(home)
+         if sys.argv[1:] == ["update"]:
+             tag = update(home)
+@@ -201,7 +250,7 @@ def main() -> int:
+                 else "Bonaparte is already current."
+             )
+             return 0
+-        automatic_update(home)
++        automatic_check(home)
+         runner = current_release(home) / "bonaparte"
+         os.execv(sys.executable, [sys.executable, str(runner), *sys.argv[1:]])
+     except Exception as error:

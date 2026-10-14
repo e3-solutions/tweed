@@ -1,0 +1,13 @@
+--- json failure binary
+rc=7
+
+--- json mutation
+rc=125
+--- json untracked creation
+rc=125
+--- json no-op
+rc=125
+--- default replay
+rc=125
+--- non-git
+rc=125

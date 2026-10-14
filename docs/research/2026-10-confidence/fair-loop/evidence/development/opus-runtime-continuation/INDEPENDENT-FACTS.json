@@ -1,0 +1,100 @@
+{
+  "phase": "author-continuation",
+  "status": "settled",
+  "source_receipt_sha256": "f305ae5b8b4e1f401ac1d7bc282fa8001d5245d5fda685efc3dd241e2828851f",
+  "observed_models": [
+    "claude-opus-5-5"
+  ],
+  "session_ids": [
+    "8c38bcc8-cccb-4c0d-bdec-b265e084fcee"
+  ],
+  "typed_terminal_observed": true,
+  "terminal_count": 1,
+  "actual_unique_tool_requests": 11,
+  "actual_unique_mcp_requests": 10,
+  "tools_by_name": {
+    "mcp__cp_trial__list_files": 1,
+    "mcp__cp_trial__write_file": 3,
+    "mcp__cp_trial__replace_text": 3,
+    "mcp__cp_trial__run_tests": 3,
+    "StructuredOutput": 1
+  },
+  "invalid_stream_or_ids": [],
+  "provider_delivery_qualified_recorded": true,
+  "timed_out": false,
+  "wall_seconds": 117.34421515464783,
+  "reported_cost_usd": 0.498269,
+  "reported_usage": {
+    "input_tokens": 14,
+    "cache_creation_input_tokens": 28900,
+    "cache_read_input_tokens": 97165,
+    "output_tokens": 12379,
+    "output_tokens_details": {
+      "thinking_tokens": 887
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 28900,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 1125,
+        "cache_read_input_tokens": 26340,
+        "cache_creation_input_tokens": 3726,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 3726
+        },
+        "type": "message"
+      }
+    ],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "reported_model_usage": {
+    "claude-opus-5-5": {
+      "inputTokens": 14,
+      "outputTokens": 12379,
+      "cacheReadInputTokens": 97165,
+      "cacheCreationInputTokens": 28900,
+      "webSearchRequests": 0,
+      "costUSD": 0.498269,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 887,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "source_authorship": {
+    "runtime": {
+      "README.md": {
+        "sha256": "28cb0fe24cd925eb628821b156c23b22d413f7e9ba60192b7881718ff8226397",
+        "mode": 420
+      },
+      "controller.py": {
+        "sha256": "1b83296c2d904551aaa12dbe93301f1102c5d91d18fdf57f9e1c7d4859056dee",
+        "mode": 420
+      },
+      "tests/test_controls.py": {
+        "sha256": "548d27cb8aa6c30e5723640e8893e603b93b5a158cefc979f3e71849d357480f",
+        "mode": 420
+      }
+    },
+    "candidate": {
+      "SKILL.md": {
+        "sha256": "b84c876c9ab3b8ade74a920fd9f7c5e27ff1b7989357236990de9616a0a7a587",
+        "mode": 420
+      }
+    }
+  },
+  "model_thinking_exported": false
+}

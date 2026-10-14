@@ -1,0 +1,10 @@
+{
+  "source_sha256": "f1c7b424438ae0e107063a6fd83e117304a64111ef576bd8b27ac52be49e545f",
+  "production_patch_sha256": "48b6234bac1814a3eddc548b4b0590d7a5d742755838affb8f69b0c1307025e7",
+  "production_paths": [
+    "skills/confidence-protocol/scripts/confidence.py"
+  ],
+  "scope_violations": [
+    "skills/confidence-protocol/tests/test_run_receipt.py"
+  ]
+}

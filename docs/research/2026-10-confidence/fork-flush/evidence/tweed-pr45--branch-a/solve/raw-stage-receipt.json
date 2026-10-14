@@ -1,0 +1,769 @@
+{
+  "cell_id": "tweed-pr45--branch-a",
+  "task_id": "tweed-pr45",
+  "arm_id": "branch-a",
+  "role": "solve",
+  "status": "completed",
+  "registration_sha256": "fcc60b8e99732336fca0ccfb28adf7753e22a2cf2c27c7ec324475f7308e90b5",
+  "protocol_inventory_before": {
+    "SKILL.md": {
+      "sha256": "b5ce87bdd7d01ce190f3b46a7522fcbd3e5d4ae894d082f6d84f333e262f22ef",
+      "mode": 420
+    },
+    "assets/contract.example.json": {
+      "sha256": "85066dbfebe8310b5414a02f8d7cc73f925987cda69ffcb508975ee0fe738112",
+      "mode": 420
+    },
+    "assets/report.example.json": {
+      "sha256": "d76fa00db14f903c423133b3a84d763b95d9dfb5e3c3170f160708e66dc8ec47",
+      "mode": 420
+    },
+    "assets/runs/invitation-authorization.json": {
+      "sha256": "676de57ab147634eefa21c7251b1385500b375bb271dca0168de867b34e5283d",
+      "mode": 420
+    },
+    "assets/runs/invitation-authorization.log": {
+      "sha256": "ec5ce487789f0bf1b922299cf02b3e3633d037e37a94d17df2b3bbbe3ed5fcc6",
+      "mode": 420
+    },
+    "assets/runs/invitation-e2e.json": {
+      "sha256": "e1d88a4c7d16e31afc9caa23bdc5576c6d758c3fbc3435d81f198eacbf156802",
+      "mode": 420
+    },
+    "assets/runs/invitation-e2e.log": {
+      "sha256": "a92b7fdcb45e1d22fc2af4c80adc6e7fc1389ff8a694010cf5e6ff0b5ffbf1f6",
+      "mode": 420
+    },
+    "references/complex-tasks.md": {
+      "sha256": "8c0396928105db561147b65b8f95b6a838ed9429efcbffc2b168030a77ae08c2",
+      "mode": 420
+    },
+    "references/evidence.md": {
+      "sha256": "bd097c352130c5199ee907199bfab369927cf8ee6f990e8133cb79a87ca01d02",
+      "mode": 420
+    },
+    "references/harnesses.md": {
+      "sha256": "6d05e95838f2a50931c734002f7179cdb61a981549c5f22cc4f2aa73e80c6c71",
+      "mode": 420
+    },
+    "references/intent-flows.md": {
+      "sha256": "d7b4461527b613f9607805f4ff6e2380ee87b47b68d44fa88b06661d544acbec",
+      "mode": 420
+    },
+    "references/model-routing.md": {
+      "sha256": "016d305701972280250c3938d5db2399807df93cf55962baaea53f89ee13fa61",
+      "mode": 420
+    },
+    "references/modes.md": {
+      "sha256": "58bdefb0a2be2a6093bd4c599e139eaf39e41c009b07aa913a51274ae90708f6",
+      "mode": 420
+    },
+    "references/question-patterns.md": {
+      "sha256": "d4815150b8418b5f747f909f4e141f8f42e6ee2890c70cf220a1ac8cf6973295",
+      "mode": 420
+    },
+    "references/report-rules.md": {
+      "sha256": "cd71fbb00b82a7b0c4811a929d1ceac8338708c59788b3a6e8ae3268b94dd61f",
+      "mode": 420
+    },
+    "references/task-profiles.md": {
+      "sha256": "83e4c88178608ab83b88829000be95962c294e2baa3444b77715d9a620c7a2a6",
+      "mode": 420
+    },
+    "scripts/confidence.py": {
+      "sha256": "8c898d5bf416990e520a1bb9b113f06ffd573854346ef4512ea5798e38d684be",
+      "mode": 420
+    },
+    "scripts/diagnostics.py": {
+      "sha256": "49a3f33e230b3598f212caad5e21315b89702c1fecaa0ffc6129220f41d25258",
+      "mode": 420
+    },
+    "tests/check_release.py": {
+      "sha256": "591177dc406102e3b83386ae1aadf0bf91d40452ec85a207b71181d99585a256",
+      "mode": 420
+    },
+    "tests/support.py": {
+      "sha256": "2ff46f81cb02720fadc665d125d211cabeae8b771604c0888322fa00c304b5b7",
+      "mode": 420
+    },
+    "tests/test_autonomy_integration.py": {
+      "sha256": "cea21305a7d291804c48ebaeb57b9c514ed589c9f8b5aeea3d2ad9f2d3fd4400",
+      "mode": 420
+    },
+    "tests/test_cancellation.py": {
+      "sha256": "6aa8dcce7fc2f62029ed0144eb838d5f0213869c9123d3cfa23cd890970ac7ed",
+      "mode": 420
+    },
+    "tests/test_capture_io.py": {
+      "sha256": "2d24d630769553b8c8c31a8bac5566cb38cba9aa73d779ea935c78dd78a702df",
+      "mode": 420
+    },
+    "tests/test_capture_metadata.py": {
+      "sha256": "bf6984ddc3815de07a15650b5c3e70d8eae8fe7152de7d513680dab04ac91bd9",
+      "mode": 420
+    },
+    "tests/test_cli_recovery.py": {
+      "sha256": "18c5de2ead4e7675ad41a3acc93ed90b45f9bea0ad91ed259592e5d0a203cd42",
+      "mode": 420
+    },
+    "tests/test_confidence.py": {
+      "sha256": "cce4c1a13d4ec28538bf13fe225c23e78a9d07b3b9a65498667e98d832767528",
+      "mode": 420
+    },
+    "tests/test_content_binding.py": {
+      "sha256": "da7b19f7742156993e6d4dc7edefd0c7f0b81dbf7c8d4d31ec57c8fd0d10ad2b",
+      "mode": 420
+    },
+    "tests/test_dependency_frontier.py": {
+      "sha256": "835def8f39816402227db6a5b6125a47cd9b3ec16126ee0ab2c8d404ec9549b7",
+      "mode": 420
+    },
+    "tests/test_diagnostics.py": {
+      "sha256": "87109b26eb2deadc34a653c03e4a315ae58f39a618c9b55a488b0dcc4de5eea5",
+      "mode": 420
+    },
+    "tests/test_dirty_submodule.py": {
+      "sha256": "1e6ffdac6d4075552ae6139f58de593cb823122d61b9150dfdf82aab019e5e3b",
+      "mode": 420
+    },
+    "tests/test_evidence_root.py": {
+      "sha256": "63dfb21de5cc1949e6c1d06394dff02e1fd22595041d97f2244c57f56d551a26",
+      "mode": 420
+    },
+    "tests/test_evidence_subtree.py": {
+      "sha256": "9f5a5dcb0d4d8e5568ecf0ebfe87513ea5b2107106e3542738aa3a6397d347eb",
+      "mode": 420
+    },
+    "tests/test_fingerprint_staging_retry.py": {
+      "sha256": "e8a13589fbb90a5f0dfae72ed62bae68cd8cb3448557a0465667c76c07d8e104",
+      "mode": 420
+    },
+    "tests/test_git_availability.py": {
+      "sha256": "544ac46da0aa9130ff2cc1db467efc7df94c52a9b026fb1b9f1d1260cea67410",
+      "mode": 420
+    },
+    "tests/test_init_recovery.py": {
+      "sha256": "b925247ed89abdcce8b9f0ca6b6b24b6951195591cddfad27fb1b6126ab60f7b",
+      "mode": 420
+    },
+    "tests/test_integrity.py": {
+      "sha256": "fda7cbf536e3646d2570bb023bceb4a01992bd9d6aa8d4574676f9fec8bd54ee",
+      "mode": 420
+    },
+    "tests/test_launch_cancellation.py": {
+      "sha256": "147d49689fe3d0f4162589667eb4accf4232265ce79d74103d2d368abb168fc2",
+      "mode": 420
+    },
+    "tests/test_limits.py": {
+      "sha256": "959c99c96b6d4cab56d172dcfdcfe65f548f422205156ba40b2872521067ac9d",
+      "mode": 420
+    },
+    "tests/test_log_inputs.py": {
+      "sha256": "97b7750150c585b4698ca9b890cf93f3f0918f7b93a2182955a47f56bede5d57",
+      "mode": 420
+    },
+    "tests/test_parallel_capture.py": {
+      "sha256": "d2faa51758fec174caa59775b0b6c9199bfe11ca98256361278069832916f95d",
+      "mode": 420
+    },
+    "tests/test_record.py": {
+      "sha256": "58482fbbdab686af9aa20a5b7d6760d07ec000e6b8c17acb432ffe1507e5a8ba",
+      "mode": 420
+    },
+    "tests/test_release_archive.py": {
+      "sha256": "a93e5c1d3a5a6554c5d79cbfaf477a45cb1d61b2e90acc6c0f840c22cf901057",
+      "mode": 420
+    },
+    "tests/test_reporting_scope.py": {
+      "sha256": "d21cd893379b4c3da3a694f9c73052e4b027342cf4d8b81758ce6624bdb08b60",
+      "mode": 420
+    },
+    "tests/test_review_provenance.py": {
+      "sha256": "375b9a2ebb0a48abf6107882d439a5d780af661fdba818b0c7da78ea72db6ece",
+      "mode": 420
+    },
+    "tests/test_run_receipt.py": {
+      "sha256": "19bfc866454d48c22097d03cbb798354c3327c03f654802863d91c4e3c6053f3",
+      "mode": 420
+    },
+    "tests/test_source_scope_output.py": {
+      "sha256": "b90467106cf976d5a4c9ec5b94241adc68366371e2c512762b113557516e24a5",
+      "mode": 420
+    },
+    "tests/test_validation_cache.py": {
+      "sha256": "5aa413a27a8d715e1aadda8bcaa793ff10928c50f68fe79fc82237b5e67cb8c0",
+      "mode": 420
+    }
+  },
+  "before": {
+    "source_sha256": "44e252515626508fa5ee0a606fc82872d5f28ca22d4deec049bd23d71a73c525",
+    "production_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "production_paths": [
+      "skills/confidence-protocol/scripts/confidence.py"
+    ],
+    "scope_violations": []
+  },
+  "protocol_inventory_after": {
+    "SKILL.md": {
+      "sha256": "b5ce87bdd7d01ce190f3b46a7522fcbd3e5d4ae894d082f6d84f333e262f22ef",
+      "mode": 420
+    },
+    "assets/contract.example.json": {
+      "sha256": "85066dbfebe8310b5414a02f8d7cc73f925987cda69ffcb508975ee0fe738112",
+      "mode": 420
+    },
+    "assets/report.example.json": {
+      "sha256": "d76fa00db14f903c423133b3a84d763b95d9dfb5e3c3170f160708e66dc8ec47",
+      "mode": 420
+    },
+    "assets/runs/invitation-authorization.json": {
+      "sha256": "676de57ab147634eefa21c7251b1385500b375bb271dca0168de867b34e5283d",
+      "mode": 420
+    },
+    "assets/runs/invitation-authorization.log": {
+      "sha256": "ec5ce487789f0bf1b922299cf02b3e3633d037e37a94d17df2b3bbbe3ed5fcc6",
+      "mode": 420
+    },
+    "assets/runs/invitation-e2e.json": {
+      "sha256": "e1d88a4c7d16e31afc9caa23bdc5576c6d758c3fbc3435d81f198eacbf156802",
+      "mode": 420
+    },
+    "assets/runs/invitation-e2e.log": {
+      "sha256": "a92b7fdcb45e1d22fc2af4c80adc6e7fc1389ff8a694010cf5e6ff0b5ffbf1f6",
+      "mode": 420
+    },
+    "references/complex-tasks.md": {
+      "sha256": "8c0396928105db561147b65b8f95b6a838ed9429efcbffc2b168030a77ae08c2",
+      "mode": 420
+    },
+    "references/evidence.md": {
+      "sha256": "bd097c352130c5199ee907199bfab369927cf8ee6f990e8133cb79a87ca01d02",
+      "mode": 420
+    },
+    "references/harnesses.md": {
+      "sha256": "6d05e95838f2a50931c734002f7179cdb61a981549c5f22cc4f2aa73e80c6c71",
+      "mode": 420
+    },
+    "references/intent-flows.md": {
+      "sha256": "d7b4461527b613f9607805f4ff6e2380ee87b47b68d44fa88b06661d544acbec",
+      "mode": 420
+    },
+    "references/model-routing.md": {
+      "sha256": "016d305701972280250c3938d5db2399807df93cf55962baaea53f89ee13fa61",
+      "mode": 420
+    },
+    "references/modes.md": {
+      "sha256": "58bdefb0a2be2a6093bd4c599e139eaf39e41c009b07aa913a51274ae90708f6",
+      "mode": 420
+    },
+    "references/question-patterns.md": {
+      "sha256": "d4815150b8418b5f747f909f4e141f8f42e6ee2890c70cf220a1ac8cf6973295",
+      "mode": 420
+    },
+    "references/report-rules.md": {
+      "sha256": "cd71fbb00b82a7b0c4811a929d1ceac8338708c59788b3a6e8ae3268b94dd61f",
+      "mode": 420
+    },
+    "references/task-profiles.md": {
+      "sha256": "83e4c88178608ab83b88829000be95962c294e2baa3444b77715d9a620c7a2a6",
+      "mode": 420
+    },
+    "scripts/confidence.py": {
+      "sha256": "8c898d5bf416990e520a1bb9b113f06ffd573854346ef4512ea5798e38d684be",
+      "mode": 420
+    },
+    "scripts/diagnostics.py": {
+      "sha256": "49a3f33e230b3598f212caad5e21315b89702c1fecaa0ffc6129220f41d25258",
+      "mode": 420
+    },
+    "tests/check_release.py": {
+      "sha256": "591177dc406102e3b83386ae1aadf0bf91d40452ec85a207b71181d99585a256",
+      "mode": 420
+    },
+    "tests/support.py": {
+      "sha256": "2ff46f81cb02720fadc665d125d211cabeae8b771604c0888322fa00c304b5b7",
+      "mode": 420
+    },
+    "tests/test_autonomy_integration.py": {
+      "sha256": "cea21305a7d291804c48ebaeb57b9c514ed589c9f8b5aeea3d2ad9f2d3fd4400",
+      "mode": 420
+    },
+    "tests/test_cancellation.py": {
+      "sha256": "6aa8dcce7fc2f62029ed0144eb838d5f0213869c9123d3cfa23cd890970ac7ed",
+      "mode": 420
+    },
+    "tests/test_capture_io.py": {
+      "sha256": "2d24d630769553b8c8c31a8bac5566cb38cba9aa73d779ea935c78dd78a702df",
+      "mode": 420
+    },
+    "tests/test_capture_metadata.py": {
+      "sha256": "bf6984ddc3815de07a15650b5c3e70d8eae8fe7152de7d513680dab04ac91bd9",
+      "mode": 420
+    },
+    "tests/test_cli_recovery.py": {
+      "sha256": "18c5de2ead4e7675ad41a3acc93ed90b45f9bea0ad91ed259592e5d0a203cd42",
+      "mode": 420
+    },
+    "tests/test_confidence.py": {
+      "sha256": "cce4c1a13d4ec28538bf13fe225c23e78a9d07b3b9a65498667e98d832767528",
+      "mode": 420
+    },
+    "tests/test_content_binding.py": {
+      "sha256": "da7b19f7742156993e6d4dc7edefd0c7f0b81dbf7c8d4d31ec57c8fd0d10ad2b",
+      "mode": 420
+    },
+    "tests/test_dependency_frontier.py": {
+      "sha256": "835def8f39816402227db6a5b6125a47cd9b3ec16126ee0ab2c8d404ec9549b7",
+      "mode": 420
+    },
+    "tests/test_diagnostics.py": {
+      "sha256": "87109b26eb2deadc34a653c03e4a315ae58f39a618c9b55a488b0dcc4de5eea5",
+      "mode": 420
+    },
+    "tests/test_dirty_submodule.py": {
+      "sha256": "1e6ffdac6d4075552ae6139f58de593cb823122d61b9150dfdf82aab019e5e3b",
+      "mode": 420
+    },
+    "tests/test_evidence_root.py": {
+      "sha256": "63dfb21de5cc1949e6c1d06394dff02e1fd22595041d97f2244c57f56d551a26",
+      "mode": 420
+    },
+    "tests/test_evidence_subtree.py": {
+      "sha256": "9f5a5dcb0d4d8e5568ecf0ebfe87513ea5b2107106e3542738aa3a6397d347eb",
+      "mode": 420
+    },
+    "tests/test_fingerprint_staging_retry.py": {
+      "sha256": "e8a13589fbb90a5f0dfae72ed62bae68cd8cb3448557a0465667c76c07d8e104",
+      "mode": 420
+    },
+    "tests/test_git_availability.py": {
+      "sha256": "544ac46da0aa9130ff2cc1db467efc7df94c52a9b026fb1b9f1d1260cea67410",
+      "mode": 420
+    },
+    "tests/test_init_recovery.py": {
+      "sha256": "b925247ed89abdcce8b9f0ca6b6b24b6951195591cddfad27fb1b6126ab60f7b",
+      "mode": 420
+    },
+    "tests/test_integrity.py": {
+      "sha256": "fda7cbf536e3646d2570bb023bceb4a01992bd9d6aa8d4574676f9fec8bd54ee",
+      "mode": 420
+    },
+    "tests/test_launch_cancellation.py": {
+      "sha256": "147d49689fe3d0f4162589667eb4accf4232265ce79d74103d2d368abb168fc2",
+      "mode": 420
+    },
+    "tests/test_limits.py": {
+      "sha256": "959c99c96b6d4cab56d172dcfdcfe65f548f422205156ba40b2872521067ac9d",
+      "mode": 420
+    },
+    "tests/test_log_inputs.py": {
+      "sha256": "97b7750150c585b4698ca9b890cf93f3f0918f7b93a2182955a47f56bede5d57",
+      "mode": 420
+    },
+    "tests/test_parallel_capture.py": {
+      "sha256": "d2faa51758fec174caa59775b0b6c9199bfe11ca98256361278069832916f95d",
+      "mode": 420
+    },
+    "tests/test_record.py": {
+      "sha256": "58482fbbdab686af9aa20a5b7d6760d07ec000e6b8c17acb432ffe1507e5a8ba",
+      "mode": 420
+    },
+    "tests/test_release_archive.py": {
+      "sha256": "a93e5c1d3a5a6554c5d79cbfaf477a45cb1d61b2e90acc6c0f840c22cf901057",
+      "mode": 420
+    },
+    "tests/test_reporting_scope.py": {
+      "sha256": "d21cd893379b4c3da3a694f9c73052e4b027342cf4d8b81758ce6624bdb08b60",
+      "mode": 420
+    },
+    "tests/test_review_provenance.py": {
+      "sha256": "375b9a2ebb0a48abf6107882d439a5d780af661fdba818b0c7da78ea72db6ece",
+      "mode": 420
+    },
+    "tests/test_run_receipt.py": {
+      "sha256": "19bfc866454d48c22097d03cbb798354c3327c03f654802863d91c4e3c6053f3",
+      "mode": 420
+    },
+    "tests/test_source_scope_output.py": {
+      "sha256": "b90467106cf976d5a4c9ec5b94241adc68366371e2c512762b113557516e24a5",
+      "mode": 420
+    },
+    "tests/test_validation_cache.py": {
+      "sha256": "5aa413a27a8d715e1aadda8bcaa793ff10928c50f68fe79fc82237b5e67cb8c0",
+      "mode": 420
+    }
+  },
+  "protocol_context_unchanged": true,
+  "stage": {
+    "process_exit": 0,
+    "timed_out": false,
+    "wall_seconds": 125.15352491699741,
+    "terminal": {
+      "duration_api_ms": 93197,
+      "stop_reason": "tool_use",
+      "session_id": "36bae5cd-b9e0-4618-889c-38d2bb652929",
+      "total_cost_usd": 0.7383845999999998,
+      "usage": {
+        "input_tokens": 24,
+        "cache_creation_input_tokens": 57681,
+        "cache_read_input_tokens": 384603,
+        "output_tokens": 9996,
+        "output_tokens_details": {
+          "thinking_tokens": 3175
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 57681,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "inference_geo": "global",
+        "iterations": [
+          {
+            "input_tokens": 2,
+            "output_tokens": 1270,
+            "cache_read_input_tokens": 57478,
+            "cache_creation_input_tokens": 2397,
+            "cache_creation": {
+              "ephemeral_5m_input_tokens": 0,
+              "ephemeral_1h_input_tokens": 2397
+            },
+            "type": "message"
+          }
+        ],
+        "speed": "standard",
+        "fallback_credit": null
+      },
+      "modelUsage": {
+        "claude-opus-5-5": {
+          "inputTokens": 24,
+          "outputTokens": 9996,
+          "cacheReadInputTokens": 384603,
+          "cacheCreationInputTokens": 57681,
+          "webSearchRequests": 0,
+          "costUSD": 0.7383845999999998,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 3175,
+          "canonicalModel": "claude-opus-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "permission_denials": [],
+      "terminal_reason": "completed",
+      "fast_mode_state": "off",
+      "fast_mode_disabled_reason": "sdk_opt_in_required",
+      "subagent_stats": {
+        "spawned": 0,
+        "requested": {
+          "background": 0,
+          "foreground": 0,
+          "unset": 0
+        },
+        "started_in_background": 0,
+        "max_depth": 0,
+        "spawned_by_subagents": 0,
+        "completed": 0,
+        "failed": 0,
+        "killed": {
+          "parent": 0,
+          "user": 0,
+          "system": 0
+        },
+        "refused": {
+          "depth_limit": 0,
+          "concurrency_limit": 0,
+          "budget": 0
+        },
+        "by_type": {}
+      },
+      "is_error": false,
+      "num_turns": 22,
+      "subtype": "success",
+      "api_error_status": null,
+      "result": "{\"complete\":true,\"summary\":\"I added a public `--json` option to `run` in skills/confidence-protocol/scripts/confidence.py, which is the only file changed (+42/-2). With `--json`, captured output is no longer replayed to stdout. stdout gets one compact JSON line instead: `{\\\"id\\\",\\\"exit_code\\\",\\\"record\\\":\\\"runs/<id>.json\\\",\\\"log\\\":\\\"runs/<id>.log\\\",\\\"workspace_binding\\\"}`. Both paths are relative to the evidence directory. The full log is still captured and hashed, so `log_sha256` in the record covers every byte, including binary output.\\n\\n`workspace_binding` compares a Git workspace fingerprint taken before the child starts with one taken after it stops (the evidence directory is left out). It is \\\"unchanged\\\" only when both fingerprints exist and match, \\\"changed\\\" when both exist and differ, and \\\"unknown\\\" otherwise. That covers non-Git directories and Git not being installed. A new small helper turns a missing `git` binary into \\\"unknown\\\"; before this change it would have crashed the run. The same value is also saved in the run record as a new `workspace_binding` field.\\n\\nWithout `--json`, output is still replayed byte-for-byte. The CLI exit code works as before: a child's nonzero status comes through, and the signed status (for example -15 for SIGTERM) is kept in both the record and the receipt, while the CLI exits 143.\\n\\nChecks:\\n- The visible check `test_run_records_failure_and_returns_child_status` passed after the final edit.\\n- The full skills test suite ran 50 tests and 45 passed. The 5 errors were all telemetry tests in test_diagnostics.py, caused by the harness setting `CONFIDENCE_DISABLE_DIAGNOSTICS=1`. With that variable unset, all 15 test_diagnostics tests passed. I didn't rerun the other 35 tests that way, but this change doesn't touch telemetry.\\n- A temporary probe I wrote ran in a scratch Git repo, and all 22 assertions passed. It covered: binary output with exit 3 (exit code, a single compact receipt line, exactly the five keys, relative paths, the log matching byte-for-byte, the record's SHA256 and exit code); \\\"unchanged\\\" when only evidence files were written; \\\"changed\\\" after editing a tracked file, after creating an untracked file, and when a failing child (exit 5) edits a file; \\\"unknown\\\" for a non-Git directory and when Git is not on PATH; SIGTERM giving -15 in the receipt with CLI exit 143; and default mode replaying the exact binary output with child status 3.\\n\\nI deleted the probe afterwards; `git status` shows only confidence.py modified. All checks were my own as the author; no independent review was done in this stage.\\n\\nKnown limits: if a file changes during the run and is restored before it ends, it will still be reported as \\\"unchanged\\\". The record's `workspace` field remains the after-run fingerprint, so `validate` does not yet treat a \\\"changed\\\" run as stale. The other PR45 changes (recovery, recording, release, docs) were left out as specified.\",\"remaining\":[\"Accepted exclusion: other PR45 recovery/recording/release/documentation changes are out of scope as specified.\",\"Known limit: a file changed and then restored during the run is reported unchanged; validation does not yet consult workspace_binding (excluded as part of the recording/validation changes).\"]}",
+      "structured_output": {
+        "complete": true,
+        "summary": "I added a public `--json` option to `run` in skills/confidence-protocol/scripts/confidence.py, which is the only file changed (+42/-2). With `--json`, captured output is no longer replayed to stdout. stdout gets one compact JSON line instead: `{\"id\",\"exit_code\",\"record\":\"runs/<id>.json\",\"log\":\"runs/<id>.log\",\"workspace_binding\"}`. Both paths are relative to the evidence directory. The full log is still captured and hashed, so `log_sha256` in the record covers every byte, including binary output.\n\n`workspace_binding` compares a Git workspace fingerprint taken before the child starts with one taken after it stops (the evidence directory is left out). It is \"unchanged\" only when both fingerprints exist and match, \"changed\" when both exist and differ, and \"unknown\" otherwise. That covers non-Git directories and Git not being installed. A new small helper turns a missing `git` binary into \"unknown\"; before this change it would have crashed the run. The same value is also saved in the run record as a new `workspace_binding` field.\n\nWithout `--json`, output is still replayed byte-for-byte. The CLI exit code works as before: a child's nonzero status comes through, and the signed status (for example -15 for SIGTERM) is kept in both the record and the receipt, while the CLI exits 143.\n\nChecks:\n- The visible check `test_run_records_failure_and_returns_child_status` passed after the final edit.\n- The full skills test suite ran 50 tests and 45 passed. The 5 errors were all telemetry tests in test_diagnostics.py, caused by the harness setting `CONFIDENCE_DISABLE_DIAGNOSTICS=1`. With that variable unset, all 15 test_diagnostics tests passed. I didn't rerun the other 35 tests that way, but this change doesn't touch telemetry.\n- A temporary probe I wrote ran in a scratch Git repo, and all 22 assertions passed. It covered: binary output with exit 3 (exit code, a single compact receipt line, exactly the five keys, relative paths, the log matching byte-for-byte, the record's SHA256 and exit code); \"unchanged\" when only evidence files were written; \"changed\" after editing a tracked file, after creating an untracked file, and when a failing child (exit 5) edits a file; \"unknown\" for a non-Git directory and when Git is not on PATH; SIGTERM giving -15 in the receipt with CLI exit 143; and default mode replaying the exact binary output with child status 3.\n\nI deleted the probe afterwards; `git status` shows only confidence.py modified. All checks were my own as the author; no independent review was done in this stage.\n\nKnown limits: if a file changes during the run and is restored before it ends, it will still be reported as \"unchanged\". The record's `workspace` field remains the after-run fingerprint, so `validate` does not yet treat a \"changed\" run as stale. The other PR45 changes (recovery, recording, release, docs) were left out as specified.",
+        "remaining": [
+          "Accepted exclusion: other PR45 recovery/recording/release/documentation changes are out of scope as specified.",
+          "Known limit: a file changed and then restored during the run is reported unchanged; validation does not yet consult workspace_binding (excluded as part of the recording/validation changes)."
+        ]
+      },
+      "ttft_ms": 1558,
+      "type": "result",
+      "duration_ms": 124527,
+      "uuid": "c91f911c-ee17-4803-86c6-671b48920360",
+      "ttft_stream_ms": 1212,
+      "time_to_request_ms": 251,
+      "first_content_frame_ms": 1212,
+      "queued_turn_count": 0,
+      "result_index": 0
+    },
+    "declared_complete": true,
+    "total_cost_usd": 0.7383845999999998,
+    "usage": {
+      "input_tokens": 24,
+      "cache_creation_input_tokens": 57681,
+      "cache_read_input_tokens": 384603,
+      "output_tokens": 9996,
+      "output_tokens_details": {
+        "thinking_tokens": 3175
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 57681,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "global",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 1270,
+          "cache_read_input_tokens": 57478,
+          "cache_creation_input_tokens": 2397,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 2397
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard",
+      "fallback_credit": null
+    },
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 24,
+        "outputTokens": 9996,
+        "cacheReadInputTokens": 384603,
+        "cacheCreationInputTokens": 57681,
+        "webSearchRequests": 0,
+        "costUSD": 0.7383845999999998,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 3175,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "permission_denials": [],
+    "request_sha256": "aca6f89c5742f2507e62e13ff42aa2b6957c9090a990f29c8f431d3b4572ec9e",
+    "invalid_stream_lines": 0,
+    "stream_sha256": "81107e4a4b872b7bb07803651796d1d74460e0815a816f3240e51fa9178b3839",
+    "observed_assistant_models": [
+      "claude-opus-5-5"
+    ],
+    "harness_initialization": {
+      "model": "claude-opus-5-5",
+      "tools": [
+        "StructuredOutput",
+        "mcp__cp_trial__confidence",
+        "mcp__cp_trial__list_files",
+        "mcp__cp_trial__read_file",
+        "mcp__cp_trial__replace_text",
+        "mcp__cp_trial__request_review",
+        "mcp__cp_trial__run_tests",
+        "mcp__cp_trial__write_file"
+      ],
+      "mcp_servers": [
+        {
+          "name": "cp_trial",
+          "status": "connected",
+          "source": "dynamic"
+        }
+      ],
+      "mcp_server_errors": null,
+      "claude_code_version": "2.1.285",
+      "permissionMode": "dontAsk"
+    },
+    "requested_effort": "high",
+    "process_cleanup_scope": "original_process_group",
+    "detached_descendants_contained": false,
+    "guarded_new_session_processes": 1,
+    "process_cleanup_seconds": 2.499999391147867e-05,
+    "stream_changed_during_cleanup": false,
+    "backend": "claude",
+    "source_sha256_at_launch": "44e252515626508fa5ee0a606fc82872d5f28ca22d4deec049bd23d71a73c525",
+    "source_sha256_after": "25dc5aff6e3ec551ee46db5172d61c906c05678b7f5fb60e0b14f573c1bf9aeb",
+    "qualification": {
+      "eligible": true,
+      "failures": [],
+      "inventory": {
+        "passed": true,
+        "basis": "live_claude_init",
+        "connected": true,
+        "missing_tools": [],
+        "unexpected_tools": [],
+        "effective_tools": [
+          "StructuredOutput",
+          "mcp__cp_trial__confidence",
+          "mcp__cp_trial__list_files",
+          "mcp__cp_trial__read_file",
+          "mcp__cp_trial__replace_text",
+          "mcp__cp_trial__request_review",
+          "mcp__cp_trial__run_tests",
+          "mcp__cp_trial__write_file"
+        ],
+        "schema_output_tool": "StructuredOutput",
+        "strict_seven_tool_parity": false,
+        "local": {
+          "passed": true,
+          "offline": true,
+          "hosted_inference_calls": 0,
+          "provider": "opus",
+          "actor_cwd": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-a/workspace",
+          "readonly": false,
+          "connected": true,
+          "effective_mcp_tools": [
+            "list_files",
+            "read_file",
+            "write_file",
+            "replace_text",
+            "run_tests",
+            "confidence",
+            "request_review"
+          ],
+          "expected_mcp_tools": [
+            "list_files",
+            "read_file",
+            "write_file",
+            "replace_text",
+            "run_tests",
+            "confidence",
+            "request_review"
+          ],
+          "list_files_succeeded": true,
+          "readonly_write_denied": null,
+          "exit_code": 0,
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout_sha256": "4a38b8443f98eb7625d6dc89eea19addab5cdb6d4a03447327a905ff45fbdd2d",
+          "config_argument": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-a/solve/qualification/server-config.json",
+          "config_argument_is_absolute": true
+        }
+      },
+      "model_attribution": "assistant_event_observed",
+      "actual_model": "claude-opus-5-5"
+    },
+    "artifacts": {
+      "command-6a474a8019284374bfbaabf23bd55495.stderr": "d39a946729ab6c5bdd507fe64ee3257e3feb9fedfb985fd0774859daae4a3995",
+      "request.json": "5a8ab29ce2ee3a9d7e811f1d576c0a1b22f0c89630fbbf92c426976fc3e1fbe3",
+      "command-22ce72879fdd4331984fc6f51853e544.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "89accf5787cc45989552ced0a1b47956.command-response.json": "bb6b331606b0a7df1bf4f95de164511a9f0db6f0b78f9faf73a7a8ab95a5b459",
+      "stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "2eca1b4a17924f889fc217f68a3f6620.command-response.json": "199580c412e3db7aee52726aaaf9b01b019d989e2a101b2294703b2db170f4d7",
+      "stream.jsonl": "81107e4a4b872b7bb07803651796d1d74460e0815a816f3240e51fa9178b3839",
+      "427f4cbd6b1d4949a25d0c0c9eec7dbc.command-response.json": "2a166a5ff2cb8f9e5117f9f46feb3282e57a7d31ff46e72a5a88afa0c32da587",
+      "command-427f4cbd6b1d4949a25d0c0c9eec7dbc.stdout": "bd039fe43ae54188e7b3da83e4b4cfc5f94a8e0ca800dc03a0ed31c13402eeea",
+      "6a474a8019284374bfbaabf23bd55495.command-request.json": "8349bfc32634a16e9286462c2c46d8833356217a03aaf32a9601c1c0ecd26349",
+      "22ce72879fdd4331984fc6f51853e544.command-response.json": "52a3358adde42bdb1f50ade9c2596cd9d59b120dfa9d07f986cf115e29bc8e56",
+      "6a474a8019284374bfbaabf23bd55495.command-response.json": "89dc6f8f37f0f23e9248299baf4670460fb277ac120216a43a9dab6fbc2a2067",
+      "command-427f4cbd6b1d4949a25d0c0c9eec7dbc.stderr": "d0b09bd5a3280fd1708a2e0aacf99263209f7da64163fbfcef80908e89d5f505",
+      "89accf5787cc45989552ced0a1b47956.command-request.json": "aa0835ae6a5d5edb73404d75b870c053485860f315f640a33719aaec94008fc2",
+      "f2893695c7a84800923ea13df0787224.command-request.json": "356c61852224e09e9a9e8b9cf247b93eaca74452ffab9930164a61ec42293dfb",
+      "22ce72879fdd4331984fc6f51853e544.command-request.json": "63744963ddb1a3e5bc0bfda1a1606282616015e79e9fca4b95ec76a29e471094",
+      "f2893695c7a84800923ea13df0787224.command-response.json": "faf1e43eed4ce493d8e622e5fa9ede06272fd11f0a165599a1b13eddc8ed86e6",
+      "command-6a474a8019284374bfbaabf23bd55495.stdout": "99ffad7dfa0ba87f472876e77a60387c70ab3debbae13cd25b29046793dff46c",
+      "server-config.json": "decf3211e74a5e1e80e1c1e567cbdaf80f8d7767f1ece98c48bbbcb5ec1f204a",
+      "command-22ce72879fdd4331984fc6f51853e544.stdout": "c9742351ad9c7850fdd66cf1dd5f7b0b06473860f20a8924bc44852b2f40be1a",
+      "command-2eca1b4a17924f889fc217f68a3f6620.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command-f2893695c7a84800923ea13df0787224.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command-3ea380029d9e4254a18b4470003a5ac8.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "427f4cbd6b1d4949a25d0c0c9eec7dbc.command-request.json": "cc4a0919e5b43fe37f8134a8bf7ffb24cee9958f231a8758016c25be182f3263",
+      "command-89accf5787cc45989552ced0a1b47956.stdout": "44eb4dd32ff476b8056f90acf8eb452e2b837a81dd2ae4410c39c1cf527d60b3",
+      "command-89accf5787cc45989552ced0a1b47956.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "2eca1b4a17924f889fc217f68a3f6620.command-request.json": "d94dc40bfbf949dacd27537ab027a38c692ccc0567414e2df186c6247343f495",
+      "tool-events.jsonl": "260426303f4c21c983bda040371be4df59bdb748228036298586104eb5a742d8",
+      "3ea380029d9e4254a18b4470003a5ac8.command-response.json": "415e272f76763f1d6f8bf984af1cc6d642caec581cce67a1fed7410e2adade58",
+      "command-3ea380029d9e4254a18b4470003a5ac8.stdout": "c0debc2f10df51451d94f7a578c50c4878a706a1cc749db3919cc0a08e976bf0",
+      "3ea380029d9e4254a18b4470003a5ac8.command-request.json": "ac4eebc8f221928244b0fa9d8fbd5c3cefb4d3bf7f187b21b085032ce5762560",
+      "command-f2893695c7a84800923ea13df0787224.stderr": "fed57b5d658f5d3833af485bc08c83d28ba63b841bf5a5f6375d0b6a342b63df",
+      "command-2eca1b4a17924f889fc217f68a3f6620.stderr": "bb710edde8792afd1c8d9d6c03471126b372ef56de142b8596236543b6084422"
+    }
+  },
+  "after": {
+    "source_sha256": "25dc5aff6e3ec551ee46db5172d61c906c05678b7f5fb60e0b14f573c1bf9aeb",
+    "production_patch_sha256": "1aeff57cd27781e7da10a200ec28bb2f6f1a871a8e0493d385d7ffb80b37d099",
+    "production_paths": [
+      "skills/confidence-protocol/scripts/confidence.py"
+    ],
+    "scope_violations": []
+  },
+  "evaluation": {
+    "process": {
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/evaluate.py",
+        "--workspace",
+        "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-a/solve/after/source",
+        "--task-id",
+        "tweed-pr45"
+      ],
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 1.4155956250033341,
+      "stdout": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-a/solve/evaluation/grader.stdout",
+      "stderr": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-a/solve/evaluation/grader.stderr",
+      "stdout_sha256": "dc5831e025416cd1e4c45b2f96e0423475f8c40a35b8c40c9ae51fd95fe5ef82",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "process_cleanup_scope": "original_process_group",
+      "detached_descendants_contained": false
+    },
+    "header": {
+      "task_id": "tweed-pr45",
+      "exit_code": 0,
+      "passed": true,
+      "oracle_passed": true,
+      "required_behavior_passed": true,
+      "negative_boundaries_passed": true,
+      "baseline_passed": true,
+      "baseline_receipts": [
+        {
+          "argv": [
+            "python3",
+            "-B",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "skills/confidence-protocol/tests",
+            "-p",
+            "test_confidence.py",
+            "-k",
+            "test_run_records_failure_and_returns_child_status"
+          ],
+          "exit_code": 0,
+          "timed_out": false,
+          "stdout": "",
+          "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.141s\n\nOK\n",
+          "wall_seconds": 0.22555104200000642,
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false
+        }
+      ],
+      "scope_violations": [],
+      "source_current": true,
+      "setup_status": "verified",
+      "failed_requirements": [],
+      "source_before_sha256": "25dc5aff6e3ec551ee46db5172d61c906c05678b7f5fb60e0b14f573c1bf9aeb",
+      "source_after_sha256": "25dc5aff6e3ec551ee46db5172d61c906c05678b7f5fb60e0b14f573c1bf9aeb",
+      "output_sha256": "4bd0fb913cddecd304e613ff18a294e1a1eb5749af18719fae50e8813d718698"
+    },
+    "source_sha256": "25dc5aff6e3ec551ee46db5172d61c906c05678b7f5fb60e0b14f573c1bf9aeb",
+    "source_unchanged": true,
+    "qualified_evaluation": true
+  },
+  "production_patch_changed_in_stage": true,
+  "full_source_changed_in_stage": true,
+  "ended_at_unix": 1791940773.6119318
+}

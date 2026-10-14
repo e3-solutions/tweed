@@ -1,0 +1,22 @@
+{
+  "scope": "Fixture consistency and synthetic manual classification calibration only; not an executed export/sales implementation, live services, task-solving benchmark or measured improvement.",
+  "fixture_A": {
+    "filtered_rows": 2,
+    "CSV_expected_roundtrip_consistent": true
+  },
+  "fixture_C": {
+    "selected_ids": [
+      "A",
+      "B"
+    ],
+    "total_minor": 2050,
+    "Toronto_window_consistent": true
+  },
+  "calibration": {
+    "cases": 10,
+    "mismatches": [],
+    "expected_sha256": "9272cdbc419f94723fc8f1ff54e962560da0d270d1911a25a8c532226a361fbd",
+    "actual_sha256": "f8a0813180ec3bd9807319ed6c4b31a865ff9794dc3c3a05ae49bea685855d70"
+  },
+  "core_version_and_schema_unchanged": true
+}

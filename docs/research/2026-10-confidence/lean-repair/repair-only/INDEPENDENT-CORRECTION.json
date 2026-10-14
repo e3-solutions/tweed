@@ -1,0 +1,41 @@
+{
+  "reviewer": "/root/lean_repair_adversary",
+  "kind": "material_correction_to_prospective_repair_preflight",
+  "prior_preflight_sha256": "b2c705365022f98bd5d6b963b51f2372ab50477f127cef74009a3c1161331434",
+  "prior_registration_sha256": "70fdb3a543e1e0c619dc7eaa1fe295ba294ea81c4a4ee51ab76c169f130faca4",
+  "prior_helper_sha256": "53b5788c3f2ffb3d05ef057a7f0c0a8b5499cfc57b4b459cd7a520b56dca5b93",
+  "failure_closure_sha256": "c7994322e3e4eec224802a0864dbe747d04dcd72871dd988b333350b625e71f2",
+  "failure_results_sha256": "7e3834bcb0eab1d18b0f4744281c8b836ce77946658004f2eb87710f15262f78",
+  "prior_launch_readiness_pass_invalidated": true,
+  "remaining_static_admission_checks_not_rewritten": true,
+  "miss": "The authentic full candidate contains .protocol. The immutable legacy mount calls safe_copy(toolkit, workspace/.protocol) before replacing policy files and refuses an existing target. Reviewer inferred launch soundness statically instead of actually exercising copy and mount.",
+  "observed_outcome": {
+    "assigned_infrastructure_attempts": 2,
+    "before_model_call_failures": 2,
+    "actual_provider_requests": 0,
+    "qualified_repair_actors": 0,
+    "scope_corrections_observed": null,
+    "qualified_scope_corrections": 0
+  },
+  "rows": [
+    {
+      "attempt_id": "pr20-observed-scope-original-r1",
+      "arm_id": "original",
+      "status": "infrastructure_or_artifact_error",
+      "error_class": "FileExistsError",
+      "failed_target": ".protocol",
+      "authentic_pre_mount_source_sha256": "6d1fb324622cea73a8ee315be8ca9127ab7a39ab35ead33e4e8bf89934323a26"
+    },
+    {
+      "attempt_id": "pr20-observed-scope-revised-r1",
+      "arm_id": "revised",
+      "status": "infrastructure_or_artifact_error",
+      "error_class": "FileExistsError",
+      "failed_target": ".protocol",
+      "authentic_pre_mount_source_sha256": "6d1fb324622cea73a8ee315be8ca9127ab7a39ab35ead33e4e8bf89934323a26"
+    }
+  ],
+  "required_reassessment": "A separately sealed prospective amendment must retain this failed study and add distinct infrastructure attempts. Before new activation, actually exercise authentic copy\u2192assigned mount\u2192before capture and full readonly source/envelope reconstruction for both arms. Two planned actual scope-repair model calls remain unexecuted; no added primary success counts.",
+  "source_and_old_receipts_preserved": true,
+  "hosted_calls_by_reviewer": 0
+}

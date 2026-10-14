@@ -1,0 +1,44 @@
+{
+  "frozen_at_utc": "2026-10-12T15:56:46.158086+00:00",
+  "zero_hybrid_solver_outcomes": true,
+  "protocol_sha256": "ca5609e66806c51b73d139fc2ebe3fb5ed50a8caa52e479fa9a9ab7d7daa8c3b",
+  "manifest_sha256": "5e7d76f398d2b490bd106d813e7f6a5811488e98d09b0dec4dab6fd673593dbb",
+  "dynamic_prompt_rule": "Fixed queue templates plus same-trial visible stage receipts/transcripts; exact payload recorded at launch",
+  "trials": 48,
+  "file_hashes": {
+    "hybrid-protocol.json": "6ff9f445794b07910161442926f3ec871902ab2be6a90a81d53d80ebe40abf83",
+    "hybrid-manifest.json": "d975e71aaf733d7594c0455f8362cf80a5b5b6c1942797c7448e5df317824472",
+    "hybrid_runner.py": "2e560c9300d16adba435048f45383293aea6ace3b7749ae17a0aea6652657a8d",
+    "cross_backend.py": "a4c94f220d66be06c40c88fdbb65578d45ce61a46b07e11c607f3aab50281739",
+    "runner.py": "1f5e9ab2e5f0823a34c8f637ae08b4b3e7e1d1ac7bbbf5aab64ab79c95288fb8",
+    "grading_adapter.py": "bcec860d709ddbe3c3566fb7bcdc86805b4a3e5c69131167b7743c91cbb2a007",
+    "hybrid_grader.py": "28f49892a059f4cd628618a4aff0e347b55946bb14159a606629261184cd4932",
+    "hybrid_process.py": "c1f1da477c8d13e1824e604fc83a0e64483d52208cede728ac80439b88c11b96",
+    "requests.json": "1789c2d131f031704afc4a8000c868d542a4136e9964b12f4dde7bde53b69fb4",
+    "schedule.json": "e9f386420185a5f17f69fb2a80752c71b74dd8f67dd61787fd968cfe5e6eeb66",
+    "capabilities.json": "e7cd45f1a17f227cf4bde6ffde295bb9195a421dbfe4106c98311c577f61c744",
+    "inventory.json": "bd802223c3c6deddd10af47eaf18402ea8d445f34a95010f54043b49e0209956"
+  },
+  "controls": {
+    "benchmark_unit_controls": 64,
+    "independent_fixture_controls": 22,
+    "actual_process_controls": 9,
+    "independent_fixture_receipt_sha256": "4c165b7d8c9a85de27580f32e3d3583bca56a6fe533e5dff2b17c321a32703c8",
+    "fixture_provider_metadata": "synthetic; not model trials"
+  },
+  "actual_bridge_control": {
+    "requested_main_model": "gpt-6-astra",
+    "main_attribution": "requested_only",
+    "requested_peer_model": "claude-opus-5-5",
+    "main_declared_complete": true,
+    "main_receipt_sha256": "6b12d1a91d6bbfc7785c8d9a5f12b86997593be979334ed513bdbfd37b7f39b4",
+    "cohort_trial": false,
+    "guarded_toy_receipt_note": "provider receipt persisted before final cleanup metadata; callback/commands/source capture completed; final CLI now persists returned cleanup metadata"
+  },
+  "prior_build": {
+    "frozen_at_utc": "2026-10-12T15:53:37.150814+00:00",
+    "status": "unqualified before launch after cleanup metadata persistence/projection changes",
+    "cohort_outcomes": 0
+  },
+  "old_cohort_overlap": true
+}

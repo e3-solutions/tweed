@@ -1,0 +1,201 @@
+diff --git a/bonaparte b/bonaparte
+index 888b766..1de9467 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -452,6 +452,7 @@ def run_phase(
+         for role, description in child_configs.items()
+     }
+     expected_branch = None
++    canonical_branch = None
+     if resume_session_id:
+         replay_policy = (
+             "This clarification may be an at-least-once replay after an ambiguous "
+@@ -481,8 +482,9 @@ def run_phase(
+                 phase,
+                 values[1] if len(values) == 2 else None,
+             )
++            canonical_branch = handoff["issue"]["git_branch_name"]
+             if phase == "implement":
+-                expected_branch = handoff["issue"]["git_branch_name"]
++                expected_branch = canonical_branch
+             phase_input = json.dumps(handoff, ensure_ascii=False)
+             context_policy = (
+                 "\n\n# Context policy\n\n"
+@@ -557,6 +559,24 @@ def run_phase(
+     observer = EventObserver(_ACTIVE_PROGRESS)
+     driver = None
+     failed = True
++    receipt = None
++    session_id = None
++    terminal = None
++
++    def resolve_canonical_branch() -> str:
++        # Resumed and create phases carry no handoff; read the issue's own
++        # Linear branch rather than trusting the checkout or receipt branch.
++        if canonical_branch:
++            return canonical_branch
++        issue = receipt.get("issue") if isinstance(receipt, dict) else None
++        if not isinstance(issue, str) or not issue:
++            raise RuntimeError("canonical issue branch is unavailable")
++        linear_issue, _comments = call_linear(repository, issue)
++        branch = linear_issue.get("gitBranchName")
++        if not isinstance(branch, str) or not branch:
++            raise RuntimeError("canonical issue branch is unavailable")
++        return branch
++
+     try:
+         driver = AppServerPhaseDriver(repository, observer)
+         driver.request(
+@@ -708,11 +728,32 @@ def run_phase(
+         if observation is not None:
+             observation.update(observed)
+         if driver is not None:
++            retire_error = None
+             try:
+-                driver.close(failed=failed)
+-            except BaseException:
+-                if not failed:
+-                    raise
++                # Any observed terminal root turn is retired (including failed
++                # turns and unparsable receipts); only a needs-input receipt
++                # keeps the session resumable.
++                if (
++                    terminal is not None
++                    and session_id is not None
++                    and not (
++                        isinstance(receipt, dict)
++                        and receipt.get("state") == "needs-input"
++                    )
++                ):
++                    driver.retire_session(session_id, resolve_canonical_branch)
++            except BaseException as error:
++                retire_error = error
++            finally:
++                try:
++                    driver.close(failed=failed)
++                except BaseException:
++                    if not failed and retire_error is None:
++                        raise
++            if retire_error is not None and (
++                not failed or not isinstance(retire_error, Exception)
++            ):
++                raise retire_error
+ 
+     validate_schema(receipt, RECEIPT_SCHEMA)
+     if receipt["phase"] != phase:
+diff --git a/bonaparte_native.py b/bonaparte_native.py
+index e9a607c..903e11a 100644
+--- a/bonaparte_native.py
++++ b/bonaparte_native.py
+@@ -274,6 +274,8 @@ class AppServerPhaseDriver:
+         if method == "thread/started":
+             thread = params.get("thread")
+             if isinstance(thread, dict) and isinstance(thread.get("id"), str):
++                started = self.__dict__.setdefault("_started_threads", {})
++                started.setdefault(thread["id"], _spawn_parent(thread))
+                 self.observer.feed(
+                     json.dumps({"type": "thread.started", "thread_id": thread["id"]})
+                 )
+@@ -345,5 +347,102 @@ class AppServerPhaseDriver:
+     def last_agent_message(self) -> str | None:
+         return self._last_agent_message
+ 
++    def owned_descendants(self, root_id: str) -> list[str]:
++        """Started threads whose started-parent chain reaches a started root."""
++        started = self.__dict__.get("_started_threads", {})
++        if root_id not in started:
++            return []
++        owned = []
++        for thread_id in started:
++            if thread_id == root_id:
++                continue
++            seen = {thread_id}
++            parent = started[thread_id]
++            while parent is not None and parent != root_id:
++                if parent in seen or parent not in started:
++                    parent = None
++                    break
++                seen.add(parent)
++                parent = started[parent]
++            if parent == root_id:
++                owned.append(thread_id)
++        return owned
++
++    def retire_session(self, root_id: str, canonical_branch) -> None:
++        """Stamp started owned descendants, then archive the started root.
++
++        Every step is attempted; failures are raised together afterwards.
++        A root with no observed thread/started event is left untouched.
++        """
++        if root_id not in self.__dict__.get("_started_threads", {}):
++            return
++        errors = []
++        interrupt = None
++        branch = None
++        updated: set[str] = set()
++        try:
++            # Descendants whose thread/started arrives while cleanup requests
++            # are in flight are picked up until the root archive is sent.
++            while True:
++                pending = [
++                    thread_id
++                    for thread_id in self.owned_descendants(root_id)
++                    if thread_id not in updated
++                ]
++                if not pending:
++                    break
++                if branch is None:
++                    try:
++                        branch = canonical_branch()
++                        if not isinstance(branch, str) or not branch:
++                            raise RuntimeError("canonical issue branch is unavailable")
++                    except Exception as error:
++                        errors.append(f"descendant metadata skipped: {error}")
++                        break
++                for thread_id in pending:
++                    updated.add(thread_id)
++                    try:
++                        self.request(
++                            "thread/metadata/update",
++                            {"threadId": thread_id, "gitInfo": {"branch": branch}},
++                        )
++                    except Exception as error:
++                        errors.append(f"descendant {thread_id} metadata: {error}")
++        except BaseException as error:
++            interrupt = error
++        try:
++            self.request("thread/archive", {"threadId": root_id})
++        except Exception as error:
++            errors.append(f"root {root_id} archive: {error}")
++        except BaseException as error:
++            if interrupt is None:
++                interrupt = error
++        if interrupt is not None:
++            raise interrupt
++        if errors:
++            raise RuntimeError("native session cleanup failed: " + "; ".join(errors))
++
+     def close(self, *, failed: bool) -> None:
+         terminate_and_reap(self.process)
++
++
++def _spawn_parent(thread: dict) -> str | None:
++    """Return the spawning parent recorded on a native thread, if any."""
++    source = thread.get("source")
++    if isinstance(source, dict):
++        for key in ("subAgent", "subagent", "sub_agent"):
++            sub_agent = source.get(key)
++            if not isinstance(sub_agent, dict):
++                continue
++            for spawn_key in ("thread_spawn", "threadSpawn"):
++                spawn = sub_agent.get(spawn_key)
++                if isinstance(spawn, dict):
++                    for parent_key in ("parent_thread_id", "parentThreadId"):
++                        parent = spawn.get(parent_key)
++                        if isinstance(parent, str) and parent:
++                            return parent
++    for parent_key in ("parentThreadId", "parent_thread_id"):
++        parent = thread.get(parent_key)
++        if isinstance(parent, str) and parent:
++            return parent
++    return None

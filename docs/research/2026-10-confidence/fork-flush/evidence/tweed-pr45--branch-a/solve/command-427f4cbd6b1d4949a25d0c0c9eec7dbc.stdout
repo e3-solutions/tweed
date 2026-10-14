@@ -1,0 +1,81 @@
+307:    def test_run_records_failure_and_returns_child_status(self) -> None:
+308-        with tempfile.TemporaryDirectory() as name:
+309-            root = Path(name)
+310-            directory = root / ".confidence"
+311-            result = subprocess.run(
+312-                [
+313-                    sys.executable,
+314-                    str(SCRIPT),
+315-                    "run",
+316-                    "--id",
+317-                    "failed",
+318-                    "--directory",
+319-                    str(directory),
+320-                    "--",
+321-                    sys.executable,
+322-                    "-c",
+323-                    "raise SystemExit(7)",
+324-                ],
+325-                capture_output=True,
+326-                text=True,
+327-            )
+328-            self.assertEqual(result.returncode, 7)
+329-            record = json.loads((directory / "runs" / "failed.json").read_text())
+330-            self.assertEqual(record["exit_code"], 7)
+331-
+332-    def test_run_times_out_and_records_the_stop_reason(self) -> None:
+333-        with tempfile.TemporaryDirectory() as name:
+334-            directory = Path(name) / ".confidence"
+335-            result = subprocess.run(
+336-                [
+337-                    sys.executable,
+338-                    str(SCRIPT),
+339-                    "run",
+340-                    "--id",
+341-                    "timeout",
+342-                    "--directory",
+343-                    str(directory),
+344-                    "--timeout-seconds",
+345-                    "0.05",
+346-                    "--",
+347-                    sys.executable,
+2:import json
+26:        confidence.write_json(
+27:            directory / "runs" / f"{run_id}.json",
+87:        confidence.write_json(directory / "contract.json", contract)
+88:        confidence.write_json(directory / "report.json", report)
+101:            report = confidence.read_json(directory / "report.json")
+112:            report = confidence.read_json(directory / "report.json")
+125:            report = confidence.read_json(directory / "report.json")
+134:            report = confidence.read_json(directory / "report.json")
+154:            report = confidence.read_json(directory / "report.json")
+156:            confidence.write_json(directory / "report.json", report)
+180:            report = confidence.read_json(directory / "report.json")
+182:            confidence.write_json(directory / "report.json", report)
+190:            report = confidence.read_json(directory / "report.json")
+192:            confidence.write_json(directory / "report.json", report)
+254:            report = confidence.read_json(directory / "report.json")
+256:            confidence.write_json(directory / "report.json", report)
+298:            record = json.loads(
+299:                (directory / "runs" / "captured.json").read_text()
+329:            record = json.loads((directory / "runs" / "failed.json").read_text())
+355:            record = json.loads((directory / "runs" / "timeout.json").read_text())
+382:            record = json.loads((directory / "runs" / "large-log.json").read_text())
+414:            record = json.loads(
+415:                (directory / "runs" / "background-child.json").read_text()
+444:            self.assertFalse((root / "escape.json").exists())
+498:            path = Path(name) / "record.json"
+501:                confidence.write_json_exclusive_atomic(path, {"replacement": True})
+510:            report = confidence.read_json(directory / "report.json")
+513:            confidence.write_json(directory / "report.json", report)
+522:            report = confidence.read_json(directory / "report.json")
+524:            confidence.write_json(directory / "report.json", report)
+532:            report = confidence.read_json(directory / "report.json")
+534:            confidence.write_json(directory / "report.json", report)
+542:            record_path = directory / "runs" / "tests.json"
+543:            record = confidence.read_json(record_path)
+545:            confidence.write_json(record_path, record)
+569:            self.assertFalse((directory / "runs" / "missing-command.json").exists())
+592:            self.assertTrue((directory / "runs" / "portable.json").exists())
+598:            contract = confidence.read_json(directory / "contract.json")
+599:            report = confidence.read_json(directory / "report.json")

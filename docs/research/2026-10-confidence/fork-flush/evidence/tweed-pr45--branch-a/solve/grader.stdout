@@ -1,0 +1,26 @@
+{"task_id": "tweed-pr45", "exit_code": 0, "passed": true, "oracle_passed": true, "required_behavior_passed": true, "negative_boundaries_passed": true, "baseline_passed": true, "baseline_receipts": [{"argv": ["python3", "-B", "-m", "unittest", "discover", "-s", "skills/confidence-protocol/tests", "-p", "test_confidence.py", "-k", "test_run_records_failure_and_returns_child_status"], "exit_code": 0, "timed_out": false, "stdout": "", "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.141s\n\nOK\n", "wall_seconds": 0.22555104200000642, "process_cleanup_scope": "original_process_group", "detached_descendants_contained": false}], "scope_violations": [], "source_current": true, "setup_status": "verified", "failed_requirements": [], "source_before_sha256": "25dc5aff6e3ec551ee46db5172d61c906c05678b7f5fb60e0b14f573c1bf9aeb", "source_after_sha256": "25dc5aff6e3ec551ee46db5172d61c906c05678b7f5fb60e0b14f573c1bf9aeb", "output_sha256": "4bd0fb913cddecd304e613ff18a294e1a1eb5749af18719fae50e8813d718698"}
+{"failed": [], "skipped": 0, "run": 3}
+test_positive_compact_capture_and_default_output (tests.test_fork_owner.Owner.test_positive_compact_capture_and_default_output) ... warning: unable to access '/etc/gitattributes': Operation not permitted
+warning: unable to access '/etc/gitattributes': Operation not permitted
+warning: unable to access '/etc/gitattributes': Operation not permitted
+warning: unable to access '/etc/gitattributes': Operation not permitted
+ok
+test_negative_failed_child_stays_failed (tests.test_fork_owner.Owner.test_negative_failed_child_stays_failed) ... warning: unable to access '/etc/gitattributes': Operation not permitted
+warning: unable to access '/etc/gitattributes': Operation not permitted
+ok
+test_negative_mutated_source_is_not_unchanged (tests.test_fork_owner.Owner.test_negative_mutated_source_is_not_unchanged) ... warning: unable to access '/etc/gitattributes': Operation not permitted
+warning: unable to access '/etc/gitattributes': Operation not permitted
+ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 1.018s
+
+OK
+
+Focused baseline: ["python3", "-B", "-m", "unittest", "discover", "-s", "skills/confidence-protocol/tests", "-p", "test_confidence.py", "-k", "test_run_records_failure_and_returns_child_status"]
+.
+----------------------------------------------------------------------
+Ran 1 test in 0.141s
+
+OK
+

@@ -1,0 +1,45 @@
+{
+  "role": "solve",
+  "status": "completed",
+  "provider_request_mtime_at_export": 1791940499.3289752,
+  "provider_interval_end_estimate": 1791940649.474427,
+  "timing_basis": "Current retained request-file mtime plus recorded stage wall_seconds; metadata, not a content-hash-certified creation timestamp",
+  "observed_models": [
+    "claude-opus-5-5"
+  ],
+  "session_id": "e0b1958f-5ac5-41b8-9cbf-5501d477732b",
+  "stage_qualified": false,
+  "qualification_failures": [
+    "stage_did_not_finish",
+    "terminal_missing_or_invalid"
+  ],
+  "software_complete": true,
+  "evidence_current": true,
+  "declared_completion": null,
+  "required_behavior_passed": true,
+  "negative_boundaries_passed": true,
+  "baseline_passed": true,
+  "scope_violations": [],
+  "scope_source_facts": [],
+  "failed_requirements": [],
+  "evaluation_qualified": true,
+  "timed_out": true,
+  "wall_seconds": 150.14545187500335,
+  "mcp_request_count": 22,
+  "invalid_stream_or_tool_ids": 0,
+  "reported_usage": null,
+  "reported_model_usage": {},
+  "reported_cost_usd": null,
+  "before_source_sha256": "04dea40313e7c4dd72d8d9474b2f1ea6613e7d7070db3b8e8a37ae939ca802fa",
+  "after_source_sha256": "21496aa35a1253107eafd70144d63cd77062aec69141db654d133e491aef2fbb",
+  "production_patch_sha256": "8822a8c28f16cdce886ac1e2cbd812ca0db66ad78b41b0c6aa41f670c0d9f34c",
+  "production_patch_changed": true,
+  "declared_primary_production_paths_changed": [
+    "skills/confidence-protocol/scripts/confidence.py"
+  ],
+  "new_root_helpers": [],
+  "receipt_sha256": "e1bcb83d4578288b76a13274356a3748238de4323336ddcccbf02052b5b50b80",
+  "stream_sha256": "b4520978e18f49f37c080784fdaedcb40f260587cbacdc2615036c20593fcb8c",
+  "request_file_sha256": "c2a73a583b77385070a94e1d16a53d9a8c448eed527e8aa18981e18f1f233b2e",
+  "evaluation_receipt_sha256": "1017c5a758b6b7f291e6d8198db273b0a68a7dd3fecef90431d3a55a7d3d1380"
+}

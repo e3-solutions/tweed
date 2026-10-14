@@ -1,0 +1,45 @@
+{
+  "role": "repair",
+  "status": "completed",
+  "provider_request_mtime_at_export": 1791940906.1593025,
+  "provider_interval_end_estimate": 1791940996.2784169,
+  "timing_basis": "Current retained request-file mtime plus recorded stage wall_seconds; metadata, not a content-hash-certified creation timestamp",
+  "observed_models": [
+    "claude-opus-5-5"
+  ],
+  "session_id": "41c19fb1-0aa0-426b-aca5-2d4e05438050",
+  "stage_qualified": false,
+  "qualification_failures": [
+    "stage_did_not_finish",
+    "terminal_missing_or_invalid"
+  ],
+  "software_complete": true,
+  "evidence_current": true,
+  "declared_completion": null,
+  "required_behavior_passed": true,
+  "negative_boundaries_passed": true,
+  "baseline_passed": true,
+  "scope_violations": [],
+  "scope_source_facts": [],
+  "failed_requirements": [],
+  "evaluation_qualified": true,
+  "timed_out": true,
+  "wall_seconds": 90.11911441700067,
+  "mcp_request_count": 15,
+  "invalid_stream_or_tool_ids": 0,
+  "reported_usage": null,
+  "reported_model_usage": {},
+  "reported_cost_usd": null,
+  "before_source_sha256": "f1c7b424438ae0e107063a6fd83e117304a64111ef576bd8b27ac52be49e545f",
+  "after_source_sha256": "43ed64ec72025954a1fff7ea6544d3487f023bb588e6e04d25c55e1dfc7a1ed3",
+  "production_patch_sha256": "8412ae7bdcb229bb7be3f4f2cff0d10e39462e4083177e24e39586e8fa4d9b56",
+  "production_patch_changed": true,
+  "declared_primary_production_paths_changed": [],
+  "new_root_helpers": [
+    "check_run_receipt.py"
+  ],
+  "receipt_sha256": "6255834155664f9abfe728f5d53cff16614292c2645d7c36c8956234dccd9a92",
+  "stream_sha256": "ea9dfa987a94bda52cfea23e3c49c4e30e3ed9df6d519eafa7934668ba1222a6",
+  "request_file_sha256": "8ef28dcf0dbb02d6cc4a0988a2ba46c4da7c0774a103a15c31ea1f3784a64b52",
+  "evaluation_receipt_sha256": "2ad60b542bc6fc2b876f34af2818a85eff54bed73f9e450c4ff01ef1877fbb41"
+}

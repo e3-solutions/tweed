@@ -1,0 +1,23 @@
+{
+  "tasks": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/TASKS.json",
+  "common_protocol": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/policies/incumbent",
+  "evaluator": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/evaluate.py",
+  "task_ids": [
+    "tweed-pr26",
+    "tweed-pr45"
+  ],
+  "arms": [
+    {
+      "id": "incumbent",
+      "skill_file": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/policies/incumbent/SKILL.md"
+    },
+    {
+      "id": "branch-a",
+      "skill_file": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/policies/branch-a/SKILL.md"
+    },
+    {
+      "id": "branch-b",
+      "skill_file": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/policies/branch-b/SKILL.md"
+    }
+  ]
+}

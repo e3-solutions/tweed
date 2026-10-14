@@ -1,0 +1,79 @@
+{
+  "phase": "main",
+  "status": "settled",
+  "source_receipt_sha256": "0e9a04e03427bffacd8d6341dbb01678a3d324dd2dfbb8bfe85253226d9f1694",
+  "observed_models": [
+    "claude-opus-5-5"
+  ],
+  "session_ids": [
+    "eff471bd-8aa8-44dc-b2c0-3b4bb94fb091"
+  ],
+  "typed_terminal_observed": true,
+  "terminal_count": 1,
+  "actual_unique_tool_requests": 12,
+  "actual_unique_mcp_requests": 11,
+  "tools_by_name": {
+    "mcp__cp_trial__read_file": 3,
+    "mcp__cp_trial__list_files": 1,
+    "mcp__cp_trial__run_tests": 6,
+    "mcp__cp_trial__write_file": 1,
+    "StructuredOutput": 1
+  },
+  "invalid_stream_or_ids": [],
+  "provider_delivery_qualified_recorded": null,
+  "timed_out": false,
+  "wall_seconds": 71.62981395899988,
+  "reported_cost_usd": 0.5896434,
+  "reported_usage": {
+    "input_tokens": 18,
+    "cache_creation_input_tokens": 51117,
+    "cache_read_input_tokens": 199977,
+    "output_tokens": 7032,
+    "output_tokens_details": {
+      "thinking_tokens": 2928
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 51117,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 877,
+        "cache_read_input_tokens": 46611,
+        "cache_creation_input_tokens": 5544,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 5544
+        },
+        "type": "message"
+      }
+    ],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "reported_model_usage": {
+    "claude-opus-5-5": {
+      "inputTokens": 18,
+      "outputTokens": 7032,
+      "cacheReadInputTokens": 199977,
+      "cacheCreationInputTokens": 51117,
+      "webSearchRequests": 0,
+      "costUSD": 0.5896434,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 2928,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "source_authorship": null,
+  "model_thinking_exported": false
+}

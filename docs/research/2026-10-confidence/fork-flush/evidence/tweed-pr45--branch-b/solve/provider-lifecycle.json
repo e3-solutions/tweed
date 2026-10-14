@@ -1,0 +1,168 @@
+{
+  "process_exit": 0,
+  "timed_out": false,
+  "wall_seconds": 145.5355274579997,
+  "process_cleanup_scope": "original_process_group",
+  "detached_descendants_contained": false,
+  "guarded_new_session_processes": 1,
+  "process_cleanup_seconds": 2.666700311237946e-05,
+  "stream_changed_during_cleanup": false,
+  "requested_effort": "high",
+  "observed_assistant_models": [
+    "claude-opus-5-5"
+  ],
+  "usage": {
+    "input_tokens": 30,
+    "cache_creation_input_tokens": 63940,
+    "cache_read_input_tokens": 544346,
+    "output_tokens": 9873,
+    "output_tokens_details": {
+      "thinking_tokens": 2534
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 63940,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 1457,
+        "cache_read_input_tokens": 62639,
+        "cache_creation_input_tokens": 2669,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 2669
+        },
+        "type": "message"
+      }
+    ],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 30,
+      "outputTokens": 9873,
+      "cacheReadInputTokens": 544346,
+      "cacheCreationInputTokens": 63940,
+      "webSearchRequests": 0,
+      "costUSD": 0.8179691999999998,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 2534,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "total_cost_usd": 0.8179691999999998,
+  "terminal": {
+    "duration_api_ms": 94005,
+    "stop_reason": "tool_use",
+    "session_id": "d78f0af8-ad19-4506-a09b-6da96db2dcf3",
+    "total_cost_usd": 0.8179691999999998,
+    "usage": {
+      "input_tokens": 30,
+      "cache_creation_input_tokens": 63940,
+      "cache_read_input_tokens": 544346,
+      "output_tokens": 9873,
+      "output_tokens_details": {
+        "thinking_tokens": 2534
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 63940,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "global",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 1457,
+          "cache_read_input_tokens": 62639,
+          "cache_creation_input_tokens": 2669,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 2669
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard",
+      "fallback_credit": null
+    },
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 30,
+        "outputTokens": 9873,
+        "cacheReadInputTokens": 544346,
+        "cacheCreationInputTokens": 63940,
+        "webSearchRequests": 0,
+        "costUSD": 0.8179691999999998,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 2534,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "permission_denials": [],
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "fast_mode_disabled_reason": "sdk_opt_in_required",
+    "subagent_stats": {
+      "spawned": 0,
+      "requested": {
+        "background": 0,
+        "foreground": 0,
+        "unset": 0
+      },
+      "started_in_background": 0,
+      "max_depth": 0,
+      "spawned_by_subagents": 0,
+      "completed": 0,
+      "failed": 0,
+      "killed": {
+        "parent": 0,
+        "user": 0,
+        "system": 0
+      },
+      "refused": {
+        "depth_limit": 0,
+        "concurrency_limit": 0,
+        "budget": 0
+      },
+      "by_type": {}
+    },
+    "is_error": false,
+    "num_turns": 22,
+    "subtype": "success",
+    "api_error_status": null,
+    "result": "{\"complete\":true,\"summary\":\"`run --json` now works: it prints a compact JSON receipt instead of replaying the captured output. The required visible check passes. The full suite ran 60 tests: all `test_confidence.py` and new receipt tests passed, and the 5 failures are all diagnostics tests not caused by this change.\\n\\n**Change** (`skills/confidence-protocol/scripts/confidence.py`):\\n- Added the `--json` flag to `run`.\\n- The runner now fingerprints the workspace before the child starts and saves that as `workspace_start` in the run record. The existing end-of-run fingerprint stays in `workspace`, so current stale-workspace validation is unchanged.\\n- With `--json`, the captured log is still fully read and its SHA256 recorded; it just isn't replayed. After the record is published, one line of JSON is printed: `id`, `exit_code` (signed child status), `termination_reason`, `record` (`runs/<id>.json`) and `log` (`runs/<id>.log`). Both paths are relative to the evidence directory. It also includes `workspace_binding`.\\n- `workspace_binding` is `unknown` if either fingerprint is missing (e.g. not a Git repo), `unchanged` only if the root and hash are the same before and after, and `changed` otherwise. So a source mutation can never show as `unchanged`.\\n- Without `--json`, output replay and the CLI exit code are unchanged. A signal exit is still stored as a negative number in the record and receipt, and the CLI returns 128+N.\\n\\n**Proof map:**\\n- **R1 \u2013 compact receipt:** passed. The receipt is under 1 KB, has the right fields, and its paths match the record.\\n- **R2 \u2013 full binary output and hash:** passed. A 128 KiB+ output with `\\\\xff\\\\x00` bytes was stored byte-for-byte and its SHA256 matches.\\n- **R3 \u2013 default replay unchanged:** passed (`test_run_captures_success_and_returns_child_status` and the new default-replay test).\\n- **R4 \u2013 failure status kept:** passed. Exit 7, child exit 125, SIGTERM (-15 in receipt/record, 143 from the CLI), timeout 124 with its reason, and a failed launch (125, no stdout, no record) all behave correctly. The visible check `test_run_records_failure_and_returns_child_status` passes.\\n- **R5 \u2013 mutation shows `changed`:** passed, including a mutation combined with a failing exit (3). A non-Git directory shows `unknown`.\\n\\nThese were checked by a new test file, `skills/confidence-protocol/tests/test_run_receipt.py`, adapted from `.protocol/tests/test_run_receipt.py`. I dropped its `version == 2` assertion because version-2 records belong to an excluded part of PR45.\\n\\n**About the 5 diagnostics failures:** the sandbox sets `CONFIDENCE_DISABLE_DIAGNOSTICS=1`, which turns off telemetry. With that variable unset, only `test_doctor_reports_required_health_checks` fails, and it fails the same way on an untouched copy of HEAD (extracted with `git archive`) in this sandbox.\\n\\n**Excluded (outside the receipt slice by the task statement):** version-2 records and `capture_sha256`, `git-content-v1` binding, interruption and publication recovery, and doc/changelog edits.\\n\\n**Limits and rollback:**\\n- Validation still accepts a supporting run whose source changed during the run, as long as the tree matches its end state. The receipt and record now show that change but don't block it.\\n- The fingerprint doesn't cover ignored files or a change made and then undone during the run.\\n- To roll back, revert `confidence.py` and delete the new test file.\",\"remaining\":[]}",
+    "structured_output": {
+      "complete": true,
+      "summary": "`run --json` now works: it prints a compact JSON receipt instead of replaying the captured output. The required visible check passes. The full suite ran 60 tests: all `test_confidence.py` and new receipt tests passed, and the 5 failures are all diagnostics tests not caused by this change.\n\n**Change** (`skills/confidence-protocol/scripts/confidence.py`):\n- Added the `--json` flag to `run`.\n- The runner now fingerprints the workspace before the child starts and saves that as `workspace_start` in the run record. The existing end-of-run fingerprint stays in `workspace`, so current stale-workspace validation is unchanged.\n- With `--json`, the captured log is still fully read and its SHA256 recorded; it just isn't replayed. After the record is published, one line of JSON is printed: `id`, `exit_code` (signed child status), `termination_reason`, `record` (`runs/<id>.json`) and `log` (`runs/<id>.log`). Both paths are relative to the evidence directory. It also includes `workspace_binding`.\n- `workspace_binding` is `unknown` if either fingerprint is missing (e.g. not a Git repo), `unchanged` only if the root and hash are the same before and after, and `changed` otherwise. So a source mutation can never show as `unchanged`.\n- Without `--json`, output replay and the CLI exit code are unchanged. A signal exit is still stored as a negative number in the record and receipt, and the CLI returns 128+N.\n\n**Proof map:**\n- **R1 \u2013 compact receipt:** passed. The receipt is under 1 KB, has the right fields, and its paths match the record.\n- **R2 \u2013 full binary output and hash:** passed. A 128 KiB+ output with `\\xff\\x00` bytes was stored byte-for-byte and its SHA256 matches.\n- **R3 \u2013 default replay unchanged:** passed (`test_run_captures_success_and_returns_child_status` and the new default-replay test).\n- **R4 \u2013 failure status kept:** passed. Exit 7, child exit 125, SIGTERM (-15 in receipt/record, 143 from the CLI), timeout 124 with its reason, and a failed launch (125, no stdout, no record) all behave correctly. The visible check `test_run_records_failure_and_returns_child_status` passes.\n- **R5 \u2013 mutation shows `changed`:** passed, including a mutation combined with a failing exit (3). A non-Git directory shows `unknown`.\n\nThese were checked by a new test file, `skills/confidence-protocol/tests/test_run_receipt.py`, adapted from `.protocol/tests/test_run_receipt.py`. I dropped its `version == 2` assertion because version-2 records belong to an excluded part of PR45.\n\n**About the 5 diagnostics failures:** the sandbox sets `CONFIDENCE_DISABLE_DIAGNOSTICS=1`, which turns off telemetry. With that variable unset, only `test_doctor_reports_required_health_checks` fails, and it fails the same way on an untouched copy of HEAD (extracted with `git archive`) in this sandbox.\n\n**Excluded (outside the receipt slice by the task statement):** version-2 records and `capture_sha256`, `git-content-v1` binding, interruption and publication recovery, and doc/changelog edits.\n\n**Limits and rollback:**\n- Validation still accepts a supporting run whose source changed during the run, as long as the tree matches its end state. The receipt and record now show that change but don't block it.\n- The fingerprint doesn't cover ignored files or a change made and then undone during the run.\n- To roll back, revert `confidence.py` and delete the new test file.",
+      "remaining": []
+    },
+    "ttft_ms": 1412,
+    "type": "result",
+    "duration_ms": 144848,
+    "uuid": "b6be0238-df84-45a1-8a98-95f695393288",
+    "ttft_stream_ms": 1090,
+    "time_to_request_ms": 98,
+    "first_content_frame_ms": 1090,
+    "queued_turn_count": 0,
+    "result_index": 0
+  }
+}

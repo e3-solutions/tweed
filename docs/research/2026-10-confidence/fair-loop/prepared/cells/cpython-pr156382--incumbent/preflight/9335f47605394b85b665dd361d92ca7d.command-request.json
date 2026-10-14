@@ -1,0 +1,1 @@
+{"id": "9335f47605394b85b665dd361d92ca7d", "argv": ["/opt/homebrew/opt/python@3.14/bin/python3.14", "-I", "-S", "-B", "-c", "import hashlib,json,pathlib;lines=pathlib.Path('configparser.py').read_text().splitlines();print(json.dumps({\"line_count\":len(lines),\"tail_sha256\":hashlib.sha256(\"\\n\".join(lines[-3:]).encode()).hexdigest()}))"], "timeout": 8.0}

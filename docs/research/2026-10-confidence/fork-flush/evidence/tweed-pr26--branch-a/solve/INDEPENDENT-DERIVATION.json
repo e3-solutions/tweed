@@ -1,0 +1,61 @@
+{
+  "role": "solve",
+  "status": "completed",
+  "provider_request_mtime_at_export": 1791940232.6939406,
+  "provider_interval_end_estimate": 1791940382.7891414,
+  "timing_basis": "Current retained request-file mtime plus recorded stage wall_seconds; metadata, not a content-hash-certified creation timestamp",
+  "observed_models": [
+    "claude-opus-5-5"
+  ],
+  "session_id": "a8c7e19f-2bbb-4337-a0fa-c6e11e9969c8",
+  "stage_qualified": false,
+  "qualification_failures": [
+    "stage_did_not_finish",
+    "terminal_missing_or_invalid"
+  ],
+  "software_complete": false,
+  "evidence_current": true,
+  "declared_completion": null,
+  "required_behavior_passed": true,
+  "negative_boundaries_passed": true,
+  "baseline_passed": true,
+  "scope_violations": [
+    "tests/test_bonaparte.py"
+  ],
+  "scope_source_facts": [
+    {
+      "path": "tests/test_bonaparte.py",
+      "baseline_existed": true,
+      "candidate_existed": true,
+      "classification": "changed-existing-baseline"
+    }
+  ],
+  "failed_requirements": [
+    {
+      "requirement": "scope",
+      "paths": [
+        "tests/test_bonaparte.py"
+      ]
+    }
+  ],
+  "evaluation_qualified": true,
+  "timed_out": true,
+  "wall_seconds": 150.09520079199865,
+  "mcp_request_count": 26,
+  "invalid_stream_or_tool_ids": 0,
+  "reported_usage": null,
+  "reported_model_usage": {},
+  "reported_cost_usd": null,
+  "before_source_sha256": "9fd110a82e5a641794ad855f3b31491b84061e5a2c35bc9b6bb141477aabace5",
+  "after_source_sha256": "000940c74e0ea7e67fd35942c47081d6f2537bfe95ba097286f9728b9b8cc855",
+  "production_patch_sha256": "830bb7965f5c1645159257c64628e8ecba2ab214d90931fdce6dc9871677e07b",
+  "production_patch_changed": true,
+  "declared_primary_production_paths_changed": [
+    "bonaparte"
+  ],
+  "new_root_helpers": [],
+  "receipt_sha256": "a7c8c707873e8b4b3a5fa331b9c806fe75d89f51077168984167958f96a8be14",
+  "stream_sha256": "c8b78dc1b7f23a0cdda619f25a9039899d6804b1e287ac4c5d631cf9543dd272",
+  "request_file_sha256": "eaaea748b7163b239b0943a96ea6cb2a4e3c672693460d223451d840d046b82c",
+  "evaluation_receipt_sha256": "e8d54d0b95c5d43490b55ed7831b55206dfc05200f793d5d8ccf64b0150662b3"
+}

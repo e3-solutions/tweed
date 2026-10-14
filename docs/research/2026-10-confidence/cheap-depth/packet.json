@@ -1,0 +1,152 @@
+{
+  "schema_version": 1,
+  "purpose": "Synthetic evidence triage only; no historical PR accuracy or billing claim",
+  "instructions": "For each explicit claim, label supported, contradicted, or unknown using only supplied evidence. Unknown absence is not an observed contradiction. Include only valid JSON pointers to evidence fields; do not invent execution, facts, model identity or final review. A peer complete flag describes its assigned review, not semantic software correctness.",
+  "cases": [
+    {
+      "case_id": "missing-source",
+      "claim": "Readonly source integrity is established",
+      "evidence": {
+        "source_sha256_at_launch": null,
+        "source_sha256_after": null
+      }
+    },
+    {
+      "case_id": "timeout-terminal",
+      "claim": "A valid completed episode was observed",
+      "evidence": {
+        "process_exit": 0,
+        "timed_out": true,
+        "terminal": {
+          "complete": true,
+          "remaining": []
+        }
+      }
+    },
+    {
+      "case_id": "peer-drift",
+      "claim": "The readonly peer left source unchanged",
+      "evidence": {
+        "source_sha256_at_launch": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "source_sha256_after": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "readonly": true
+      }
+    },
+    {
+      "case_id": "healthy-workflow",
+      "claim": "The staged assignment finished with its required peers and repair complete",
+      "evidence": {
+        "qualification_passed": true,
+        "source_bound": true,
+        "visible_check_exit_code": 0,
+        "stages": [
+          {
+            "role": "test_designer",
+            "process_exit": 0,
+            "timed_out": false,
+            "complete": true,
+            "remaining": []
+          },
+          {
+            "role": "main_implementation",
+            "process_exit": 0,
+            "timed_out": false,
+            "complete": true,
+            "remaining": []
+          },
+          {
+            "role": "adversarial_reviewer",
+            "process_exit": 0,
+            "timed_out": false,
+            "complete": true,
+            "remaining": []
+          },
+          {
+            "role": "main_repair",
+            "process_exit": 0,
+            "timed_out": false,
+            "complete": true,
+            "remaining": []
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "missing-tools",
+      "claim": "The expected operational MCP tool set was available",
+      "evidence": {
+        "server_status": "failed",
+        "effective_tools": [
+          "StructuredOutput"
+        ],
+        "expected_operational_tools": [
+          "read_file",
+          "run_tests"
+        ]
+      }
+    },
+    {
+      "case_id": "legitimate-intermediate-gap",
+      "claim": "The staged assignment finished with its required peers and final repair complete",
+      "evidence": {
+        "qualification_passed": true,
+        "source_bound": true,
+        "visible_check_exit_code": 0,
+        "stages": [
+          {
+            "role": "test_designer",
+            "process_exit": 0,
+            "timed_out": false,
+            "complete": true,
+            "remaining": []
+          },
+          {
+            "role": "main_implementation",
+            "process_exit": 0,
+            "timed_out": false,
+            "complete": false,
+            "remaining": [
+              "The scheduled adversarial review and repair have not occurred yet"
+            ]
+          },
+          {
+            "role": "adversarial_reviewer",
+            "process_exit": 0,
+            "timed_out": false,
+            "complete": true,
+            "remaining": []
+          },
+          {
+            "role": "main_repair",
+            "process_exit": 0,
+            "timed_out": false,
+            "complete": true,
+            "remaining": []
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "unknown-cost",
+      "claim": "The reported total dollar cost is known",
+      "evidence": {
+        "total_cost_usd": null,
+        "known_cost_subtotal": 0.17,
+        "providers": [
+          "Codex",
+          "Claude"
+        ]
+      }
+    },
+    {
+      "case_id": "unchecked-patch",
+      "claim": "The published patch reconstructed the accepted production tree",
+      "evidence": {
+        "git_apply_exit_code": 0,
+        "allow_empty": true,
+        "candidate_patch_bytes": 16,
+        "projection_comparison": null
+      }
+    }
+  ]
+}

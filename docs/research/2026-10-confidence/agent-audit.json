@@ -1,0 +1,578 @@
+{
+  "schema": 1,
+  "date": "2026-10-12",
+  "claude_code_version": "2.1.285",
+  "requested_researcher_model": "claude-opus-5-5",
+  "research_spawned": 40,
+  "testing_spawned": 26,
+  "testing_completed_reported": 25,
+  "scope_notes": [
+    "Runtime metadata is local evidence, not an authenticated provider attestation.",
+    "Parent permission_denials omits some child denials; audited child outcomes are in the reports.",
+    "Initial vendor/project panels had denied web tools and were replaced; their vendor recollections are not treated as verified research.",
+    "Projects testing first parent reported completed with seven of eight child completions; resumption recovered a partial worker, not a full suite-on-mutants result.",
+    "Two denied/help-only tester assignments were replaced by actual native agents with executed checks.",
+    "Haiku helper requests for web processing are disclosed; parent and configured substantive workers used Opus.",
+    "Resume session cost is cumulative and is not added again."
+  ],
+  "runs": [
+    {
+      "phase": "research",
+      "label": "models-initial",
+      "local_receipt": ".confidence/research/models-research.json",
+      "receipt_sha256": "002e70cb4e0f620ecadae11ba31887d005c39bb74ff28b0574656ff682f6e0e2",
+      "session_id": "02cfd6c2-0e33-42fd-9e65-7d8bfbbc8961",
+      "terminal_reason": "completed",
+      "is_error": false,
+      "subagent_stats": {
+        "spawned": 8,
+        "requested": {
+          "background": 0,
+          "foreground": 0,
+          "unset": 8
+        },
+        "started_in_background": 8,
+        "max_depth": 1,
+        "spawned_by_subagents": 0,
+        "completed": 8,
+        "failed": 0,
+        "killed": {
+          "parent": 0,
+          "user": 0,
+          "system": 0
+        },
+        "refused": {
+          "depth_limit": 0,
+          "concurrency_limit": 0,
+          "budget": 0
+        },
+        "by_type": {
+          "sol_researcher": 1,
+          "astra_researcher": 1,
+          "opus_researcher": 1,
+          "context_researcher": 1,
+          "permissions_researcher": 1,
+          "independence_researcher": 1,
+          "eval_researcher": 1,
+          "resume_researcher": 1
+        }
+      },
+      "models": [
+        {
+          "canonicalModel": "claude-opus-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        },
+        {
+          "canonicalModel": "claude-haiku-4-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      ],
+      "list_price_usage_estimate_usd": 7.132460600000002,
+      "parent_permission_denials": 0
+    },
+    {
+      "phase": "research",
+      "label": "models-grounded",
+      "local_receipt": ".confidence/research/models-grounded-research.json",
+      "receipt_sha256": "116c43aabf42e13f0a02d1e549ecc2a9e925f4f1e78f752b3ef9cc455bc131ab",
+      "session_id": "c9a05ecd-0aeb-4051-aa4f-6f4e1bb36088",
+      "terminal_reason": "completed",
+      "is_error": false,
+      "subagent_stats": {
+        "spawned": 8,
+        "requested": {
+          "background": 0,
+          "foreground": 0,
+          "unset": 8
+        },
+        "started_in_background": 8,
+        "max_depth": 1,
+        "spawned_by_subagents": 0,
+        "completed": 8,
+        "failed": 0,
+        "killed": {
+          "parent": 0,
+          "user": 0,
+          "system": 0
+        },
+        "refused": {
+          "depth_limit": 0,
+          "concurrency_limit": 0,
+          "budget": 0
+        },
+        "by_type": {
+          "sol_researcher": 1,
+          "astra_researcher": 1,
+          "opus_researcher": 1,
+          "context_researcher": 1,
+          "permissions_researcher": 1,
+          "independence_researcher": 1,
+          "eval_researcher": 1,
+          "resume_researcher": 1
+        }
+      },
+      "models": [
+        {
+          "canonicalModel": "claude-opus-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        },
+        {
+          "canonicalModel": "claude-haiku-4-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      ],
+      "list_price_usage_estimate_usd": 7.721538400000001,
+      "parent_permission_denials": 0
+    },
+    {
+      "phase": "research",
+      "label": "projects-initial",
+      "local_receipt": ".confidence/research/projects-research.json",
+      "receipt_sha256": "5b4295ece333164fb39234403e3f800deab6831790251d25843d6a6d384249f2",
+      "session_id": "d4221195-6b77-4054-a82a-c9ed5a76b3eb",
+      "terminal_reason": "completed",
+      "is_error": false,
+      "subagent_stats": {
+        "spawned": 8,
+        "requested": {
+          "background": 0,
+          "foreground": 0,
+          "unset": 8
+        },
+        "started_in_background": 8,
+        "max_depth": 1,
+        "spawned_by_subagents": 0,
+        "completed": 8,
+        "failed": 0,
+        "killed": {
+          "parent": 0,
+          "user": 0,
+          "system": 0
+        },
+        "refused": {
+          "depth_limit": 0,
+          "concurrency_limit": 0,
+          "budget": 0
+        },
+        "by_type": {
+          "codex_lifecycle": 1,
+          "codex_multiagent": 1,
+          "t3_architecture": 1,
+          "t3_adapters": 1,
+          "openhands": 1,
+          "aider": 1,
+          "langgraph": 1,
+          "inspect_swebench": 1
+        }
+      },
+      "models": [
+        {
+          "canonicalModel": "claude-opus-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      ],
+      "list_price_usage_estimate_usd": 1.9858419999999999,
+      "parent_permission_denials": 0
+    },
+    {
+      "phase": "research",
+      "label": "projects-grounded",
+      "local_receipt": ".confidence/research/projects-research-repair.json",
+      "receipt_sha256": "a2b01ae3f101727aa05e3de7921811e4843235c71bb20fbadb2259c4b1967dd5",
+      "session_id": "541d5709-b48c-4558-86cc-9a4e429aff77",
+      "terminal_reason": "completed",
+      "is_error": false,
+      "subagent_stats": {
+        "spawned": 8,
+        "requested": {
+          "background": 0,
+          "foreground": 0,
+          "unset": 8
+        },
+        "started_in_background": 8,
+        "max_depth": 1,
+        "spawned_by_subagents": 0,
+        "completed": 8,
+        "failed": 0,
+        "killed": {
+          "parent": 0,
+          "user": 0,
+          "system": 0
+        },
+        "refused": {
+          "depth_limit": 0,
+          "concurrency_limit": 0,
+          "budget": 0
+        },
+        "by_type": {
+          "codex_lifecycle": 1,
+          "codex_multiagent": 1,
+          "t3_architecture": 1,
+          "t3_adapters": 1,
+          "openhands": 1,
+          "aider": 1,
+          "langgraph": 1,
+          "inspect_swebench": 1
+        }
+      },
+      "models": [
+        {
+          "canonicalModel": "claude-opus-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        },
+        {
+          "canonicalModel": "claude-haiku-4-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      ],
+      "list_price_usage_estimate_usd": 10.168785599999994,
+      "parent_permission_denials": 0
+    },
+    {
+      "phase": "research",
+      "label": "protocol",
+      "local_receipt": ".confidence/research/protocol-research.json",
+      "receipt_sha256": "903a86a3fbce1a291ce57cee220b29ea72310fea74fedbf3bdb3f60037475b69",
+      "session_id": "6d23a5bd-c3e2-46ee-acb0-0ada31fb0d06",
+      "terminal_reason": "completed",
+      "is_error": false,
+      "subagent_stats": {
+        "spawned": 8,
+        "requested": {
+          "background": 0,
+          "foreground": 8,
+          "unset": 0
+        },
+        "started_in_background": 0,
+        "max_depth": 1,
+        "spawned_by_subagents": 0,
+        "completed": 8,
+        "failed": 0,
+        "killed": {
+          "parent": 0,
+          "user": 0,
+          "system": 0
+        },
+        "refused": {
+          "depth_limit": 0,
+          "concurrency_limit": 0,
+          "budget": 0
+        },
+        "by_type": {
+          "dependency_graph": 1,
+          "review_provenance": 1,
+          "bounded_progress": 1,
+          "evidence_freshness": 1,
+          "semantic_claims": 1,
+          "experiment_isolation": 1,
+          "schema_compatibility": 1,
+          "minimal_improvement": 1
+        }
+      },
+      "models": [
+        {
+          "canonicalModel": "claude-opus-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        },
+        {
+          "canonicalModel": "claude-haiku-4-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      ],
+      "list_price_usage_estimate_usd": 5.760328,
+      "parent_permission_denials": 0
+    },
+    {
+      "phase": "testing",
+      "label": "models",
+      "local_receipt": ".confidence/research/models-testing.json",
+      "receipt_sha256": "79957d2e930e9101537f52ebc458498aaa3264c13668eb98896da1ec9b109f97",
+      "session_id": "a06785c4-43af-4741-bd21-f1e9f38d34fd",
+      "terminal_reason": "completed",
+      "is_error": false,
+      "subagent_stats": {
+        "spawned": 8,
+        "requested": {
+          "background": 0,
+          "foreground": 0,
+          "unset": 8
+        },
+        "started_in_background": 8,
+        "max_depth": 1,
+        "spawned_by_subagents": 0,
+        "completed": 8,
+        "failed": 0,
+        "killed": {
+          "parent": 0,
+          "user": 0,
+          "system": 0
+        },
+        "refused": {
+          "depth_limit": 0,
+          "concurrency_limit": 0,
+          "budget": 0
+        },
+        "by_type": {
+          "schema_tester": 1,
+          "policy_tester": 1,
+          "coverage_tester": 1,
+          "identity_tester": 1,
+          "artifact_tester": 1,
+          "contract_tester": 1,
+          "freshness_tester": 1,
+          "migration_tester": 1
+        }
+      },
+      "models": [
+        {
+          "canonicalModel": "claude-opus-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      ],
+      "list_price_usage_estimate_usd": 4.5945066,
+      "parent_permission_denials": 0
+    },
+    {
+      "phase": "testing",
+      "label": "models-artifact-repair",
+      "local_receipt": ".confidence/research/models-artifact-repair.json",
+      "receipt_sha256": "032f08f26eb5dcd804001da0fe2dd43e7ea32ba952a068d960362491999b6dda",
+      "session_id": "16adec67-ef9d-4a7f-b3de-aef13ff2a175",
+      "terminal_reason": "completed",
+      "is_error": false,
+      "subagent_stats": {
+        "spawned": 1,
+        "requested": {
+          "background": 0,
+          "foreground": 1,
+          "unset": 0
+        },
+        "started_in_background": 0,
+        "max_depth": 1,
+        "spawned_by_subagents": 0,
+        "completed": 1,
+        "failed": 0,
+        "killed": {
+          "parent": 0,
+          "user": 0,
+          "system": 0
+        },
+        "refused": {
+          "depth_limit": 0,
+          "concurrency_limit": 0,
+          "budget": 0
+        },
+        "by_type": {
+          "artifact_repair_tester": 1
+        }
+      },
+      "models": [
+        {
+          "canonicalModel": "claude-opus-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      ],
+      "list_price_usage_estimate_usd": 0.19701000000000002,
+      "parent_permission_denials": 0
+    },
+    {
+      "phase": "testing",
+      "label": "protocol",
+      "local_receipt": ".confidence/research/protocol-testing.json",
+      "receipt_sha256": "76e648c34e7113c9d86b45bcb382cd34891e5a2e6ab6f9fcb5947ed1a6359547",
+      "session_id": "c348e44d-fa5a-430b-b6b9-ee902ad7cf01",
+      "terminal_reason": "completed",
+      "is_error": false,
+      "subagent_stats": {
+        "spawned": 8,
+        "requested": {
+          "background": 0,
+          "foreground": 0,
+          "unset": 8
+        },
+        "started_in_background": 8,
+        "max_depth": 1,
+        "spawned_by_subagents": 0,
+        "completed": 8,
+        "failed": 0,
+        "killed": {
+          "parent": 0,
+          "user": 0,
+          "system": 0
+        },
+        "refused": {
+          "depth_limit": 0,
+          "concurrency_limit": 0,
+          "budget": 0
+        },
+        "by_type": {
+          "graph_validation": 1,
+          "chain_scalability": 1,
+          "frontier_determinism": 1,
+          "stale_references": 1,
+          "readonly_failures": 1,
+          "record_dependencies": 1,
+          "proof_demotion": 1,
+          "malformed_documents": 1
+        }
+      },
+      "models": [
+        {
+          "canonicalModel": "claude-opus-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      ],
+      "list_price_usage_estimate_usd": 5.026868,
+      "parent_permission_denials": 0
+    },
+    {
+      "phase": "testing",
+      "label": "projects",
+      "local_receipt": ".confidence/research/projects-testing.json",
+      "receipt_sha256": "8ff8198487afe3bc3c95e65a677e5b77618bc1ca189216e4ac7877080ef79c98",
+      "session_id": "00bb342c-2783-4026-aadd-a14d20f9e666",
+      "terminal_reason": "completed",
+      "is_error": false,
+      "subagent_stats": {
+        "spawned": 8,
+        "requested": {
+          "background": 0,
+          "foreground": 0,
+          "unset": 8
+        },
+        "started_in_background": 8,
+        "max_depth": 1,
+        "spawned_by_subagents": 0,
+        "completed": 7,
+        "failed": 0,
+        "killed": {
+          "parent": 0,
+          "user": 0,
+          "system": 0
+        },
+        "refused": {
+          "depth_limit": 0,
+          "concurrency_limit": 0,
+          "budget": 0
+        },
+        "by_type": {
+          "cli_graph": 1,
+          "copied_scope": 1,
+          "compaction_replay": 1,
+          "malicious_verification": 1,
+          "subprocess_terminal": 1,
+          "compatibility_archive": 1,
+          "mutation_bypass": 1,
+          "holdout_adaptation": 1
+        }
+      },
+      "models": [
+        {
+          "canonicalModel": "claude-opus-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      ],
+      "list_price_usage_estimate_usd": 9.456410200000002,
+      "parent_permission_denials": 0
+    },
+    {
+      "phase": "testing-resume",
+      "label": "projects-resume",
+      "local_receipt": ".confidence/research/projects-testing-resumed.json",
+      "receipt_sha256": "f2aaf33150560ecc36b23b939dee55211be7409ba673cfe5c70b45786f05e065",
+      "session_id": "00bb342c-2783-4026-aadd-a14d20f9e666",
+      "terminal_reason": "completed",
+      "is_error": false,
+      "subagent_stats": {
+        "spawned": 0,
+        "requested": {
+          "background": 0,
+          "foreground": 0,
+          "unset": 0
+        },
+        "started_in_background": 0,
+        "max_depth": 0,
+        "spawned_by_subagents": 0,
+        "completed": 0,
+        "failed": 0,
+        "killed": {
+          "parent": 0,
+          "user": 0,
+          "system": 0
+        },
+        "refused": {
+          "depth_limit": 0,
+          "concurrency_limit": 0,
+          "budget": 0
+        },
+        "by_type": {}
+      },
+      "models": [
+        {
+          "canonicalModel": "claude-opus-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      ],
+      "list_price_usage_estimate_usd": 9.972046200000003,
+      "parent_permission_denials": 0
+    },
+    {
+      "phase": "testing",
+      "label": "projects-malicious-repair",
+      "local_receipt": ".confidence/research/projects-testing-repair.json",
+      "receipt_sha256": "fb19163219fc236e594031c86d857f1dbfeed10cbf79ed0510100f6ebc3844cd",
+      "session_id": "51664795-74c0-41ab-ac88-0027debb9225",
+      "terminal_reason": "completed",
+      "is_error": false,
+      "subagent_stats": {
+        "spawned": 1,
+        "requested": {
+          "background": 0,
+          "foreground": 1,
+          "unset": 0
+        },
+        "started_in_background": 0,
+        "max_depth": 1,
+        "spawned_by_subagents": 0,
+        "completed": 1,
+        "failed": 0,
+        "killed": {
+          "parent": 0,
+          "user": 0,
+          "system": 0
+        },
+        "refused": {
+          "depth_limit": 0,
+          "concurrency_limit": 0,
+          "budget": 0
+        },
+        "by_type": {
+          "malicious_verification_repair": 1
+        }
+      },
+      "models": [
+        {
+          "canonicalModel": "claude-opus-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      ],
+      "list_price_usage_estimate_usd": 0.9319018,
+      "parent_permission_denials": 1
+    }
+  ]
+}

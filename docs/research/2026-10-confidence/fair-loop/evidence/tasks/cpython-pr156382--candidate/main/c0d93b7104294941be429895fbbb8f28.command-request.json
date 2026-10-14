@@ -1,0 +1,1 @@
+{"id": "c0d93b7104294941be429895fbbb8f28", "argv": ["/opt/homebrew/opt/python@3.14/bin/python3.14", "-B", "-c", "import re\nsrc=open('configparser.py').read().splitlines()\nfor i,l in enumerate(src,1):\n  if re.search(r'_OPT_TMPL|_OPT_NV_TMPL|delimiters|_optcre|def _read|def _handle|_strip|_Line|class _', l): print(i,l)"], "timeout": 90.0}

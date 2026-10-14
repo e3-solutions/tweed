@@ -1,0 +1,1089 @@
+{
+  "private_stream_sha256": "f636d9e82e8837d1708369df23fc4e0321c483571fc794dd722dc6a2705d1415",
+  "filter": "Typed init/assistant metadata/tool operations/results/terminal facts; no thinking/signatures/narrative. Research result bodies hash-bound only.",
+  "events": [
+    {
+      "type": "system",
+      "subtype": "init",
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "model": "claude-opus-5-5",
+      "tools": [
+        "StructuredOutput",
+        "mcp__cp_trial__list_files",
+        "mcp__cp_trial__read_file",
+        "mcp__cp_trial__replace_text",
+        "mcp__cp_trial__run_tests",
+        "mcp__cp_trial__write_file"
+      ],
+      "mcp_servers": [
+        {
+          "name": "cp_trial",
+          "status": "connected",
+          "source": "dynamic"
+        }
+      ],
+      "permissionMode": "dontAsk",
+      "claude_code_version": "2.1.285",
+      "uuid": "26ce788b-0b07-4143-aaca-eb8bb37dc06e"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1NTxvmbNxF4444k9aos",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 5360,
+          "cache_read_input_tokens": 1166,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 5360
+          },
+          "output_tokens": 3,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": []
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "0b3c0200-d390-4dbe-ac02-9347d53cdf64"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1NTxvmbNxF4444k9aos",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 5360,
+          "cache_read_input_tokens": 1166,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 5360
+          },
+          "output_tokens": 3,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_01LEhNenccpBQjAQXCBCDbmb",
+            "name": "mcp__cp_trial__read_file",
+            "input": {
+              "path": "runtime/controller.py"
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ]
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "0be5a23f-5599-4fb6-9617-98b12f0ac584"
+    },
+    {
+      "type": "user",
+      "message": {
+        "role": "user",
+        "content": [
+          {
+            "tool_use_id": "toolu_01LEhNenccpBQjAQXCBCDbmb",
+            "type": "tool_result",
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"path\": \"runtime/controller.py\", \"content\": \"\\\"\\\"\\\"Lean task-trial controller: seal, serial provider admission, owned-group\\nreap, sandbox composition, single conditional continuation. Taskblind.\\\"\\\"\\\"\\nimport fcntl, hashlib, json, os, signal, subprocess, sys, time\\n\\nTASK_FIELDS = (\\\"task_id\\\", \\\"prompt\\\", \\\"requirements\\\", \\\"base_snapshot\\\", \\\"source_directory\\\",\\n               \\\"production_paths\\\", \\\"visible_commands\\\", \\\"source_sha256\\\", \\\"interpreter\\\",\\n               \\\"runtime_read_paths\\\", \\\"forbidden_runtime_read_paths\\\")\\nTOOLS = [\\\"mcp__cp_trial__list_files\\\", \\\"mcp__cp_trial__read_file\\\", \\\"mcp__cp_trial__write_file\\\",\\n         \\\"mcp__cp_trial__replace_text\\\", \\\"mcp__cp_trial__run_tests\\\"]\\nMAIN = {\\\"model\\\": \\\"claude-opus-5-5\\\", \\\"effort\\\": \\\"high\\\", \\\"seconds\\\": 300, \\\"usd\\\": 3.0}\\nCONT = {\\\"model\\\": \\\"claude-opus-5-5\\\", \\\"effort\\\": \\\"high\\\", \\\"seconds\\\": 180, \\\"usd\\\": 2.0}\\n\\n\\ndef digest(value):\\n    return hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()\\n\\n\\ndef write(path, value):\\n    os.makedirs(os.path.dirname(path) or \\\".\\\", exist_ok=True)\\n    tmp = f\\\"{path}.{os.getpid()}.tmp\\\"\\n    with open(tmp, \\\"w\\\") as h:\\n        json.dump(value, h, indent=2, sort_keys=True); h.flush(); os.fsync(h.fileno())\\n    os.replace(tmp, path)\\n\\n\\ndef read(path, default=None):\\n    try:\\n        with open(path) as h: return json.load(h)\\n    except FileNotFoundError: return default\\n\\n\\ndef inventory(root, scratch=(\\\".git\\\", \\\"__pycache__\\\", \\\".pytest_cache\\\")):\\n    out = {}\\n    for base, dirs, files in os.walk(root):\\n        dirs[:] = sorted(d for d in dirs if d not in scratch)\\n        for f in sorted(files):\\n            p = os.path.join(base, f); rel = os.path.relpath(p, root)\\n            if os.path.islink(p): out[rel] = {\\\"symlink\\\": os.readlink(p)}; continue\\n            with open(p, \\\"rb\\\") as h: out[rel] = hashlib.sha256(h.read()).hexdigest()\\n    return out\\n\\n\\n# ---- immutable inputs seal (separate from per-run outputs) ----\\ndef seal_inputs(study, task, policy_root):\\n    missing = [k for k in TASK_FIELDS if k not in task]\\n    if missing: raise ValueError(f\\\"task missing fields {missing}\\\")\\n    seal = {\\\"task\\\": digest({k: task[k] for k in TASK_FIELDS}), \\\"policy\\\": inventory(policy_root)}\\n    path = os.path.join(study, \\\"inputs\\\", \\\"SEAL.json\\\")\\n    if read(path) is None: write(path, seal)\\n    elif read(path) != seal: raise RuntimeError(\\\"input seal changed\\\")\\n    return seal\\n\\n\\ndef check_seal(study, task, policy_root):\\n    sealed = read(os.path.join(study, \\\"inputs\\\", \\\"SEAL.json\\\"))\\n    now = {\\\"task\\\": digest({k: task[k] for k in TASK_FIELDS}), \\\"policy\\\": inventory(policy_root)}\\n    if sealed != now: raise RuntimeError(\\\"seal mismatch: inputs or policy docs changed\\\")\\n    return True\\n\\n\\ndef prepare(study, task, policy_root):\\n    seal_inputs(study, task, policy_root)\\n    write(os.path.join(study, \\\"runs\\\", task[\\\"task_id\\\"], \\\"PREFLIGHT.json\\\"),\\n          {\\\"task_id\\\": task[\\\"task_id\\\"], \\\"prepared\\\": time.time()})\\n    check_seal(study, task, policy_root)  # recheck after real prepare\\n\\n\\n# ---- sandbox composition: allow support reads, then literal denies ----\\ndef sandbox_profile(workspace, task, policy_paths=()):\\n    q = lambda p: json.dumps(p)\\n    rules = [\\\"(version 1)\\\", \\\"(deny default)\\\", \\\"(allow process-fork)\\\", \\\"(allow process-exec*)\\\",\\n             \\\"(allow signal (target same-sandbox))\\\", \\\"(allow sysctl-read)\\\", \\\"(allow mach-lookup)\\\",\\n             \\\"(allow file-read-metadata)\\\", \\\"(deny network*)\\\",\\n             f\\\"(allow file-read* (subpath {q(workspace)}))\\\", f\\\"(allow file-write* (subpath {q(workspace)}))\\\",\\n             '(allow file-write* (literal \\\"/dev/null\\\"))']\\n    rules += [f\\\"(allow file-read* (subpath {q(p)}))\\\" for p in task[\\\"runtime_read_paths\\\"]]\\n    for p in task[\\\"forbidden_runtime_read_paths\\\"]:  # unchanged, no resolving away aliases\\n        rules.append(f\\\"(deny file-read* (literal {q(p)}))\\\")\\n        rules.append(f\\\"(deny file-read* (subpath {q(p)}))\\\")\\n    rules += [f\\\"(deny file-write* (subpath {q(p)}))\\\" for p in policy_paths]\\n    return \\\"\\\\n\\\".join(rules)\\n\\n\\ndef command_prefix(workspace, task, policy_paths=()):\\n    return [\\\"/usr/bin/sandbox-exec\\\", \\\"-p\\\", sandbox_profile(workspace, task, policy_paths)]\\n\\n\\ndef visible_argv(task, command):\\n    \\\"\\\"\\\"Visible commands always run with the task's exact qualified interpreter.\\\"\\\"\\\"\\n    argv = list(command)\\n    if argv and argv[0] in (\\\"python\\\", \\\"python3\\\", \\\"interpreter\\\"): argv[0] = task[\\\"interpreter\\\"]\\n    return argv\\n\\n\\n# ---- global serial provider admission ----\\nclass Admission:\\n    def __init__(self, state_dir):\\n        self.dir = state_dir; os.makedirs(state_dir, exist_ok=True)\\n        self.lock_path = os.path.join(state_dir, \\\"provider.lock\\\")\\n        self.ledger = os.path.join(state_dir, \\\"ADMISSION.json\\\")\\n\\n    def __enter__(self):\\n        self.h = open(self.lock_path, \\\"a+\\\")\\n        waited = time.monotonic(); fcntl.flock(self.h, fcntl.LOCK_EX)\\n        self.queue_wait = time.monotonic() - waited  # not debited from provider timer\\n        led = read(self.ledger)\\n        if led and led.get(\\\"state\\\") != \\\"settled\\\":\\n            fcntl.flock(self.h, fcntl.LOCK_UN); self.h.close()\\n            raise RuntimeError(f\\\"unsettled admission blocks dispatch: {led}\\\")\\n        return self\\n\\n    def admit(self, record):\\n        write(self.ledger, dict(record, state=\\\"admitted\\\", admitted=time.time()))\\n\\n    def settle(self, outcome):\\n        write(self.ledger, dict(read(self.ledger, {}), state=\\\"settled\\\", outcome=outcome))\\n\\n    def __exit__(self, *exc):  # on exception the admission stays durable/unsettled\\n        fcntl.flock(self.h, fcntl.LOCK_UN); self.h.close()\\n\\n\\ndef settle_explicitly(state_dir, note):\\n    led = os.path.join(state_dir, \\\"ADMISSION.json\\\")\\n    write(led, dict(read(led, {}), state=\\\"settled\\\", outcome={\\\"explicit\\\": note}))\\n\\n\\ndef cleanup_group(proc):\\n    try: os.killpg(proc.pid, signal.SIGTERM)\\n    except ProcessLookupError: pass\\n    try: proc.wait(timeout=5)\\n    except subprocess.TimeoutExpired:\\n        try: os.killpg(proc.pid, signal.SIGKILL)\\n        except ProcessLookupError: pass\\n        proc.wait()\\n    try: os.killpg(proc.pid, 0); alive = True\\n    except ProcessLookupError: alive = False\\n    return {\\\"reaped\\\": True, \\\"group_alive\\\": alive, \\\"returncode\\\": proc.returncode}\\n\\n\\ndef run_stage(state_dir, run_dir, stage, argv, seconds, cleanup=cleanup_group, env=None):\\n    \\\"\\\"\\\"Launch one provider stage under the global lock; retain partial streams.\\\"\\\"\\\"\\n    os.makedirs(run_dir, exist_ok=True)\\n    out, err = os.path.join(run_dir, f\\\"{stage}.stdout\\\"), os.path.join(run_dir, f\\\"{stage}.stderr\\\")\\n    with Admission(state_dir) as adm:\\n        write(os.path.join(run_dir, f\\\"{stage}.request.json\\\"), {\\\"argv\\\": argv, \\\"seconds\\\": seconds})\\n        adm.admit({\\\"stage\\\": stage, \\\"run_dir\\\": run_dir})\\n        with open(out, \\\"wb\\\") as o, open(err, \\\"wb\\\") as e:\\n            start = time.monotonic()\\n            proc = subprocess.Popen(argv, stdout=o, stderr=e, start_new_session=True, env=env)\\n            write(os.path.join(run_dir, f\\\"{stage}.process.json\\\"), {\\\"pid\\\": proc.pid, \\\"pgid\\\": proc.pid})\\n            try: proc.wait(timeout=seconds); timed_out = False\\n            except subprocess.TimeoutExpired: timed_out = True\\n            reap = cleanup(proc)\\n        receipt = {\\\"stage\\\": stage, \\\"timed_out\\\": timed_out, \\\"elapsed\\\": time.monotonic() - start,\\n                   \\\"queue_wait\\\": adm.queue_wait, \\\"reap\\\": reap, **parse_stream(out)}\\n        if timed_out: receipt[\\\"terminal\\\"] = None  # never fabricate a terminal\\n        write(os.path.join(run_dir, f\\\"{stage}.receipt.json\\\"), receipt)\\n        adm.settle({\\\"stage\\\": stage, \\\"timed_out\\\": timed_out})\\n    return receipt\\n\\n\\ndef parse_stream(path):\\n    models, tools, terminal = set(), None, None\\n    with open(path, \\\"rb\\\") as h:\\n        for line in h:\\n            try: ev = json.loads(line)\\n            except ValueError: continue\\n            if ev.get(\\\"type\\\") == \\\"system\\\" and ev.get(\\\"subtype\\\") == \\\"init\\\": tools = ev.get(\\\"tools\\\")\\n            if ev.get(\\\"type\\\") == \\\"assistant\\\": models.add((ev.get(\\\"message\\\") or {}).get(\\\"model\\\"))\\n            if ev.get(\\\"type\\\") == \\\"result\\\": terminal = ev\\n    return {\\\"observed_models\\\": sorted(m for m in models if m), \\\"init_tools\\\": tools, \\\"terminal\\\": terminal}\\n\\n\\ndef claude_argv(prompt, system, mcp_config, final_schema, limits):\\n    return [\\\"claude\\\", \\\"--print\\\", \\\"--model\\\", limits[\\\"model\\\"], \\\"--effort\\\", limits[\\\"effort\\\"],\\n            \\\"--output-format\\\", \\\"stream-json\\\", \\\"--verbose\\\", \\\"--tools\\\", \\\"\\\", \\\"--strict-mcp-config\\\",\\n            \\\"--mcp-config\\\", json.dumps(mcp_config), \\\"--setting-sources\\\", \\\"\\\", \\\"--no-session-persistence\\\",\\n            \\\"--restricted\\\", \\\"--disable-slash-commands\\\", \\\"--permission-mode\\\", \\\"dontAsk\\\",\\n            \\\"--allowedTools\\\", *TOOLS, \\\"--max-budget-usd\\\", str(limits[\\\"usd\\\"]),\\n            \\\"--json-schema\\\", json.dumps(final_schema), \\\"--system-prompt\\\", system, prompt]\\n\\n\\n# ---- continuation decision (max one, durable) ----\\ndef continuation_decision(grade, receipt, source_stable):\\n    if grade.get(\\\"evaluation_status\\\") != \\\"observed\\\":\\n        return {\\\"admit\\\": False, \\\"reason\\\": \\\"unknown grade\\\"}\\n    gap = not all(grade.get(k) for k in (\\\"product_passed\\\", \\\"negative_passed\\\",\\n                                          \\\"regression_passed\\\", \\\"scope_valid\\\"))\\n    deadline = bool(receipt.get(\\\"timed_out\\\")) and receipt.get(\\\"observed_models\\\") == [MAIN[\\\"model\\\"]] \\\\\\n        and set(receipt.get(\\\"init_tools\\\") or []) >= set(TOOLS) \\\\\\n        and receipt.get(\\\"reap\\\", {}).get(\\\"group_alive\\\") is False and source_stable\\n    if gap: return {\\\"admit\\\": True, \\\"reason\\\": \\\"observed artifact gap\\\"}\\n    if deadline: return {\\\"admit\\\": True, \\\"reason\\\": \\\"known settled provider deadline\\\"}\\n    return {\\\"admit\\\": False, \\\"reason\\\": \\\"no observed gap or qualified deadline\\\"}\\n\\n\\ndef feedback(grade):\\n    \\\"\\\"\\\"Actor-safe feedback only: no raw tracebacks, oracle source, or head.\\\"\\\"\\\"\\n    return {\\\"failed_requirements\\\": [{k: r.get(k) for k in (\\\"id\\\", \\\"claim\\\", \\\"observed\\\", \\\"expected\\\")}\\n                                    for r in grade.get(\\\"failed_requirements\\\", [])],\\n            **{k: grade.get(k) for k in (\\\"source_current\\\", \\\"scope_valid\\\", \\\"local_module_binding\\\")}}\\n\\n\\ndef claim_continuation(run_dir, decision):\\n    \\\"\\\"\\\"Durable max-one cap enforced at every entrypoint (O_EXCL marker).\\\"\\\"\\\"\\n    if not decision[\\\"admit\\\"]: return False\\n    try: fd = os.open(os.path.join(run_dir, \\\"CONTINUATION.claim\\\"), os.O_CREAT | os.O_EXCL | os.O_WRONLY)\\n    except FileExistsError: return False\\n    os.write(fd, json.dumps(decision).encode()); os.close(fd)\\n    return True\\n\\n\\n# ---- local module origin probe (grader owns binding; this is the actual probe) ----\\ndef module_origin(interpreter, workspace, module):\\n    code = (\\\"import importlib,json,sys;sys.path.insert(0,sys.argv[2]);\\\"\\n            \\\"m=importlib.import_module(sys.argv[1]);print(json.dumps(getattr(m,'__file__',None)))\\\")\\n    r = subprocess.run([interpreter, \\\"-I\\\", \\\"-c\\\", code, module, workspace], cwd=workspace,\\n                       capture_output=True, text=True, env={\\\"PATH\\\": \\\"/usr/bin:/bin\\\"})\\n    origin = json.loads(r.stdout) if r.returncode == 0 else None\\n    real_ws = os.path.realpath(workspace)\\n    local = bool(origin) and os.path.realpath(origin).startswith(real_ws + os.sep)\\n    return {\\\"module\\\": module, \\\"origin\\\": origin, \\\"local\\\": local}\\n\\n\\nif __name__ == \\\"__main__\\\":\\n    print(json.dumps({\\\"tools\\\": TOOLS, \\\"main\\\": MAIN, \\\"continuation\\\": CONT}))\\n    sys.exit(0)\\n\"}"
+              }
+            ]
+          }
+        ]
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "84a56a4b-e8df-4aa9-8f28-f1187153a5dc"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1NTxvmbNxF4444k9aos",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 5360,
+          "cache_read_input_tokens": 1166,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 5360
+          },
+          "output_tokens": 3,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_01D9PyPMXouTnBa6nLkrJmGs",
+            "name": "mcp__cp_trial__read_file",
+            "input": {
+              "path": "runtime/tests/test_controls.py"
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ]
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "1bc668f2-d6fe-4f9d-b7d0-53b706fe6b3e"
+    },
+    {
+      "type": "user",
+      "message": {
+        "role": "user",
+        "content": [
+          {
+            "tool_use_id": "toolu_01D9PyPMXouTnBa6nLkrJmGs",
+            "type": "tool_result",
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"path\": \"runtime/tests/test_controls.py\", \"content\": \"import json, os, subprocess, sys, tempfile, threading, time, unittest\\nsys.path.insert(0, os.path.join(os.path.dirname(__file__), \\\"..\\\"))\\nimport controller as c\\n\\n\\ndef task(tmp, **kw):\\n    t = {k: None for k in c.TASK_FIELDS}\\n    t.update(task_id=\\\"t1\\\", prompt=\\\"p\\\", requirements=[], interpreter=sys.executable,\\n             runtime_read_paths=[\\\"/usr\\\", \\\"/System\\\", \\\"/Library\\\", \\\"/private/var/db\\\", \\\"/dev\\\",\\n                                 os.path.realpath(sys.prefix), os.path.realpath(sys.base_prefix)],\\n             forbidden_runtime_read_paths=[], visible_commands=[], production_paths=[])\\n    t.update(kw); return t\\n\\n\\nclass Controls(unittest.TestCase):\\n    def setUp(self):\\n        self.tmp = os.path.realpath(tempfile.mkdtemp())\\n        self.policy = os.path.join(self.tmp, \\\"policy\\\"); os.makedirs(self.policy)\\n        open(os.path.join(self.policy, \\\"SKILL.md\\\"), \\\"w\\\").write(\\\"skill\\\")\\n        self.study = os.path.join(self.tmp, \\\"study\\\")\\n\\n    def test_1_seal_after_prepare_and_io_separation(self):\\n        t = task(self.tmp)\\n        c.prepare(self.study, t, self.policy)\\n        sealed = open(os.path.join(self.study, \\\"inputs\\\", \\\"SEAL.json\\\")).read()\\n        c.prepare(self.study, t, self.policy)  # prepare again must not overwrite inputs\\n        self.assertEqual(sealed, open(os.path.join(self.study, \\\"inputs\\\", \\\"SEAL.json\\\")).read())\\n        self.assertTrue(os.path.exists(os.path.join(self.study, \\\"runs\\\", \\\"t1\\\", \\\"PREFLIGHT.json\\\")))\\n        open(os.path.join(self.policy, \\\"SKILL.md\\\"), \\\"w\\\").write(\\\"tampered\\\")\\n        with self.assertRaises(RuntimeError): c.check_seal(self.study, t, self.policy)\\n\\n    def test_2_timeout_reaps_owned_group_keeps_partial_no_terminal(self):\\n        child = \\\"import subprocess,sys,time;subprocess.Popen([sys.executable,'-c','import time;time.sleep(60)']);\\\" \\\\\\n                \\\"print('{\\\\\\\"type\\\\\\\":\\\\\\\"system\\\\\\\",\\\\\\\"subtype\\\\\\\":\\\\\\\"init\\\\\\\",\\\\\\\"tools\\\\\\\":[]}',flush=True);time.sleep(60)\\\"\\n        r = c.run_stage(os.path.join(self.tmp, \\\"g\\\"), os.path.join(self.tmp, \\\"run\\\"), \\\"main\\\",\\n                        [sys.executable, \\\"-c\\\", child], 1)\\n        self.assertTrue(r[\\\"timed_out\\\"]); self.assertIsNone(r[\\\"terminal\\\"])\\n        self.assertFalse(r[\\\"reap\\\"][\\\"group_alive\\\"]); self.assertEqual(r[\\\"init_tools\\\"], [])\\n        self.assertEqual(json.load(open(os.path.join(self.tmp, \\\"g\\\", \\\"ADMISSION.json\\\")))[\\\"state\\\"], \\\"settled\\\")\\n\\n    def test_3_global_serial_admission_main_and_repair(self):\\n        g, marks = os.path.join(self.tmp, \\\"g\\\"), os.path.join(self.tmp, \\\"marks\\\")\\n        prog = f\\\"import os,time;open({marks!r},'a').write('s');time.sleep(0.4);open({marks!r},'a').write('e')\\\"\\n        ths = [threading.Thread(target=c.run_stage, args=(g, os.path.join(self.tmp, s), s,\\n                                [sys.executable, \\\"-c\\\", prog], 10)) for s in (\\\"main\\\", \\\"continuation\\\", \\\"main2\\\")]\\n        [t.start() for t in ths]; [t.join() for t in ths]\\n        self.assertEqual(open(marks).read(), \\\"se\\\" * 3)  # never overlapping\\n        # incomplete admission on exception stays durable and blocks dispatch\\n        with self.assertRaises(FileNotFoundError):\\n            c.run_stage(g, os.path.join(self.tmp, \\\"x\\\"), \\\"main\\\", [\\\"/nonexistent-binary\\\"], 5)\\n        with self.assertRaises(RuntimeError):\\n            c.run_stage(g, os.path.join(self.tmp, \\\"y\\\"), \\\"main\\\", [sys.executable, \\\"-c\\\", \\\"0\\\"], 5)\\n        c.settle_explicitly(g, \\\"operator settled failed launch\\\")\\n        self.assertFalse(c.run_stage(g, os.path.join(self.tmp, \\\"y\\\"), \\\"main\\\", [sys.executable, \\\"-c\\\", \\\"0\\\"], 5)[\\\"timed_out\\\"])\\n\\n    @unittest.skipUnless(os.path.exists(\\\"/usr/bin/sandbox-exec\\\") and subprocess.run(\\n        [\\\"/usr/bin/sandbox-exec\\\", \\\"-p\\\", \\\"(version 1)(allow default)\\\", \\\"/usr/bin/true\\\"],\\n        capture_output=True).returncode == 0, \\\"GAP: sandbox_apply not permitted (nested sandbox)\\\")\\n    def test_4_sandbox_prefix_denies_and_exact_interpreter(self):\\n        ws = os.path.join(self.tmp, \\\"ws\\\"); os.makedirs(ws)\\n        outside = os.path.join(self.tmp, \\\"outside.txt\\\"); open(outside, \\\"w\\\").write(\\\"secret\\\")\\n        denied = os.path.join(os.path.realpath(sys.base_prefix), \\\"lib\\\")\\n        t = task(self.tmp, forbidden_runtime_read_paths=[os.path.join(denied, \\\"this_is_denied.py\\\")])\\n        pre = c.command_prefix(ws, t, policy_paths=[self.policy])\\n        def run(code):\\n            return subprocess.run(pre + c.visible_argv(t, [\\\"python\\\", \\\"-I\\\", \\\"-S\\\", \\\"-B\\\", \\\"-c\\\", code]),\\n                                  cwd=ws, capture_output=True, text=True, timeout=30)\\n        self.assertEqual(run(\\\"print(1)\\\").stdout.strip(), \\\"1\\\", \\\"baseline\\\")\\n        self.assertEqual(run(f\\\"open({os.path.join(ws,'w')!r},'w').write('x')\\\").returncode, 0)\\n        self.assertNotEqual(run(f\\\"open({outside!r}).read()\\\").returncode, 0, \\\"outside read\\\")\\n        self.assertNotEqual(run(f\\\"open({os.path.join(self.tmp,'o2')!r},'w')\\\").returncode, 0, \\\"outside write\\\")\\n        self.assertNotEqual(run(f\\\"open({os.path.join(self.policy,'SKILL.md')!r},'w')\\\").returncode, 0, \\\"policy write\\\")\\n        self.assertNotEqual(run(\\\"import socket;socket.create_connection(('1.1.1.1',80),timeout=3)\\\").returncode, 0)\\n        self.assertEqual(c.visible_argv(t, [\\\"python\\\", \\\"x\\\"])[0], sys.executable)\\n        # forbidden literal: create a probe file under workspace and deny it explicitly\\n        tgt = os.path.join(ws, \\\"target.py\\\"); open(tgt, \\\"w\\\").write(\\\"X=1\\\")\\n        t2 = task(self.tmp, forbidden_runtime_read_paths=[tgt])\\n        pre = c.command_prefix(ws, t2)\\n        r = subprocess.run(pre + [sys.executable, \\\"-I\\\", \\\"-S\\\", \\\"-c\\\", f\\\"open({tgt!r}).read()\\\"],\\n                           cwd=ws, capture_output=True, timeout=30)\\n        self.assertNotEqual(r.returncode, 0, \\\"forbidden source read denied after allow\\\")\\n\\n    def test_5_local_module_origin_rejects_installed_or_forged(self):\\n        ws = os.path.join(self.tmp, \\\"ws\\\"); os.makedirs(ws)\\n        open(os.path.join(ws, \\\"localmod.py\\\"), \\\"w\\\").write(\\\"X=1\\\")\\n        self.assertTrue(c.module_origin(sys.executable, ws, \\\"localmod\\\")[\\\"local\\\"])\\n        self.assertFalse(c.module_origin(sys.executable, ws, \\\"json\\\")[\\\"local\\\"])  # installed stdlib\\n        open(os.path.join(ws, \\\"shadow.py\\\"), \\\"w\\\").write(\\\"import sys,json;sys.modules['shadow']=json\\\")\\n        self.assertFalse(c.module_origin(sys.executable, ws, \\\"shadow\\\")[\\\"local\\\"])\\n\\n    def test_6_continuation_only_observed_gap_or_settled_deadline_max_one(self):\\n        ok = dict(evaluation_status=\\\"observed\\\", product_passed=True, negative_passed=True,\\n                  regression_passed=True, scope_valid=True)\\n        settled = {\\\"timed_out\\\": True, \\\"observed_models\\\": [\\\"claude-opus-5-5\\\"], \\\"init_tools\\\": c.TOOLS + [\\\"StructuredOutput\\\"],\\n                   \\\"reap\\\": {\\\"group_alive\\\": False}}\\n        self.assertFalse(c.continuation_decision(ok, {\\\"timed_out\\\": False}, True)[\\\"admit\\\"])\\n        self.assertFalse(c.continuation_decision({\\\"evaluation_status\\\": \\\"unknown\\\"}, settled, True)[\\\"admit\\\"])\\n        self.assertTrue(c.continuation_decision(dict(ok, negative_passed=False), {}, True)[\\\"admit\\\"])\\n        self.assertTrue(c.continuation_decision(ok, settled, True)[\\\"admit\\\"])\\n        self.assertFalse(c.continuation_decision(ok, dict(settled, observed_models=[\\\"other\\\"]), True)[\\\"admit\\\"])\\n        self.assertFalse(c.continuation_decision(ok, settled, False)[\\\"admit\\\"])\\n        self.assertFalse(c.continuation_decision(ok, dict(settled, reap={\\\"group_alive\\\": True}), True)[\\\"admit\\\"])\\n        fb = c.feedback({\\\"failed_requirements\\\": [{\\\"id\\\": \\\"r1\\\", \\\"claim\\\": \\\"c\\\", \\\"observed\\\": \\\"o\\\", \\\"expected\\\": \\\"e\\\",\\n                                                  \\\"traceback\\\": \\\"SECRET\\\"}], \\\"source_current\\\": True})\\n        self.assertNotIn(\\\"SECRET\\\", json.dumps(fb))\\n        run = os.path.join(self.tmp, \\\"run\\\"); os.makedirs(run)\\n        d = c.continuation_decision(ok, settled, True)\\n        self.assertTrue(c.claim_continuation(run, d)); self.assertFalse(c.claim_continuation(run, d))\\n        a = c.claude_argv(\\\"p\\\", \\\"s\\\", {}, {}, c.CONT)\\n        self.assertEqual(a[a.index(\\\"--model\\\") + 1], \\\"claude-opus-5-5\\\"); self.assertIn(\\\"--no-session-persistence\\\", a)\\n        self.assertEqual(a[a.index(\\\"--max-budget-usd\\\") + 1], \\\"2.0\\\")\\n\\n\\nif __name__ == \\\"__main__\\\":\\n    unittest.main(verbosity=2)\\n\"}"
+              }
+            ]
+          }
+        ]
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "6a3986b1-290a-43a4-81a8-b8ed330d6045"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1NUBEhEnwGUh1CTfQ7x",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 9708,
+          "cache_read_input_tokens": 6526,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 9708
+          },
+          "output_tokens": 3,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": []
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "73342a37-58cd-4a59-a249-9ba9cbf255eb"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1NUBEhEnwGUh1CTfQ7x",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 9708,
+          "cache_read_input_tokens": 6526,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 9708
+          },
+          "output_tokens": 3,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_01GAhs3Xz2vYFu4ZvmYFd1Wv",
+            "name": "mcp__cp_trial__write_file",
+            "input": {
+              "path": "runtime/hybrid_process_v2.py",
+              "content": "\"\"\"V2-only direct-child reaping before original-group escalation.\n\nOn macOS, killpg(SIGKILL) can return EPERM when the group contains only an\nunreaped zombie direct child. Reap that child before escalation. Still send\nSIGKILL to its original group to stop surviving SIGTERM-ignoring descendants.\nDo not suppress permission failures or claim detached-descendant containment.\nThe first registered process helper and its receipts remain unchanged.\n\"\"\"\nimport os\nimport signal\nimport time\n\n\ndef cleanup_group(process):\n    if getattr(process, '_hybrid_group_cleanup_complete', False):\n        return\n    try:\n        os.killpg(process.pid, signal.SIGTERM)\n    except ProcessLookupError:\n        pass\n    else:\n        time.sleep(.05)\n    # poll uses waitpid on our direct child. A zombie cannot execute/write;\n    # reaping it does not imply that other group members have stopped.\n    process.poll()\n    try:\n        os.killpg(process.pid, signal.SIGKILL)\n    except ProcessLookupError:\n        pass\n    if process.poll() is None:\n        process.wait(timeout=2)\n    process._hybrid_group_cleanup_complete = True\n\n\ndef install(process_module):\n    \"\"\"Replace only this imported V2 controller's cleanup implementation.\"\"\"\n    process_module.cleanup_group = cleanup_group\n"
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ]
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "2e91d912-3b18-46be-8daa-00ff3731626b"
+    },
+    {
+      "type": "user",
+      "message": {
+        "role": "user",
+        "content": [
+          {
+            "tool_use_id": "toolu_01GAhs3Xz2vYFu4ZvmYFd1Wv",
+            "type": "tool_result",
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"written\": \"runtime/hybrid_process_v2.py\"}"
+              }
+            ]
+          }
+        ]
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "37c40334-e2ec-4335-b086-f52518493c23"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1NZmnUVFN5nXY4zsLRU",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 7829,
+          "cache_read_input_tokens": 16234,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 7829
+          },
+          "output_tokens": 3,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": []
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "eeaae528-020d-44e5-844d-3b51cdea4db6"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1NZmnUVFN5nXY4zsLRU",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 7829,
+          "cache_read_input_tokens": 16234,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 7829
+          },
+          "output_tokens": 3,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_017L7JwAX8JSR8AasrvQAJxb",
+            "name": "mcp__cp_trial__write_file",
+            "input": {
+              "path": "runtime/controller.py",
+              "content": "\"\"\"Lean task-trial controller: seal, serial provider admission, owned-group\nreap (qualified hybrid_process_v2), sandbox composition, single conditional\ncontinuation. Taskblind. No detached-descendant containment claim.\"\"\"\nimport fcntl, hashlib, json, os, re, subprocess, sys, time\nfrom pathlib import Path\n\nsys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))\nimport hybrid_process_v2  # qualified helper, copied unchanged; hash bound below\n\nTASK_FIELDS = (\"task_id\", \"prompt\", \"requirements\", \"base_snapshot\", \"source_directory\",\n               \"production_paths\", \"visible_commands\", \"source_sha256\", \"interpreter\",\n               \"runtime_read_paths\", \"forbidden_runtime_read_paths\")\nTOOLS = [\"mcp__cp_trial__list_files\", \"mcp__cp_trial__read_file\", \"mcp__cp_trial__write_file\",\n         \"mcp__cp_trial__replace_text\", \"mcp__cp_trial__run_tests\"]\nINVENTORY = sorted(TOOLS + [\"StructuredOutput\"])  # exact, never a superset\nMODEL = \"claude-opus-5-5\"\nMAIN = {\"model\": MODEL, \"effort\": \"high\", \"seconds\": 300, \"usd\": 3.0}\nCONT = {\"model\": MODEL, \"effort\": \"high\", \"seconds\": 180, \"usd\": 2.0}\n\n\ndef file_sha(path):\n    with open(path, \"rb\") as h: return hashlib.sha256(h.read()).hexdigest()\n\n\nCLEANUP_SHA = file_sha(hybrid_process_v2.__file__)\ncleanup_group = hybrid_process_v2.cleanup_group\n\n\ndef digest(value):\n    return hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()\n\n\ndef write(path, value):\n    os.makedirs(os.path.dirname(path) or \".\", exist_ok=True)\n    tmp = f\"{path}.{os.getpid()}.tmp\"\n    with open(tmp, \"w\") as h:\n        json.dump(value, h, indent=2, sort_keys=True); h.flush(); os.fsync(h.fileno())\n    os.replace(tmp, path)\n\n\ndef read(path, default=None):\n    try:\n        with open(path) as h: return json.load(h)\n    except FileNotFoundError: return default\n\n\ndef inventory(root, scratch=(\".git\", \"__pycache__\", \".pytest_cache\")):\n    \"\"\"Full tree material; symlinks recorded, never followed (no recursion).\"\"\"\n    out = {}\n    if not os.path.isdir(root): return {\"<missing>\": str(root)}\n    for base, dirs, files in os.walk(root, followlinks=False):\n        keep = []\n        for d in sorted(dirs):\n            p = os.path.join(base, d)\n            if os.path.islink(p): out[os.path.relpath(p, root)] = {\"symlink\": os.readlink(p)}\n            elif d not in scratch: keep.append(d)\n        dirs[:] = keep\n        for f in sorted(files):\n            p = os.path.join(base, f); rel = os.path.relpath(p, root)\n            out[rel] = {\"symlink\": os.readlink(p)} if os.path.islink(p) else file_sha(p)\n    return out\n\n\n# ---- immutable inputs seal (separate from per-run PREFLIGHT outputs) ----\ndef _seal_now(task, policy_root):\n    missing = [k for k in TASK_FIELDS if k not in task]\n    if missing: raise ValueError(f\"task missing fields {missing}\")\n    if not task.get(\"base_snapshot\") or not os.path.isdir(task[\"base_snapshot\"]):\n        raise ValueError(\"base_snapshot must be an existing pinned tree\")\n    return {\"task\": digest({k: task[k] for k in TASK_FIELDS}), \"policy\": inventory(policy_root),\n            \"base_snapshot\": inventory(task[\"base_snapshot\"])}\n\n\ndef seal_inputs(study, task, policy_root):\n    seal, path = _seal_now(task, policy_root), os.path.join(study, \"inputs\", \"SEAL.json\")\n    old = read(path)\n    if old is None:\n        fd = os.open(path if os.path.isdir(os.path.dirname(path)) else (os.makedirs(os.path.dirname(path)) or path),\n                     os.O_CREAT | os.O_EXCL | os.O_WRONLY)  # never overwritten\n        os.write(fd, json.dumps(seal, indent=2, sort_keys=True).encode()); os.close(fd)\n    elif old != seal: raise RuntimeError(\"input seal changed\")\n    return seal\n\n\ndef check_seal(study, task, policy_root):\n    if read(os.path.join(study, \"inputs\", \"SEAL.json\")) != _seal_now(task, policy_root):\n        raise RuntimeError(\"seal mismatch: task, base snapshot, or policy docs changed\")\n    return True\n\n\ndef _mutation_rejected(study, task, policy_root, target):\n    \"\"\"Edit an actual file, require check_seal rejection, restore exact bytes.\"\"\"\n    with open(target, \"rb\") as h: original = h.read()\n    st = os.stat(target)\n    try:\n        with open(target, \"ab\") as h: h.write(b\"\\n#mutation-control\\n\")\n        try: check_seal(study, task, policy_root); return False\n        except RuntimeError: return True\n    finally:\n        with open(target, \"wb\") as h: h.write(original)\n        os.utime(target, ns=(st.st_atime_ns, st.st_mtime_ns))\n\n\ndef _first_file(root):\n    for rel, v in sorted(inventory(root).items()):\n        if isinstance(v, str): return os.path.join(root, rel)\n    raise RuntimeError(f\"no regular file for mutation control in {root}\")\n\n\ndef prepare(study, task, policy_root):\n    seal_inputs(study, task, policy_root)\n    controls = {\"base\": _mutation_rejected(study, task, policy_root, _first_file(task[\"base_snapshot\"])),\n                \"policy\": _mutation_rejected(study, task, policy_root, _first_file(policy_root))}\n    if not all(controls.values()): raise RuntimeError(f\"mutation control not rejected: {controls}\")\n    check_seal(study, task, policy_root)  # recheck after real prepare + restore\n    write(os.path.join(study, \"runs\", task[\"task_id\"], \"PREFLIGHT.json\"),\n          {\"task_id\": task[\"task_id\"], \"prepared\": time.time(), \"mutation_controls\": controls})\n    return controls\n\n\ndef stage_snapshot(workspace, policy_root, policy_before, production_paths=None):\n    \"\"\"Snapshot callback factory: genuine production/full-scope/policy digests.\"\"\"\n    def snap():\n        first = inventory(workspace); second = inventory(workspace); pol = inventory(policy_root)\n        prod = {p: first.get(p) for p in (production_paths or [])}\n        return {\"workspace\": first, \"workspace_digest\": digest(first), \"production\": prod,\n                \"policy\": pol, \"policy_digest\": digest(pol), \"policy_unchanged\": pol == policy_before,\n                \"source_stable\": first == second, \"paths\": {\"workspace\": str(workspace), \"policy\": str(policy_root)}}\n    return snap\n\n\n# ---- sandbox: EXACT qualified base profile, then task composition ----\ndef sandbox_profile(workspace, temporary, *, extra_reads=(), extra_writes=(), readonly=False):\n    read_roots=[Path(\"/System\"),Path(\"/usr\"),Path(\"/bin\"),\n                *(Path(\"/opt/homebrew\")/part for part in (\"bin\",\"lib\",\"opt\",\"Cellar\",\"Frameworks\")),\n                Path(\"/Library/Frameworks\"),Path(\"/Library/Developer/CommandLineTools\"),\n                Path(workspace).resolve(),Path(temporary).resolve(),*(Path(p).resolve() for p in extra_writes)]\n    literals=[Path(p).resolve() for p in extra_reads]\n    # macOS requires directory traversal/read permission on exact ancestors.\n    ancestors={str(parent) for path in [*read_roots,*literals] for parent in path.parents}\n    rules=[\"(version 1)\",\"(deny default)\",\"(allow process-fork)\",\"(allow process-exec)\",\n           \"(allow signal (target same-sandbox))\"]\n    readers=[f\"(literal {json.dumps(p)})\" for p in sorted(ancestors)]\n    readers += [f\"(subpath {json.dumps(str(p))})\" for p in read_roots]\n    readers += [f\"(literal {json.dumps(str(p))})\" for p in literals]\n    readers += ['(literal \"/dev/null\")','(literal \"/dev/urandom\")','(literal \"/dev/random\")']\n    rules.append(\"(allow file-read* \"+\" \".join(readers)+\")\")\n    writable=([Path(workspace).resolve()] if not readonly else []) + [Path(temporary).resolve(),*(Path(p).resolve() for p in extra_writes)]\n    rules.append(\"(allow file-write* \"+\" \".join(f\"(subpath {json.dumps(str(p))})\" for p in writable)+\")\")\n    rules.append('(allow file-write* (literal \"/dev/null\"))')\n    rules.append(f\"(deny file-write* (subpath {json.dumps(str(Path(workspace).resolve()/'.protocol'))}))\")\n    rules.append(f\"(deny file-write* (subpath {json.dumps(str(Path(workspace).resolve()/'.git'))}))\")\n    rules.append(f\"(deny file-write* (literal {json.dumps(str(Path(workspace).resolve()/'AGENTS.md'))}))\")\n    return \"\\n\".join(rules)\n\n\ndef _both(p):\n    r = os.path.realpath(p)\n    return [p] if r == p else [p, r]\n\n\ndef task_profile(workspace, temporary, task, policy_paths=(), protocol_allow=None):\n    \"\"\"Base + task support allows (+ancestor literals), then FULL forbidden\n    literal denies unchanged, actor .protocol allowlist denies, policy write denies.\"\"\"\n    q = json.dumps\n    rules = [sandbox_profile(workspace, temporary)]\n    support = [x for p in (task.get(\"runtime_read_paths\") or []) for x in _both(str(p))]\n    if support:\n        anc = sorted({str(a) for p in support for a in Path(p).parents})\n        rules.append(\"(allow file-read* \" + \" \".join([f\"(literal {q(a)})\" for a in anc] +\n                                                     [f\"(subpath {q(p)})\" for p in support]) + \")\")\n    if protocol_allow is not None:\n        proto = os.path.join(os.path.realpath(workspace), \".protocol\")\n        for rel, _ in sorted(inventory(proto).items()):\n            if rel not in protocol_allow and rel != \"<missing>\":\n                rules.append(f\"(deny file-read* (literal {q(os.path.join(proto, rel))}))\")\n    for p in task.get(\"forbidden_runtime_read_paths\") or []:\n        for x in _both(str(p)): rules.append(f\"(deny file-read* (literal {q(x)}))\")\n    for p in policy_paths:\n        for x in _both(str(p)): rules.append(f\"(deny file-write* (subpath {q(x)}))\")\n    return \"\\n\".join(rules)\n\n\ndef command_prefix(workspace, temporary, task, policy_paths=(), protocol_allow=None):\n    return [\"/usr/bin/sandbox-exec\", \"-p\", task_profile(workspace, temporary, task, policy_paths, protocol_allow)]\n\n\ndef visible_argv(task, command):\n    \"\"\"Visible commands always run with the task's exact qualified interpreter.\"\"\"\n    argv = list(command)\n    if argv and argv[0] in (\"python\", \"python3\", \"interpreter\"): argv[0] = task[\"interpreter\"]\n    return argv\n\n\ndef mcp_config(task, server_script, workspace, prefix=()):\n    \"\"\"MCP execute config using exact task interpreter (bridge: native adapter).\"\"\"\n    argv = [*prefix, task[\"interpreter\"], server_script, str(workspace)]\n    return {\"mcpServers\": {\"cp_trial\": {\"command\": argv[0], \"args\": argv[1:]}}}\n\n\n# ---- global serial provider admission (one state_dir for ALL entrypoints) ----\nclass Admission:\n    def __init__(self, state_dir, recovering=False):\n        self.dir, self.recovering = state_dir, recovering; os.makedirs(state_dir, exist_ok=True)\n        self.lock_path = os.path.join(state_dir, \"provider.lock\")\n        self.ledger = os.path.join(state_dir, \"ADMISSION.json\")\n\n    def __enter__(self):\n        self.h = open(self.lock_path, \"a+\")\n        waited = time.monotonic(); fcntl.flock(self.h, fcntl.LOCK_EX)\n        self.queue_wait = time.monotonic() - waited  # separate from provider timer\n        led = read(self.ledger)\n        if not self.recovering and led and led.get(\"state\") != \"settled\":\n            fcntl.flock(self.h, fcntl.LOCK_UN); self.h.close()\n            raise RuntimeError(f\"unsettled admission blocks dispatch: {led.get('state')} {led.get('stage')}\")\n        return self\n\n    def record(self, **kw):\n        write(self.ledger, dict(read(self.ledger, {}), **kw))\n\n    def __exit__(self, *exc):  # exceptions leave ledger durable/unsettled\n        fcntl.flock(self.h, fcntl.LOCK_UN); self.h.close()\n\n\ndef probe_group(pgid, wait=2.0):\n    \"\"\"absent | alive | unknown. Only ProcessLookupError proves absence.\"\"\"\n    end = time.monotonic() + wait\n    while True:\n        try: os.killpg(pgid, 0); state = \"alive\"\n        except ProcessLookupError: return \"absent\"\n        except PermissionError: state = \"unknown\"\n        if time.monotonic() >= end: return state\n        time.sleep(0.05)\n\n\ndef _request_identity(argv):\n    def after(flag):\n        return argv[argv.index(flag) + 1] if flag in argv[:-1] else None\n    tools = []\n    if \"--allowedTools\" in argv:\n        for a in argv[argv.index(\"--allowedTools\") + 1:]:\n            if a.startswith(\"--\"): break\n            tools.append(a)\n    return {\"model\": after(\"--model\"), \"allowed_tools\": tools, \"mcp_config\": after(\"--mcp-config\"),\n            \"tools_flag\": after(\"--tools\"), \"effort\": after(\"--effort\"), \"budget\": after(\"--max-budget-usd\")}\n\n\ndef run_stage(state_dir, run_dir, stage, argv, seconds, *, cwd=None, env=None, service=None,\n              snapshot=None, cleanup=None, stdin=None):\n    \"\"\"One provider stage holding the global lock from before Popen through\n    cleanup/reap/closed streams/snapshot/receipt; settle only on proven\n    group absence + reaped leader + snapshot. service(process, deadline) is\n    called repeatedly while the child is alive (mechanical MCP adapter).\"\"\"\n    cleanup = cleanup or cleanup_group\n    os.makedirs(run_dir, exist_ok=True)\n    out, err = os.path.join(run_dir, f\"{stage}.stdout\"), os.path.join(run_dir, f\"{stage}.stderr\")\n    with Admission(state_dir) as adm:\n        request = {\"stage\": stage, \"argv\": list(argv), \"argv_sha256\": digest(list(argv)), \"seconds\": seconds,\n                   \"cwd\": cwd, \"env_keys\": sorted(env) if env is not None else None,\n                   \"env_sha256\": digest(env) if env is not None else None,\n                   \"identity\": _request_identity(list(argv)), \"cleanup_sha256\": CLEANUP_SHA,\n                   \"queue_wait\": adm.queue_wait, \"requested_at\": time.time()}\n        write(os.path.join(run_dir, f\"{stage}.request.json\"), request)\n        adm.record(state=\"admitted\", stage=stage, run_dir=run_dir, pgid=None, admitted=time.time())\n        proc, timed_out, cutoff = None, False, None\n        with open(out, \"wb\") as o, open(err, \"wb\") as e:\n            try:\n                proc = subprocess.Popen(argv, stdout=o, stderr=e, start_new_session=True, cwd=cwd, env=env,\n                                        stdin=stdin if stdin is not None else subprocess.DEVNULL)\n            except Exception as exc:\n                adm.record(launch_error=type(exc).__name__); raise\n            start = time.monotonic(); deadline = start + seconds\n            adm.record(pgid=proc.pid)\n            write(os.path.join(run_dir, f\"{stage}.process.json\"), {\"pid\": proc.pid, \"pgid\": proc.pid,\n                                                                   \"started\": time.time()})\n            try:\n                while proc.poll() is None:\n                    if time.monotonic() >= deadline:\n                        timed_out = True; o.flush(); cutoff = os.fstat(o.fileno()).st_size; break\n                    if service: service(proc, deadline)\n                    else: time.sleep(0.05)\n            finally:  # always kill descendants, even when the leader already exited\n                cleanup(proc)\n            elapsed = time.monotonic() - start\n        # streams closed here\n        group = probe_group(proc.pid)\n        reap = {\"helper\": \"hybrid_process_v2\" if cleanup is cleanup_group else getattr(cleanup, \"__name__\", \"custom\"),\n                \"helper_sha256\": CLEANUP_SHA if cleanup is cleanup_group else None,\n                \"reaped\": proc.returncode is not None, \"returncode\": proc.returncode, \"group\": group}\n        snap = snapshot() if snapshot else None\n        receipt = {\"stage\": stage, \"timed_out\": timed_out, \"deadline_known\": timed_out, \"bytes_at_deadline\": cutoff,\n                   \"elapsed\": elapsed, \"queue_wait\": adm.queue_wait, \"reap\": reap, \"request\": request,\n                   \"stdout_sha256\": file_sha(out), \"stderr_sha256\": file_sha(err),\n                   \"snapshot\": snap, \"snapshot_sha256\": digest(snap) if snap is not None else None,\n                   **parse_stream(out, cutoff)}\n        clean = group == \"absent\" and reap[\"reaped\"] and snap is not None\n        receipt[\"settled\"] = clean\n        write(os.path.join(run_dir, f\"{stage}.receipt.json\"), receipt)\n        if clean:\n            adm.record(state=\"settled\", outcome={\"stage\": stage, \"timed_out\": timed_out,\n                                                 \"receipt_sha256\": file_sha(os.path.join(run_dir, f\"{stage}.receipt.json\"))})\n        else:\n            adm.record(state=\"unsettled\", reason={\"group\": group, \"reaped\": reap[\"reaped\"], \"snapshot\": snap is not None})\n    return receipt\n\n\ndef recover_settle(state_dir, snapshot):\n    \"\"\"Only settle path for unsettled admissions: under the SAME lock require\n    actual group absence (or proven launch failure) + retained streams + snapshot.\"\"\"\n    with Admission(state_dir, recovering=True) as adm:\n        led = read(adm.ledger) or {}\n        if led.get(\"state\") == \"settled\": return True\n        pgid, run_dir, stage = led.get(\"pgid\"), led.get(\"run_dir\"), led.get(\"stage\")\n        if pgid is None and not led.get(\"launch_error\"): return False\n        group = probe_group(pgid) if pgid is not None else \"never_started\"\n        if group not in (\"absent\", \"never_started\"): return False\n        streams = {}\n        for s in (\"stdout\", \"stderr\"):\n            p = os.path.join(run_dir or \"\", f\"{stage}.{s}\")\n            if not os.path.isfile(p): return False\n            streams[s] = file_sha(p)\n        snap = snapshot()\n        if snap is None: return False\n        proof = {\"group\": group, \"streams\": streams, \"snapshot_sha256\": digest(snap), \"recovered_at\": time.time()}\n        write(os.path.join(run_dir, f\"{stage}.recovery.json\"), dict(proof, snapshot=snap))\n        adm.record(state=\"settled\", outcome={\"recovered\": proof})  # receipt stays unsettled: never continuation-qualified\n        return True\n\n\ndef parse_stream(path, cutoff=None):\n    r = {\"observed_models\": [], \"init_tools\": None, \"init_model\": None, \"terminal\": None,\n         \"terminal_before_deadline\": None, \"session_ids\": [], \"tool_uses\": [], \"anomalies\": [],\n         \"truncated_tail\": False}\n    inits = results = 0; offset = 0\n    with open(path, \"rb\") as h:\n        for n, line in enumerate(h, 1):\n            offset += len(line)\n            if not line.strip(): continue\n            try: ev = json.loads(line)\n            except ValueError:\n                if not line.endswith(b\"\\n\"): r[\"truncated_tail\"] = True\n                else: r[\"anomalies\"].append({\"line\": n, \"kind\": \"invalid_json\"})\n                continue\n            if not isinstance(ev, dict): r[\"anomalies\"].append({\"line\": n, \"kind\": \"non_object\"}); continue\n            sid = ev.get(\"session_id\")\n            if sid and sid not in r[\"session_ids\"]: r[\"session_ids\"].append(sid)\n            t = ev.get(\"type\")\n            if results and t != \"result\": r[\"anomalies\"].append({\"line\": n, \"kind\": \"event_after_result\"})\n            if t == \"system\" and ev.get(\"subtype\") == \"init\":\n                inits += 1\n                if inits > 1: r[\"anomalies\"].append({\"line\": n, \"kind\": \"multiple_init\"})\n                else: r[\"init_tools\"], r[\"init_model\"] = ev.get(\"tools\"), ev.get(\"model\")\n            elif t == \"assistant\":\n                msg = ev.get(\"message\") or {}\n                m = msg.get(\"model\")\n                if m and m not in r[\"observed_models\"]: r[\"observed_models\"].append(m)\n                for b in msg.get(\"content\") or []:\n                    if isinstance(b, dict) and b.get(\"type\") == \"tool_use\":\n                        r[\"tool_uses\"].append({\"id\": b.get(\"id\"), \"name\": b.get(\"name\")})\n            elif t == \"result\":\n                results += 1\n                if results > 1: r[\"anomalies\"].append({\"line\": n, \"kind\": \"multiple_result\"})\n                else: r[\"terminal\"], r[\"terminal_before_deadline\"] = ev, (cutoff is None or offset <= cutoff)\n    if len(r[\"observed_models\"]) > 1: r[\"anomalies\"].append({\"kind\": \"multiple_models\"})\n    if len(r[\"session_ids\"]) > 1: r[\"anomalies\"].append({\"kind\": \"multiple_sessions\"})\n    ids = [u[\"id\"] for u in r[\"tool_uses\"]]\n    if len(ids) != len(set(ids)): r[\"anomalies\"].append({\"kind\": \"duplicate_tool_use_id\"})\n    if r[\"init_model\"] and r[\"init_model\"] != MODEL: r[\"anomalies\"].append({\"kind\": \"init_model_mismatch\"})\n    return r\n\n\ndef claude_argv(prompt, system, mcp_config, final_schema, limits):\n    return [\"claude\", \"--print\", \"--model\", limits[\"model\"], \"--effort\", limits[\"effort\"],\n            \"--output-format\", \"stream-json\", \"--verbose\", \"--tools\", \"\", \"--strict-mcp-config\",\n            \"--mcp-config\", json.dumps(mcp_config), \"--setting-sources\", \"\", \"--no-session-persistence\",\n            \"--restricted\", \"--disable-slash-commands\", \"--permission-mode\", \"dontAsk\",\n            \"--allowedTools\", *TOOLS, \"--max-budget-usd\", str(limits[\"usd\"]),\n            \"--json-schema\", json.dumps(final_schema), \"--system-prompt\", system, prompt]\n\n\n# ---- continuation decision (max one, durable) ----\ndef qualification(grade, receipt):\n    \"\"\"Reasons the main stage is NOT qualified; empty list means qualified.\"\"\"\n    bad, rq = [], (receipt or {}).get(\"request\") or {}\n    ident, snap = rq.get(\"identity\") or {}, (receipt or {}).get(\"snapshot\") or {}\n    if (receipt or {}).get(\"stage\") != \"main\": bad.append(\"not main stage\")\n    if ident.get(\"model\") != MODEL: bad.append(\"requested model\")\n    if ident.get(\"allowed_tools\") != TOOLS: bad.append(\"requested tools\")\n    if (receipt or {}).get(\"observed_models\") != [MODEL]: bad.append(\"observed model\")\n    inv = (receipt or {}).get(\"init_tools\")\n    if not isinstance(inv, list) or sorted(inv) != INVENTORY: bad.append(\"tool inventory\")\n    if any(u.get(\"name\") not in INVENTORY for u in (receipt or {}).get(\"tool_uses\") or []): bad.append(\"unexpected tool use\")\n    if (receipt or {}).get(\"anomalies\"): bad.append(\"stream anomalies\")\n    reap = (receipt or {}).get(\"reap\") or {}\n    if not (reap.get(\"group\") == \"absent\" and reap.get(\"reaped\") and receipt.get(\"settled\")): bad.append(\"unsettled group\")\n    if snap.get(\"source_stable\") is not True or snap.get(\"policy_unchanged\") is not True: bad.append(\"source/policy\")\n    if grade.get(\"evaluation_status\") != \"observed\": bad.append(\"grade not observed\")\n    if grade.get(\"source_current\") is not True: bad.append(\"source not current\")\n    return bad\n\n\ndef continuation_decision(grade, receipt):\n    bad = qualification(grade, receipt)\n    if bad: return {\"admit\": False, \"reason\": \"unqualified: \" + \", \".join(bad)}\n    gap = not all(grade.get(k) is True for k in (\"product_passed\", \"negative_passed\",\n                                                  \"regression_passed\", \"scope_valid\"))\n    missing_terminal = receipt.get(\"timed_out\") and receipt.get(\"deadline_known\") and receipt.get(\"terminal\") is None\n    first = {\"first_timed_out\": bool(receipt.get(\"timed_out\")), \"first_terminal_missing\": receipt.get(\"terminal\") is None}\n    if gap: return dict(first, admit=True, kind=\"product_repair\", reason=\"observed artifact gap\",\n                        delivery_gap=bool(missing_terminal))\n    if missing_terminal: return dict(first, admit=True, kind=\"delivery_recovery\",\n                                     reason=\"known clean settled deadline, missing terminal\")\n    return {\"admit\": False, \"reason\": \"no observed gap or qualified deadline\"}\n\n\n_ABS = re.compile(r\"(?<![\\w.])(?:/[^\\s/:'\\\"<>]+){2,}/?\")\n\n\ndef _scrub(v):\n    if not isinstance(v, str): return v\n    v = v.split(\"Traceback (most recent call last)\")[0]\n    return _ABS.sub(\"<path>\", v).strip()\n\n\ndef feedback(grade, receipt=None):\n    \"\"\"Actor-safe: required rows + scope/source/binding/status + delivery gap.\n    No tracebacks, absolute owner paths, oracle source, raw owner output, head.\"\"\"\n    rows = [{k: _scrub(r.get(k)) for k in (\"id\", \"claim\", \"observed\", \"expected\", \"status\")}\n            for r in grade.get(\"required_rows\", grade.get(\"failed_requirements\", []))]\n    out = {\"required_rows\": rows, **{k: grade.get(k) for k in\n           (\"evaluation_status\", \"scope_valid\", \"source_current\", \"local_module_binding\")}}\n    if receipt is not None:\n        out[\"delivery_gap\"] = bool(receipt.get(\"timed_out\") and receipt.get(\"terminal\") is None)\n    return out\n\n\ndef claim_continuation(run_dir, decision):\n    \"\"\"Durable max-one cap enforced at every entrypoint (O_EXCL marker).\"\"\"\n    if not decision.get(\"admit\"): return False\n    try: fd = os.open(os.path.join(run_dir, \"CONTINUATION.claim\"), os.O_CREAT | os.O_EXCL | os.O_WRONLY)\n    except FileExistsError: return False\n    os.write(fd, json.dumps(decision).encode()); os.close(fd)\n    return True\n\n\nif __name__ == \"__main__\":\n    print(json.dumps({\"tools\": TOOLS, \"inventory\": INVENTORY, \"main\": MAIN, \"continuation\": CONT,\n                      \"cleanup_sha256\": CLEANUP_SHA}))\n    sys.exit(0)\n"
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ]
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "6e08df71-e389-478e-8bfd-1fdc5062eaa0"
+    },
+    {
+      "type": "user",
+      "message": {
+        "role": "user",
+        "content": [
+          {
+            "tool_use_id": "toolu_017L7JwAX8JSR8AasrvQAJxb",
+            "type": "tool_result",
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"written\": \"runtime/controller.py\"}"
+              }
+            ]
+          }
+        ]
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "ea938025-7908-4874-9710-00205fb14dc7"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1Neso1tK4P8Md1EwSEM",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 9867,
+          "cache_read_input_tokens": 24063,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 9867
+          },
+          "output_tokens": 8,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": []
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "0fc2dc32-b848-4aa4-bbb9-28e1e5bc1ae1"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1Neso1tK4P8Md1EwSEM",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 9867,
+          "cache_read_input_tokens": 24063,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 9867
+          },
+          "output_tokens": 8,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_01QdQdqQwSEQ2qk2o5gxfrvP",
+            "name": "mcp__cp_trial__replace_text",
+            "input": {
+              "path": "runtime/controller.py",
+              "old": "        fd = os.open(path if os.path.isdir(os.path.dirname(path)) else (os.makedirs(os.path.dirname(path)) or path),\n                     os.O_CREAT | os.O_EXCL | os.O_WRONLY)  # never overwritten",
+              "new": "        os.makedirs(os.path.dirname(path), exist_ok=True)\n        fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)  # never overwritten"
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ]
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "05048b26-3872-490d-bc60-3569e506c404"
+    },
+    {
+      "type": "user",
+      "message": {
+        "role": "user",
+        "content": [
+          {
+            "tool_use_id": "toolu_01QdQdqQwSEQ2qk2o5gxfrvP",
+            "type": "tool_result",
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"written\": \"runtime/controller.py\"}"
+              }
+            ]
+          }
+        ]
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "ab9b86eb-0706-47d8-bec7-e23c028092b5"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1NfA923z5G6Rvy2UL1c",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 370,
+          "cache_read_input_tokens": 33930,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 370
+          },
+          "output_tokens": 32,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": []
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "f4c6e3a8-6c4c-4854-befa-e21585206696"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1NfA923z5G6Rvy2UL1c",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 370,
+          "cache_read_input_tokens": 33930,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 370
+          },
+          "output_tokens": 32,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_01BkNX7hi19GJthwSRrdQGhX",
+            "name": "mcp__cp_trial__write_file",
+            "input": {
+              "path": "runtime/tests/test_controls.py",
+              "content": "import fcntl, json, os, signal, subprocess, sys, tempfile, threading, time, unittest\nsys.path.insert(0, os.path.join(os.path.dirname(__file__), \"..\"))\nimport controller as c\n\n\ndef task(tmp, **kw):\n    base = os.path.join(tmp, \"base\"); os.makedirs(base, exist_ok=True)\n    if not os.path.exists(os.path.join(base, \"mod.py\")): open(os.path.join(base, \"mod.py\"), \"w\").write(\"X=1\\n\")\n    t = {k: None for k in c.TASK_FIELDS}\n    t.update(task_id=\"t1\", prompt=\"p\", requirements=[], interpreter=sys.executable, base_snapshot=base,\n             runtime_read_paths=[os.path.realpath(sys.prefix), os.path.realpath(sys.base_prefix)],\n             forbidden_runtime_read_paths=[], visible_commands=[], production_paths=[\"mod.py\"])\n    t.update(kw); return t\n\n\ndef alive(pid):\n    try: os.kill(pid, 0); return True\n    except ProcessLookupError: return False\n    except PermissionError: return True\n\n\nclass Controls(unittest.TestCase):\n    def setUp(self):\n        self.tmp = os.path.realpath(tempfile.mkdtemp())\n        self.policy = os.path.join(self.tmp, \"policy\"); os.makedirs(self.policy)\n        open(os.path.join(self.policy, \"SKILL.md\"), \"w\").write(\"skill\")\n        self.study = os.path.join(self.tmp, \"study\")\n        self.ws = os.path.join(self.tmp, \"ws\"); os.makedirs(self.ws)\n        self.snap = c.stage_snapshot(self.ws, self.policy, c.inventory(self.policy), [\"mod.py\"])\n\n    def test_1_seal_base_policy_mutation_controls(self):\n        t = task(self.tmp)\n        ctl = c.prepare(self.study, t, self.policy)\n        self.assertEqual(ctl, {\"base\": True, \"policy\": True})\n        sealed = open(os.path.join(self.study, \"inputs\", \"SEAL.json\")).read()\n        self.assertEqual(open(os.path.join(t[\"base_snapshot\"], \"mod.py\")).read(), \"X=1\\n\")  # restored\n        c.prepare(self.study, t, self.policy)  # input seal never overwritten\n        self.assertEqual(sealed, open(os.path.join(self.study, \"inputs\", \"SEAL.json\")).read())\n        self.assertTrue(os.path.exists(os.path.join(self.study, \"runs\", \"t1\", \"PREFLIGHT.json\")))\n        open(os.path.join(t[\"base_snapshot\"], \"mod.py\"), \"a\").write(\"Y=2\\n\")  # authentic base drift\n        with self.assertRaises(RuntimeError): c.check_seal(self.study, t, self.policy)\n        open(os.path.join(t[\"base_snapshot\"], \"mod.py\"), \"w\").write(\"X=1\\n\")\n        c.check_seal(self.study, t, self.policy)\n        open(os.path.join(self.policy, \"SKILL.md\"), \"w\").write(\"tampered\")  # shadow policy drift\n        with self.assertRaises(RuntimeError): c.check_seal(self.study, t, self.policy)\n        os.symlink(self.tmp, os.path.join(t[\"base_snapshot\"], \"loop\"))  # no symlink recursion\n        self.assertEqual(c.inventory(t[\"base_snapshot\"])[\"loop\"], {\"symlink\": self.tmp})\n\n    def test_2_resistant_grandchild_cleanup_or_unsettled(self):\n        g, pidf = os.path.join(self.tmp, \"g\"), os.path.join(self.tmp, \"gc.pid\")\n        gc = \"import signal,time;signal.signal(signal.SIGTERM,signal.SIG_IGN);time.sleep(60)\"\n        parent = f\"import subprocess,sys;p=subprocess.Popen([sys.executable,'-c',{gc!r}]);open({pidf!r},'w').write(str(p.pid))\"\n        held = []\n        def snap():  # source capture happens while the global lock is still held\n            h = open(os.path.join(g, \"provider.lock\"), \"a+\")\n            try: fcntl.flock(h, fcntl.LOCK_EX | fcntl.LOCK_NB); held.append(False)\n            except BlockingIOError: held.append(True)\n            h.close(); return self.snap()\n        r = c.run_stage(g, os.path.join(self.tmp, \"run\"), \"main\", [sys.executable, \"-c\", parent], 20, snapshot=snap)\n        self.assertEqual(held, [True]); self.assertFalse(r[\"timed_out\"])\n        self.assertEqual(r[\"reap\"][\"group\"], \"absent\"); self.assertTrue(r[\"settled\"])\n        self.assertEqual(r[\"reap\"][\"helper_sha256\"], c.CLEANUP_SHA)\n        self.assertFalse(alive(int(open(pidf).read())), \"grandchild survived parent exit\")\n        # negative: cleanup that does not kill descendants -> durable unsettled, blocks dispatch\n        os.remove(pidf)\n        r2 = c.run_stage(g, os.path.join(self.tmp, \"run2\"), \"main\", [sys.executable, \"-c\", parent], 20,\n                         snapshot=self.snap, cleanup=lambda p: p.wait())\n        self.assertFalse(r2[\"settled\"]); self.assertEqual(r2[\"reap\"][\"group\"], \"alive\")\n        self.assertEqual(json.load(open(os.path.join(g, \"ADMISSION.json\")))[\"state\"], \"unsettled\")\n        with self.assertRaises(RuntimeError):\n            c.run_stage(g, os.path.join(self.tmp, \"run3\"), \"main\", [sys.executable, \"-c\", \"0\"], 5, snapshot=self.snap)\n        self.assertFalse(hasattr(c, \"settle_explicitly\"))  # no clearing note\n        self.assertFalse(c.recover_settle(g, self.snap))  # group still alive\n        gpid = int(open(pidf).read()); os.kill(gpid, signal.SIGKILL)\n        for _ in range(40):\n            if not alive(gpid): break\n            time.sleep(0.05)\n        self.assertTrue(c.recover_settle(g, self.snap))\n        # missing snapshot never settles\n        r4 = c.run_stage(g, os.path.join(self.tmp, \"run4\"), \"main\", [sys.executable, \"-c\", \"0\"], 5)\n        self.assertFalse(r4[\"settled\"])\n\n    def test_3_global_serial_admission_queue_separate(self):\n        g, marks = os.path.join(self.tmp, \"g\"), os.path.join(self.tmp, \"marks\")\n        prog = f\"import time;open({marks!r},'a').write('s');time.sleep(0.4);open({marks!r},'a').write('e')\"\n        rs = []\n        ths = [threading.Thread(target=lambda s=s: rs.append(c.run_stage(g, os.path.join(self.tmp, s), s,\n                                [sys.executable, \"-c\", prog], 10, snapshot=self.snap))) for s in (\"main\", \"continuation\", \"m2\")]\n        [t.start() for t in ths]; [t.join() for t in ths]\n        self.assertEqual(open(marks).read(), \"se\" * 3)\n        self.assertTrue(max(r[\"queue_wait\"] for r in rs) > 0.3 and all(r[\"elapsed\"] < 5 for r in rs))\n        calls = []\n        r = c.run_stage(g, os.path.join(self.tmp, \"svc\"), \"main\", [sys.executable, \"-c\", \"import time;time.sleep(0.3)\"], 10,\n                        snapshot=self.snap, cwd=self.ws, env={\"PATH\": \"/usr/bin:/bin\"},\n                        service=lambda p, d: (calls.append(p.poll()), time.sleep(0.02)))\n        self.assertTrue(len(calls) > 3 and r[\"settled\"] and r[\"request\"][\"cwd\"] == self.ws)\n        with self.assertRaises(FileNotFoundError):\n            c.run_stage(g, os.path.join(self.tmp, \"x\"), \"main\", [\"/nonexistent-binary\"], 5, snapshot=self.snap)\n        with self.assertRaises(RuntimeError):\n            c.run_stage(g, os.path.join(self.tmp, \"y\"), \"main\", [sys.executable, \"-c\", \"0\"], 5, snapshot=self.snap)\n        self.assertTrue(c.recover_settle(g, self.snap))  # proven never-started + retained streams\n        self.assertTrue(c.run_stage(g, os.path.join(self.tmp, \"y\"), \"main\", [sys.executable, \"-c\", \"0\"], 5,\n                                    snapshot=self.snap)[\"settled\"])\n\n    @unittest.skipUnless(os.path.exists(\"/usr/bin/sandbox-exec\") and subprocess.run(\n        [\"/usr/bin/sandbox-exec\", \"-p\", \"(version 1)(allow default)\", \"/usr/bin/true\"],\n        capture_output=True).returncode == 0, \"GAP: nested sandbox_apply blocked; root native runs after settlement\")\n    def test_4_sandbox_prefix_denies_and_exact_interpreter(self):\n        tmpd = os.path.join(self.tmp, \"scratch\"); os.makedirs(tmpd)\n        outside = os.path.join(self.tmp, \"outside.txt\"); open(outside, \"w\").write(\"secret\")\n        tgt = os.path.join(self.ws, \"target.py\"); open(tgt, \"w\").write(\"X=1\")\n        t = task(self.tmp, forbidden_runtime_read_paths=[tgt])\n        pre = c.command_prefix(self.ws, tmpd, t, policy_paths=[self.policy])\n        def run(code):\n            return subprocess.run(pre + c.visible_argv(t, [\"python\", \"-I\", \"-S\", \"-B\", \"-c\", code]),\n                                  cwd=self.ws, capture_output=True, text=True, timeout=30)\n        base = run(\"print(1)\")\n        self.assertEqual(base.stdout.strip(), \"1\", f\"baseline cannot start: {base.returncode} {base.stderr}\")\n        self.assertEqual(run(f\"open({os.path.join(self.ws,'w')!r},'w').write('x')\").returncode, 0)\n        self.assertNotEqual(run(f\"open({outside!r}).read()\").returncode, 0, \"outside read\")\n        self.assertNotEqual(run(f\"open({os.path.join(self.tmp,'o2')!r},'w')\").returncode, 0, \"outside write\")\n        self.assertNotEqual(run(f\"open({os.path.join(self.policy,'SKILL.md')!r},'w')\").returncode, 0, \"policy write\")\n        self.assertNotEqual(run(f\"open({tgt!r}).read()\").returncode, 0, \"forbidden literal after allow\")\n        self.assertEqual(c.visible_argv(t, [\"python\", \"x\"])[0], sys.executable)\n\n    def test_5_parse_stream_retains_terminal_and_anomalies(self):\n        g, run = os.path.join(self.tmp, \"g\"), os.path.join(self.tmp, \"run\")\n        lines = ['{\"type\":\"system\",\"subtype\":\"init\",\"tools\":[],\"session_id\":\"s\"}',\n                 '{\"type\":\"assistant\",\"message\":{\"model\":\"claude-opus-5-5\",\"content\":[{\"type\":\"tool_use\",\"id\":\"t1\",\"name\":\"x\"}]}}',\n                 '{\"type\":\"result\",\"subtype\":\"success\",\"result\":\"done\"}']\n        prog = \"import time\\n\" + \"\".join(f\"print({l!r},flush=True)\\n\" for l in lines) + \"time.sleep(60)\\n\"\n        r = c.run_stage(g, run, \"main\", [sys.executable, \"-c\", prog], 1.5, snapshot=self.snap)\n        self.assertTrue(r[\"timed_out\"]); self.assertEqual(r[\"terminal\"][\"result\"], \"done\")\n        self.assertTrue(r[\"terminal_before_deadline\"]); self.assertEqual(r[\"tool_uses\"], [{\"id\": \"t1\", \"name\": \"x\"}])\n        p = os.path.join(self.tmp, \"s.jsonl\")\n        open(p, \"w\").write(\"\\n\".join([lines[0], \"not json\", lines[0],\n                                      lines[1].replace(\"claude-opus-5-5\", \"other\"), lines[1], lines[2], lines[2]]) + \"\\n{\\\"trunc\")\n        kinds = {a[\"kind\"] for a in c.parse_stream(p)[\"anomalies\"]}\n        self.assertTrue({\"invalid_json\", \"multiple_init\", \"multiple_result\", \"multiple_models\",\n                         \"duplicate_tool_use_id\", \"event_after_result\"} <= kinds, kinds)\n        self.assertTrue(c.parse_stream(p)[\"truncated_tail\"])\n\n    def test_6_continuation_exact_qualification_max_one(self):\n        ok = dict(evaluation_status=\"observed\", source_current=True, product_passed=True, negative_passed=True,\n                  regression_passed=True, scope_valid=True)\n        snap = {\"source_stable\": True, \"policy_unchanged\": True}\n        good = {\"stage\": \"main\", \"timed_out\": True, \"deadline_known\": True, \"terminal\": None, \"settled\": True,\n                \"observed_models\": [c.MODEL], \"init_tools\": c.TOOLS + [\"StructuredOutput\"], \"anomalies\": [],\n                \"tool_uses\": [{\"id\": \"a\", \"name\": c.TOOLS[1]}], \"reap\": {\"group\": \"absent\", \"reaped\": True},\n                \"snapshot\": snap, \"request\": {\"identity\": c._request_identity(c.claude_argv(\"p\", \"s\", {}, {}, c.MAIN))}}\n        D = c.continuation_decision\n        self.assertEqual(D(ok, good)[\"kind\"], \"delivery_recovery\")  # even if artifact passes\n        self.assertEqual(D(dict(ok, negative_passed=False), dict(good, timed_out=False, deadline_known=False))[\"kind\"], \"product_repair\")\n        self.assertFalse(D(dict(ok, negative_passed=False), {})[\"admit\"])  # receipt={} rejected\n        for bad in (dict(good, observed_models=[\"other\"]), dict(good, init_tools=c.TOOLS + [\"StructuredOutput\", \"Bash\"]),\n                    dict(good, init_tools=c.TOOLS), dict(good, tool_uses=[{\"id\": \"b\", \"name\": \"Bash\"}]),\n                    dict(good, snapshot=dict(snap, policy_unchanged=False)), dict(good, snapshot=dict(snap, source_stable=False)),\n                    dict(good, reap={\"group\": \"unknown\", \"reaped\": True}), dict(good, settled=False),\n                    dict(good, anomalies=[{\"kind\": \"multiple_result\"}]), dict(good, stage=\"continuation\"),\n                    dict(good, terminal={\"type\": \"result\", \"result\": \"complete\"}, timed_out=False, deadline_known=False)):\n            self.assertFalse(D(dict(ok, negative_passed=False) if bad.get(\"terminal\") is None else ok, bad)[\"admit\"]\n                             if bad.get(\"terminal\") is None else D(ok, bad)[\"admit\"])\n        self.assertFalse(D(dict(ok, evaluation_status=\"unknown\"), good)[\"admit\"])\n        self.assertFalse(D(dict(ok, source_current=False), good)[\"admit\"])\n        fb = c.feedback({\"required_rows\": [{\"id\": \"r1\", \"claim\": \"c\", \"status\": \"fail\", \"expected\": \"e\",\n                         \"observed\": \"bad at /Users/owner/secret/x.py line 3\\nTraceback (most recent call last): SECRET\"}],\n                         \"source_current\": True, \"evaluation_status\": \"observed\"}, good)\n        s = json.dumps(fb); self.assertNotIn(\"SECRET\", s); self.assertNotIn(\"/Users/owner\", s); self.assertTrue(fb[\"delivery_gap\"])\n        run = os.path.join(self.tmp, \"run\"); os.makedirs(run)\n        d = D(ok, good)\n        self.assertTrue(c.claim_continuation(run, d)); self.assertFalse(c.claim_continuation(run, d))\n        a = c.claude_argv(\"p\", \"s\", {}, {}, c.CONT)\n        self.assertEqual(a[a.index(\"--model\") + 1], c.MODEL); self.assertEqual(a[a.index(\"--max-budget-usd\") + 1], \"2.0\")\n\n\nif __name__ == \"__main__\":\n    unittest.main(verbosity=2)\n"
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ]
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "1e74097a-0ee5-41e4-9ee9-b637d998e942"
+    },
+    {
+      "type": "user",
+      "message": {
+        "role": "user",
+        "content": [
+          {
+            "tool_use_id": "toolu_01BkNX7hi19GJthwSRrdQGhX",
+            "type": "tool_result",
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"written\": \"runtime/tests/test_controls.py\"}"
+              }
+            ]
+          }
+        ]
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "3e89e5fc-04c0-431a-a4f3-e89c91e4497e"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1NfA923z5G6Rvy2UL1c",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 370,
+          "cache_read_input_tokens": 33930,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 370
+          },
+          "output_tokens": 32,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_01Bde2Ju32nHgbgh2iWyH51Q",
+            "name": "mcp__cp_trial__run_tests",
+            "input": {
+              "argv": [
+                "python3",
+                "runtime/tests/test_controls.py"
+              ],
+              "timeout_seconds": 90
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ]
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "c464a593-5b14-4d96-adc1-2f4c9622ef88"
+    },
+    {
+      "type": "user",
+      "message": {
+        "role": "user",
+        "content": [
+          {
+            "tool_use_id": "toolu_01Bde2Ju32nHgbgh2iWyH51Q",
+            "type": "tool_result",
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"argv\": [\"/usr/bin/sandbox-exec\", \"-p\", \"(version 1)\\n(deny default)\\n(allow process-fork)\\n(allow process-exec)\\n(allow signal (target same-sandbox))\\n(allow file-read* (literal \\\"/\\\") (literal \\\"/Library\\\") (literal \\\"/Library/Developer\\\") (literal \\\"/Users\\\") (literal \\\"/Users/aryagm\\\") (literal \\\"/Users/aryagm/.codex\\\") (literal \\\"/Users/aryagm/.codex/worktrees\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-final-patch\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-final-patch/call\\\") (literal \\\"/opt\\\") (literal \\\"/opt/homebrew\\\") (subpath \\\"/System\\\") (subpath \\\"/usr\\\") (subpath \\\"/bin\\\") (subpath \\\"/opt/homebrew/bin\\\") (subpath \\\"/opt/homebrew/lib\\\") (subpath \\\"/opt/homebrew/opt\\\") (subpath \\\"/opt/homebrew/Cellar\\\") (subpath \\\"/opt/homebrew/Frameworks\\\") (subpath \\\"/Library/Frameworks\\\") (subpath \\\"/Library/Developer/CommandLineTools\\\") (subpath \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace\\\") (subpath \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-final-patch/call/execution-scratch\\\") (literal \\\"/dev/null\\\") (literal \\\"/dev/urandom\\\") (literal \\\"/dev/random\\\"))\\n(allow file-write* (subpath \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace\\\") (subpath \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-final-patch/call/execution-scratch\\\"))\\n(allow file-write* (literal \\\"/dev/null\\\"))\\n(deny file-write* (subpath \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/.protocol\\\"))\\n(deny file-write* (subpath \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/.git\\\"))\\n(deny file-write* (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/AGENTS.md\\\"))\", \"/opt/homebrew/opt/python@3.14/bin/python3.14\", \"runtime/tests/test_controls.py\"], \"exit_code\": 1, \"timed_out\": false, \"wall_seconds\": 8.94204512500437, \"stdout\": \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-final-patch/call/command-59b18fcac179450b976a43f1c65dbc0f.stdout\", \"stderr\": \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-final-patch/call/command-59b18fcac179450b976a43f1c65dbc0f.stderr\", \"stdout_sha256\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"stderr_sha256\": \"63b932867cd67e964bf743af644953132fb7fdd4b1c5cb0c509fd1f5ea530447\", \"process_cleanup_scope\": \"original_process_group\", \"detached_descendants_contained\": false, \"output\": \"\", \"error_output\": \"test_1_seal_base_policy_mutation_controls (__main__.Controls.test_1_seal_base_policy_mutation_controls) ... /Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:26: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-final-patch/call/execution-scratch/tmpsvkm2p4n/policy/SKILL.md' mode='w' encoding='UTF-8'>\\n  open(os.path.join(self.policy, \\\"SKILL.md\\\"), \\\"w\\\").write(\\\"skill\\\")\\nResourceWarning: Enable tracemalloc to get the object allocation traceback\\n/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:8: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-final-patch/call/execution-scratch/tmpsvkm2p4n/base/mod.py' mode='w' encoding='UTF-8'>\\n  if not os.path.exists(os.path.join(base, \\\"mod.py\\\")): open(os.path.join(base, \\\"mod.py\\\"), \\\"w\\\").write(\\\"X=1\\\\n\\\")\\nResourceWarning: Enable tracemalloc to get the object allocation traceback\\n/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:35: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-final-patch/call/execution-scratch/tmpsvkm2p4n/study/inputs/SEAL.json' mode='r' encoding='UTF-8'>\\n  sealed = open(os.path.join(self.study, \\\"inputs\\\", \\\"SEAL.json\\\")).read()\\nResourceWarning: Enable tracemalloc to get the object allocation traceback\\n/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:36: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-final-patch/call/execution-scratch/tmpsvkm2p4n/base/mod.py' mode='r' encoding='UTF-8'>\\n  self.assertEqual(open(os.path.join(t[\\\"base_snapshot\\\"], \\\"mod.py\\\")).read(), \\\"X=1\\\\n\\\")  # restored\\nResourceWarning: Enable tracemalloc to get the object allocation traceback\\n/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:38: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-final-patch/call/execution-scratch/tmpsvkm2p4n/study/inputs/SEAL.json' mode='r' encoding='UTF-8'>\\n  self.assertEqual(sealed, open(os.path.join(self.study, \\\"inputs\\\", \\\"SEAL.json\\\")).read())\\nResourceWarning: Enable tracemalloc to get the object allocation traceback\\n/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:40: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-final-patch/call/execution-scratch/tmpsvkm2p4n/base/mod.py' mode='a' encoding='UTF-8'>\\n  open(os.path.join(t[\\\"base_snapshot\\\"], \\\"mod.py\\\"), \\\"a\\\").write(\\\"Y=2\\\\n\\\")  # authentic base drift\\nResourceWarning: Enable tracemalloc to get the object allocation traceback\\n/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:42: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-final-patch/call/execution-scratch/tmpsvkm2p4n/base/mod.py' mode='w' encoding='UTF-8'>\\n  open(os.path.join(t[\\\"base_snapshot\\\"], \\\"mod.py\\\"), \\\"w\\\").write(\\\"X=1\\\\n\\\")\\nResourceWarning: Enable tracemalloc to get the object allocation traceback\\n/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:44: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-final-patch/call/execution-scratch/tmpsvkm2p4n/policy/SKILL.md' mode='w' encoding='UTF-8'>\\n  open(os.path.join(self.policy, \\\"SKILL.md\\\"), \\\"w\\\").write(\\\"tampered\\\")  # shadow policy drift\\nResourceWarning: Enable tracemalloc to get the object allocation traceback\\nok\\ntest_2_resistant_grandchild_cleanup_or_unsettled (__main__.Controls.test_2_resistant_grandchild_cleanup_or_unsettled) ... /Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:26: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-final-patch/call/execution-scratch/tmpytv9zwwr/policy/SKILL.md' mode='w' encoding='UTF-8'>\\n  open(os.path.join(self.policy, \\\"SKILL.md\\\"), \\\"w\\\").write(\\\"skill\\\")\\nResourceWarning: Enable tracemalloc to get the object allocation traceback\\n/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:63: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-final-patch/call/execution-scratch/tmpytv9zwwr/gc.pid' mode='r' encoding='UTF-8'>\\n  self.assertFalse(alive(int(open(pidf).read())), \\\"grandchild survived parent exit\\\")\\nResourceWarning: Enable tracemalloc to get the object allocation traceback\\n/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:69: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-final-patch/call/execution-scratch/tmpytv9zwwr/g/ADMISSION.json' mode='r' encoding='UTF-8'>\\n  self.assertEqual(json.load(open(os.path.join(g, \\\"ADMISSION.json\\\")))[\\\"state\\\"], \\\"unsettled\\\")\\nResourceWarning: Enable tracemalloc to get the object allocation traceback\\n/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:74: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-final-patch/call/execution-scratch/tmpytv9zwwr/gc.pid' mode='r' encoding='UTF-8'>\\n  gpid = int(open(pidf).read()); os.kill(gpid, signal.SIGKILL)\\nResourceWarning: Enable tracemalloc to get the object allocation traceback\\nok\\ntest_3_global_serial_admission_queue_separate (__main__.Controls.test_3_global_serial_admission_queue_separate) ... /Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:26: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-final-patch/call/execution-scratch/tmpj0o981s7/policy/SKILL.md' mode='w' encoding='UTF-8'>\\n  open(os.path.join(self.policy, \\\"SKILL.md\\\"), \\\"w\\\").write(\\\"skill\\\")\\nResourceWarning: Enable tracemalloc to get the object allocation traceback\\n/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:90: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-final-patch/call/execution-scratch/tmpj0o981s7/marks' mode='r' encoding='UTF-8'>\\n  self.assertEqual(open(marks).read(), \\\"se\\\" * 3)\\nResourceWarning: Enable tracemalloc to get the object allocation traceback\\nok\\ntest_4_sandbox_prefix_denies_and_exact_interpreter (__main__.Controls.test_4_sandbox_prefix_denies_and_exact_interpreter) ... skipped 'GAP: nested sandbox_apply blocked; root native runs after settlement'\\ntest_5_parse_stream_retains_terminal_and_anomalies (__main__.Controls.test_5_parse_stream_retains_terminal_and_anomalies) ... /Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:26: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-final-patch/call/execution-scratch/tmpc668_klm/policy/SKILL.md' mode='w' encoding='UTF-8'>\\n  open(os.path.join(self.policy, \\\"SKILL.md\\\"), \\\"w\\\").write(\\\"skill\\\")\\nResourceWarning: Enable tracemalloc to get the object allocation traceback\\n/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:136: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-final-patch/call/execution-scratch/tmpc668_klm/s.jsonl' mode='w' encoding='UTF-8'>\\n  open(p, \\\"w\\\").write(\\\"\\\\n\\\".join([lines[0], \\\"not json\\\", lines[0],\\nResourceWarning: Enable tracemalloc to get the object allocation traceback\\nFAIL\\ntest_6_continuation_exact_qualification_max_one (__main__.Controls.test_6_continuation_exact_qualification_max_one) ... /Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:26: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-final-patch/call/execution-scratch/tmpnw2i6hbr/policy/SKILL.md' mode='w' encoding='UTF-8'>\\n  open(os.path.join(self.policy, \\\"SKILL.md\\\"), \\\"w\\\").write(\\\"skill\\\")\\nResourceWarning: Enable tracemalloc to get the object allocation traceback\\nok\\n\\n======================================================================\\nFAIL: test_5_parse_stream_retains_terminal_and_anomalies (__main__.Controls.test_5_parse_stream_retains_terminal_and_anomalies)\\n----------------------------------------------------------------------\\nTraceback (most recent call last):\\n  File \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py\\\", line 139, in test_5_parse_stream_retains_terminal_and_anomalies\\n    self.assertTrue({\\\"invalid_json\\\", \\\"multiple_init\\\", \\\"multiple_result\\\", \\\"multiple_models\\\",\\n    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n                     \\\"duplicate_tool_use_id\\\", \\\"event_after_result\\\"} <= kinds, kinds)\\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\nAssertionError: False is not true : {'multiple_init', 'duplicate_tool_use_id', 'multiple_result', 'invalid_json', 'multiple_models'}\\n\\n----------------------------------------------------------------------\\nRan 6 tests in 8.732s\\n\\nFAILED (failures=1, skipped=1)\\n\"}"
+              }
+            ]
+          }
+        ]
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "e8bc9675-8a65-44bd-a632-2df64fbd6abd"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1Nit4jpjaa9cyq6WQ6x",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 12868,
+          "cache_read_input_tokens": 34300,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 12868
+          },
+          "output_tokens": 8,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": []
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "72649b80-a0fb-4f8c-9a00-80f5346bb598"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1Nit4jpjaa9cyq6WQ6x",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 12868,
+          "cache_read_input_tokens": 34300,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 12868
+          },
+          "output_tokens": 8,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_01G8suzjzUdz4to9LSL6F7Tm",
+            "name": "mcp__cp_trial__replace_text",
+            "input": {
+              "path": "runtime/tests/test_controls.py",
+              "old": "lines[1], lines[2], lines[2]]) + \"\\n{\\\"trunc\")",
+              "new": "lines[1], lines[2], lines[2], lines[1]]) + \"\\n{\\\"trunc\")"
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ]
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "05a4d819-cfb6-48c1-aa07-f71b7404efe6"
+    },
+    {
+      "type": "user",
+      "message": {
+        "role": "user",
+        "content": [
+          {
+            "tool_use_id": "toolu_01G8suzjzUdz4to9LSL6F7Tm",
+            "type": "tool_result",
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"written\": \"runtime/tests/test_controls.py\"}"
+              }
+            ]
+          }
+        ]
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "75175d14-4c7e-407b-925a-c95ec7a200eb"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1Nit4jpjaa9cyq6WQ6x",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 12868,
+          "cache_read_input_tokens": 34300,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 12868
+          },
+          "output_tokens": 8,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_01VSqygBy72stJjRbms7CBru",
+            "name": "mcp__cp_trial__read_file",
+            "input": {
+              "path": "candidate/SKILL.md"
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ]
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "e697cae5-700c-485d-b5c0-52251636931d"
+    },
+    {
+      "type": "user",
+      "message": {
+        "role": "user",
+        "content": [
+          {
+            "tool_use_id": "toolu_01VSqygBy72stJjRbms7CBru",
+            "type": "tool_result",
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"path\": \"candidate/SKILL.md\", \"content\": \"---\\nname: confidence-protocol\\ndescription: Implement, fix, refactor, research, or review software with explicit proof obligations, proportional verification, and traceable evidence. Use when the user requests Confidence Protocol or justified confidence in a software change.\\n---\\n\\n# Confidence Protocol\\n\\nDeliver the requested outcome with evidence a teammate can inspect. Command success, current source, and sufficient proof are separate judgments.\\n\\n## Default loop\\n\\nOrdinary work follows one loop: contract, proof plan, change, check and repair, close. Add process only where the risk rules below call for it, and continue autonomously until the authorized outcome is delivered or a concrete blocker remains.\\n\\n1. **Contract.** State the goal, the required behaviors, what must not happen or change, and the scope boundary: the paths, interfaces, data and environment the task may read or change. Recover settled decisions and discover facts from the conversation, repository and retained evidence before asking. Ask only when an open choice would change the outcome, acceptance, consequential risk or authority; then ask the current frontier once, grouped, as in [intent and task flows](references/intent-flows.md) and [question patterns](references/question-patterns.md). Otherwise state assumptions and proceed. A necessary fact that is still unknown stays a required gap.\\n2. **Proof plan.** For each required behavior, name the public interface that shows it, an expected result derived from the requirement rather than from the code, and a negative or boundary case that could refute it.\\n3. **Change.** Make the smallest change that fits repository conventions and stays inside the scope boundary; report a worthwhile change outside it as a suggestion.\\n4. **Check and repair.** Run the planned checks against the current source and repair from what a failed check actually showed. As soon as a repeated attempt adds no new facts, change the diagnostic, hypothesis or route, or report a precise blocker; no fixed number of attempts is required first.\\n5. **Close.** Pair each required behavior, each negative case and the scope boundary (the actual changed paths) with current evidence, as described under Verify and finish.\\n\\n## Establish the contract\\n\\nUnderstand the desired outcome before choosing an implementation. Use [intent and task flows](references/intent-flows.md) for new, ambiguous, or substantial work: recover known decisions, resolve consequential unknowns, choose the task flow, and map acceptance to proof. A clear Quick task needs only a brief statement. Identify observable success, important regressions, constraints, the scope boundary and unresolved facts before implementation. Turn consequential claims into disprovable obligations. Trace the actual behavior through its execution and validation gates; a prerequisite that exists but is invalid must not enable an action or promise readiness.\\n\\nFor complex or long-running work, use [complex tasks](references/complex-tasks.md) to preserve dependencies, authority, blockers, review provenance, and recovery state. Use [harness guidance](references/harnesses.md) when delegating across Codex, Claude Code, or T3 Code. Resolve model and runtime capabilities from current documentation and actual receipts; a model name or agent count is not proof.\\n\\nUse the lightest adequate process: **Quick** for clear, reversible local edits; **Standard** for ordinary bugs, features, and implementation-guiding research; **Critical** for consequential trust, money, destructive data, migration, or broad product changes. Use [mode examples](references/modes.md) and [task profiles](references/task-profiles.md) when the proof scope needs clarification. Explain the proof plan briefly. Preserve scope and existing authorization; continue discovery, implementation, repair, and verification autonomously. Ask only for an unresolved consequential choice or an action requiring additional authorization. Finish authorized preparation before that decision.\\n\\nFor substantial work, follow [model routing](references/model-routing.md). Claude Opus owns difficult implementation, diagnosis and repair, including its own check-and-repair loop; Claude Haiku takes bounded discovery or evidence extraction only when checking its output costs less than doing the work. When Codex coordinates, it keeps the user conversation, authority, integration and independent checks, returns concrete requirement-affecting findings, including scope and data errors, to Opus for repair, and does not redo delegated work. An unavailable route falls back to direct work. Keep Quick work direct. Whoever claims completion verifies promoted findings; model output cannot close a proof obligation by itself.\\n\\n## Build and challenge\\n\\nChoose a small useful change that fits repository conventions. For bugs, reproduce the failure, locate its cause, then verify the trigger and important nearby behavior; a fix that masks the symptom or weakens required validation is not a repair, while correcting an overly strict, incorrect guard can be the root-cause fix. Read facts from the right repository, account, environment, entity and time through an authoritative accessible source: an MCP when appropriate, a CLI or local file when it answers the same boundary. Exercise important boundaries through public behavior; mocks establish only the behavior they retain, and an offline mock is not live integration proof. If a claim depends on persistence or an external contract, run that boundary or mark the claim partial.\\n\\nUse independent review for Critical work, consequential unresolved assumptions, changed trust/persistence/service contracts, surprising proof failures, or failures that are difficult to detect or undo. A reversible local mapping can use focused checks when it changes no such boundary; record why. Give the reviewer a narrow counterexample question and raw evidence. Critical work needs separate test-design and adversarial-review roles. Obtain independent proof design before implementation; review the resulting change adversarially afterward. Retain reviewer origin, scope, findings, and a resolvable reference; never invent independence. An actor's check of its own implementation or repair is author evidence, not independent review of that change. For new Critical software contracts, use the pinned review records described in [complex tasks](references/complex-tasks.md). If required review is unavailable, disclose the gap. Use native delegation within task authorization; separately billed or cross-provider calls need authorization covering cost and source exposure. Preserve authorization already granted.\\n\\nPrefer one clear owner per rule, direct code, and abstractions justified by current needs. Remove unused scaffolding. Tests should check observable public behavior with small isolated fixtures, explicit or independently derived expectations and clear failure messages, and, where relevant, a negative case that could reject the claim; a trivial documentation edit needs no forced red test or new test. Avoid duplicated coverage and mocks that erase the boundary being tested. Add or change ordinary tests when that helps; when a requirement changes expected behavior, update the affected expectation, name the requirement that justifies it, and keep unrelated regression checks intact. Never weaken, skip or replace an independent owner check, acceptance fixture or negative case to make it pass.\\n\\nWhen findings arrive from a reviewer, critic or owner check, including scope and data-boundary verdicts, handle the complete set as claims about the current source, as in [model routing](references/model-routing.md): reproduce or inspect each, then repair it or reject it with contradicting evidence; do not drop one silently. After a handoff or fresh context, rebuild state from durable material (the contract, current diff, latest check output and open findings) rather than from summary pass labels.\\n\\n## Verify and finish\\n\\nRerun affected proof after relevant code, test, or environment changes. Use the cheapest adequate probe and reuse current sufficient evidence; do not repeat adequate passing checks or broad suites without a relevant change. Resolve failures before expanding the test scope; when the same failure repeats with no new facts, change the diagnostic, hypothesis or route at once rather than repeating the attempt; a justified diagnostic retry of a suspected transient failure remains acceptable. Stop when the accepted scope is complete.\\n\\nFor Standard/Critical repository work, use [evidence.md](references/evidence.md) for capture, incremental recording, and completion semantics when its evidence CLI is available in the task environment; otherwise keep the same claim-to-evidence pairing in the report. A focused Standard task does not need a CLI certificate. Keep read-only requests read-only unless artifact creation is authorized. Required missing proof stays partial; accepted or optional exclusions remain visible with reasons, separate from required gaps, and do not by themselves make the delivered scope incomplete. Successful validation checks evidence rules, not the truth of every product claim.\\n\\nBefore declaring completion, reread the accepted contract and pair each required behavior and the scope boundary (compare the actual changed paths) with the current executed check or inspected artifact that shows it, including a relevant negative or boundary case where one could refute the claim. An unpaired requirement, an unresolved known counterexample or proof that predates a relevant edit is a gap; a worker's completion claim, a passing suite, review agreement or a passing accepted reference does not close it.\\n\\nReport delivered behavior, strongest relevant proof, remaining uncertainty, evidence location, and rollback when consequential. State exactly what was verified. Continue until the authorized outcome is delivered or a concrete blocker prevents further useful work.\\n\"}"
+              }
+            ]
+          }
+        ]
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "a7ae7039-fccd-49c9-b7d7-1b879b0f9ff7"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1NjCz2rjBGgwuxQCDfV",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 3597,
+          "cache_read_input_tokens": 47168,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 3597
+          },
+          "output_tokens": 8,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": []
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "6b332aa5-dede-49cd-b738-3086b4b2fcd2"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1NjCz2rjBGgwuxQCDfV",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 3597,
+          "cache_read_input_tokens": 47168,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 3597
+          },
+          "output_tokens": 8,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_01JXR8Rb9EqVDEoQcuDH2Nvq",
+            "name": "mcp__cp_trial__replace_text",
+            "input": {
+              "path": "candidate/SKILL.md",
+              "old": "or report a precise blocker; no fixed number of attempts is required first.",
+              "new": "or report a precise blocker; a justified diagnostic retry of a suspected transient failure remains acceptable, and no fixed number of attempts is required first."
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ]
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "b7c658d2-8fed-4a75-a617-1ba0cb386871"
+    },
+    {
+      "type": "user",
+      "message": {
+        "role": "user",
+        "content": [
+          {
+            "tool_use_id": "toolu_01JXR8Rb9EqVDEoQcuDH2Nvq",
+            "type": "tool_result",
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"written\": \"candidate/SKILL.md\"}"
+              }
+            ]
+          }
+        ]
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "8709b080-974d-4d9d-976a-d649a669f9bd"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1NjCz2rjBGgwuxQCDfV",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 3597,
+          "cache_read_input_tokens": 47168,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 3597
+          },
+          "output_tokens": 8,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_012rzwRFthRTK32nDVDjTfso",
+            "name": "mcp__cp_trial__replace_text",
+            "input": {
+              "path": "candidate/SKILL.md",
+              "old": "A clear Quick task needs only a brief statement. Identify observable success, important regressions, constraints, the scope boundary and unresolved facts before implementation. Turn",
+              "new": "A clear Quick task needs only a brief statement. Turn"
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ]
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "ba302a99-a600-45da-97d9-f553322c7256"
+    },
+    {
+      "type": "user",
+      "message": {
+        "role": "user",
+        "content": [
+          {
+            "tool_use_id": "toolu_012rzwRFthRTK32nDVDjTfso",
+            "type": "tool_result",
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"written\": \"candidate/SKILL.md\"}"
+              }
+            ]
+          }
+        ]
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "bb4fe025-72db-4be0-b9cf-3095e7466154"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1NjCz2rjBGgwuxQCDfV",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 3597,
+          "cache_read_input_tokens": 47168,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 3597
+          },
+          "output_tokens": 8,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_01XDnsGobGjyGcYiDsdHf781",
+            "name": "mcp__cp_trial__replace_text",
+            "input": {
+              "path": "candidate/SKILL.md",
+              "old": "Explain the proof plan briefly. Preserve scope and existing authorization; continue discovery, implementation, repair, and verification autonomously. Ask only for an unresolved consequential choice or an action requiring additional authorization. Finish",
+              "new": "Explain the proof plan briefly. Preserve scope and existing authorization. Finish"
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ]
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "4448172c-a2ff-46a0-bcac-4aa3b89f4d7d"
+    },
+    {
+      "type": "user",
+      "message": {
+        "role": "user",
+        "content": [
+          {
+            "tool_use_id": "toolu_01XDnsGobGjyGcYiDsdHf781",
+            "type": "tool_result",
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"written\": \"candidate/SKILL.md\"}"
+              }
+            ]
+          }
+        ]
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "196f5b16-158c-4bca-862a-c4a020fc6fdb"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1NjCz2rjBGgwuxQCDfV",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 3597,
+          "cache_read_input_tokens": 47168,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 3597
+          },
+          "output_tokens": 8,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_01Ew713onUEucx9RYpoJo9cG",
+            "name": "mcp__cp_trial__replace_text",
+            "input": {
+              "path": "candidate/SKILL.md",
+              "old": "Resolve failures before expanding the test scope; when the same failure repeats with no new facts, change the diagnostic, hypothesis or route at once rather than repeating the attempt; a justified diagnostic retry of a suspected transient failure remains acceptable. Stop",
+              "new": "Resolve failures before expanding the test scope. Stop"
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ]
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "c55e45dc-70bd-4700-a6de-6c562785ab5f"
+    },
+    {
+      "type": "user",
+      "message": {
+        "role": "user",
+        "content": [
+          {
+            "tool_use_id": "toolu_01Ew713onUEucx9RYpoJo9cG",
+            "type": "tool_result",
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"written\": \"candidate/SKILL.md\"}"
+              }
+            ]
+          }
+        ]
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "863d1f00-ca69-4c83-9e52-b6ba867bae2d"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1NjCz2rjBGgwuxQCDfV",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 3597,
+          "cache_read_input_tokens": 47168,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 3597
+          },
+          "output_tokens": 8,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_01DQVGg5bXoEDHV37WoxoAgB",
+            "name": "mcp__cp_trial__replace_text",
+            "input": {
+              "path": "candidate/SKILL.md",
+              "old": "State exactly what was verified. Continue until the authorized outcome is delivered or a concrete blocker prevents further useful work.\n",
+              "new": "State exactly what was verified.\n"
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ]
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "51a5a7b4-5024-48b2-acac-0e7dd3d5d173"
+    },
+    {
+      "type": "user",
+      "message": {
+        "role": "user",
+        "content": [
+          {
+            "tool_use_id": "toolu_01DQVGg5bXoEDHV37WoxoAgB",
+            "type": "tool_result",
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"written\": \"candidate/SKILL.md\"}"
+              }
+            ]
+          }
+        ]
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "66266eef-68b8-44cc-85db-ebeaca2def15"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1NjCz2rjBGgwuxQCDfV",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 3597,
+          "cache_read_input_tokens": 47168,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 3597
+          },
+          "output_tokens": 8,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_013Q3kvkTzM46DoyvCR4my2Q",
+            "name": "mcp__cp_trial__run_tests",
+            "input": {
+              "argv": [
+                "python3",
+                "-W",
+                "ignore",
+                "runtime/tests/test_controls.py"
+              ],
+              "timeout_seconds": 90
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ]
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "f6e2c2ab-0d4e-4645-888f-930d1abfb5a7"
+    },
+    {
+      "type": "user",
+      "message": {
+        "role": "user",
+        "content": [
+          {
+            "tool_use_id": "toolu_013Q3kvkTzM46DoyvCR4my2Q",
+            "type": "tool_result",
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"argv\": [\"/usr/bin/sandbox-exec\", \"-p\", \"(version 1)\\n(deny default)\\n(allow process-fork)\\n(allow process-exec)\\n(allow signal (target same-sandbox))\\n(allow file-read* (literal \\\"/\\\") (literal \\\"/Library\\\") (literal \\\"/Library/Developer\\\") (literal \\\"/Users\\\") (literal \\\"/Users/aryagm\\\") (literal \\\"/Users/aryagm/.codex\\\") (literal \\\"/Users/aryagm/.codex/worktrees\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-final-patch\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-final-patch/call\\\") (literal \\\"/opt\\\") (literal \\\"/opt/homebrew\\\") (subpath \\\"/System\\\") (subpath \\\"/usr\\\") (subpath \\\"/bin\\\") (subpath \\\"/opt/homebrew/bin\\\") (subpath \\\"/opt/homebrew/lib\\\") (subpath \\\"/opt/homebrew/opt\\\") (subpath \\\"/opt/homebrew/Cellar\\\") (subpath \\\"/opt/homebrew/Frameworks\\\") (subpath \\\"/Library/Frameworks\\\") (subpath \\\"/Library/Developer/CommandLineTools\\\") (subpath \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace\\\") (subpath \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-final-patch/call/execution-scratch\\\") (literal \\\"/dev/null\\\") (literal \\\"/dev/urandom\\\") (literal \\\"/dev/random\\\"))\\n(allow file-write* (subpath \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace\\\") (subpath \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-final-patch/call/execution-scratch\\\"))\\n(allow file-write* (literal \\\"/dev/null\\\"))\\n(deny file-write* (subpath \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/.protocol\\\"))\\n(deny file-write* (subpath \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/.git\\\"))\\n(deny file-write* (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/AGENTS.md\\\"))\", \"/opt/homebrew/opt/python@3.14/bin/python3.14\", \"-W\", \"ignore\", \"runtime/tests/test_controls.py\"], \"exit_code\": 0, \"timed_out\": false, \"wall_seconds\": 8.820598040998448, \"stdout\": \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-final-patch/call/command-8346e91c7afa48c09e0a0e2155e8cff7.stdout\", \"stderr\": \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-final-patch/call/command-8346e91c7afa48c09e0a0e2155e8cff7.stderr\", \"stdout_sha256\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"stderr_sha256\": \"a3e84c134bdc196f0dae21a3a9cd1ac8f8a9a2e1e8d94f5214f4f98d6dbb99d7\", \"process_cleanup_scope\": \"original_process_group\", \"detached_descendants_contained\": false, \"output\": \"\", \"error_output\": \"test_1_seal_base_policy_mutation_controls (__main__.Controls.test_1_seal_base_policy_mutation_controls) ... ok\\ntest_2_resistant_grandchild_cleanup_or_unsettled (__main__.Controls.test_2_resistant_grandchild_cleanup_or_unsettled) ... ok\\ntest_3_global_serial_admission_queue_separate (__main__.Controls.test_3_global_serial_admission_queue_separate) ... ok\\ntest_4_sandbox_prefix_denies_and_exact_interpreter (__main__.Controls.test_4_sandbox_prefix_denies_and_exact_interpreter) ... skipped 'GAP: nested sandbox_apply blocked; root native runs after settlement'\\ntest_5_parse_stream_retains_terminal_and_anomalies (__main__.Controls.test_5_parse_stream_retains_terminal_and_anomalies) ... ok\\ntest_6_continuation_exact_qualification_max_one (__main__.Controls.test_6_continuation_exact_qualification_max_one) ... ok\\n\\n----------------------------------------------------------------------\\nRan 6 tests in 8.606s\\n\\nOK (skipped=1)\\n\"}"
+              }
+            ]
+          }
+        ]
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "2c6c34bd-5b6a-4256-811b-11ab8902c87b"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1Nm556Cht7xPyvJ4pAj",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 4324,
+          "cache_read_input_tokens": 50765,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 4324
+          },
+          "output_tokens": 8,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": []
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "cd3a561e-581b-403e-8ab2-70104d92dbf7"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1Nm556Cht7xPyvJ4pAj",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 4324,
+          "cache_read_input_tokens": 50765,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 4324
+          },
+          "output_tokens": 8,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": []
+      },
+      "session_id": "a9ec373e-f46b-4a77-8108-fc82170177b2",
+      "uuid": "f887fcc0-3e01-4f02-8737-b3db6d4580fc"
+    }
+  ]
+}

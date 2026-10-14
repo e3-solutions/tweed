@@ -1,0 +1,24 @@
+........................E...E.....................................
+======================================================================
+ERROR: test_progress_fd_is_scrubbed_and_never_sent_to_children (tests.test_bonaparte.BonaparteRunnerTests.test_progress_fd_is_scrubbed_and_never_sent_to_children)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-a/workspace/tests/test_bonaparte.py", line 1235, in test_progress_fd_is_scrubbed_and_never_sent_to_children
+    os.fstat(2)
+    ~~~~~~~~^^^
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_receipt_size_boundary_is_review_only (tests.test_bonaparte.BonaparteRunnerTests.test_receipt_size_boundary_is_review_only)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-a/workspace/tests/test_bonaparte.py", line 1473, in test_receipt_size_boundary_is_review_only
+    serialized = RUNNER.serialize_receipt(baseline_accepted)
+  File "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-a/workspace/bonaparte", line 215, in serialize_receipt
+    raise RuntimeError("receipt exceeded 4 KiB")
+RuntimeError: receipt exceeded 4 KiB
+
+----------------------------------------------------------------------
+Ran 66 tests in 35.216s
+
+FAILED (errors=2)

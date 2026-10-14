@@ -1,0 +1,277 @@
+611 
+612     # Regular expressions for parsing section headers and options
+613     _SECT_TMPL = r"""
+614         \[                                 # [
+615         (?P<header>.+)                     # very permissive!
+616         \]                                 # ]
+617         """
+618     _OPT_TMPL = r"""
+619         (?P<option>                        # very permissive!
+620             (?:(?!{delim})\S)*             # non-delimiter non-whitespace
+621             (?:\s+(?:(?!{delim})\S)+)*)    # optionally more words
+622         \s*(?P<vi>{delim})\s*              # any number of space/tab,
+623                                            # followed by any of the
+624                                            # allowed delimiters,
+625                                            # followed by any space/tab
+626         (?P<value>.*)$                     # everything up to eol
+627         """
+628     _OPT_NV_TMPL = r"""
+629         (?P<option>                        # very permissive!
+630             (?:(?!{delim})\S)*             # non-delimiter non-whitespace
+631             (?:\s+(?:(?!{delim})\S)+)*)    # optionally more words
+632         \s*(?:                             # any number of space/tab,
+633         (?P<vi>{delim})\s*                 # optionally followed by
+634                                            # any of the allowed
+635                                            # delimiters, followed by any
+636                                            # space/tab
+637         (?P<value>.*))?$                   # everything up to eol
+638         """
+639     # Interpolation algorithm to be used if the user does not specify another
+640     _DEFAULT_INTERPOLATION = Interpolation()
+641     # Compiled regular expression for matching sections
+642     SECTCRE = re.compile(_SECT_TMPL, re.VERBOSE)
+643     # Compiled regular expression for matching options with typical separators
+644     OPTCRE = re.compile(_OPT_TMPL.format(delim="=|:"), re.VERBOSE)
+645     # Compiled regular expression for matching options with optional values
+646     # delimited using typical separators
+647     OPTCRE_NV = re.compile(_OPT_NV_TMPL.format(delim="=|:"), re.VERBOSE)
+648     # Compiled regular expression for matching leading whitespace in a line
+649     NONSPACECRE = re.compile(r"\S")
+650     # Possible boolean values in the configuration.
+651     BOOLEAN_STATES = {'1': True, 'yes': True, 'true': True, 'on': True,
+652                       '0': False, 'no': False, 'false': False, 'off': False}
+653 
+654     def __init__(self, defaults=None, dict_type=_default_dict,
+655                  allow_no_value=False, *, delimiters=('=', ':'),
+656                  comment_prefixes=('#', ';'), inline_comment_prefixes=None,
+657                  strict=True, empty_lines_in_values=True,
+658                  default_section=DEFAULTSECT,
+659                  interpolation=_UNSET, converters=_UNSET,
+660                  allow_unnamed_section=False,):
+661 
+662         self._dict = dict_type
+663         self._sections = self._dict()
+664         self._defaults = self._dict()
+665         self._converters = ConverterMapping(self)
+666         self._proxies = self._dict()
+667         self._proxies[default_section] = SectionProxy(self, default_section)
+668         self._delimiters = tuple(delimiters)
+669         if delimiters == ('=', ':'):
+670             self._optcre = self.OPTCRE_NV if allow_no_value else self.OPTCRE
+671         else:
+672             d = "|".join(re.escape(d) for d in delimiters)
+673             if allow_no_value:
+674                 self._optcre = re.compile(self._OPT_NV_TMPL.format(delim=d),
+675                                           re.VERBOSE)
+676             else:
+677                 self._optcre = re.compile(self._OPT_TMPL.format(delim=d),
+678                                           re.VERBOSE)
+679         self._comments = _CommentSpec(comment_prefixes or (), inline_comment_prefixes or ())
+680         self._strict = strict
+681         self._allow_no_value = allow_no_value
+682         self._empty_lines_in_values = empty_lines_in_values
+683         self.default_section=default_section
+684         self._interpolation = interpolation
+685         if self._interpolation is _UNSET:
+686             self._interpolation = self._DEFAULT_INTERPOLATION
+687         if self._interpolation is None:
+688             self._interpolation = Interpolation()
+689         if not isinstance(self._interpolation, Interpolation):
+690             raise TypeError(
+691                 f"interpolation= must be None or an instance of Interpolation;"
+1056 
+1057     def __iter__(self):
+1058         # XXX does it break when underlying container state changed?
+1059         return itertools.chain((self.default_section,), self._sections.keys())
+1060 
+1061     def _read(self, fp, fpname):
+1062         """Parse a sectioned configuration file.
+1063 
+1064         Each section in a configuration file contains a header, indicated by
+1065         a name in square brackets (`[]`), plus key/value options, indicated by
+1066         `name` and `value` delimited with a specific substring (`=` or `:` by
+1067         default).
+1068 
+1069         Values can span multiple lines, as long as they are indented deeper
+1070         than the first line of the value. Depending on the parser's mode, blank
+1071         lines may be treated as parts of multiline values or ignored.
+1072 
+1073         Configuration files may include comments, prefixed by specific
+1074         characters (`#` and `;` by default). Comments may appear on their own
+1075         in an otherwise empty line or may be entered in lines holding values or
+1076         section names. Please note that comments get stripped off when reading configuration files.
+1077         """
+1078         try:
+1079             ParsingError._raise_all(self._read_inner(fp, fpname))
+1080         finally:
+1081             self._join_multiline_values()
+1082 
+1083     def _read_inner(self, fp, fpname):
+1084         st = _ReadState()
+1085 
+1086         for st.lineno, line in enumerate(map(self._comments.wrap, fp), start=1):
+1087             if not line.clean:
+1088                 if self._empty_lines_in_values:
+1089                     # add empty line to the value, but only if there was no
+1090                     # comment on the line
+1091                     if (not line.has_comments and
+1092                         st.cursect is not None and
+1093                         st.optname and
+1094                         st.cursect[st.optname] is not None):
+1095                         st.cursect[st.optname].append('') # newlines added at join
+1096                 else:
+1097                     # empty line marks end of value
+1098                     st.indent_level = sys.maxsize
+1099                 continue
+1100 
+1101             first_nonspace = self.NONSPACECRE.search(line)
+1102             st.cur_indent_level = first_nonspace.start() if first_nonspace else 0
+1103 
+1104             if self._handle_continuation_line(st, line, fpname):
+1105                 continue
+1106 
+1107             self._handle_rest(st, line, fpname)
+1108 
+1109         return st.errors
+1110 
+1111     def _handle_continuation_line(self, st, line, fpname):
+1112         # continuation line?
+1113         is_continue = (st.cursect is not None and st.optname and
+1114             st.cur_indent_level > st.indent_level)
+1115         if is_continue:
+1116             if st.cursect[st.optname] is None:
+1117                 raise MultilineContinuationError(fpname, st.lineno, line)
+1118             st.cursect[st.optname].append(line.clean)
+1119         return is_continue
+1120 
+1121     def _handle_rest(self, st, line, fpname):
+1122         # a section header or option header?
+1123         if self._allow_unnamed_section and st.cursect is None:
+1124             self._handle_header(st, UNNAMED_SECTION, fpname)
+1125 
+1126         st.indent_level = st.cur_indent_level
+1127         # is it a section header?
+1128         mo = self.SECTCRE.match(line.clean)
+1129 
+1130         if not mo and st.cursect is None:
+1131             raise MissingSectionHeaderError(fpname, st.lineno, line)
+1132 
+1133         self._handle_header(st, mo.group('header'), fpname) if mo else self._handle_option(st, line, fpname)
+1134 
+1135     def _handle_header(self, st, sectname, fpname):
+1136         st.sectname = sectname
+1137         if st.sectname in self._sections:
+1138             if self._strict and st.sectname in st.elements_added:
+1139                 raise DuplicateSectionError(st.sectname, fpname,
+1140                                             st.lineno)
+1141             st.cursect = self._sections[st.sectname]
+1142             st.elements_added.add(st.sectname)
+1143         elif st.sectname == self.default_section:
+1144             st.cursect = self._defaults
+1145         else:
+1146             st.cursect = self._dict()
+1147             self._sections[st.sectname] = st.cursect
+1148             self._proxies[st.sectname] = SectionProxy(self, st.sectname)
+1149             st.elements_added.add(st.sectname)
+1150         # So sections can't start with a continuation line
+1151         st.optname = None
+1152 
+1153     def _handle_option(self, st, line, fpname):
+1154         # an option line?
+1155         st.indent_level = st.cur_indent_level
+1156 
+1157         mo = self._optcre.match(line.clean)
+1158         if not mo:
+1159             # a non-fatal parsing error occurred. set up the
+1160             # exception but keep going. the exception will be
+1161             # raised at the end of the file and will contain a
+1162             # list of all bogus lines
+1163             st.errors.append(ParsingError(fpname, st.lineno, line))
+1164             return
+1165 
+1166         st.optname, vi, optval = mo.group('option', 'vi', 'value')
+1167         if not st.optname:
+1168             st.errors.append(ParsingError(fpname, st.lineno, line))
+1169         st.optname = self.optionxform(st.optname.rstrip())
+1170         if (self._strict and
+1171             (st.sectname, st.optname) in st.elements_added):
+1172             raise DuplicateOptionError(st.sectname, st.optname,
+1173                                     fpname, st.lineno)
+1174         st.elements_added.add((st.sectname, st.optname))
+1175         # This check is fine because the OPTCRE cannot
+1176         # match if it would set optval to None
+1177         if optval is not None:
+1178             optval = optval.strip()
+1179             st.cursect[st.optname] = [optval]
+1180         else:
+1181             # valueless option handling
+1182             st.cursect[st.optname] = None
+1183 
+1184     def _join_multiline_values(self):
+1185         defaults = self.default_section, self._defaults
+1186         all_sections = itertools.chain((defaults,),
+1187                                        self._sections.items())
+1188         for section, options in all_sections:
+1189             for name, val in options.items():
+1190                 if isinstance(val, list):
+1191                     val = '\n'.join(val).rstrip()
+1192                 options[name] = self._interpolation.before_read(self,
+1193                                                                 section,
+1194                                                                 name, val)
+1195 
+1196     def _read_defaults(self, defaults):
+1197         """Read the defaults passed in the initializer.
+1198         Note: values can be non-string."""
+1199         for key, value in defaults.items():
+1200             self._defaults[self.optionxform(key)] = value
+1201 
+1202     def _unify_values(self, section, vars):
+1203         """Create a sequence of lookups with 'vars' taking priority over
+1204         the 'section' which takes priority over the DEFAULTSECT.
+1205 
+1206         """
+1207         sectiondict = {}
+1208         try:
+1209             sectiondict = self._sections[section]
+1210         except KeyError:
+1211             if section != self.default_section:
+1212                 raise NoSectionError(section) from None
+1213         # Update with the entry specific variables
+1214         vardict = {}
+1215         if vars:
+1216             for key, value in vars.items():
+1217                 if value is not None:
+1218                     value = str(value)
+1219                 vardict[self.optionxform(key)] = value
+1220         return _ChainMap(vardict, sectiondict, self._defaults)
+1221 
+1222     def _convert_to_boolean(self, value):
+1223         """Return a boolean value translating from other types if necessary.
+1224         """
+1225         if value.lower() not in self.BOOLEAN_STATES:
+1226             raise ValueError('Not a boolean: %s' % value)
+1227         return self.BOOLEAN_STATES[value.lower()]
+1228 
+1229     def _validate_key_contents(self, key):
+1230         """Raises an InvalidWriteError for any keys containing
+1231         delimiters or that begins with the section header pattern"""
+1232         if re.match(self.SECTCRE, key):
+1233             raise InvalidWriteError(
+1234                 f"Cannot write key {key}; begins with section pattern")
+1235         for delim in self._delimiters:
+1236             if delim in key:
+1237                 raise InvalidWriteError(
+1238                     f"Cannot write key {key}; contains delimiter {delim}")
+1239 
+1240     def _validate_value_types(self, *, section="", option="", value=""):
+1241         """Raises a TypeError for illegal non-string values.
+1242 
+1243         Legal non-string values are UNNAMED_SECTION and falsey values if
+1244         they are allowed.
+1245 
+1246         For compatibility reasons this method is not used in classic set()
+1247         for RawConfigParsers. It is invoked in every case for mapping protocol
+1248         access and in ConfigParser.set().
+1249         """
+1250         if section is UNNAMED_SECTION:
+1251             if not self._allow_unnamed_section:

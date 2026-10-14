@@ -1,0 +1,772 @@
+{
+  "schema_version": 3,
+  "purpose": "Final isolated-runtime non-task hosted pipeline qualification only; no efficacy inference",
+  "checked_at_utc": "2026-10-12T17:38:33.838750+00:00",
+  "passed": true,
+  "efficacy_trials": 0,
+  "source_files_unchanged": true,
+  "source_sha256": {
+    "hybrid-v2-protocol.json": "dedd40de835e54874c07d72b304c459a730c6fa8dff17df81d9b724bf65f84aa",
+    "v2_controls.py": "c7fc3b0f7fe1efa22248508bded95022459b53bafa49bb4cab212bbed5349df6",
+    "hybrid_v2.py": "926a1fde84379ebd591939ad10706bdbfb7cb64503d75d7c8bf5e39a9a1ad7d6",
+    "hybrid_runner.py": "2e560c9300d16adba435048f45383293aea6ace3b7749ae17a0aea6652657a8d",
+    "runner.py": "1f5e9ab2e5f0823a34c8f637ae08b4b3e7e1d1ac7bbbf5aab64ab79c95288fb8",
+    "cross_backend.py": "a4c94f220d66be06c40c88fdbb65578d45ce61a46b07e11c607f3aab50281739",
+    "hybrid_process.py": "c1f1da477c8d13e1824e604fc83a0e64483d52208cede728ac80439b88c11b96",
+    "hybrid_process_v2.py": "631e695e36f5c000b3fef02d4f64f8c518edc31befac116db559816750d8e95f",
+    "hybrid_runtime_v2.py": "7b5c3bbabe03f7bd3b2ce3fa8b1dc049e8ee4659cd567590a42fcbe5617c76e6"
+  },
+  "independent_grader_sha256": "48bf6aa09a4bd34d718f6f2761b8b631c2af5b48716df27ca7f5b62a1205481a",
+  "evidence_sha256": {
+    "toy-registration.json": "5d30c3dbcf73b08ef4be0eb19118f990dffb25b7479328d6f322336dee9752de",
+    "qualification-summary.json": "007cb4a2e262a45bcfba5e20c6c959d5d685c814c1e147b6d8b955485c6ad169",
+    "pipeline-checks.json": "56f5677f1840f1ab16eedba76f1f7cce5b465e732b4da6adfaf2cf3a8fbbbdfa"
+  },
+  "independent_controls_sha256": "b2a3383572850200061062077be43e4f1d9ffb4b4f1a0e534cb1a0ad4f0859a5",
+  "trials": [
+    {
+      "trial_id": "v2-non-task-pipeline-toy--astra_main_opus_peer--r1",
+      "receipt_sha256": "0d5e939db78fba17cd436215a48648f560de155e14d99a813055bec5f3afdd88",
+      "wall_seconds": 101.97107795900001,
+      "total_reported_cost_usd": null,
+      "known_reported_cost_subtotal_usd": 0.24788700000000002,
+      "stages": [
+        {
+          "role": "test_designer",
+          "assigned_model": "opus",
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "model_attribution": "event_observed",
+          "declared_complete": true,
+          "independent_inventory_lifecycle_source_qualification": {
+            "passed": true,
+            "skipped": false,
+            "provider": "opus",
+            "reasons": [],
+            "recorded_qualification": {
+              "passed": true,
+              "basis": "live_claude_init",
+              "connected": true,
+              "missing_tools": [],
+              "unexpected_tools": [],
+              "effective_tools": [
+                "StructuredOutput",
+                "mcp__cp_trial__confidence",
+                "mcp__cp_trial__list_files",
+                "mcp__cp_trial__read_file",
+                "mcp__cp_trial__replace_text",
+                "mcp__cp_trial__request_review",
+                "mcp__cp_trial__run_tests",
+                "mcp__cp_trial__write_file"
+              ],
+              "strict_seven_tool_parity": false,
+              "live_wire_inventory_observed": null,
+              "additional_resource_handlers": null,
+              "observed_tool_call_names": null
+            },
+            "local_transport": {
+              "passed": true,
+              "offline": true,
+              "hosted_inference_calls": 0,
+              "provider": "opus",
+              "readonly": true,
+              "connected": true,
+              "effective_mcp_tools": [
+                "list_files",
+                "read_file",
+                "write_file",
+                "replace_text",
+                "run_tests",
+                "confidence",
+                "request_review"
+              ],
+              "list_files_succeeded": true,
+              "readonly_write_denied": true,
+              "exit_code": 0,
+              "config_argument_is_absolute": true,
+              "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "stdout_sha256": "2003abe22bd6fcd57e5f6d52cc6b6df1d4a45787d5f84978e7add3002eac6230"
+            },
+            "source_binding": {
+              "at_launch": "0acf1386259cb5fe8a25866289241008b5205466eef55f19eaf755c90382dcd3",
+              "after": "0acf1386259cb5fe8a25866289241008b5205466eef55f19eaf755c90382dcd3"
+            },
+            "lifecycle": {
+              "timed_out": false,
+              "process_exit": 0,
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false,
+              "guarded_new_session_processes": 1,
+              "stream_changed_during_cleanup": false,
+              "process_cleanup_seconds": 1.1208000159967924e-05
+            }
+          },
+          "actual_toy_source_read": true,
+          "executed_toy_checks": [
+            {
+              "command_code": "import toy; from toy import answer; r=answer(); print(repr(r), type(r).__name__); assert r==1; assert answer() in (1,2)",
+              "exit_code": 0,
+              "request_sha256": "59bba26780010f7578f2b43a7defb2b68b86369b151062d1b7e22f16c03fd7c0",
+              "response_sha256": "27fb937a28cfd17294992247da5e3eae8866a6ab74bd412525c7cc7e6bc59274",
+              "command_kind": "successful_behavior_or_capture_check"
+            }
+          ],
+          "actual_confidence_capture_success": false,
+          "stage_receipt_sha256": "dc30f23c8fafb5256da3bc10f5318d2f466a19b35d3cdb1546b6c5c33c9ae5d9"
+        },
+        {
+          "role": "main_implementation",
+          "assigned_model": "astra",
+          "requested_model": "gpt-6-astra",
+          "observed_models": [],
+          "model_attribution": "requested_only",
+          "declared_complete": false,
+          "independent_inventory_lifecycle_source_qualification": {
+            "passed": true,
+            "skipped": false,
+            "provider": "astra",
+            "reasons": [],
+            "recorded_qualification": {
+              "passed": true,
+              "basis": "offline_declared_codex_inventory_and_local_pipeline",
+              "connected": null,
+              "missing_tools": null,
+              "unexpected_tools": null,
+              "effective_tools": null,
+              "strict_seven_tool_parity": false,
+              "live_wire_inventory_observed": false,
+              "additional_resource_handlers": [
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource"
+              ],
+              "observed_tool_call_names": [
+                "confidence",
+                "read_file",
+                "replace_text",
+                "run_tests"
+              ]
+            },
+            "local_transport": {
+              "passed": true,
+              "offline": true,
+              "hosted_inference_calls": 0,
+              "provider": "astra",
+              "readonly": false,
+              "connected": true,
+              "effective_mcp_tools": [
+                "list_files",
+                "read_file",
+                "write_file",
+                "replace_text",
+                "run_tests",
+                "confidence",
+                "request_review"
+              ],
+              "list_files_succeeded": true,
+              "readonly_write_denied": null,
+              "exit_code": 0,
+              "config_argument_is_absolute": true,
+              "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "stdout_sha256": "f0c7f870cb453d1b4e3ecf2c666c11db7495daf592fcbe402bf1aebad3dcf66c"
+            },
+            "source_binding": {
+              "at_launch": "80d6b23186cca39bcbd43fa56e60f6dd891130076d3cc33c8a3ff7a02436f49a",
+              "after": "ac9a64e67c08287d33115ef8e3970ba53b14a1dfdb9ea0a116399e2e9d089332"
+            },
+            "lifecycle": {
+              "timed_out": false,
+              "process_exit": 0,
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false,
+              "guarded_new_session_processes": 1,
+              "stream_changed_during_cleanup": false,
+              "process_cleanup_seconds": 1.158399982159608e-05
+            }
+          },
+          "actual_toy_source_read": true,
+          "executed_toy_checks": [
+            {
+              "command_code": "import contextlib, io; output=io.StringIO()\nwith contextlib.redirect_stdout(output):\n import toy\nfrom toy import answer\nassert output.getvalue()==''\nr=answer(); assert r==2 and type(r) is int\nassert [answer() for _ in range(3)]==[2,2,2]\nassert answer() in (1,2)\nprint(2)",
+              "exit_code": 0,
+              "request_sha256": "3f57f0c2207dad3ee3b35c866b75c8d0c6f84b5f4e3c85b254b61134a92bd695",
+              "response_sha256": "ed39cf7ebea53b819a712424bd01eee3bd0b3701d3d81adaa3ccf7a6884783ed",
+              "command_kind": "successful_behavior_or_capture_check"
+            },
+            {
+              "command_code": "from toy import answer; assert answer()==2; print(2)",
+              "exit_code": 0,
+              "request_sha256": "5be865f32fc5bbde4cabe6897dbd78c0d27a043624ff495ded291a4839a7fc5b",
+              "response_sha256": "2af8afb0f8106ae4d9b2d59d30b815ce0f053dc63668c27bacbb780ce2fe16fe",
+              "command_kind": "successful_behavior_or_capture_check"
+            }
+          ],
+          "actual_confidence_capture_success": true,
+          "stage_receipt_sha256": "153aa5ddd5b25048f7196e9a8b3e8f3a790119017cdc110c9d610849493df97e"
+        },
+        {
+          "role": "adversarial_reviewer",
+          "assigned_model": "opus",
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "model_attribution": "event_observed",
+          "declared_complete": true,
+          "independent_inventory_lifecycle_source_qualification": {
+            "passed": true,
+            "skipped": false,
+            "provider": "opus",
+            "reasons": [],
+            "recorded_qualification": {
+              "passed": true,
+              "basis": "live_claude_init",
+              "connected": true,
+              "missing_tools": [],
+              "unexpected_tools": [],
+              "effective_tools": [
+                "StructuredOutput",
+                "mcp__cp_trial__confidence",
+                "mcp__cp_trial__list_files",
+                "mcp__cp_trial__read_file",
+                "mcp__cp_trial__replace_text",
+                "mcp__cp_trial__request_review",
+                "mcp__cp_trial__run_tests",
+                "mcp__cp_trial__write_file"
+              ],
+              "strict_seven_tool_parity": false,
+              "live_wire_inventory_observed": null,
+              "additional_resource_handlers": null,
+              "observed_tool_call_names": null
+            },
+            "local_transport": {
+              "passed": true,
+              "offline": true,
+              "hosted_inference_calls": 0,
+              "provider": "opus",
+              "readonly": true,
+              "connected": true,
+              "effective_mcp_tools": [
+                "list_files",
+                "read_file",
+                "write_file",
+                "replace_text",
+                "run_tests",
+                "confidence",
+                "request_review"
+              ],
+              "list_files_succeeded": true,
+              "readonly_write_denied": true,
+              "exit_code": 0,
+              "config_argument_is_absolute": true,
+              "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "stdout_sha256": "cadc7a40eb7369d118d5b36a45b07091f06a52406e5ecfdd072c5c46a03c64c5"
+            },
+            "source_binding": {
+              "at_launch": "ac9a64e67c08287d33115ef8e3970ba53b14a1dfdb9ea0a116399e2e9d089332",
+              "after": "ac9a64e67c08287d33115ef8e3970ba53b14a1dfdb9ea0a116399e2e9d089332"
+            },
+            "lifecycle": {
+              "timed_out": false,
+              "process_exit": 0,
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false,
+              "guarded_new_session_processes": 1,
+              "stream_changed_during_cleanup": false,
+              "process_cleanup_seconds": 9.333999969385331e-06
+            }
+          },
+          "actual_toy_source_read": true,
+          "executed_toy_checks": [
+            {
+              "command_code": "import contextlib,io\nbuf=io.StringIO()\nwith contextlib.redirect_stdout(buf):\n import toy\nassert buf.getvalue()==''\nfrom toy import answer\nr=answer(); assert r==2 and type(r) is int, r\nassert answer() in (1,2)\nimport importlib; importlib.reload(toy); assert toy.answer()==2\nassert [n for n in dir(toy) if not n.startswith('_')]==['answer'], dir(toy)\nprint('ok', r)",
+              "exit_code": 0,
+              "request_sha256": "b3a51770fff447502cb3b241c4a94c8d77b15457dee3a55882b875134907c2ae",
+              "response_sha256": "781dc85bfd01e8a145fe880148dadd9926ee8b65dfa6e4c41dc049ce25b7b46f",
+              "command_kind": "successful_behavior_or_capture_check"
+            },
+            {
+              "command_code": "from toy import answer; assert answer() in (1,2)",
+              "exit_code": 0,
+              "request_sha256": "982d104c96793d9a4dc6746c488722d293b088bff49b67f6992262810aced8fc",
+              "response_sha256": "0955fda3a0dc767cf69c83f54e4efcff4faa49dd0bf0f61bc7d229dff5d3ab2b",
+              "command_kind": "successful_behavior_or_capture_check"
+            }
+          ],
+          "actual_confidence_capture_success": false,
+          "stage_receipt_sha256": "9329902e9aa78eeab2970b611ae88d34a3e685795c690ff26c6368e1c42bca5d"
+        },
+        {
+          "role": "main_repair",
+          "assigned_model": "astra",
+          "requested_model": "gpt-6-astra",
+          "observed_models": [],
+          "model_attribution": "requested_only",
+          "declared_complete": true,
+          "independent_inventory_lifecycle_source_qualification": {
+            "passed": true,
+            "skipped": false,
+            "provider": "astra",
+            "reasons": [],
+            "recorded_qualification": {
+              "passed": true,
+              "basis": "offline_declared_codex_inventory_and_local_pipeline",
+              "connected": null,
+              "missing_tools": null,
+              "unexpected_tools": null,
+              "effective_tools": null,
+              "strict_seven_tool_parity": false,
+              "live_wire_inventory_observed": false,
+              "additional_resource_handlers": [
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource"
+              ],
+              "observed_tool_call_names": [
+                "confidence",
+                "list_files",
+                "read_file",
+                "run_tests"
+              ]
+            },
+            "local_transport": {
+              "passed": true,
+              "offline": true,
+              "hosted_inference_calls": 0,
+              "provider": "astra",
+              "readonly": false,
+              "connected": true,
+              "effective_mcp_tools": [
+                "list_files",
+                "read_file",
+                "write_file",
+                "replace_text",
+                "run_tests",
+                "confidence",
+                "request_review"
+              ],
+              "list_files_succeeded": true,
+              "readonly_write_denied": null,
+              "exit_code": 0,
+              "config_argument_is_absolute": true,
+              "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "stdout_sha256": "b63bb99be54a98d3fec0b83572c90f4b11b09ecec3f897673f82e5365c903e94"
+            },
+            "source_binding": {
+              "at_launch": "220e04476842ee16a229c0535cda9ebb277e71520671d6561487c2f33240286e",
+              "after": "800b208f275e2197de958d5df50174d1c1a7566a7bdf2ccfd2ac2fba0bc8a675"
+            },
+            "lifecycle": {
+              "timed_out": false,
+              "process_exit": 0,
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false,
+              "guarded_new_session_processes": 1,
+              "stream_changed_during_cleanup": false,
+              "process_cleanup_seconds": 1.4833000022917986e-05
+            }
+          },
+          "actual_toy_source_read": true,
+          "executed_toy_checks": [
+            {
+              "command_code": "from toy import answer; assert answer()==2; print(2)",
+              "exit_code": 125,
+              "request_sha256": "66bcaae97048bed1615ed9430fd0b2afc97ec3664262cc248425d8f5b765f065",
+              "response_sha256": "7ed91c19bba0e03034a4e669448701d5e68a1e1d3f9f18bd03376b45931b9182",
+              "command_kind": "auxiliary_confidence_capture",
+              "expected_resolved_refusal": "RUN_ID_EXISTS: existing proof preserved; fresh toy-repair-pass subsequently captured successfully"
+            },
+            {
+              "command_code": "from toy import answer; assert answer()==2; print(2)",
+              "exit_code": 0,
+              "request_sha256": "2a9a3e7e7f0625f4886340bee8a11e415f69d88d69e13deba0de99d7b44fd13e",
+              "response_sha256": "efc9fa344d2b987c1f6bfcfc82ffae89d236c145fb563f45124744bf03429a5c",
+              "command_kind": "successful_behavior_or_capture_check"
+            },
+            {
+              "command_code": "from toy import answer; assert answer()==2; assert type(answer()) is int; assert answer() in (1,2); print(2)",
+              "exit_code": 0,
+              "request_sha256": "b93944b3e007b0123c58c6adf13e5f9996f598ff71f2ea87d3549e508877e38b",
+              "response_sha256": "c80a2f097971efe35ffd93f289015f6c4eebd3585843a79db1ddb7e2a67b3cc4",
+              "command_kind": "successful_behavior_or_capture_check"
+            }
+          ],
+          "actual_confidence_capture_success": true,
+          "stage_receipt_sha256": "23e9d281b44ecac7993d38816e355219ef6c4b64d19486943380d00b273d08a8"
+        }
+      ]
+    },
+    {
+      "trial_id": "v2-non-task-pipeline-toy--opus_main_astra_peer--r1",
+      "receipt_sha256": "02cee30898ddd23a8d4c0fbc32c274fa8ae35ea1f0c7cc7e4aa0265da6c00da0",
+      "wall_seconds": 84.64973345900034,
+      "total_reported_cost_usd": null,
+      "known_reported_cost_subtotal_usd": 0.2934866,
+      "stages": [
+        {
+          "role": "test_designer",
+          "assigned_model": "astra",
+          "requested_model": "gpt-6-astra",
+          "observed_models": [],
+          "model_attribution": "requested_only",
+          "declared_complete": true,
+          "independent_inventory_lifecycle_source_qualification": {
+            "passed": true,
+            "skipped": false,
+            "provider": "astra",
+            "reasons": [],
+            "recorded_qualification": {
+              "passed": true,
+              "basis": "offline_declared_codex_inventory_and_local_pipeline",
+              "connected": null,
+              "missing_tools": null,
+              "unexpected_tools": null,
+              "effective_tools": null,
+              "strict_seven_tool_parity": false,
+              "live_wire_inventory_observed": false,
+              "additional_resource_handlers": [
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource"
+              ],
+              "observed_tool_call_names": [
+                "read_file",
+                "run_tests"
+              ]
+            },
+            "local_transport": {
+              "passed": true,
+              "offline": true,
+              "hosted_inference_calls": 0,
+              "provider": "astra",
+              "readonly": true,
+              "connected": true,
+              "effective_mcp_tools": [
+                "list_files",
+                "read_file",
+                "write_file",
+                "replace_text",
+                "run_tests",
+                "confidence",
+                "request_review"
+              ],
+              "list_files_succeeded": true,
+              "readonly_write_denied": true,
+              "exit_code": 0,
+              "config_argument_is_absolute": true,
+              "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "stdout_sha256": "2003abe22bd6fcd57e5f6d52cc6b6df1d4a45787d5f84978e7add3002eac6230"
+            },
+            "source_binding": {
+              "at_launch": "0acf1386259cb5fe8a25866289241008b5205466eef55f19eaf755c90382dcd3",
+              "after": "0acf1386259cb5fe8a25866289241008b5205466eef55f19eaf755c90382dcd3"
+            },
+            "lifecycle": {
+              "timed_out": false,
+              "process_exit": 0,
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false,
+              "guarded_new_session_processes": 1,
+              "stream_changed_during_cleanup": false,
+              "process_cleanup_seconds": 1.516700012871297e-05
+            }
+          },
+          "actual_toy_source_read": true,
+          "executed_toy_checks": [
+            {
+              "command_code": "from toy import answer; assert answer()==1; print(1)",
+              "exit_code": 0,
+              "request_sha256": "dfdd7b6fadeeca201742ebd0b75f40654c9102e274a9594063c7f5fe365eca8b",
+              "response_sha256": "ce61e8799983558f45979c66b41ab6c0d684aaf9510a11a65270bf86fa7b9925",
+              "command_kind": "successful_behavior_or_capture_check"
+            }
+          ],
+          "actual_confidence_capture_success": false,
+          "stage_receipt_sha256": "3d3903f6d20e5a326bc7b502ec8f37bf441af7ba1ccfb9ffdc8fa986e9a75e0b"
+        },
+        {
+          "role": "main_implementation",
+          "assigned_model": "opus",
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "model_attribution": "event_observed",
+          "declared_complete": false,
+          "independent_inventory_lifecycle_source_qualification": {
+            "passed": true,
+            "skipped": false,
+            "provider": "opus",
+            "reasons": [],
+            "recorded_qualification": {
+              "passed": true,
+              "basis": "live_claude_init",
+              "connected": true,
+              "missing_tools": [],
+              "unexpected_tools": [],
+              "effective_tools": [
+                "StructuredOutput",
+                "mcp__cp_trial__confidence",
+                "mcp__cp_trial__list_files",
+                "mcp__cp_trial__read_file",
+                "mcp__cp_trial__replace_text",
+                "mcp__cp_trial__request_review",
+                "mcp__cp_trial__run_tests",
+                "mcp__cp_trial__write_file"
+              ],
+              "strict_seven_tool_parity": false,
+              "live_wire_inventory_observed": null,
+              "additional_resource_handlers": null,
+              "observed_tool_call_names": null
+            },
+            "local_transport": {
+              "passed": true,
+              "offline": true,
+              "hosted_inference_calls": 0,
+              "provider": "opus",
+              "readonly": false,
+              "connected": true,
+              "effective_mcp_tools": [
+                "list_files",
+                "read_file",
+                "write_file",
+                "replace_text",
+                "run_tests",
+                "confidence",
+                "request_review"
+              ],
+              "list_files_succeeded": true,
+              "readonly_write_denied": null,
+              "exit_code": 0,
+              "config_argument_is_absolute": true,
+              "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "stdout_sha256": "f0c7f870cb453d1b4e3ecf2c666c11db7495daf592fcbe402bf1aebad3dcf66c"
+            },
+            "source_binding": {
+              "at_launch": "63f8589347f571fff83d4b01560c0f58a12ecda6127b6b3a45f8540d4741dcb7",
+              "after": "0c3ff02410e3165e1f584e09deb46318b90d86b0be6bae2a68443072d2e3e5e1"
+            },
+            "lifecycle": {
+              "timed_out": false,
+              "process_exit": 0,
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false,
+              "guarded_new_session_processes": 1,
+              "stream_changed_during_cleanup": false,
+              "process_cleanup_seconds": 1.3374999980442226e-05
+            }
+          },
+          "actual_toy_source_read": true,
+          "executed_toy_checks": [
+            {
+              "command_code": "from toy import answer; assert answer()==2; print(2)",
+              "exit_code": 0,
+              "request_sha256": "7a3b54dab55247563734ad6a2aeb48f3363cdd34b0b895296c9f9d3fc0ea3756",
+              "response_sha256": "08acd03755ca6d8c482ae43ecf4617d649de0b296d3213d25200fedb2f848bdd",
+              "command_kind": "successful_behavior_or_capture_check"
+            },
+            {
+              "command_code": "from toy import answer; assert answer() in (1,2)",
+              "exit_code": 0,
+              "request_sha256": "b253e5ccd75f45ae2e63db5811de70871958eacaafe9a2170b1df83ae822a4c8",
+              "response_sha256": "dcf09bb16663cdefc6394e16f282a9970f119cb37dd508b5dc8706f34acd9394",
+              "command_kind": "successful_behavior_or_capture_check"
+            }
+          ],
+          "actual_confidence_capture_success": true,
+          "stage_receipt_sha256": "8c0621559888325e2298bf099816ed7f486b722d8bf2eb107d5b2cfd9d56c5b3"
+        },
+        {
+          "role": "adversarial_reviewer",
+          "assigned_model": "astra",
+          "requested_model": "gpt-6-astra",
+          "observed_models": [],
+          "model_attribution": "requested_only",
+          "declared_complete": true,
+          "independent_inventory_lifecycle_source_qualification": {
+            "passed": true,
+            "skipped": false,
+            "provider": "astra",
+            "reasons": [],
+            "recorded_qualification": {
+              "passed": true,
+              "basis": "offline_declared_codex_inventory_and_local_pipeline",
+              "connected": null,
+              "missing_tools": null,
+              "unexpected_tools": null,
+              "effective_tools": null,
+              "strict_seven_tool_parity": false,
+              "live_wire_inventory_observed": false,
+              "additional_resource_handlers": [
+                "functions.list_mcp_resources",
+                "functions.list_mcp_resource_templates",
+                "functions.read_mcp_resource"
+              ],
+              "observed_tool_call_names": [
+                "read_file",
+                "run_tests"
+              ]
+            },
+            "local_transport": {
+              "passed": true,
+              "offline": true,
+              "hosted_inference_calls": 0,
+              "provider": "astra",
+              "readonly": true,
+              "connected": true,
+              "effective_mcp_tools": [
+                "list_files",
+                "read_file",
+                "write_file",
+                "replace_text",
+                "run_tests",
+                "confidence",
+                "request_review"
+              ],
+              "list_files_succeeded": true,
+              "readonly_write_denied": true,
+              "exit_code": 0,
+              "config_argument_is_absolute": true,
+              "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "stdout_sha256": "cadc7a40eb7369d118d5b36a45b07091f06a52406e5ecfdd072c5c46a03c64c5"
+            },
+            "source_binding": {
+              "at_launch": "0c3ff02410e3165e1f584e09deb46318b90d86b0be6bae2a68443072d2e3e5e1",
+              "after": "0c3ff02410e3165e1f584e09deb46318b90d86b0be6bae2a68443072d2e3e5e1"
+            },
+            "lifecycle": {
+              "timed_out": false,
+              "process_exit": 0,
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false,
+              "guarded_new_session_processes": 1,
+              "stream_changed_during_cleanup": false,
+              "process_cleanup_seconds": 1.0541000392549904e-05
+            }
+          },
+          "actual_toy_source_read": true,
+          "executed_toy_checks": [
+            {
+              "command_code": "from toy import answer; assert answer() in (1,2)",
+              "exit_code": 0,
+              "request_sha256": "efe04a40d3c320813e08d2c0d45bc0a8f2fc9b7b035c899fcbfa962639c02b41",
+              "response_sha256": "d84a256c2dc3d08ded3abb9234fedd80d0d10c065da3439c512e854f678a8386",
+              "command_kind": "successful_behavior_or_capture_check"
+            },
+            {
+              "command_code": "from toy import answer; assert answer()==2; print(2)",
+              "exit_code": 0,
+              "request_sha256": "0f9206f2067356f7a8a9f4f3c851e4bb94e725594c6c554dcf89839b438ef281",
+              "response_sha256": "2395b2faa402be31e408e82f10fe312e1ccd0745f130879b7154f140cb73d537",
+              "command_kind": "successful_behavior_or_capture_check"
+            }
+          ],
+          "actual_confidence_capture_success": false,
+          "stage_receipt_sha256": "d7e804c57db7d6d4e6ae1e49e6755ddee2c28e2bca3f66cec8f3590f197e3678"
+        },
+        {
+          "role": "main_repair",
+          "assigned_model": "opus",
+          "requested_model": "claude-opus-5-5",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "model_attribution": "event_observed",
+          "declared_complete": true,
+          "independent_inventory_lifecycle_source_qualification": {
+            "passed": true,
+            "skipped": false,
+            "provider": "opus",
+            "reasons": [],
+            "recorded_qualification": {
+              "passed": true,
+              "basis": "live_claude_init",
+              "connected": true,
+              "missing_tools": [],
+              "unexpected_tools": [],
+              "effective_tools": [
+                "StructuredOutput",
+                "mcp__cp_trial__confidence",
+                "mcp__cp_trial__list_files",
+                "mcp__cp_trial__read_file",
+                "mcp__cp_trial__replace_text",
+                "mcp__cp_trial__request_review",
+                "mcp__cp_trial__run_tests",
+                "mcp__cp_trial__write_file"
+              ],
+              "strict_seven_tool_parity": false,
+              "live_wire_inventory_observed": null,
+              "additional_resource_handlers": null,
+              "observed_tool_call_names": null
+            },
+            "local_transport": {
+              "passed": true,
+              "offline": true,
+              "hosted_inference_calls": 0,
+              "provider": "opus",
+              "readonly": false,
+              "connected": true,
+              "effective_mcp_tools": [
+                "list_files",
+                "read_file",
+                "write_file",
+                "replace_text",
+                "run_tests",
+                "confidence",
+                "request_review"
+              ],
+              "list_files_succeeded": true,
+              "readonly_write_denied": null,
+              "exit_code": 0,
+              "config_argument_is_absolute": true,
+              "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "stdout_sha256": "b63bb99be54a98d3fec0b83572c90f4b11b09ecec3f897673f82e5365c903e94"
+            },
+            "source_binding": {
+              "at_launch": "7c6a7130249cf5268a46fabcd5b677b383b7335c55add826988b84248a88941e",
+              "after": "7c6a7130249cf5268a46fabcd5b677b383b7335c55add826988b84248a88941e"
+            },
+            "lifecycle": {
+              "timed_out": false,
+              "process_exit": 0,
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false,
+              "guarded_new_session_processes": 1,
+              "stream_changed_during_cleanup": false,
+              "process_cleanup_seconds": 1.0624999958963599e-05
+            }
+          },
+          "actual_toy_source_read": true,
+          "executed_toy_checks": [
+            {
+              "command_code": "from toy import answer; assert answer()==2; print(answer())",
+              "exit_code": 0,
+              "request_sha256": "cc4568a5b9f2d4caeb0ed8588b1b8d08ae3d5e5246c750720c08e74506cf6260",
+              "response_sha256": "dfc60729d5140d02e88d4bd3e5d2b69c8acf0b6cef5a5e9e456a6eada882cf2d",
+              "command_kind": "successful_behavior_or_capture_check"
+            },
+            {
+              "command_code": "from toy import answer; assert answer() in (1,2)",
+              "exit_code": 0,
+              "request_sha256": "abf6ce9efd03d22a4ed6ab2eee9902b961c0aa33731b85d2d5811acf499219b9",
+              "response_sha256": "d0736d4b7137db9bb6560eb58584bc81d50bec2a71242bec0940a92742a028c6",
+              "command_kind": "successful_behavior_or_capture_check"
+            }
+          ],
+          "actual_confidence_capture_success": false,
+          "stage_receipt_sha256": "7dce551f31f085c41a58bbeee2aeda31208a17caa19677e9b01180d601c122ae"
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "Only non-task pipeline, actual command runtime and declared metadata boundaries exercised",
+    "Astra attribution remains requested-only and live wire inventory unobserved",
+    "No strict seven-tool parity or full descendant containment",
+    "Reported total cost unknown; known Claude subtotals separate",
+    "No historical-task outcome or model/protocol accuracy inference"
+  ],
+  "audit_refinement": "Initial independent audit grouped any command containing from-toy code as an all-zero required behavior check. Inspection identified one correct toolkit duplicate-ID refusal (125/RUN_ID_EXISTS), subsequently resolved with a fresh successful capture. This auxiliary guard remains reported separately; raw receipts/source/calls unchanged. All direct behavior checks and required successful captures passed."
+}

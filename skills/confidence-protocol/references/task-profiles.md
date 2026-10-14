@@ -22,14 +22,14 @@ Evidence:
 Claims:
 
 - The stated cause produces the symptom.
-- The fix removes the cause.
+- The fix removes the cause rather than masking the symptom.
 - The fix does not break nearby behavior.
 
 Evidence:
 
 - Reproduction before the fix.
 - A regression test that fails before and passes after.
-- Focused tests around the boundary.
+- Focused tests around the boundary, including input that must still be rejected.
 - Runtime evidence when the bug depends on real integration.
 
 ## Feature

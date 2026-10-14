@@ -1,0 +1,7 @@
+{
+  "owned_dispatcher_pid": 33013,
+  "paused_at_unix": 1791940603.746422,
+  "reason": "Keep aggregate concurrent model calls<=2 whilefirstregistered conditionalrepair runs; active cell child continues, nexttaskbatchwaits. Resume afterrepairterminal.",
+  "resumed_at_unix": 1791940627.8891258,
+  "note": "Repair receipt alreadycompleted bypauseinspection; no remainingrepair call. Dispatcher resumed immediately, existing two secondtaskcalls continue."
+}

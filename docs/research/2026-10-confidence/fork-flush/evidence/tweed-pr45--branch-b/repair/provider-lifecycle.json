@@ -1,0 +1,18 @@
+{
+  "process_exit": -9,
+  "timed_out": true,
+  "wall_seconds": 90.11911441700067,
+  "process_cleanup_scope": "original_process_group",
+  "detached_descendants_contained": false,
+  "guarded_new_session_processes": 1,
+  "process_cleanup_seconds": 6.20899663772434e-06,
+  "stream_changed_during_cleanup": false,
+  "requested_effort": "high",
+  "observed_assistant_models": [
+    "claude-opus-5-5"
+  ],
+  "usage": null,
+  "modelUsage": {},
+  "total_cost_usd": null,
+  "terminal": null
+}

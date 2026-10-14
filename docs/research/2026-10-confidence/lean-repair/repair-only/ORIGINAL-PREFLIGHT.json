@@ -1,0 +1,69 @@
+{
+  "reviewer": "/root/lean_repair_adversary",
+  "kind": "prospective_separate_scope_correction_preflight",
+  "passed": true,
+  "checks": [
+    {
+      "check": "prospective_seal_authentic_outcome_and_unchanged_primary",
+      "passed": true,
+      "facts": {
+        "registration_sha256": "70fdb3a543e1e0c619dc7eaa1fe295ba294ea81c4a4ee51ab76c169f130faca4",
+        "helper_sha256": "53b5788c3f2ffb3d05ef057a7f0c0a8b5499cfc57b4b459cd7a520b56dca5b93",
+        "authentic_origin": "tweed-pr20--revised--r1",
+        "scope_breach": [
+          "README.md"
+        ],
+        "no_primary_production_repairs": true
+      }
+    },
+    {
+      "check": "identical_feedback_scope_authority_and_fixed_route_budgets",
+      "passed": true,
+      "facts": {
+        "assigned_correction_attempts": 2,
+        "common_prompt_sha256": "df13232bedaf27bac113cec980991f2abb50a64b4a85dd23d09543bdaaa47077",
+        "packet_sha256": "542f582eabfdf1cba3ec9257acab98a115631181d1fa6862665dce72881c6570",
+        "call_seconds": 90,
+        "call_budget_usd": 1,
+        "owner_checks_seconds": 60,
+        "fixed_order": [
+          "original",
+          "revised"
+        ]
+      }
+    },
+    {
+      "check": "current_bound_prechecks_without_new_grader_runs",
+      "passed": true,
+      "facts": {
+        "candidate_grade_passed": true,
+        "focused_checks_passed": true,
+        "grade_receipt_sha256": "6acaac1bd88bffd73c96924dbd072a631f09e19d299218e443fc9673528cc2a4",
+        "focused_receipt_sha256": "6efa15a2a1c65de45da6d29d6893ff6c0f482e719d4d843508f20e487ef9e786"
+      }
+    },
+    {
+      "check": "committed_activation_and_unstarted_pair",
+      "passed": true,
+      "facts": {
+        "activation_commit": "78fdcab2813f6ea1c894c464cd641d9c530ba255",
+        "public_registration_sha256": "daf7ccdf09dbc7e2651d25f52b688949de4835d909a978545572d225da2e5264",
+        "no_attempts_started": true
+      }
+    }
+  ],
+  "source_review": {
+    "launch": "Authentic full candidate copied and hash checked before mounting each frozen arm; saved before tree is rederived from same candidate plus assigned policy. Final tree source/patch/input association rechecked.",
+    "envelope": "Actual sole repair prompt and complete Claude argv/MCP schema/sandbox envelope reconstructed; stage caps prospectively 90 seconds/USD1. Owner checks use independent 60-second allowance.",
+    "acceptance": "Qualified actual stage plus exact baseline README restoration, genuine scope fail\u2192pass, production-byte and production-patch preservation, frozen focused and unchanged oracle passes, owner deadline. complete/remaining retained separately.",
+    "artifact_custody": "New helper excludes ephemeral execution-scratch prospectively; request, stream, server config, tool events, local qualification and controller command outputs remain hash-bound. Original collector/manifests unchanged."
+  },
+  "limits": [
+    "Outcome-selected revised-origin documentation scope breach; two corrections of one candidate, not new tasks or production repair trials.",
+    "Both receive newly explicit scope verdict/diff and baseline restoration bytes; no causal policy superiority claim.",
+    "No primary scores, remaining fields, custody errors or source files rewritten; new successes must never add to six-cell primary counts.",
+    "Exporter privacy scan is narrow; inspect actual output before publication."
+  ],
+  "hosted_calls_by_reviewer": 0,
+  "remaining_gate": "Root sole pair launch authorization; actual stage and post-correction custody remain to qualify"
+}

@@ -1,0 +1,195 @@
+diff --git a/bonaparte-launcher b/bonaparte-launcher
+index 67681b7..0be89fe 100755
+--- a/bonaparte-launcher
++++ b/bonaparte-launcher
+@@ -9,15 +9,14 @@ import shutil
+ import subprocess
+ import sys
+ import tempfile
+-import time
++import fcntl
+ from pathlib import Path
+ 
+ REPOSITORY = os.environ.get(
+     "BONAPARTE_REPOSITORY", "https://github.com/e3-solutions/tweed.git"
+ )
+ TAG_PATTERN = re.compile(r"v(\d+)\.(\d+)\.(\d+)")
+-CHECK_INTERVAL = 24 * 60 * 60
+-REQUIRED = """bonaparte bonaparte-launcher bonaparte_checkpoint.py
++REQUIRED = """bonaparte autoresearch bonaparte-launcher bonaparte_checkpoint.py
+ bonaparte_native.py bonaparte_progress.py
+ bonaparte_linear.py
+ skills/use-bonaparte/SKILL.md
+@@ -46,8 +45,11 @@ def bonaparte_home() -> Path:
+ def atomic_link(target: str, link: Path) -> None:
+     temporary = link.with_name(f".{link.name}.{os.getpid()}")
+     temporary.unlink(missing_ok=True)
+-    temporary.symlink_to(target)
+-    os.replace(temporary, link)
++    try:
++        temporary.symlink_to(target)
++        os.replace(temporary, link)
++    finally:
++        temporary.unlink(missing_ok=True)
+ 
+ 
+ def migrate_autoresearch_link(home: Path) -> None:
+@@ -71,7 +73,7 @@ def current_release(home: Path) -> Path:
+ 
+ 
+ def tag_version(tag: str) -> tuple[int, int, int] | None:
+-    match = TAG_PATTERN.search(tag)
++    match = TAG_PATTERN.fullmatch(tag)
+     return tuple(map(int, match.groups())) if match else None
+ 
+ 
+@@ -94,11 +96,22 @@ def latest_tag() -> tuple[str, str]:
+ 
+ 
+ def validate_release(release: Path) -> None:
+-    missing = [name for name in REQUIRED if not (release / name).exists()]
+-    if missing:
+-        raise RuntimeError(f"release is missing {', '.join(missing)}")
++    invalid = []
++    for name in REQUIRED:
++        path = release / name
++        if not path.is_file() or any(
++            (release / Path(*Path(name).parts[:index])).is_symlink()
++            for index in range(1, len(Path(name).parts) + 1)
++        ):
++            invalid.append(name)
++    if invalid:
++        raise RuntimeError(f"release has missing or invalid required paths: {', '.join(invalid)}")
++    for name in ("bonaparte-launcher", "autoresearch"):
++        if not os.access(release / name, os.X_OK):
++            raise RuntimeError(f"release entry point is not executable: {name}")
+     for name in (
+         "bonaparte",
++        "autoresearch",
+         "bonaparte-launcher",
+         "bonaparte_checkpoint.py",
+         "bonaparte_linear.py",
+@@ -140,9 +153,8 @@ def git(directory: Path, *arguments: str, output: bool = False):
+ 
+ def fetch_release(home: Path, tag: str, expected_oid: str) -> Path:
+     destination = home / "releases" / tag
+-    if destination.exists():
+-        validate_release(destination)
+-        return destination
++    if destination.exists() or destination.is_symlink():
++        raise RuntimeError(f"release destination already exists: {destination}")
+     staging = Path(tempfile.mkdtemp(prefix=".update-", dir=home))
+     try:
+         git(staging, "init", "-q")
+@@ -152,7 +164,18 @@ def fetch_release(home: Path, tag: str, expected_oid: str) -> Path:
+             raise RuntimeError(f"tag {tag} moved while updating")
+         git(staging, "checkout", "-q", "--detach", "FETCH_HEAD")
+         validate_release(staging)
++        # Recheck the advertised tag after validation as well as FETCH_HEAD.
++        advertised = subprocess.check_output(
++            ["git", "ls-remote", "--tags", "--refs", REPOSITORY, f"refs/tags/{tag}"],
++            env=updater_environment(), text=True, timeout=15,
++        ).split()
++        if advertised != [expected_oid, f"refs/tags/{tag}"]:
++            raise RuntimeError(f"tag {tag} moved while updating")
+         shutil.rmtree(staging / ".git")
++        identity = staging / ".bonaparte-release-oid"
++        if identity.is_symlink() or identity.exists():
++            raise RuntimeError("release contains reserved updater metadata")
++        identity.write_text(expected_oid + "\n")
+         staging.rename(destination)
+         return destination
+     finally:
+@@ -160,39 +183,59 @@ def fetch_release(home: Path, tag: str, expected_oid: str) -> Path:
+             shutil.rmtree(staging)
+ 
+ 
+-def update(home: Path) -> str | None:
+-    migrate_autoresearch_link(home)
+-    tag, oid = latest_tag()
++def release_oid(release: Path) -> str | None:
++    identity = release / ".bonaparte-release-oid"
++    if identity.is_file() and not identity.is_symlink():
++        return identity.read_text().strip()
++    return None
++
++
++def status(home: Path) -> int:
+     current = current_release(home)
+-    current_version = tag_version(current.name)
+-    if current_version and current_version >= tag_version(tag):
+-        return None
+-    release = fetch_release(home, tag, oid)
+-    current_version = tag_version(current_release(home).name)
+-    if current_version and current_version >= tag_version(tag):
+-        return None
+-    atomic_link(f"releases/{release.name}", home / "current")
+-    migrate_autoresearch_link(home)
+-    return tag
++    print(f"installed: {current.name}")
++    try:
++        tag, oid = latest_tag()
++    except Exception:
++        print("latest: unavailable\ncurrent: unknown")
++        return 1
++    print(f"latest: {tag}")
++    matches = current.name == tag and release_oid(current) in (None, oid)
++    print(f"current: {'yes' if matches else 'no'}")
++    return 0
++
++
++def update(home: Path) -> str | None:
++    # Serialize competing updates; readers keep using the old complete tree.
++    with (home / ".update-lock").open("a") as lock:
++        fcntl.flock(lock, fcntl.LOCK_EX)
++        current = current_release(home)
++        tag, oid = latest_tag()
++        if current.name == tag:
++            if release_oid(current) != oid:
++                raise RuntimeError(f"tag {tag} moved or installed identity is unavailable")
++            validate_release(current)
++            return None
++        release = fetch_release(home, tag, oid)
++        try:
++            # Any compatibility-link error must occur before activation.
++            migrate_autoresearch_link(home)
++            atomic_link(f"releases/{release.name}", home / "current")
++        except Exception:
++            shutil.rmtree(release)
++            raise
++        return tag
+ 
+ 
+ def automatic_update(home: Path) -> None:
+-    if os.environ.get("BONAPARTE_AUTO_UPDATE") == "0":
+-        return
+-    checked = home / "last-check"
+-    if checked.exists() and time.time() - checked.stat().st_mtime < CHECK_INTERVAL:
+-        return
+-    try:
+-        checked.touch()
+-        update(home)
+-    except Exception as error:
+-        print(f"bonaparte: automatic update failed: {error}", file=sys.stderr)
++    """Compatibility entry point: ordinary checks never install a release."""
++    return None
+ 
+ 
+ def main() -> int:
+     home = bonaparte_home()
+     try:
+-        migrate_autoresearch_link(home)
++        if sys.argv[1:] in (["status"], ["check"]):
++            return status(home)
+         if sys.argv[1:] == ["update"]:
+             tag = update(home)
+             print(
+@@ -201,7 +244,7 @@ def main() -> int:
+                 else "Bonaparte is already current."
+             )
+             return 0
+-        automatic_update(home)
++        migrate_autoresearch_link(home)
+         runner = current_release(home) / "bonaparte"
+         os.execv(sys.executable, [sys.executable, str(runner), *sys.argv[1:]])
+     except Exception as error:

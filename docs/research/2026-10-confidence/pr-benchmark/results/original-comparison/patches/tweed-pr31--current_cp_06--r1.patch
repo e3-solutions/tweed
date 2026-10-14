@@ -1,0 +1,142 @@
+diff --git a/bonaparte b/bonaparte
+index 26a168f..fea9303 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -400,6 +400,14 @@ def resolve_soft_phase_budget(value: object) -> float:
+     return budget
+ 
+ 
++class SoftBudgetInterruption(RuntimeError):
++    """A steered coordinator turn ended without a valid wrap-up receipt."""
++
++    def __init__(self, message: str, session_id: str):
++        super().__init__(message)
++        self.session_id = session_id
++
++
+ def require_pull_request(receipt: dict, phase: str) -> None:
+     if (
+         phase in {"implement", "review", "publish"}
+@@ -665,11 +673,14 @@ def run_phase(
+             steer_acknowledged = True
+         if terminal.get("status") != "completed":
+             detail = terminal.get("error")
+-            raise RuntimeError(
+-                f"{phase} coordinator failed: {detail or terminal.get('status')}"
+-            )
++            message = f"{phase} coordinator failed: {detail or terminal.get('status')}"
++            if steered:
++                raise SoftBudgetInterruption(message, session_id)
++            raise RuntimeError(message)
+         if post_steer_work:
+-            raise RuntimeError("coordinator started new work after soft-budget steer")
++            raise SoftBudgetInterruption(
++                "coordinator started new work after soft-budget steer", session_id
++            )
+         if not driver.last_agent_message:
+             items = terminal.get("items")
+             if isinstance(items, list):
+@@ -709,15 +720,19 @@ def run_phase(
+         raise RuntimeError("phase requested input without a question")
+     if steered:
+         if receipt["state"] != "needs-input":
+-            raise RuntimeError("soft-budget wrap-up did not request continuation")
++            raise SoftBudgetInterruption(
++                "soft-budget wrap-up did not request continuation", session_id
++            )
+         question = receipt["question"]
+         if question != SOFT_BUDGET_CONTINUE_QUESTION and not question.startswith(
+             "Clarification required:"
+         ):
+-            raise RuntimeError("soft-budget wrap-up returned an invalid question")
++            raise SoftBudgetInterruption(
++                "soft-budget wrap-up returned an invalid question", session_id
++            )
+         if "unverified" not in receipt["summary"].casefold():
+-            raise RuntimeError(
+-                "soft-budget wrap-up omitted unverified proof obligations"
++            raise SoftBudgetInterruption(
++                "soft-budget wrap-up omitted unverified proof obligations", session_id
+             )
+     if receipt["state"] == "needs-input":
+         receipt["resume_session_id"] = session_id
+@@ -1066,6 +1081,19 @@ def resume_checkpoint(
+             ),
+             130,
+         )
++    except SoftBudgetInterruption as error:
++        # The answer reached the native turn; continue that session, not a replay.
++        _update_checkpoint_observation(checkpoint, observation)
++        checkpoint.update(
++            status="waiting-input",
++            question=SOFT_BUDGET_CONTINUE_QUESTION,
++            pending_answer=None,
++        )
++        return _checkpoint_failure(
++            checkpoint,
++            str(error).replace("\n", " ")[:800],
++            remote_uncertain=True,
++        ), 1
+     except Exception as error:  # noqa: BLE001 - preserve a resumable answer
+         _update_checkpoint_observation(checkpoint, observation)
+         return _checkpoint_failure(
+@@ -1123,16 +1151,38 @@ def run_and_checkpoint(
+ ) -> dict:
+     base_git = capture_git_state(repository) if session_id is None else None
+     observation: dict = {}
+-    receipt = run_phase(
+-        repository,
+-        phase,
+-        phase_input,
+-        session_id,
+-        model,
+-        reasoning,
+-        observation=observation,
+-        soft_phase_budget_seconds=soft_phase_budget_seconds,
+-    )
++    try:
++        receipt = run_phase(
++            repository,
++            phase,
++            phase_input,
++            session_id,
++            model,
++            reasoning,
++            observation=observation,
++            soft_phase_budget_seconds=soft_phase_budget_seconds,
++        )
++    except SoftBudgetInterruption as error:
++        summary = str(error).replace("\n", " ")[:800]
++        interrupted = {name: None for name in RECEIPT_SCHEMA["required"]}
++        interrupted.update(
++            phase=phase,
++            state="needs-input",
++            summary=summary,
++            question=SOFT_BUDGET_CONTINUE_QUESTION,
++        )
++        checkpoint = new_question_checkpoint(
++            repository,
++            phase,
++            interrupted,
++            error.session_id,
++            model,
++            reasoning,
++            observation,
++            base_git or capture_git_state(repository),
++            soft_phase_budget_seconds,
++        )
++        return _checkpoint_failure(checkpoint, summary, remote_uncertain=True)
+     if receipt["state"] != "needs-input":
+         return receipt
+     coordinator_session = observation.get("session_id") or session_id
+@@ -1337,6 +1387,10 @@ def main() -> int:
+                     selected_soft_phase_budget
+                     or DEFAULT_SOFT_PHASE_BUDGET_SECONDS,
+                 )
++            if result_receipt["state"] == "failed" and result_receipt.get(
++                "resume_token"
++            ):
++                exit_code = exit_code or 1
+             progress.stop_heartbeat()
+             progress.report("finalizing")
+             terminal_state = result_receipt["state"]

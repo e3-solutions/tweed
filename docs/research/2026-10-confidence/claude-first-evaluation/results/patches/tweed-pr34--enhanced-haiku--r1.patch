@@ -1,0 +1,62 @@
+diff --git a/bonaparte b/bonaparte
+index cdc8a50..cdba534 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -242,6 +242,26 @@ def latest_comment(comments: list[dict], header: str) -> str | None:
+     return match["body"] if match else None
+ 
+ 
++COMPLETE_REVIEW_MARKERS = (
++    "**Verdict:** Ready to publish",
++    "### Review basis",
++    "### Contract and quality result",
++    "### Evidence ledger",
++    "### Git handoff",
++)
++
++
++def latest_complete_review(comments: list[dict]) -> str | None:
++    complete = [
++        comment
++        for comment in comments
++        if all(
++            marker in (comment.get("body") or "") for marker in COMPLETE_REVIEW_MARKERS
++        )
++    ]
++    return latest_comment(complete, PHASE_HEADERS["review"])
++
++
+ def select_handoff(
+     issue: dict, comments: list[dict], phase: str, supplemental: str | None = None
+ ) -> dict:
+@@ -259,6 +279,12 @@ def select_handoff(
+         context["intake"] = issue["description"]
+         if isinstance(current_record.get("id"), str):
+             context["existing_comment_id"] = current_record["id"]
++    if phase == "publish" and current:
++        if isinstance(current_record.get("id"), str):
++            context["existing_comment_id"] = current_record["id"]
++        review = latest_complete_review(comments)
++        if review is not None:
++            context["review"] = review
+     key = f"scope:{kind}" if phase == "scope" else phase
+     if not current and key not in PHASE_INPUTS:
+         context = {"missing": "**Kind:** Bug | Feature"}
+diff --git a/workflows/publish.md b/workflows/publish.md
+index 9840ecb..b2a89fa 100644
+--- a/workflows/publish.md
++++ b/workflows/publish.md
+@@ -11,7 +11,12 @@ metadata, readiness, and final Linear comment.
+ 
+ - Existing publish result: reverify its exact ready PR and Linear delivery
+   comment, then return it without another write. If either is stale or missing,
+-  return `blocked` with that fact.
++  return `blocked` with that fact. The runner may also supply `review`, the
++  latest complete implementation review, and `existing_comment_id`, the stable
++  Linear ID of the publish comment. Use `review` only to confirm that the
++  existing publish's PR, branch, and reviewed commit match that review. Never
++  create a second delivery comment for the same reviewed PR; any repair of the
++  existing delivery comment must address `existing_comment_id`.
+ - New publish: require a complete `## Bonaparte · Implementation Review` as the
+   publish handoff.
+ - Extract the exact reviewed branch and commit. Require a clean local worktree

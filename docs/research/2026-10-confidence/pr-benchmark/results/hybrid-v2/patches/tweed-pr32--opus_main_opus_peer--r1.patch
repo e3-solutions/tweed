@@ -1,0 +1,94 @@
+diff --git a/bonaparte b/bonaparte
+index 26a168f..d6700a4 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -409,6 +409,27 @@ def require_pull_request(receipt: dict, phase: str) -> None:
+         raise RuntimeError(f"completed {phase} is missing its pull request")
+ 
+ 
++def coordinator_turn_completion(
++    message: dict, completed_turn: dict | None, session_id: str, turn_id: str
++) -> dict | None:
++    """Return the completion only when it belongs to the active coordinator turn.
++
++    Native child threads report their own ``turn/completed`` notifications on
++    the same connection; those must never finish or replace the coordinator
++    turn. Legacy notifications without ``threadId`` are attributed to the
++    coordinator and still require the active turn ID.
++    """
++    if completed_turn is None:
++        return None
++    params = message.get("params")
++    thread_id = params.get("threadId") if isinstance(params, dict) else None
++    if thread_id is not None and thread_id != session_id:
++        return None
++    if completed_turn.get("id") != turn_id:
++        raise RuntimeError("Codex app-server completed the wrong turn")
++    return completed_turn
++
++
+ def run_phase(
+     repository: Path,
+     phase: str,
+@@ -609,11 +630,10 @@ def run_phase(
+                 if message is not None:
+                     if "method" in message:
+                         _method, completed_turn = driver.observe_notification(message)
++                        completed_turn = coordinator_turn_completion(
++                            message, completed_turn, session_id, turn_id
++                        )
+                         if completed_turn is not None:
+-                            if completed_turn.get("id") != turn_id:
+-                                raise RuntimeError(
+-                                    "Codex app-server completed the wrong turn"
+-                                )
+                             terminal = completed_turn
+                         continue
+                     raise RuntimeError("Codex app-server response correlation failed")
+@@ -648,9 +668,10 @@ def run_phase(
+                             and item.get("kind") == "started"
+                         )
+                 _method, completed_turn = driver.observe_notification(message)
++                completed_turn = coordinator_turn_completion(
++                    message, completed_turn, session_id, turn_id
++                )
+                 if completed_turn is not None:
+-                    if completed_turn.get("id") != turn_id:
+-                        raise RuntimeError("Codex app-server completed the wrong turn")
+                     terminal = completed_turn
+                 continue
+             if not steered or message.get("id") != steer_id:
+diff --git a/bonaparte_native.py b/bonaparte_native.py
+index 8ec992a..33d0aa6 100644
+--- a/bonaparte_native.py
++++ b/bonaparte_native.py
+@@ -273,7 +273,12 @@ class AppServerPhaseDriver:
+             raise RuntimeError(f"unsupported app-server request: {method}")
+         if method == "thread/started":
+             thread = params.get("thread")
+-            if isinstance(thread, dict) and isinstance(thread.get("id"), str):
++            if (
++                isinstance(thread, dict)
++                and isinstance(thread.get("id"), str)
++                # A native child thread must not replace the coordinator session.
++                and self._receipt_thread_id in (None, thread["id"])
++            ):
+                 self.observer.feed(
+                     json.dumps({"type": "thread.started", "thread_id": thread["id"]})
+                 )
+@@ -306,6 +311,15 @@ class AppServerPhaseDriver:
+             turn = params.get("turn")
+             if not isinstance(turn, dict):
+                 raise RuntimeError("Codex app-server turn completion is malformed")
++            thread_id = params.get("threadId")
++            if (
++                thread_id is not None
++                and self._receipt_thread_id is not None
++                and thread_id != self._receipt_thread_id
++            ):
++                # A native child thread finished its own turn; it cannot
++                # complete the coordinator turn.
++                return method, None
+             return method, turn
+         return method, None
+ 

@@ -1,0 +1,14 @@
+FAIL: test_doctor_reports_required_health_checks (test_diagnostics.DiagnosticsTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-b/workspace/skills/confidence-protocol/tests/test_diagnostics.py", line 395, in test_doctor_reports_required_health_checks
+    self.assertEqual(report["status"], "pass")
+AssertionError: 'fail' != 'pass'
+- fail
++ pass
+
+
+----------------------------------------------------------------------
+Ran 15 tests in 6.267s
+
+FAILED (failures=1)

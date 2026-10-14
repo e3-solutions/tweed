@@ -1,0 +1,414 @@
+{
+  "simulator_limit": "Frozen keyword matching, supplied facts, maximum three rounds; these are task-local generated transcripts, not real user conversations.",
+  "episodes": [
+    {
+      "spec": {
+        "case": "resume-precedence",
+        "policy": "baseline",
+        "repeat": 1
+      },
+      "history": [
+        {
+          "assistant": {
+            "questions": [
+              "Precedence on resume: the saved checkpoint, the CLI, and the environment can each supply a budget value. Which one should win? Options: (a) CLI > env > checkpoint, so an operator can override on resume; (b) checkpoint > CLI > env, so a resumed run keeps its original budget; (c) another order you specify.",
+              "How should operators turn the budget off? Options: (a) a sentinel value on the existing flag and env var, such as 0 or 'none' or 'off' (please name which); (b) a new separate flag or env var, which would add a name but leave the existing flag names as they are; (c) something else.",
+              "Should a disabled budget be saved in the checkpoint, so a resumed run stays disabled unless someone explicitly sets a value? Or should resume fall back to a default or env value when nothing is passed?",
+              "What should happen when a budget value is invalid or can't be read, whether it comes from the CLI, the env, or a saved checkpoint? Options: (a) fail fast with an error before doing any work; (b) warn and use the next source in precedence order; (c) warn and run with the budget disabled.",
+              "What does 'resume reliably' mean here? Is there a specific failure you've seen, such as a resume ignoring the disable setting, a resume crashing on the saved budget value, or the budget resetting? Or is the goal just that resume behaves the same way given the precedence rules above?",
+              "Should the effective budget and where it came from (CLI, env, or checkpoint) be logged or shown on startup and resume, so operators can check what was applied?"
+            ],
+            "settled": [
+              "Keep the existing CLI flag names (answered earlier).",
+              "Known fact: the saved checkpoint stores a budget value.",
+              "Known fact: the CLI and the environment can each supply a budget value."
+            ],
+            "ready": false,
+            "missing": [
+              "Which source wins on resume: checkpoint, CLI, or environment.",
+              "How the budget is turned off: a sentinel value or a separate flag or env var.",
+              "Whether a disabled budget is saved in the checkpoint and still applies on resume.",
+              "What happens with an invalid or unreadable budget value.",
+              "What 'resume reliably' means: a specific failure seen, or the expected behavior.",
+              "Whether the effective budget and its source are shown to operators."
+            ]
+          }
+        },
+        {
+          "user": [
+            "When the resume option is omitted, preserve the saved budget choice, including disabled.",
+            "An environment setting must not silently replace an explicit choice stored in a checkpoint."
+          ]
+        },
+        {
+          "assistant": {
+            "questions": [
+              "If an operator passes the budget option on resume, should that CLI value replace the budget saved in the checkpoint, including turning a disabled budget back on or turning an enabled one off? Or should a resumed run always keep the saved budget?",
+              "If the environment sets a budget that differs from the explicit choice saved in the checkpoint, what should happen? Options: (a) keep the checkpoint value and ignore the env value; (b) keep the checkpoint value and warn that the env value was ignored; (c) stop with an error until the operator resolves the conflict, for example by passing the CLI option.",
+              "Should the environment apply on resume when the checkpoint has no explicit budget choice, such as an older checkpoint or a missing or empty value? Should it apply on a fresh start?",
+              "How should operators turn the budget off while keeping the existing flag names? Options: (a) a special value on the existing flag and env var, such as 0, 'none', or 'off' (please name it); (b) a new separate flag or env var; (c) something else.",
+              "What should happen when a budget value is invalid or can't be read, whether it comes from the CLI, the env, or the checkpoint? Options: (a) stop with an error before doing any work; (b) warn and use the next source; (c) warn and run with the budget disabled.",
+              "Should startup and resume show the budget in effect and where it came from (CLI, env, or checkpoint), including when it's disabled?"
+            ],
+            "settled": [
+              "Keep the existing CLI flag names (answered earlier).",
+              "On resume with no budget option passed, keep the budget choice saved in the checkpoint, including a disabled budget.",
+              "An environment setting must not silently replace an explicit budget choice saved in a checkpoint.",
+              "Known fact: the saved checkpoint stores a budget value.",
+              "Known fact: the CLI and the environment can each supply a budget value."
+            ],
+            "ready": false,
+            "missing": [
+              "Whether an explicit CLI budget option on resume replaces the budget saved in the checkpoint.",
+              "What happens when the env value conflicts with the explicit checkpoint choice: ignore it, warn, or stop with an error. The answer rules out a silent replacement but doesn't say which of these to do.",
+              "Whether the env applies when the checkpoint has no explicit choice (for example, an older or missing value) and on a fresh start.",
+              "How the budget is turned off: a special value on the existing flag and env var (and which value) or a new separate flag or env var.",
+              "What happens with an invalid or unreadable budget value from each source.",
+              "Whether the budget in effect and its source are shown to operators."
+            ]
+          }
+        },
+        {
+          "user": [
+            "An environment setting must not silently replace an explicit choice stored in a checkpoint."
+          ]
+        },
+        {
+          "assistant": {
+            "questions": [
+              "When an operator passes the budget option on resume, should it replace the budget saved in the checkpoint? This includes turning a disabled budget back on or turning an enabled one off. Or should a resumed run always keep the saved budget?",
+              "When the environment sets a budget that differs from the explicit choice saved in the checkpoint, which should happen? (a) Keep the saved value and ignore the environment value without a message. (b) Keep the saved value and warn that the environment value was ignored. (c) Stop with an error until the operator resolves the conflict, for example by passing the budget option.",
+              "Should the environment value apply when the checkpoint has no explicit budget choice, for example an older checkpoint or a missing or empty value? Should it apply on a fresh start?",
+              "With the existing flag names kept, how should operators turn the budget off? (a) A special value on the existing flag and environment variable, such as 0, 'none' or 'off' (please name which). (b) A new separate flag or environment variable. (c) Something else.",
+              "When a budget value from the CLI, the environment or the checkpoint is invalid or can't be read, which should happen? (a) Stop with an error before doing any work. (b) Warn and use the next source. (c) Warn and run with the budget turned off.",
+              "Should startup and resume show the budget in effect and where it came from (CLI, environment or checkpoint), including when it's turned off?"
+            ],
+            "settled": [
+              "Keep the existing CLI flag names (answered earlier).",
+              "On resume with no budget option passed, keep the budget choice saved in the checkpoint, including a disabled budget.",
+              "An environment setting must not silently replace an explicit budget choice saved in a checkpoint (restated in the latest answer, with no added detail).",
+              "Known fact: the saved checkpoint stores a budget value.",
+              "Known fact: the CLI and the environment can each supply a budget value."
+            ],
+            "ready": false,
+            "missing": [
+              "Whether a budget option passed on resume replaces the budget saved in the checkpoint.",
+              "What happens when the environment value conflicts with an explicit saved choice: ignore it without a message, warn, or stop with an error. The rule rules out a silent replacement but doesn't say which of these to do.",
+              "Whether the environment value applies when the checkpoint has no explicit choice and on a fresh start.",
+              "How the budget is turned off: a special value on the existing flag and environment variable (and which value), or a new separate flag or environment variable.",
+              "What happens with an invalid or unreadable budget value from each source.",
+              "Whether the budget in effect and its source are shown to operators."
+            ]
+          }
+        },
+        {
+          "user": [
+            "An environment setting must not silently replace an explicit choice stored in a checkpoint."
+          ]
+        }
+      ]
+    },
+    {
+      "spec": {
+        "case": "notification-ownership",
+        "policy": "baseline",
+        "repeat": 1
+      },
+      "history": [
+        {
+          "assistant": {
+            "questions": [
+              "What should count as completion: only a completion event whose threadId and turnId match the parent's active turn, or should the parent also wait until its child threads finish?",
+              "Older notifications sometimes have no threadId. How should their completion events be handled: match by turnId only, ignore them for completion, or treat them as parent events as they are now?",
+              "After a child completion stops counting as parent completion, what should happen to it: show it as child-only status, hide it from users but keep it for logs or diagnostics, or drop it entirely?",
+              "Where does the confusion show up that needs fixing: the UI completion indicator, user-facing alerts such as sounds or toasts, programmatic or API completion state, or all of these?",
+              "If an event's threadId or turnId doesn't match any known parent or child, should it be ignored, logged as a warning, or kept as it is handled today?"
+            ],
+            "settled": [
+              "Goal: child notifications must not be treated as, or confused with, parent completion.",
+              "Do not change the transport schema (previously answered).",
+              "Source fact: events may contain threadId and turnId.",
+              "Source fact: older notifications sometimes omit threadId.",
+              "Questions must be answered before the fix starts; no implementation happens during intake."
+            ],
+            "ready": false,
+            "missing": [
+              "Rule for what counts as completion: matching parent threadId and turnId, and whether the parent waits for its child threads",
+              "Fallback for older notifications that omit threadId",
+              "What happens to child completion events (show as child-only, hide but log, or drop)",
+              "Which places must stop treating child events as completion (UI, alerts, API state)",
+              "How to handle events that match no known parent or child"
+            ]
+          }
+        },
+        {
+          "user": [
+            "Accept a legacy completion without threadId only when its turnId is the active coordinator turn.",
+            "Keep child progress visible, but it must never replace the coordinator final receipt.",
+            "Only the active coordinator thread and turn can establish its completion."
+          ]
+        },
+        {
+          "assistant": {
+            "questions": [
+              "Where does the confusion need to be fixed: the UI completion indicator, user-facing alerts such as sounds or toasts, programmatic or API completion state, or all of these?",
+              "If an event's threadId or turnId doesn't match the active coordinator or any known child, should it be ignored, logged as a warning, or left as it is handled today?"
+            ],
+            "settled": [
+              "Goal: child notifications must not be treated as, or confused with, coordinator completion.",
+              "Do not change the transport schema (answered earlier).",
+              "Source fact: events may contain threadId and turnId.",
+              "Source fact: older notifications sometimes omit threadId.",
+              "Completion rule: only an event matching both the active coordinator thread and the active coordinator turn can mark the coordinator complete.",
+              "Older notifications with no threadId: accept the completion only when its turnId is the active coordinator turn. Otherwise it doesn't count as completion.",
+              "Child progress stays visible, but it must never replace the coordinator's final receipt."
+            ],
+            "ready": false,
+            "missing": [
+              "Which places must stop treating child events as completion: UI indicator, alerts, API state, or all of these",
+              "How to handle events whose threadId or turnId matches neither the active coordinator nor a known child"
+            ]
+          }
+        },
+        {
+          "user": [
+            "Only the active coordinator thread and turn can establish its completion."
+          ]
+        },
+        {
+          "assistant": {
+            "questions": [
+              "Which places must apply the coordinator-only completion rule: the UI completion indicator, user-facing alerts such as sounds or toasts, programmatic or API completion state, or all of these?",
+              "We've settled that events matching neither the active coordinator nor a known child can't mark completion. Beyond that, should they be ignored silently, logged as a warning, or shown the way they are shown today?"
+            ],
+            "settled": [
+              "Goal: child notifications must not be treated as, or confused with, coordinator completion.",
+              "Do not change the transport schema (answered earlier).",
+              "Source fact: events may contain threadId and turnId.",
+              "Source fact: older notifications sometimes omit threadId.",
+              "Completion rule (confirmed again): only an event matching both the active coordinator thread and the active coordinator turn can mark the coordinator complete.",
+              "Older notifications with no threadId: accept the completion only when its turnId is the active coordinator turn. Otherwise it doesn't count as completion.",
+              "Child progress stays visible, but it must never replace the coordinator's final receipt.",
+              "Events matching neither the active coordinator nor a known child can't mark completion. This follows from the completion rule."
+            ],
+            "ready": false,
+            "missing": [
+              "Which places must apply the completion rule: UI indicator, alerts, API state, or all of these. The latest reply repeated the completion rule but didn't answer this.",
+              "What happens to events matching neither the active coordinator nor a known child, apart from not counting as completion: ignore, log a warning, or show them as they are shown today."
+            ]
+          }
+        },
+        {
+          "user": [
+            "No new consequential decision was recognized. Use known source facts and ask the missing behavior choice."
+          ]
+        }
+      ]
+    },
+    {
+      "spec": {
+        "case": "resume-precedence",
+        "policy": "v08",
+        "repeat": 1
+      },
+      "history": [
+        {
+          "assistant": {
+            "questions": [
+              "How should an operator turn the phase budget off, given that the existing CLI flag names stay the same? (A) A special value on the existing flag/env var, e.g. 0, 'off', or 'none' (please say which). (B) Something else (please describe).",
+              "When a run resumes and the checkpoint, the CLI, and the environment each give a budget, which one wins? Please give the full order (e.g. CLI > env > checkpoint, or checkpoint > CLI > env).",
+              "If the budget was turned off when the checkpoint was saved, should a resumed run keep it off when no CLI or env value is given? Should a CLI or env value be able to turn it back on?",
+              "If the budget was on in the checkpoint, should a CLI or env value be able to turn it off on resume?",
+              "On resume, if the budget you supply is different from the one in the checkpoint, should the run (A) quietly use the winning value, (B) use it and log a warning, or (C) refuse to resume until the mismatch is fixed?",
+              "If the budget value from the CLI, env, or checkpoint is invalid (unparseable, negative, or empty), should the run (A) fail with an error before doing any work, (B) ignore that value and use the next one in the order, or (C) behave some other way (please describe)?",
+              "Should the checkpoint save the budget value that was actually used (including 'off'), so that a later resume reproduces it?",
+              "Does 'resume reliably' mean anything beyond keeping the budget consistent, such as a specific failure you have seen? If so, please describe what you expected to happen and what happened instead."
+            ],
+            "settled": [
+              "Keep the existing CLI flag names (previously answered).",
+              "Source fact: the saved checkpoint contains a budget value.",
+              "Source fact: the CLI and the environment can each supply a budget value."
+            ],
+            "ready": false,
+            "missing": [
+              "How the budget is turned off (the value or form that means 'off')",
+              "Which of checkpoint, CLI, and env wins on resume",
+              "Whether 'off' carries over on resume, and whether CLI or env can override it in either direction",
+              "What to do when the supplied budget doesn't match the checkpoint (silent, warn, or refuse)",
+              "How invalid or empty budget values are handled",
+              "Whether the checkpoint saves the budget actually used, including 'off'",
+              "What 'resume reliably' covers beyond the budget (any specific failure seen)"
+            ]
+          }
+        },
+        {
+          "user": [
+            "An environment setting must not silently replace an explicit choice stored in a checkpoint."
+          ]
+        },
+        {
+          "assistant": {
+            "questions": [
+              "How should an operator turn the phase budget off, given that the existing CLI flag names stay the same? (A) A special value on the existing flag or env var, such as 0, 'off', or 'none' (please say which). (B) Something else (please describe).",
+              "On resume, if the environment gives a different budget from an explicit choice saved in the checkpoint, what should happen? (A) Use the checkpoint value and log a warning that the env value was ignored. (B) Refuse to resume until the mismatch is fixed. (C) Use the env value but log a warning. (D) Something else. This also covers the case where one of them is 'off'.",
+              "On resume, if the CLI gives a different budget from an explicit choice saved in the checkpoint, should the CLI value (A) win quietly, (B) win with a warning, (C) lose to the checkpoint, or (D) cause the run to refuse to resume? This also covers turning the budget off or back on from the CLI.",
+              "If both the CLI and the environment give a budget, which one wins? Does the answer differ between a fresh run and a resumed one?",
+              "What counts as an 'explicit choice stored in a checkpoint'? (A) Any budget value in the checkpoint. (B) Only a value the operator set through the CLI or env, not a default the program filled in. If (B), should a default saved in the checkpoint be replaceable by env or CLI without a warning?",
+              "If a budget value from the CLI, env, or checkpoint is invalid (can't be parsed, negative, or empty), should the run (A) fail with an error before doing any work, (B) ignore that value and use the next source in the order, or (C) behave some other way (please describe)?",
+              "Should the checkpoint save the budget actually used, including 'off', so that a later resume reproduces it? If yes, should it also record whether that value was set explicitly or came from a default?",
+              "Does 'resume reliably' mean anything beyond keeping the budget consistent, such as a specific failure you've seen? If so, please describe what you expected and what happened instead."
+            ],
+            "settled": [
+              "Keep the existing CLI flag names (previously answered).",
+              "An environment setting must not silently replace an explicit budget choice stored in a checkpoint (user answer). This rules out quiet env-over-checkpoint replacement. It does not say whether the checkpoint wins, whether a warning is enough, or whether the run refuses to resume.",
+              "Source fact: the saved checkpoint contains a budget value.",
+              "Source fact: the CLI and the environment can each supply a budget value."
+            ],
+            "ready": false,
+            "missing": [
+              "How the budget is turned off: which value or form means 'off'",
+              "What happens when env and an explicit checkpoint value differ: checkpoint wins with a warning, refuse to resume, or env wins with a warning",
+              "How the CLI and the checkpoint relate on resume, including turning the budget off or back on",
+              "Which wins between the CLI and env, on fresh and resumed runs",
+              "What counts as an 'explicit' checkpoint choice versus a saved default",
+              "How invalid or empty budget values are handled",
+              "Whether the checkpoint saves the budget actually used (including 'off') and whether it was explicit",
+              "What 'resume reliably' covers beyond the budget"
+            ]
+          }
+        },
+        {
+          "user": [
+            "When the resume option is omitted, preserve the saved budget choice, including disabled.",
+            "An environment setting must not silently replace an explicit choice stored in a checkpoint."
+          ]
+        },
+        {
+          "assistant": {
+            "questions": [
+              "How should an operator turn the phase budget off with the existing flag names? (A) Use a special value on the existing flag or env var: 0, 'off', or 'none' (please say which). (B) Something else (please describe).",
+              "On resume, if the CLI budget option is given and differs from the saved choice, which applies? (A) The CLI value replaces the saved choice, including turning the budget off or back on. (B) The CLI value replaces it and a warning is logged. (C) The run refuses to resume. (D) Something else.",
+              "On resume with no CLI budget option, the saved choice is kept. If the environment sets a different budget, should the run (A) keep the saved choice and log that the env value was ignored, (B) refuse to resume until the mismatch is fixed, or (C) do something else?",
+              "On a fresh run with no checkpoint, which wins if the CLI and the environment both set a budget?",
+              "Does 'explicit choice stored in a checkpoint' cover every saved budget value? Or only values an operator set, so that a default the program filled in could be replaced by the environment?",
+              "If a budget value from the CLI, env, or checkpoint is invalid (can't be parsed, negative, or empty), should the run (A) fail before doing any work, (B) skip that source and use the next one, or (C) do something else?",
+              "Does 'resume reliably' cover anything beyond keeping the budget choice consistent, such as a specific failure you've seen? If so, what did you expect, and what happened instead?"
+            ],
+            "settled": [
+              "Keep the existing CLI flag names (answered earlier).",
+              "An environment setting must not silently replace an explicit budget choice stored in a checkpoint (your answer).",
+              "When the resume option is omitted, the saved budget choice is kept, including 'disabled' (your answer). So the checkpoint must be able to store 'disabled' as a distinct state, and the saved choice is kept rather than replaced by env in that case. My reading is that 'resume option' means the CLI budget option given on resume; please correct me if that's wrong.",
+              "Source fact: the saved checkpoint contains a budget value.",
+              "Source fact: the CLI and the environment can each supply a budget value."
+            ],
+            "ready": false,
+            "missing": [
+              "Which value or form means 'off' on the existing flag or env var",
+              "What happens on resume when the CLI option is given and differs from the saved choice (replace, warn, or refuse), including turning the budget off or back on",
+              "What happens when env differs from the saved choice and no CLI option is given: keep the saved choice with a warning, or refuse",
+              "Whether the CLI or env wins on a fresh run",
+              "Whether a default the program saved counts as an 'explicit' checkpoint choice",
+              "How invalid or empty budget values are handled",
+              "What 'resume reliably' covers beyond the budget"
+            ]
+          }
+        },
+        {
+          "user": [
+            "When the resume option is omitted, preserve the saved budget choice, including disabled.",
+            "An environment setting must not silently replace an explicit choice stored in a checkpoint."
+          ]
+        }
+      ]
+    },
+    {
+      "spec": {
+        "case": "notification-ownership",
+        "policy": "v08",
+        "repeat": 1
+      },
+      "history": [
+        {
+          "assistant": {
+            "questions": [
+              "When should the parent turn count as complete? Option A: as soon as its own completion event arrives (matching threadId/turnId), even if child work is still running. Option B: only after its own completion event and all known child turns have finished. Option C: something else (please describe).",
+              "Older notifications sometimes have no threadId. How should a completion event without a threadId be handled? Option A: treat it as the parent's (current behavior; a child event could still end the parent early). Option B: count it only if its turnId matches the parent's active turn, and ignore it otherwise. Option C: never let it trigger completion (an older parent might then never be marked complete). Option D: something else.",
+              "Apart from completion, what should happen to child notifications? Option A: keep showing or forwarding them as child activity. Option B: hide them from the parent's view. Option C: something else.",
+              "If an event's threadId shows it belongs to the parent but its turnId is missing or doesn't match the active turn, should it be able to mark the parent complete? Yes or no?"
+            ],
+            "settled": [
+              "Goal: child notifications must not cause or confuse the parent's completion.",
+              "Don't change the transport schema (answered earlier). The fix must work with the existing event fields.",
+              "Source fact: events may include threadId and turnId.",
+              "Source fact: older notifications sometimes leave out threadId."
+            ],
+            "ready": false,
+            "missing": [
+              "Definition of parent completion: whether it waits for outstanding child turns.",
+              "How completion events without a threadId are attributed.",
+              "Whether child notifications are still shown or forwarded, or hidden.",
+              "Whether the turnId must match the active turn before an event can trigger completion."
+            ]
+          }
+        },
+        {
+          "user": [
+            "Accept a legacy completion without threadId only when its turnId is the active coordinator turn.",
+            "Keep child progress visible, but it must never replace the coordinator final receipt.",
+            "Only the active coordinator thread and turn can establish its completion."
+          ]
+        },
+        {
+          "assistant": {
+            "questions": [
+              "Still open: once the coordinator's own completion event arrives (matching the active thread and turn), should it count as complete right away, even if child turns are still running? Option A: yes, complete right away; children keep reporting progress afterward. Option B: no, wait until all known child turns have also finished. Option C: something else (please describe)."
+            ],
+            "settled": [
+              "Goal: child notifications must not cause or confuse the coordinator's completion.",
+              "Don't change the transport schema (answered earlier). The fix must work with the existing event fields.",
+              "Source fact: events may include threadId and turnId. Older notifications sometimes leave out threadId.",
+              "Only the active coordinator thread and turn can establish completion. Events from other threads, or with a missing or non-matching turnId, never complete the coordinator.",
+              "A legacy completion event with no threadId is accepted only if its turnId is the active coordinator turn. Otherwise it is ignored for completion.",
+              "Child progress stays visible but must never replace the coordinator's final receipt."
+            ],
+            "ready": false,
+            "missing": [
+              "Whether coordinator completion waits for outstanding child turns or happens as soon as the coordinator's own completion event arrives."
+            ]
+          }
+        },
+        {
+          "user": [
+            "Keep child progress visible, but it must never replace the coordinator final receipt.",
+            "Only the active coordinator thread and turn can establish its completion."
+          ]
+        },
+        {
+          "assistant": {
+            "questions": [
+              "One question is still open, and your latest reply didn't answer it. When the coordinator's own completion event arrives (matching the active thread and turn) while child turns are still running, should the coordinator count as complete? Option A: yes, it completes right away and children keep reporting progress afterward. Option B: no, it is complete only after all known child turns have also finished. Option C: something else (please describe)."
+            ],
+            "settled": [
+              "Goal: child notifications must not cause or confuse the coordinator's completion.",
+              "The transport schema stays unchanged (answered earlier). The fix must work with the existing event fields.",
+              "Source fact: events may include threadId and turnId. Older notifications sometimes leave out threadId.",
+              "Only the active coordinator thread and turn can establish completion. Events from other threads, or with a missing or non-matching turnId, never complete the coordinator.",
+              "An older completion event with no threadId counts only if its turnId is the active coordinator turn. Otherwise it is ignored for completion.",
+              "Child progress stays visible, but it must never replace the coordinator's final receipt."
+            ],
+            "ready": false,
+            "missing": [
+              "Whether the coordinator completes as soon as its own completion event arrives, or waits until all outstanding child turns have finished. Your answer that only the coordinator's thread and turn can establish completion says which event can trigger it, not whether it waits for children."
+            ]
+          }
+        },
+        {
+          "user": [
+            "Keep child progress visible, but it must never replace the coordinator final receipt.",
+            "Only the active coordinator thread and turn can establish its completion."
+          ]
+        }
+      ]
+    }
+  ]
+}

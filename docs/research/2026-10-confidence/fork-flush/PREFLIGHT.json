@@ -1,0 +1,310 @@
+{
+  "schema_version": 1,
+  "tasks_sha256": "8b77cd481fbc94172d7d8c5d103f55359bbb8986e603740367de929bc732613b",
+  "evaluator_sha256": "f2c56d851b5d0dc196d511f122812000225cca968211b3b3e66352871e131b38",
+  "controls": [
+    {
+      "task_id": "tweed-pr26",
+      "side": "base",
+      "exit_code": 1,
+      "wall_seconds": 0.20537100000365172,
+      "header": {
+        "task_id": "tweed-pr26",
+        "exit_code": 1,
+        "passed": false,
+        "oracle_passed": false,
+        "required_behavior_passed": true,
+        "negative_boundaries_passed": false,
+        "baseline_passed": true,
+        "baseline_receipts": [
+          {
+            "argv": [
+              "python3",
+              "-B",
+              "-m",
+              "unittest",
+              "tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "",
+            "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n",
+            "wall_seconds": 0.08181812499969965,
+            "process_cleanup_scope": "original_process_group",
+            "detached_descendants_contained": false
+          }
+        ],
+        "scope_violations": [],
+        "source_current": true,
+        "setup_status": "verified",
+        "failed_requirements": [
+          {
+            "requirement": "negative-boundaries",
+            "failed_tests": [
+              "tests.test_fork_owner.Owner.test_negative_overflow_is_not_emitted"
+            ]
+          }
+        ],
+        "source_before_sha256": "ca1e83ab41c71a632c39fd7e107ced43a93fc760721b861d3f6beaf2df04424b",
+        "source_after_sha256": "ca1e83ab41c71a632c39fd7e107ced43a93fc760721b861d3f6beaf2df04424b",
+        "output_sha256": "969284e326a4b4d59ccc30ba5001e938626a2f85e075079204c024c4453ea3ee"
+      },
+      "log": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/oracles/pr-26/base-actual-prefix-amended-control.log",
+      "log_sha256": "6031c39d1338a8a766823a1eb3829659eef9c89a29997e3c3c8b6ff5b43258af"
+    },
+    {
+      "task_id": "tweed-pr26",
+      "side": "reference",
+      "exit_code": 0,
+      "wall_seconds": 0.20439362499746494,
+      "header": {
+        "task_id": "tweed-pr26",
+        "exit_code": 0,
+        "passed": true,
+        "oracle_passed": true,
+        "required_behavior_passed": true,
+        "negative_boundaries_passed": true,
+        "baseline_passed": true,
+        "baseline_receipts": [
+          {
+            "argv": [
+              "python3",
+              "-B",
+              "-m",
+              "unittest",
+              "tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "",
+            "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n",
+            "wall_seconds": 0.0829867079955875,
+            "process_cleanup_scope": "original_process_group",
+            "detached_descendants_contained": false
+          }
+        ],
+        "scope_violations": [],
+        "source_current": true,
+        "setup_status": "verified",
+        "failed_requirements": [],
+        "source_before_sha256": "8355a0c57467b9ea8e75f1e5ff31ba70afee8d162384fac3db1ebb0eddf47073",
+        "source_after_sha256": "8355a0c57467b9ea8e75f1e5ff31ba70afee8d162384fac3db1ebb0eddf47073",
+        "output_sha256": "b8928ad9c6e78a3c32e5da5e243328e8a879ec7af9dada544c73c7520e4ecab0"
+      },
+      "log": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/oracles/pr-26/reference-actual-prefix-amended-control.log",
+      "log_sha256": "9bebdccb07e9f5f08726bbb69225e0408ebc176634d7b4cbdfc553a18ae5316c"
+    },
+    {
+      "task_id": "tweed-pr45",
+      "side": "base",
+      "exit_code": 1,
+      "wall_seconds": 0.6753416669962462,
+      "header": {
+        "task_id": "tweed-pr45",
+        "exit_code": 1,
+        "passed": false,
+        "oracle_passed": false,
+        "required_behavior_passed": false,
+        "negative_boundaries_passed": false,
+        "baseline_passed": true,
+        "baseline_receipts": [
+          {
+            "argv": [
+              "python3",
+              "-B",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              "skills/confidence-protocol/tests",
+              "-p",
+              "test_confidence.py",
+              "-k",
+              "test_run_records_failure_and_returns_child_status"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "",
+            "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.135s\n\nOK\n",
+            "wall_seconds": 0.21473641700140433,
+            "process_cleanup_scope": "original_process_group",
+            "detached_descendants_contained": false
+          }
+        ],
+        "scope_violations": [],
+        "source_current": true,
+        "setup_status": "verified",
+        "failed_requirements": [
+          {
+            "requirement": "behavior",
+            "failed_tests": [
+              "tests.test_fork_owner.Owner.test_positive_compact_capture_and_default_output"
+            ]
+          },
+          {
+            "requirement": "negative-boundaries",
+            "failed_tests": [
+              "tests.test_fork_owner.Owner.test_negative_failed_child_stays_failed",
+              "tests.test_fork_owner.Owner.test_negative_mutated_source_is_not_unchanged"
+            ]
+          }
+        ],
+        "source_before_sha256": "8078234c2a829bbe88d40b6daf6d27bc97256f5aec27b3d1b5e2856c94dd226d",
+        "source_after_sha256": "8078234c2a829bbe88d40b6daf6d27bc97256f5aec27b3d1b5e2856c94dd226d",
+        "output_sha256": "385f0f2142f8522ab9c6ddf60a13b00fd73b5b7698895e6af535794595223258"
+      },
+      "log": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/oracles/pr-45/base-actual-prefix-amended-control.log",
+      "log_sha256": "171f7d2fc710376b4a79da7b463817352cb1bb196c9a75ff044abb1947bca4aa"
+    },
+    {
+      "task_id": "tweed-pr45",
+      "side": "reference",
+      "exit_code": 0,
+      "wall_seconds": 1.3472312079975381,
+      "header": {
+        "task_id": "tweed-pr45",
+        "exit_code": 0,
+        "passed": true,
+        "oracle_passed": true,
+        "required_behavior_passed": true,
+        "negative_boundaries_passed": true,
+        "baseline_passed": true,
+        "baseline_receipts": [
+          {
+            "argv": [
+              "python3",
+              "-B",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              "skills/confidence-protocol/tests",
+              "-p",
+              "test_confidence.py",
+              "-k",
+              "test_run_records_failure_and_returns_child_status"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "",
+            "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.139s\n\nOK\n",
+            "wall_seconds": 0.22277008299715817,
+            "process_cleanup_scope": "original_process_group",
+            "detached_descendants_contained": false
+          }
+        ],
+        "scope_violations": [],
+        "source_current": true,
+        "setup_status": "verified",
+        "failed_requirements": [],
+        "source_before_sha256": "83bd9fe858b05aa9bc3af6437fbb8ce55e0d8361f78970b541db5b64427fe909",
+        "source_after_sha256": "83bd9fe858b05aa9bc3af6437fbb8ce55e0d8361f78970b541db5b64427fe909",
+        "output_sha256": "8c721e7a80a42772b97a087ac560301493fea374eb4b55de1a047d56017df5d2"
+      },
+      "log": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/oracles/pr-45/reference-actual-prefix-amended-control.log",
+      "log_sha256": "e5f9ded5f7a54d981bb9fd8f04d2961c219545b4f9881da8a9e37d2093a8f8e3"
+    },
+    {
+      "task_id": "tweed-pr18",
+      "side": "base",
+      "exit_code": 1,
+      "wall_seconds": 0.20462937499542022,
+      "header": {
+        "task_id": "tweed-pr18",
+        "exit_code": 1,
+        "passed": false,
+        "oracle_passed": false,
+        "required_behavior_passed": false,
+        "negative_boundaries_passed": true,
+        "baseline_passed": true,
+        "baseline_receipts": [
+          {
+            "argv": [
+              "python3",
+              "-B",
+              "-m",
+              "unittest",
+              "tests.test_bonaparte.BonaparteRunnerTests.test_coordinator_reasoning_is_medium"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "",
+            "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n",
+            "wall_seconds": 0.07111441700544674,
+            "process_cleanup_scope": "original_process_group",
+            "detached_descendants_contained": false
+          }
+        ],
+        "scope_violations": [],
+        "source_current": true,
+        "setup_status": "verified",
+        "failed_requirements": [
+          {
+            "requirement": "behavior",
+            "failed_tests": [
+              "tests.test_fork_owner.Owner.test_positive_review_failure_does_not_surface_stderr"
+            ]
+          }
+        ],
+        "source_before_sha256": "d436170e598b18df1b01e70e07f2d0398c11e4da9c438c18d4a66f3e8e136be7",
+        "source_after_sha256": "d436170e598b18df1b01e70e07f2d0398c11e4da9c438c18d4a66f3e8e136be7",
+        "output_sha256": "e8f7e4f0ec445aedb949d034cb65fc6bad3538de65200a7deade04e9d7af391d"
+      },
+      "log": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/oracles/pr-18/base-actual-prefix-amended-control.log",
+      "log_sha256": "d96aa56bf546049d924f7f625e284cafef97db58665c87b7aab99f2339c964f5"
+    },
+    {
+      "task_id": "tweed-pr18",
+      "side": "reference",
+      "exit_code": 0,
+      "wall_seconds": 0.20970133299852023,
+      "header": {
+        "task_id": "tweed-pr18",
+        "exit_code": 0,
+        "passed": true,
+        "oracle_passed": true,
+        "required_behavior_passed": true,
+        "negative_boundaries_passed": true,
+        "baseline_passed": true,
+        "baseline_receipts": [
+          {
+            "argv": [
+              "python3",
+              "-B",
+              "-m",
+              "unittest",
+              "tests.test_bonaparte.BonaparteRunnerTests.test_coordinator_reasoning_is_medium"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "",
+            "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n",
+            "wall_seconds": 0.07236762499815086,
+            "process_cleanup_scope": "original_process_group",
+            "detached_descendants_contained": false
+          }
+        ],
+        "scope_violations": [],
+        "source_current": true,
+        "setup_status": "verified",
+        "failed_requirements": [],
+        "source_before_sha256": "3e3fb76b6d0acd4d1a8b1f2bb0c9b3b2e86a9df7500c03a460ef066b6099e352",
+        "source_after_sha256": "3e3fb76b6d0acd4d1a8b1f2bb0c9b3b2e86a9df7500c03a460ef066b6099e352",
+        "output_sha256": "fd1f0d164f5fe446743e355db6d96ae4ff133ce045155a0a599cd60fb523b7ac"
+      },
+      "log": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/oracles/pr-18/reference-actual-prefix-amended-control.log",
+      "log_sha256": "1b58d52e9fac5aea075bb809b62873bdd88b303eefb9779af845ed36393765de"
+    }
+  ],
+  "previous_setup_evidence": [
+    "oracles/initial-setup-preflight.json",
+    "oracles/pre-baseline-preflight.json",
+    "oracles/PREFLIGHT-before-actual-prefix-amendment.json"
+  ],
+  "amendment": "oracles/actual-prefix-amendment.json",
+  "setup_limit_seconds_per_command": 5,
+  "all_base_fail_reference_pass": true,
+  "all_baseline_scope_and_current_controls_pass": true,
+  "actual_controlled_prefix_qualification": "pending runner; local owner grader controls are not route qualification",
+  "no_solver_inference_used_for_amendment": true
+}

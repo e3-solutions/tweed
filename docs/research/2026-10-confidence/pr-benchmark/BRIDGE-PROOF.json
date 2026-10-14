@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "classification": "Actual callback capability control, not task accuracy comparison",
+  "main": {
+    "backend": "codex_cli",
+    "cli_version": "codex-cli 0.154.0",
+    "model_requested": "gpt-6-astra",
+    "model_attribution": "requested_only",
+    "observed_models": [],
+    "requested_effort": "medium",
+    "process_exit": 0,
+    "timed_out": false,
+    "declared_complete": true,
+    "total_cost_usd": null,
+    "usage": {
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 63616,
+      "input_tokens": 89157,
+      "output_tokens": 594,
+      "reasoning_output_tokens": 0
+    },
+    "wall_seconds": 61.02679312499822,
+    "session_id": "01a130d0-8323-7d83-93f2-5f40a646b135"
+  },
+  "peer": {
+    "backend": "claude_code",
+    "model_requested": "claude-opus-5-5",
+    "observed_models": [
+      "claude-opus-5-5"
+    ],
+    "requested_effort": "medium",
+    "timed_out": false,
+    "declared_complete": true,
+    "total_cost_usd": 0.07370299999999999,
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 5457,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 5457,
+      "cache_read_input_tokens": 8215,
+      "fallback_credit": null,
+      "inference_geo": "global",
+      "input_tokens": 6,
+      "iterations": [
+        {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 2088,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 2088,
+          "cache_read_input_tokens": 4737,
+          "input_tokens": 2,
+          "output_tokens": 966,
+          "type": "message"
+        }
+      ],
+      "output_tokens": 1419,
+      "output_tokens_details": {
+        "thinking_tokens": 91
+      },
+      "server_tool_use": {
+        "web_fetch_requests": 0,
+        "web_search_requests": 0
+      },
+      "service_tier": "standard",
+      "speed": "standard"
+    },
+    "wall_seconds": 18.118170915993687,
+    "session_id": "97973213-6ded-4436-a621-cfd9cc4da6a7"
+  },
+  "source_binding": {
+    "launch_sha256": "cd4bed9dc938d18ada10a12fc73f85d351ca0d716b052355fbc9f703a95f9e9f",
+    "after_sha256": "cd4bed9dc938d18ada10a12fc73f85d351ca0d716b052355fbc9f703a95f9e9f",
+    "equal": true
+  },
+  "peer_commands": [
+    {
+      "request_sha256": "d423c81573067e634b21b95576b1178e7e8033383fac07dec8ff51644502b731",
+      "response_sha256": "b3c0d72504e74dca9c563400e32cba1eaae69a4408f3308dc726b786dfb789a8",
+      "exit_code": 0
+    }
+  ],
+  "readonly_write_denied": true,
+  "actual_request_review_count": 1,
+  "main_raw_receipt_sha256": "6b12d1a91d6bbfc7785c8d9a5f12b86997593be979334ed513bdbfd37b7f39b4",
+  "main_stream_sha256": "a21692618459e1b85b6bd9cc61c0525185d8771ae55fa77f5c8d3925214de9d9",
+  "peer_stream_sha256": "e543a51aeaa63248462e5e226deabcf13f5ccbcfac3d5977518429d63b51f59a",
+  "independent_final_behavior_exit_code": 0,
+  "cleanup_note": "This main receipt was persisted before final cleanup enrichment; endpoint/source/callback controls are observed, complete descendant containment is not claimed. Subsequent adapter main persists returned cleanup metadata.",
+  "limits": [
+    "Codex response model omitted: requested-only attribution",
+    "Codex dollars unreported: totalunknown",
+    "A non-task toy does not show accuracy gains, quotas or complete proof packet quality",
+    "Different models are not independent oracles"
+  ]
+}

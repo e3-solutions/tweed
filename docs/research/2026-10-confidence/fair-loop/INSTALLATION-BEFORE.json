@@ -1,0 +1,21 @@
+{
+  "installed_version": "0.8.0",
+  "historical_manifest_sha256": "324016c34a9518738a9aa76fc75bd7c2945d93e9cdc3c0297358793a47415a76",
+  "source_and_cache_checks": [
+    {
+      "directory": "/Users/aryagm/plugins/confidence-protocol",
+      "files": 21,
+      "matches": true,
+      "mismatches": []
+    },
+    {
+      "directory": "/Users/aryagm/.codex/plugins/cache/personal/confidence-protocol/0.8.0",
+      "files": 21,
+      "matches": true,
+      "mismatches": []
+    }
+  ],
+  "candidate_promoted": false,
+  "install_or_enablement_mutation": false,
+  "checked_before_task_inference": true
+}

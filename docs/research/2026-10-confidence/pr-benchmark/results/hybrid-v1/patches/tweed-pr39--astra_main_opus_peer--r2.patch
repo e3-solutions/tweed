@@ -1,0 +1,171 @@
+diff --git a/bonaparte b/bonaparte
+index 888b766..1337e97 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -481,8 +481,7 @@ def run_phase(
+                 phase,
+                 values[1] if len(values) == 2 else None,
+             )
+-            if phase == "implement":
+-                expected_branch = handoff["issue"]["git_branch_name"]
++            expected_branch = handoff["issue"]["git_branch_name"]
+             phase_input = json.dumps(handoff, ensure_ascii=False)
+             context_policy = (
+                 "\n\n# Context policy\n\n"
+@@ -559,6 +558,7 @@ def run_phase(
+     failed = True
+     try:
+         driver = AppServerPhaseDriver(repository, observer)
++        driver.issue_branch = expected_branch
+         driver.request(
+             "initialize", {"clientInfo": {"name": "bonaparte", "version": "1"}}
+         )
+@@ -638,6 +638,7 @@ def run_phase(
+                     },
+                 )
+                 steered = True
++                driver.keep_open = True
+                 if observation is not None:
+                     observation["soft_budget_steered"] = True
+                 continue
+@@ -702,16 +703,34 @@ def run_phase(
+         if not driver.last_agent_message:
+             raise RuntimeError("Codex app-server returned no final receipt")
+         receipt = json.loads(driver.last_agent_message)
++        driver.keep_open = receipt.get("state") == "needs-input"
++        if (
++            expected_branch is None
++            and not driver.keep_open
++            and getattr(driver, "_started_threads", None)
++            and driver.owned_descendants()
++            and receipt.get("issue")
++        ):
++            # Create and legacy resume lack an intake handoff. Resolve the
++            # canonical issue branch; never infer it from a worktree or receipt.
++            issue, _comments = call_linear(repository, receipt["issue"])
++            driver.issue_branch = issue.get("gitBranchName")
+         failed = False
+     finally:
+-        observed = observer.finish()
+-        if observation is not None:
+-            observation.update(observed)
+-        if driver is not None:
+-            try:
+-                driver.close(failed=failed)
+-            except BaseException:
+-                if not failed:
++        primary = sys.exc_info()[1]
++        try:
++            observed = observer.finish()
++            if observation is not None:
++                observation.update(observed)
++        finally:
++            if driver is not None:
++                try:
++                    driver.close(failed=failed)
++                except BaseException as cleanup_error:
++                    # Capture the coordinator error before cleanup: a cleanup
++                    # error's context may instead be another cleanup failure.
++                    if primary is not None:
++                        raise primary from cleanup_error
+                     raise
+ 
+     validate_schema(receipt, RECEIPT_SCHEMA)
+diff --git a/bonaparte_native.py b/bonaparte_native.py
+index e9a607c..7c1a2db 100644
+--- a/bonaparte_native.py
++++ b/bonaparte_native.py
+@@ -121,6 +121,10 @@ class AppServerPhaseDriver:
+         self._last_agent_message: str | None = None
+         self._receipt_thread_id: str | None = None
+         self._receipt_turn_id: str | None = None
++        self._root_thread_id: str | None = None
++        self._started_threads: dict[str, str | None] = {}
++        self.issue_branch: str | None = None
++        self.keep_open = False
+         self._reader = threading.Thread(target=self._read, daemon=True)
+         self._reader.start()
+ 
+@@ -273,10 +277,18 @@ class AppServerPhaseDriver:
+             raise RuntimeError(f"unsupported app-server request: {method}")
+         if method == "thread/started":
+             thread = params.get("thread")
+-            if isinstance(thread, dict) and isinstance(thread.get("id"), str):
+-                self.observer.feed(
+-                    json.dumps({"type": "thread.started", "thread_id": thread["id"]})
++            if isinstance(thread, dict) and isinstance(thread.get("id"), str) and thread["id"]:
++                source = thread.get("source")
++                subagent = source.get("subAgent") if isinstance(source, dict) else None
++                spawn = subagent.get("thread_spawn") if isinstance(subagent, dict) else None
++                parent = spawn.get("parent_thread_id") if isinstance(spawn, dict) else None
++                self._started_threads.setdefault(
++                    thread["id"], parent if isinstance(parent, str) and parent else None
+                 )
++                if thread["id"] == self._root_thread_id:
++                    self.observer.feed(
++                        json.dumps({"type": "thread.started", "thread_id": thread["id"]})
++                    )
+         if method in {"item/started", "item/completed"}:
+             item = params.get("item")
+             if not isinstance(item, dict):
+@@ -339,11 +351,59 @@ class AppServerPhaseDriver:
+             result = message.get("result")
+             if not isinstance(result, dict):
+                 raise RuntimeError(f"Codex app-server returned no result for {method}")
++            if method in {"thread/start", "thread/resume"}:
++                thread = result.get("thread")
++                if isinstance(thread, dict) and isinstance(thread.get("id"), str):
++                    self._root_thread_id = thread["id"]
+             return result
+ 
+     @property
+     def last_agent_message(self) -> str | None:
+         return self._last_agent_message
+ 
++    def owned_descendants(self) -> set[str]:
++        root = self._root_thread_id
++        if root not in self._started_threads:
++            return set()
++        # Resolve at teardown so starts can arrive before their parents.
++        owned = {root}
++        while True:
++            descendants = {
++                identifier for identifier, parent in self._started_threads.items()
++                if parent in owned
++            } - owned
++            if not descendants:
++                return owned - {root}
++            owned.update(descendants)
++
+     def close(self, *, failed: bool) -> None:
+-        terminate_and_reap(self.process)
++        errors: list[BaseException] = []
++        try:
++            root = getattr(self, "_root_thread_id", None)
++            started = getattr(self, "_started_threads", {})
++            if root in started and not getattr(self, "keep_open", False):
++                branch = self.issue_branch
++                if isinstance(branch, str) and branch:
++                    for identifier in sorted(self.owned_descendants()):
++                        try:
++                            self.request(
++                                "thread/metadata/update",
++                                {"threadId": identifier, "gitInfo": {"branch": branch}},
++                            )
++                        except BaseException as error:
++                            errors.append(error)
++                try:
++                    self.request("thread/archive", {"threadId": root})
++                except BaseException as error:
++                    errors.append(error)
++        finally:
++            try:
++                terminate_and_reap(self.process)
++            except BaseException as error:
++                errors.append(error)
++        if errors:
++            if len(errors) > 1:
++                raise errors[0] from RuntimeError(
++                    "Additional cleanup failures: " + "; ".join(str(error) for error in errors[1:])
++                )
++            raise errors[0]

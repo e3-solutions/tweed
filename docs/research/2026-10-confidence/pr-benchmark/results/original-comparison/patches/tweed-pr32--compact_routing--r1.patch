@@ -1,0 +1,54 @@
+diff --git a/bonaparte_native.py b/bonaparte_native.py
+index 8ec992a..0805318 100644
+--- a/bonaparte_native.py
++++ b/bonaparte_native.py
+@@ -97,6 +97,24 @@ def terminate_and_reap(process: subprocess.Popen) -> None:
+                     pass
+ 
+ 
++def may_complete_active_turn(
++    params: dict, turn: dict, active_thread: str | None, active_turn: str | None
++) -> bool:
++    """Reject turn completions owned by other threads, such as native children.
++
++    Before the coordinator turn is bound, completions are returned unchanged.
++    A completion naming the coordinator thread is returned so the caller can
++    reject a mismatched turn. A legacy completion without ``threadId`` counts
++    only when it names the active turn.
++    """
++    if active_thread is None or active_turn is None:
++        return True
++    thread_id = params.get("threadId")
++    if thread_id is None:
++        return turn.get("id") == active_turn
++    return thread_id == active_thread
++
++
+ class AppServerPhaseDriver:
+     """Drive one native app-server turn without retaining its raw event stream."""
+ 
+@@ -284,7 +302,9 @@ class AppServerPhaseDriver:
+             if (
+                 method == "item/completed"
+                 and item.get("type") == "agentMessage"
+-                and params.get("threadId") == self._receipt_thread_id
++                and getattr(self, "_receipt_turn_id", None) is not None
++                and params.get("threadId", self._receipt_thread_id)
++                == self._receipt_thread_id
+                 and params.get("turnId") == self._receipt_turn_id
+             ):
+                 text = item.get("text")
+@@ -306,6 +326,13 @@ class AppServerPhaseDriver:
+             turn = params.get("turn")
+             if not isinstance(turn, dict):
+                 raise RuntimeError("Codex app-server turn completion is malformed")
++            if not may_complete_active_turn(
++                params,
++                turn,
++                getattr(self, "_receipt_thread_id", None),
++                getattr(self, "_receipt_turn_id", None),
++            ):
++                return method, None
+             return method, turn
+         return method, None
+ 

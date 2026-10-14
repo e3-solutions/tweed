@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "assigned": 48,
+  "reviewed": 48,
+  "reviewers": [
+    {
+      "reviewer": "a",
+      "candidates": 16,
+      "static_findings": 27,
+      "original_sha256": "e2bac185af072cea6518c605310fe8493e04295b93d51781cfdbada07e717738",
+      "public_sha256": "0dbd380c200a860912aa420cdce038859ca4048d6bfb3f9ca6a0d83fa617565e"
+    },
+    {
+      "reviewer": "b",
+      "candidates": 16,
+      "static_findings": 33,
+      "original_sha256": "d4e99d9de097c08727c4b9fd375cfbab18d225a528c90b32fc58b44fb14dad47",
+      "public_sha256": "dab9e0134aa1859c0d561d6abd6dc11c5a4bdeaa467303c27f26cf66693b62df"
+    },
+    {
+      "reviewer": "c",
+      "candidates": 16,
+      "static_findings": 31,
+      "original_sha256": "5a2092120452829cf17a91d10908ad516ae51659dc94ac6ecb0eff607b4127a5",
+      "public_sha256": "2df1a8e8687d96140ddd9c3869afc1ca4c1063aed999f8015e72f1e43a5a1397"
+    }
+  ],
+  "metadata_blinding_only": true,
+  "visible_inventory_sha256": "6cad9bdceda2fc91286a4c969baa4aa1697352387a50949915c30d5cc81f6326",
+  "exporter_sha256": "1ff46087f1d19dfb2ec484db160102400481b033c5cd7c3ae16edb5ce8177b4f",
+  "exporter_tests_sha256": "714dda4c1f2046371ee717acee1cdf7cf3250b7638848100b6baf77c7f3d39f2",
+  "limitations": [
+    "One static reviewer per candidate, three fresh contexts assigned two complete task groups each; not independent repeated judgments for each candidate.",
+    "Counterexamples are proposals except the separately marked16-case posthoc native-process fixture probe; no primary grades changed.",
+    "Finding totals are inspection descriptions, not model-quality scores or a calibrated ranking.",
+    "Sources may provide stylistic clues; instructions and metadata blinding were not OS-enforced filesystem confinement.",
+    "The first routing probe used an invalid completed receipt after steering; it is retained privately as invalid diagnostic evidence. The final valid continuation receipt and active-work controls are reported."
+  ]
+}

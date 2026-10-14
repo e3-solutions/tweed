@@ -1,0 +1,8 @@
+{
+  "phase": "Pre-inference native control setup",
+  "error": "ValueError: Submitted production path has a symlink ancestor",
+  "cause": "Temporary /var path alias was not resolved before invoking existing safe-copy helper.",
+  "correction": "Resolve temporary root before projecting; no grader/owner/requirements/source change.",
+  "model_calls": 0,
+  "behavioral_oracle_runs": 0
+}

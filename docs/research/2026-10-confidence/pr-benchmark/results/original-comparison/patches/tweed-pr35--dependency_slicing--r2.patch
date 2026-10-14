@@ -1,0 +1,53 @@
+diff --git a/bonaparte-launcher b/bonaparte-launcher
+index 67681b7..61683b0 100755
+--- a/bonaparte-launcher
++++ b/bonaparte-launcher
+@@ -97,6 +97,16 @@ def validate_release(release: Path) -> None:
+     missing = [name for name in REQUIRED if not (release / name).exists()]
+     if missing:
+         raise RuntimeError(f"release is missing {', '.join(missing)}")
++    root = release.resolve()
++    invalid = [
++        name
++        for name in (*REQUIRED, "autoresearch")
++        if (release / name).is_symlink()
++        or not (release / name).is_file()
++        or not (release / name).resolve().is_relative_to(root)
++    ]
++    if invalid:
++        raise RuntimeError(f"release has invalid {', '.join(invalid)}")
+     for name in (
+         "bonaparte",
+         "bonaparte-launcher",
+@@ -189,9 +199,31 @@ def automatic_update(home: Path) -> None:
+         print(f"bonaparte: automatic update failed: {error}", file=sys.stderr)
+ 
+ 
++def status(home: Path) -> int:
++    """Report installed and latest stable releases without changing any state."""
++
++    installed = current_release(home).name
++    try:
++        tag, _ = latest_tag()
++    except Exception as error:
++        print(f"installed: {installed}")
++        print("latest: unavailable")
++        print("current: unknown")
++        print(f"bonaparte: cannot resolve latest release: {error}", file=sys.stderr)
++        return 1
++    installed_version = tag_version(installed)
++    up_to_date = installed_version is not None and installed_version >= tag_version(tag)
++    print(f"installed: {installed}")
++    print(f"latest: {tag}")
++    print(f"current: {'yes' if up_to_date else 'no'}")
++    return 0
++
++
+ def main() -> int:
+     home = bonaparte_home()
+     try:
++        if sys.argv[1:] == ["status"]:
++            return status(home)
+         migrate_autoresearch_link(home)
+         if sys.argv[1:] == ["update"]:
+             tag = update(home)

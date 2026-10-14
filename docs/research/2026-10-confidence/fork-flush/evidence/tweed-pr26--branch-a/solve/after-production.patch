@@ -1,0 +1,14 @@
+diff --git a/bonaparte b/bonaparte
+index 32509c7..b5fb493 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -210,7 +210,8 @@ def find_codex() -> str:
+ 
+ def serialize_receipt(receipt: dict) -> str:
+     output = json.dumps(receipt, ensure_ascii=False, separators=(",", ":"))
+-    if len(output.encode("utf-8")) > RECEIPT_MAX_BYTES:
++    # The limit covers the whole emitted UTF-8 line, including its newline.
++    if len((output + "\n").encode("utf-8")) > RECEIPT_MAX_BYTES:
+         raise RuntimeError("receipt exceeded 4 KiB")
+     return output
+ 

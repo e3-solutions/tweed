@@ -23,7 +23,7 @@ from typing import Any
 
 
 SCHEMA_VERSION = 1
-TOOL_VERSION = "0.5.0+codex.20260915150954"
+TOOL_VERSION = "0.8.1"
 MAX_EVENT_BYTES = 8_192
 MAX_EVENT_LOG_BYTES = 1_000_000
 REMOTE_TIMEOUT_SECONDS = 1.0
@@ -559,7 +559,7 @@ def safe_run_records(directory: Path) -> list[dict[str, Any]]:
         if isinstance(workspace, dict):
             kind = workspace.get("kind")
             fingerprint = workspace.get("sha256")
-            if kind == "git" and isinstance(fingerprint, str) and re.fullmatch(
+            if kind in ("git", "git-content-v1") and isinstance(fingerprint, str) and re.fullmatch(
                 r"[0-9a-f]{64}", fingerprint
             ):
                 safe_workspace = {"kind": kind, "sha256": fingerprint}
@@ -586,7 +586,7 @@ def safe_run_records(directory: Path) -> list[dict[str, Any]]:
             log_sha256 = None
         records.append(
             {
-                "version": 1 if value.get("version") == 1 else None,
+                "version": value.get("version") if type(value.get("version")) is int and value.get("version") in (1, 2) else None,
                 **safe_timestamps,
                 "exit_code": exit_code,
                 "termination_reason": termination_reason,

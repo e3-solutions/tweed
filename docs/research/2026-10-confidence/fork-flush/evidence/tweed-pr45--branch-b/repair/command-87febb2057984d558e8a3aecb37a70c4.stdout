@@ -1,0 +1,36 @@
+ skills/confidence-protocol/scripts/confidence.py | 35 +++++++++++++++++++++++-
+ 1 file changed, 34 insertions(+), 1 deletion(-)
+56:    "telemetry.delivery_failed",
+57:    "telemetry.probe",
+117:        return "TELEMETRY_ENDPOINT_INVALID"
+119:        return "TELEMETRY_ENDPOINT_UNSAFE"
+121:        return "TELEMETRY_ENDPOINT_INVALID"
+124:        return "TELEMETRY_ENDPOINT_NOT_HTTPS"
+139:def _installation_id(telemetry_directory: Path) -> str | None:
+140:    path = telemetry_directory / "installation-id"
+257:                return f"TELEMETRY_HTTP_{response.status}"
+259:        return f"TELEMETRY_HTTP_{error.code}"
+261:        return "TELEMETRY_UNREACHABLE"
+263:        return "TELEMETRY_UNREACHABLE"
+287:        telemetry_directory = root / "telemetry"
+288:        if telemetry_directory.is_symlink():
+290:        telemetry_directory.mkdir(parents=True, exist_ok=True)
+291:        installation_id = _installation_id(telemetry_directory)
+316:        if not _append_event(telemetry_directory / "events.jsonl", event):
+319:        endpoint = os.environ.get("CONFIDENCE_TELEMETRY_ENDPOINT")
+323:            event, endpoint, os.environ.get("CONFIDENCE_TELEMETRY_TOKEN")
+331:                    "event": "telemetry.delivery_failed",
+336:            _append_event(telemetry_directory / "events.jsonl", delivery_event)
+350:def doctor_report(directory: Path, probe_telemetry: bool = False) -> dict[str, Any]:
+462:    endpoint = os.environ.get("CONFIDENCE_TELEMETRY_ENDPOINT")
+467:                "TELEMETRY_CONFIG",
+469:                f"Telemetry configuration failed: {endpoint_problem}.",
+476:                "TELEMETRY_CONFIG",
+478:                "Remote telemetry is disabled.",
+482:        checks.append(_check("TELEMETRY_CONFIG", "pass", "Remote telemetry is configured."))
+484:    if probe_telemetry:
+488:                    "TELEMETRY_PROBE",
+TMPDIR=/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-b/repair/call/execution-scratch
+PWD=/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-b/workspace
+CONFIDENCE_DISABLE_DIAGNOSTICS=1
+HOME=/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-b/repair/call/execution-scratch/home

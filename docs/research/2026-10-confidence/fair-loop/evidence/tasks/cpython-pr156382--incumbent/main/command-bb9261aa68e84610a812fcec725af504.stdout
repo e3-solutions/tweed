@@ -1,0 +1,100 @@
+561 
+562 class _ReadState:
+563     elements_added : set[str]
+564     cursect : dict[str, str] | None = None
+565     sectname : str | None = None
+566     optname : str | None = None
+567     lineno : int = 0
+568     indent_level : int = 0
+569     errors : list[ParsingError]
+570 
+571     def __init__(self):
+572         self.elements_added = set()
+573         self.errors = list()
+574 
+575 
+576 class _Line(str):
+577     __slots__ = 'clean', 'has_comments'
+578 
+579     def __new__(cls, val, *args, **kwargs):
+580         return super().__new__(cls, val)
+581 
+582     def __init__(self, val, comments):
+583         trimmed = val.strip()
+584         self.clean = comments.strip(trimmed)
+585         self.has_comments = trimmed != self.clean
+586 
+587 
+588 class _CommentSpec:
+589     def __init__(self, full_prefixes, inline_prefixes):
+590         full_patterns = (
+591             # prefix at the beginning of a line
+592             fr'^({re.escape(prefix)}).*'
+593             for prefix in full_prefixes
+594         )
+595         inline_patterns = (
+596             # prefix at the beginning of the line or following a space
+597             fr'(^|\s)({re.escape(prefix)}.*)'
+598             for prefix in inline_prefixes
+599         )
+600         self.pattern = re.compile('|'.join(itertools.chain(full_patterns, inline_patterns)))
+601 
+602     def strip(self, text):
+603         return self.pattern.sub('', text).rstrip()
+604 
+605     def wrap(self, text):
+606         return _Line(text, self)
+607 
+608 
+609 class RawConfigParser(MutableMapping):
+610     """ConfigParser that does not do interpolation."""
+611 
+956                 sectdict = self._sections[section]
+957             except KeyError:
+958                 raise NoSectionError(section) from None
+959         sectdict[self.optionxform(option)] = value
+960 
+961     def write(self, fp, space_around_delimiters=True):
+962         """Write an .ini-format representation of the configuration state.
+963 
+964         If `space_around_delimiters` is True (the default), delimiters
+965         between keys and values are surrounded by spaces.
+966 
+967         Please note that comments in the original configuration file are not
+968         preserved when writing the configuration back.
+969         """
+970         if space_around_delimiters:
+971             d = " {} ".format(self._delimiters[0])
+972         else:
+973             d = self._delimiters[0]
+974         if self._defaults:
+975             self._write_section(fp, self.default_section,
+976                                     self._defaults.items(), d)
+977         if UNNAMED_SECTION in self._sections and self._sections[UNNAMED_SECTION]:
+978             self._write_section(fp, UNNAMED_SECTION, self._sections[UNNAMED_SECTION].items(), d, unnamed=True)
+979 
+980         for section in self._sections:
+981             if section is UNNAMED_SECTION:
+982                 continue
+983             self._write_section(fp, section,
+984                                 self._sections[section].items(), d)
+985 
+986     def _write_section(self, fp, section_name, section_items, delimiter, unnamed=False):
+987         """Write a single section to the specified 'fp'."""
+988         if not unnamed:
+989             fp.write("[{}]\n".format(section_name))
+990         for key, value in section_items:
+991             self._validate_key_contents(key)
+992             value = self._interpolation.before_write(self, section_name, key,
+993                                                      value)
+994             if value is not None or not self._allow_no_value:
+995                 # Convert all possible line-endings into '\n\t'
+996                 value = (delimiter + str(value).replace('\r\n', '\n')
+997                          .replace('\r', '\n').replace('\n', '\n\t'))
+998             else:
+999                 value = ""
+1000             fp.write("{}{}\n".format(key, value))
+1001         fp.write("\n")
+{'colour dark': 'blue'}
+{'colour': 'dark blue'}
+{'key': 'v'}

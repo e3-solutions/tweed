@@ -1,0 +1,184 @@
+diff --git a/bonaparte b/bonaparte
+index 26a168f..c1f4d8a 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -409,6 +409,22 @@ def require_pull_request(receipt: dict, phase: str) -> None:
+         raise RuntimeError(f"completed {phase} is missing its pull request")
+ 
+ 
++class SoftBudgetGuardError(RuntimeError):
++    """A soft-budget wrap-up guard failed after the native session was verified."""
++
++
++class CheckpointedFailure(Exception):
++    """A failure whose bounded receipt already names a durable continuation."""
++
++    def __init__(self, receipt: dict, exit_code: int) -> None:
++        super().__init__(receipt.get("summary"))
++        self.receipt = receipt
++        self.exit_code = exit_code
++
++
++SOFT_BUDGET_SESSION_KEY = "soft_budget_session_id"
++
++
+ def run_phase(
+     repository: Path,
+     phase: str,
+@@ -626,6 +642,10 @@ def run_phase(
+                     },
+                 )
+                 steered = True
++                if observation is not None:
++                    # Only a verified session reaches this point, so the
++                    # continuation token can never retarget a different session.
++                    observation[SOFT_BUDGET_SESSION_KEY] = session_id
+                 continue
+             if "method" in message:
+                 if steer_acknowledged and message.get("method") == "item/started":
+@@ -665,11 +685,13 @@ def run_phase(
+             steer_acknowledged = True
+         if terminal.get("status") != "completed":
+             detail = terminal.get("error")
+-            raise RuntimeError(
++            raise (SoftBudgetGuardError if steered else RuntimeError)(
+                 f"{phase} coordinator failed: {detail or terminal.get('status')}"
+             )
+         if post_steer_work:
+-            raise RuntimeError("coordinator started new work after soft-budget steer")
++            raise SoftBudgetGuardError(
++                "coordinator started new work after soft-budget steer"
++            )
+         if not driver.last_agent_message:
+             items = terminal.get("items")
+             if isinstance(items, list):
+@@ -709,14 +731,18 @@ def run_phase(
+         raise RuntimeError("phase requested input without a question")
+     if steered:
+         if receipt["state"] != "needs-input":
+-            raise RuntimeError("soft-budget wrap-up did not request continuation")
++            raise SoftBudgetGuardError(
++                "soft-budget wrap-up did not request continuation"
++            )
+         question = receipt["question"]
+         if question != SOFT_BUDGET_CONTINUE_QUESTION and not question.startswith(
+             "Clarification required:"
+         ):
+-            raise RuntimeError("soft-budget wrap-up returned an invalid question")
++            raise SoftBudgetGuardError(
++                "soft-budget wrap-up returned an invalid question"
++            )
+         if "unverified" not in receipt["summary"].casefold():
+-            raise RuntimeError(
++            raise SoftBudgetGuardError(
+                 "soft-budget wrap-up omitted unverified proof obligations"
+             )
+     if receipt["state"] == "needs-input":
+@@ -1058,13 +1084,25 @@ def resume_checkpoint(
+             replayed_answer,
+             checkpoint["soft_phase_budget_seconds"],
+         )
+-    except KeyboardInterrupt:
++    except (KeyboardInterrupt, SoftBudgetGuardError) as error:
+         _update_checkpoint_observation(checkpoint, observation)
++        interrupted = isinstance(error, KeyboardInterrupt)
++        if observation.get(SOFT_BUDGET_SESSION_KEY) == checkpoint["token"]:
++            # The answer reached the same native session before the soft-budget
++            # steer, so the continuation is a plain Continue on the same token.
++            checkpoint.update(
++                status="waiting-input",
++                question=SOFT_BUDGET_CONTINUE_QUESTION,
++                pending_answer=None,
++            )
++        summary = (
++            "Bonaparte was interrupted."
++            if interrupted
++            else str(error).replace("\n", " ")[:800]
++        )
+         return (
+-            _checkpoint_failure(
+-                checkpoint, "Bonaparte was interrupted.", remote_uncertain=True
+-            ),
+-            130,
++            _checkpoint_failure(checkpoint, summary, remote_uncertain=True),
++            130 if interrupted else 1,
+         )
+     except Exception as error:  # noqa: BLE001 - preserve a resumable answer
+         _update_checkpoint_observation(checkpoint, observation)
+@@ -1123,16 +1161,53 @@ def run_and_checkpoint(
+ ) -> dict:
+     base_git = capture_git_state(repository) if session_id is None else None
+     observation: dict = {}
+-    receipt = run_phase(
+-        repository,
+-        phase,
+-        phase_input,
+-        session_id,
+-        model,
+-        reasoning,
+-        observation=observation,
+-        soft_phase_budget_seconds=soft_phase_budget_seconds,
+-    )
++    try:
++        receipt = run_phase(
++            repository,
++            phase,
++            phase_input,
++            session_id,
++            model,
++            reasoning,
++            observation=observation,
++            soft_phase_budget_seconds=soft_phase_budget_seconds,
++        )
++    except (KeyboardInterrupt, SoftBudgetGuardError) as error:
++        continuation = observation.get(SOFT_BUDGET_SESSION_KEY)
++        if not continuation:
++            raise
++        interrupted = isinstance(error, KeyboardInterrupt)
++        summary = (
++            "Bonaparte was interrupted after the soft phase budget."
++            if interrupted
++            else str(error).replace("\n", " ")[:800]
++        )
++        wrap_up = {name: None for name in RECEIPT_SCHEMA["required"]}
++        wrap_up.update(
++            phase=phase,
++            state="needs-input",
++            summary=summary,
++            question=SOFT_BUDGET_CONTINUE_QUESTION,
++            resume_session_id=continuation,
++        )
++        try:
++            checkpoint = new_question_checkpoint(
++                repository,
++                phase,
++                wrap_up,
++                continuation,
++                model,
++                reasoning,
++                observation,
++                base_git or capture_git_state(repository),
++                soft_phase_budget_seconds,
++            )
++        except Exception:  # noqa: BLE001 - report the original failure instead
++            raise error from None
++        raise CheckpointedFailure(
++            _checkpoint_failure(checkpoint, summary, remote_uncertain=True),
++            130 if interrupted else 1,
++        ) from error
+     if receipt["state"] != "needs-input":
+         return receipt
+     coordinator_session = observation.get("session_id") or session_id
+@@ -1343,6 +1418,12 @@ def main() -> int:
+             if terminal_state not in PROGRESS_TERMINAL_STATES:
+                 raise ValueError("invalid progress state")
+             serialized_receipt = serialize_receipt(result_receipt)
++        except CheckpointedFailure as stopped:
++            progress.stop_heartbeat()
++            progress.report("finalizing")
++            serialized_receipt = serialize_receipt(stopped.receipt)
++            terminal_state = "failed"
++            exit_code = stopped.exit_code
+         except KeyboardInterrupt:
+             progress.stop_heartbeat()
+             progress.report("finalizing")

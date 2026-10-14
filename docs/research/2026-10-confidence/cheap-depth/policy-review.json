@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "classification": "Scoped policy reviews and owner resolutions, not universal passing review",
+  "reviews": [
+    {
+      "requested_model": "claude-opus-5-5",
+      "observed_assistant_models": [
+        "claude-opus-5-5"
+      ],
+      "requested_effort": "medium",
+      "source_sha256": {
+        "skills/confidence-protocol/SKILL.md": "2cfaef27337d8af8d2ab883e81b8fe1bc076cee2deb2a40da5a30a8ad8ccf543",
+        "skills/confidence-protocol/references/model-routing.md": "8a166e7a2062a8c585ef9aaad47c67b0e366540f0741e6d4b86dfc9112c61f84",
+        "skills/confidence-protocol/references/harnesses.md": "0ac93c62cbdba658b1d59394b33cd9b7243f951bdf9771d58bac8e348120b26c",
+        "skills/confidence-protocol/references/complex-tasks.md": "a56e0b50eb84c95e7879d9b6b16f2ef90ad593d7df438aecb7e6ca530dc5972d",
+        "skills/confidence-protocol/references/evidence.md": "bd097c352130c5199ee907199bfab369927cf8ee6f990e8133cb79a87ca01d02"
+      },
+      "request_sha256": "6dc8045381efb6bd502f74a31a9cc2c16ddfd648ed3e905d818725dcb3722cca",
+      "receipt_sha256": "6ef4d255290c6ae9272d17baaf651b36b4096883bc9912791c34558fec420cce",
+      "review_sha256": "dbb0fe081e4de69f36a892498110fa50e057bba4c5c965edb813f41fc247ad1f",
+      "source_unchanged_during_call": true,
+      "process_exit": 0,
+      "timed_out": false,
+      "wall_seconds": 70.15803095799947,
+      "cli_reported_cost_usd": 0.262556,
+      "finding_counts": {
+        "blocking": 0,
+        "material": 6,
+        "minor": 4
+      },
+      "scope": "Independent fresh-context review of supplied source policy and normal-use scenarios; no runtime dispatch or source execution"
+    },
+    {
+      "requested_model": "claude-opus-5-5",
+      "observed_assistant_models": [
+        "claude-opus-5-5"
+      ],
+      "requested_effort": "medium",
+      "source_sha256": {
+        "skills/confidence-protocol/SKILL.md": "9788b037884656391afb4ed05063dc3c0e7d31055b2f7d4208e20fcdac1914a3",
+        "skills/confidence-protocol/references/model-routing.md": "cb45b32fe1d882a6cb53d4d9442f0b984d7c0a1c28bbae7ac063bec8e5e7c290",
+        "skills/confidence-protocol/references/harnesses.md": "fa1a48f291ce0c140500cb2e3404d72e0840d93298f245ef91220d31e2f52c67",
+        "skills/confidence-protocol/references/complex-tasks.md": "1aae8be1f22129da1c64912528298e69c08031c0b1aa6c4b266ebcce627d7e9c",
+        "skills/confidence-protocol/references/evidence.md": "bd097c352130c5199ee907199bfab369927cf8ee6f990e8133cb79a87ca01d02"
+      },
+      "request_sha256": "efc539835147cd735ff142e2cef3a1fb0f154c53ad355c010ec619e641ff284e",
+      "receipt_sha256": "2b5518640707ca7bc3436fe5e1115a49f079e7937b1e564fbef043592e96e1d2",
+      "review_sha256": "ae16c2cd306d0e6fe3c6c4da7dd4b7f84434e36f9422b9de3e6f018e756dd356",
+      "source_unchanged_during_call": true,
+      "process_exit": 0,
+      "timed_out": false,
+      "wall_seconds": 85.74931054199988,
+      "cli_reported_cost_usd": 0.292721,
+      "finding_counts": {
+        "blocking": 0,
+        "material": 6,
+        "minor": 5
+      },
+      "scope": "Independent fresh-context review of supplied source policy and normal-use scenarios; no runtime dispatch or source execution"
+    }
+  ],
+  "owner_resolution": [
+    {
+      "topic": "native-authority",
+      "decision": "clarified",
+      "reason": "Native delegation uses current task authority; separately billed/cross-provider calls remain within granted cost/source scope."
+    },
+    {
+      "topic": "qualification-reuse",
+      "decision": "clarified",
+      "reason": "Retained untracked task artifacts persist; accessible dated receipts can be reused for unchanged model/harness/tools/task-class. No global registry required; first real shard can qualify."
+    },
+    {
+      "topic": "negative-completeness",
+      "decision": "fixed",
+      "reason": "Owner repeats enumeration before using negative/completeness claims; deterministic enumeration can feed workers directly."
+    },
+    {
+      "topic": "critical-records",
+      "decision": "partly-adopted",
+      "reason": "New Critical authoring uses pinned records. Legacy format remains compatible. Declared identities are not authenticated and missing actual model identity is not invented."
+    },
+    {
+      "topic": "model-substitution",
+      "decision": "fixed",
+      "reason": "Owner-selected, user-required and registered routes have distinct rules. A registered experiment without fallback cannot substitute."
+    },
+    {
+      "topic": "shared-source-captures",
+      "decision": "fixed",
+      "reason": "Parallel ownership and integration clarified; whole-inventory captures need stable integrated source."
+    },
+    {
+      "topic": "repair-overhead",
+      "decision": "fixed",
+      "reason": "Switch route/direct owner when verification/repair exceeds direct effort."
+    },
+    {
+      "topic": "registered-route-authority",
+      "decision": "fixed",
+      "reason": "Registration governs route choice only; does not override authority or proof requirements."
+    },
+    {
+      "topic": "read-only-recording",
+      "decision": "fixed",
+      "reason": "Response metadata instead of new artifacts when artifact creation is unauthorized."
+    },
+    {
+      "topic": "metadata-source-binding",
+      "decision": "clarified",
+      "reason": "Finalize arbitrary artifacts before capture or use authorized intentionally ignored evidence; report supported references/digests, no new unsupported fields."
+    },
+    {
+      "topic": "multiple-implementers",
+      "decision": "procedural-limit",
+      "reason": "Owner checks all contributors against review scope; separate actor/fresh context, no prior endorsement. Existing mechanical gate excludes only single named implementer; no plural runtime enforcement claimed."
+    },
+    {
+      "topic": "native-confinement",
+      "decision": "clarified",
+      "reason": "Instructions alone are not confinement. Consequential routes need actual envelope checks or credential-free source packets/snapshots."
+    },
+    {
+      "topic": "model-aliases",
+      "decision": "retained-with-limits",
+      "reason": "Family examples are candidates in a conditional reference, not fixed exact-version routes or proof of current price/capability. Dated specifics remain in research."
+    },
+    {
+      "topic": "price-recheck",
+      "decision": "clarified",
+      "reason": "Check when selecting per-task route and reuse dated information absent relevant change/failure."
+    },
+    {
+      "topic": "worker-capture",
+      "decision": "clarified",
+      "reason": "Authorized worker capture usable after owner checks logs/binding; read-only role without artifact authority does not capture."
+    }
+  ],
+  "retained_support_artifacts": {
+    "luna_source_map_sha256": "4f30ab697a490d8bd02dfe141194093bab31b87bb76705daf1948708ce0dafa6",
+    "terra_scenarios_sha256": "ee726b49f495803ed4f819ddaba97fca38b258a8ad6321a21094e127226626cc"
+  },
+  "current_routing_source_sha256": {
+    "skills/confidence-protocol/SKILL.md": "9788b037884656391afb4ed05063dc3c0e7d31055b2f7d4208e20fcdac1914a3",
+    "skills/confidence-protocol/references/model-routing.md": "9c9f94681a5a4213d8bfd5ce8cccc268188325a056c6b899de663c6582926990",
+    "skills/confidence-protocol/references/harnesses.md": "96b7bf6e19f46579d397efc6b53421c0bf436db915b8baaa087dd982c48a0905",
+    "skills/confidence-protocol/references/complex-tasks.md": "8c0396928105db561147b65b8f95b6a838ed9429efcbffc2b168030a77ae08c2",
+    "skills/confidence-protocol/references/evidence.md": "bd097c352130c5199ee907199bfab369927cf8ee6f990e8133cb79a87ca01d02"
+  },
+  "limits": [
+    "Reviewer proposals were assessed against actual existing source; not all suggestions were adopted",
+    "Source was revised after each review; current source hashes differ and are not relabeled as reviewer-observed final hashes",
+    "Legacy role-label acceptance and single named-implementer consistency gate remain disclosed limits",
+    "No evidence of general lower cost or higher complex-task accuracy",
+    "Native worker usage/model identity unavailable beyond configured routes; provider receipts do not authenticate weights"
+  ]
+}

@@ -1,0 +1,1 @@
+{"id": "151597e0bcad41c8b8bcfd93fd862fe9", "argv": ["/bin/bash", "-c", "S=$(cd .. && pwd)/solve/call/execution-scratch; ls -la $S; ls ../solve/call/execution-scratch/ 2>&1"], "timeout": 42.66110801696777}

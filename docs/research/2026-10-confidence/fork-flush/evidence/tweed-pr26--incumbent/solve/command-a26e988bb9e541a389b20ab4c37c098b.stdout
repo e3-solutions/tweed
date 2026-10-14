@@ -1,0 +1,26 @@
+35:RECEIPT_MAX_BYTES = 4096
+211:def serialize_receipt(receipt: dict) -> str:
+212:    output = json.dumps(receipt, ensure_ascii=False, separators=(",", ":"))
+213:    if len(output.encode("utf-8")) > RECEIPT_MAX_BYTES:
+218:def serialize_review_receipt(receipt: dict) -> str:
+219:    output = json.dumps(receipt, ensure_ascii=False, separators=(",", ":"))
+220:    if len((output + "\n").encode("utf-8")) > RECEIPT_MAX_BYTES:
+225:def emit_serialized(output: str) -> None:
+226:    sys.stdout.write(output + "\n")
+227:    sys.stdout.flush()
+230:def emit(receipt: dict) -> None:
+288:                    json.dumps(event, ensure_ascii=False, separators=(",", ":"))
+423:            json.dumps({"id": request_id, "method": method, "params": params}) + "\n"
+801:            f"{key}={json.dumps(value, ensure_ascii=False)}"
+808:def require_pull_request(receipt: dict, phase: str) -> None:
+873:            phase_input = json.dumps(handoff, ensure_ascii=False)
+931:        schema_path.write_text(json.dumps(RECEIPT_SCHEMA))
+939:                f"model_reasoning_effort={json.dumps(reasoning)}",
+1032:def _coordinator_receipt(receipt: dict) -> dict:
+1131:def _serialized_size(receipt: dict) -> int:
+1134:            json.dumps(receipt, ensure_ascii=False, separators=(",", ":")) + "\n"
+1139:def checkpoint_receipt(
+1181:    if _serialized_size(receipt) <= RECEIPT_MAX_BYTES:
+1190:    if _serialized_size(receipt) <= RECEIPT_MAX_BYTES:
+1203:    if _serialized_size(receipt) > RECEIPT_MAX_BYTES:
+1225:    if _serialized_size(receipt) > RECEIPT_MAX_BYTES:

@@ -1,0 +1,830 @@
+{
+  "schema_version": 1,
+  "phase": "final",
+  "prospective_commit": "32960cc9c6e230c73c018af3b1902d5d1e62d89f",
+  "registration_sha256": "46a74c49b458afcca84ff85bf07c656869126629c7ff5c93da21b73aa8e9ae71",
+  "pre_inference_sha256": "643924e497c24e17ca4a6897e4e3d03a568566d496c085e014fd2a2182c2ceb4",
+  "entrypoint_control_commit": "4758787015f05a95ea38896f57a462316b3d9d80",
+  "rows": [
+    {
+      "cell_id": "cpython-pr156382--incumbent",
+      "task_id": "cpython-pr156382",
+      "arm": "incumbent",
+      "status": "closed",
+      "stages": [
+        {
+          "role": "main",
+          "artifact_complete": true,
+          "artifact_evaluation_status": "observed",
+          "delivery_valid": true,
+          "known_deadline": false,
+          "custody_qualified": true,
+          "custody_failures": [],
+          "controller_settled": true,
+          "after_source_sha256": "29313ab1352993ab7a22176cdd7943070c99f11867814376f82eb470195a6a1c",
+          "before_source_sha256": "b60349bee3b303ad5f50ebd4ec03c9138636b98c9fd066e2588787c7c844a6cf",
+          "primary_runtime_changed": true,
+          "required_gaps": [],
+          "safe_declared_completion": {
+            "complete": true,
+            "remaining": [],
+            "summary": "I fixed how ConfigParser handles explicitly configured whitespace delimiters. With `delimiters=(\" \", \"=\")`, the line `colour dark blue` now reads as option `colour` with value `dark blue`. Before the fix it came out as `{'colour dark': 'blue'}`, and I confirmed that before changing anything.\n\n**Cause:** the pattern for option names let any whitespace join words in a name, even when that whitespace was a delimiter. The match then backtracked to the last space instead of the first.\n\n**Fix:** a one-line change to the option-name pattern in `configparser.py`, applied to both the normal and the `allow_no_value` versions. Words in an option name can now only be joined by whitespace that is not a delimiter, so a whitespace delimiter splits at its first occurrence. This also fixes the tab case: with `delimiters=(\"\\t\",)`, `a\\tb\\tc` now gives `a` = `b\\tc`. Before, it would have given `a\\tb` = `c` (my reading of the old pattern; I ran the old code only on the space example).\n\n**Tests:** I added 11 tests in `tests/test_whitespace_delimiters.py`, and they all pass along with the visible check. They cover:\n- **Space and tab delimiters:** `colour dark blue`, `key = v`, `full name\\tAda` and `a\\tb\\tc` all split correctly.\n- **Whitespace inside names:** a tab can still join words in a name when only space is a delimiter. With the default delimiters, `full name = Ada` keeps its multi-word name.\n- **Rejection:** lines with no delimiter raise `ParsingError`, and repeated options raise `DuplicateOptionError` in strict mode (not with `strict=False`).\n- **Other features:** `allow_no_value`, `getint`/`getfloat`/`getboolean`, `%(base)s` interpolation, and write-then-read round trips for space, tab and space-plus-`=` delimiters.\n- **Long bad lines:** a 20,000-word line with no delimiter is rejected quickly.\n\nThe visible check (`python3.14 -B -m unittest tests.test_visible`) passes.\n\n**Not done:** no review by anyone other than me, no full CPython test suite, and no security or performance audit. The long-line test is a quick sanity check, not proof the pattern can't be slowed down by crafted input."
+          },
+          "original_evaluation_corrected": true,
+          "facts": {
+            "phase": "main",
+            "status": "settled",
+            "source_receipt_sha256": "0e9a04e03427bffacd8d6341dbb01678a3d324dd2dfbb8bfe85253226d9f1694",
+            "observed_models": [
+              "claude-opus-5-5"
+            ],
+            "session_ids": [
+              "eff471bd-8aa8-44dc-b2c0-3b4bb94fb091"
+            ],
+            "typed_terminal_observed": true,
+            "terminal_count": 1,
+            "actual_unique_tool_requests": 12,
+            "actual_unique_mcp_requests": 11,
+            "tools_by_name": {
+              "mcp__cp_trial__read_file": 3,
+              "mcp__cp_trial__list_files": 1,
+              "mcp__cp_trial__run_tests": 6,
+              "mcp__cp_trial__write_file": 1,
+              "StructuredOutput": 1
+            },
+            "invalid_stream_or_ids": [],
+            "provider_delivery_qualified_recorded": null,
+            "timed_out": false,
+            "wall_seconds": 71.62981395899988,
+            "reported_cost_usd": 0.5896434,
+            "reported_usage": {
+              "input_tokens": 18,
+              "cache_creation_input_tokens": 51117,
+              "cache_read_input_tokens": 199977,
+              "output_tokens": 7032,
+              "output_tokens_details": {
+                "thinking_tokens": 2928
+              },
+              "server_tool_use": {
+                "web_search_requests": 0,
+                "web_fetch_requests": 0
+              },
+              "service_tier": "standard",
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 51117,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "inference_geo": "global",
+              "iterations": [
+                {
+                  "input_tokens": 2,
+                  "output_tokens": 877,
+                  "cache_read_input_tokens": 46611,
+                  "cache_creation_input_tokens": 5544,
+                  "cache_creation": {
+                    "ephemeral_5m_input_tokens": 0,
+                    "ephemeral_1h_input_tokens": 5544
+                  },
+                  "type": "message"
+                }
+              ],
+              "speed": "standard",
+              "fallback_credit": null
+            },
+            "reported_model_usage": {
+              "claude-opus-5-5": {
+                "inputTokens": 18,
+                "outputTokens": 7032,
+                "cacheReadInputTokens": 199977,
+                "cacheCreationInputTokens": 51117,
+                "webSearchRequests": 0,
+                "costUSD": 0.5896434,
+                "contextWindow": 1000000,
+                "maxOutputTokens": 128000,
+                "thinkingTokens": 2928,
+                "canonicalModel": "claude-opus-5-5",
+                "provider": "firstParty",
+                "costBasis": "list"
+              }
+            },
+            "source_authorship": null,
+            "model_thinking_exported": false
+          },
+          "evaluation_receipt_sha256": "161be20a2041f0f418b966c7d5fbf821a16adabd22d051b10cb9102692a8096f"
+        }
+      ],
+      "first_artifact_complete": true,
+      "final_artifact_complete": true,
+      "final_delivery_valid": true,
+      "final_custody_qualified": true,
+      "selected_acceptance_complete": true,
+      "full_literal_prompt_coverage_verified": true,
+      "continuation_attempted": false,
+      "causal_production_repair": false,
+      "delivery_recovery": false
+    },
+    {
+      "cell_id": "cpython-pr156382--candidate",
+      "task_id": "cpython-pr156382",
+      "arm": "candidate",
+      "status": "closed",
+      "stages": [
+        {
+          "role": "main",
+          "artifact_complete": true,
+          "artifact_evaluation_status": "observed",
+          "delivery_valid": true,
+          "known_deadline": false,
+          "custody_qualified": true,
+          "custody_failures": [],
+          "controller_settled": true,
+          "after_source_sha256": "898c936bd2789ed487ac44e01723fe173c07a58b7597207464c783278cf50810",
+          "before_source_sha256": "59821593819e396e6881c1de78af40e3ed1a1876ab9e904eddc808dc2809bd83",
+          "primary_runtime_changed": true,
+          "required_gaps": [],
+          "safe_declared_completion": {
+            "complete": true,
+            "remaining": [],
+            "summary": "Fixed ConfigParser handling of explicitly configured whitespace delimiters. Cause: in both _OPT_TMPL and _OPT_NV_TMPL in configparser.py, words in an option name could be joined by any whitespace (\\s+), and the longest name was tried first. With a space delimiter, 'colour dark blue' therefore parsed as {'colour dark': 'blue'}; this was reproduced before the fix, along with the matching tab case. Fix: the whitespace between words in a name must not be a configured delimiter ((?:(?!{delim})\\s)+). The default '=' and ':' delimiters behave as before. Added tests/test_whitespace_delimiters.py with 11 tests: space, tab and mixed space/tab delimiters; spaces kept in option names with default and custom ('->') delimiters; allow_no_value; strict duplicate and malformed-line rejection; typed getters and interpolation; write/read round trips; and a long line with no delimiter parsing in under 2 seconds. The visible test and the 11 new tests ran together in one unittest run (12 tests, all OK); the exact non-verbose visible command was not run separately. tests/test_visible.py is unchanged. Changed paths: configparser.py and tests/test_whitespace_delimiters.py. Not done: the CPython test suite, independent review, and rerunning the new tests against the old code (the bug was confirmed only by the manual reproduction). The speed test is a single timing check, not a performance audit."
+          },
+          "original_evaluation_corrected": false,
+          "facts": {
+            "phase": "main",
+            "status": "settled",
+            "source_receipt_sha256": "27a89ae26da3943bf2370c8af31a824e11a970146edd3cb4708a61c114dd2a29",
+            "observed_models": [
+              "claude-opus-5-5"
+            ],
+            "session_ids": [
+              "3cec00de-91f0-41b8-8afb-d2cfe1accf4d"
+            ],
+            "typed_terminal_observed": true,
+            "terminal_count": 1,
+            "actual_unique_tool_requests": 13,
+            "actual_unique_mcp_requests": 12,
+            "tools_by_name": {
+              "mcp__cp_trial__read_file": 3,
+              "mcp__cp_trial__list_files": 1,
+              "mcp__cp_trial__run_tests": 5,
+              "mcp__cp_trial__write_file": 1,
+              "mcp__cp_trial__replace_text": 2,
+              "StructuredOutput": 1
+            },
+            "invalid_stream_or_ids": [],
+            "provider_delivery_qualified_recorded": null,
+            "timed_out": false,
+            "wall_seconds": 66.78709966699535,
+            "reported_cost_usd": 0.5261796,
+            "reported_usage": {
+              "input_tokens": 16,
+              "cache_creation_input_tokens": 44283,
+              "cache_read_input_tokens": 154058,
+              "output_tokens": 7052,
+              "output_tokens_details": {
+                "thinking_tokens": 1977
+              },
+              "server_tool_use": {
+                "web_search_requests": 0,
+                "web_fetch_requests": 0
+              },
+              "service_tier": "standard",
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 44283,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "inference_geo": "global",
+              "iterations": [
+                {
+                  "input_tokens": 2,
+                  "output_tokens": 1422,
+                  "cache_read_input_tokens": 39865,
+                  "cache_creation_input_tokens": 6293,
+                  "cache_creation": {
+                    "ephemeral_5m_input_tokens": 0,
+                    "ephemeral_1h_input_tokens": 6293
+                  },
+                  "type": "message"
+                }
+              ],
+              "speed": "standard",
+              "fallback_credit": null
+            },
+            "reported_model_usage": {
+              "claude-opus-5-5": {
+                "inputTokens": 16,
+                "outputTokens": 7052,
+                "cacheReadInputTokens": 154058,
+                "cacheCreationInputTokens": 44283,
+                "webSearchRequests": 0,
+                "costUSD": 0.5261796,
+                "contextWindow": 1000000,
+                "maxOutputTokens": 128000,
+                "thinkingTokens": 1977,
+                "canonicalModel": "claude-opus-5-5",
+                "provider": "firstParty",
+                "costBasis": "list"
+              }
+            },
+            "source_authorship": null,
+            "model_thinking_exported": false
+          },
+          "evaluation_receipt_sha256": "5267fe26c7ba945278d0fa962a359f7611dfdafd7d8004b157db087872680125"
+        }
+      ],
+      "first_artifact_complete": true,
+      "final_artifact_complete": true,
+      "final_delivery_valid": true,
+      "final_custody_qualified": true,
+      "selected_acceptance_complete": true,
+      "full_literal_prompt_coverage_verified": true,
+      "continuation_attempted": false,
+      "causal_production_repair": false,
+      "delivery_recovery": false
+    },
+    {
+      "cell_id": "cpython-pr32225--candidate",
+      "task_id": "cpython-pr32225",
+      "arm": "candidate",
+      "status": "closed",
+      "stages": [
+        {
+          "role": "main",
+          "artifact_complete": true,
+          "artifact_evaluation_status": "observed",
+          "delivery_valid": true,
+          "known_deadline": false,
+          "custody_qualified": true,
+          "custody_failures": [],
+          "controller_settled": true,
+          "after_source_sha256": "ae82ffc8462cb4e3e0e9db07a4e4e2575d677531cc0b50ab3e1d260e7929b7ce",
+          "before_source_sha256": "8bfb829a4bf2753f083201c9d83a23416a86413d6a5f4075eb24092b92ae5165",
+          "primary_runtime_changed": true,
+          "required_gaps": [],
+          "safe_declared_completion": {
+            "complete": true,
+            "remaining": [],
+            "summary": "I fixed `csv.DictReader` and `csv.DictWriter` so a one-shot iterator passed as `fieldnames` now works for the header and for every row after it. The visible check and my 9 new tests all pass (10 tests in total).\n\n**What changed in `csv.py`:** in both constructors, if `fieldnames` isn't None and `iter(fieldnames) is fieldnames` (meaning it's a one-shot iterator), it's turned into a list once. Lists, tuples and other reusable sequences are stored as the exact object you passed in, so if you update a list later, the reader or writer sees the change. Non-iterable values like `1`, `object()` or `3.5` now raise TypeError when you construct the object, because `iter()` fails on them. `DictReader` with no `fieldnames` still reads the header row from the file. Nothing else in `csv.py` was touched.\n\n**Tests:** I added `tests/test_fieldnames_iter.py`. It loads the local `csv.py` directly and checks:\n- `DictReader` with an iterator or generator across several rows, with `restkey`/`restval`.\n- That a list passed to `DictReader` is kept as the same object and later changes to it take effect, plus tuples and the default header behaviour.\n- `DictWriter` with an iterator: `writeheader`, `writerow` and `writerows`, keeping your field order and quoting commas, embedded quotes, newlines and non-ASCII text (\u00e9\u20ac) correctly.\n- `DictWriter` still rejects extra keys by default (repeatedly, not just the first time) and ignores them when asked, with `restval` filling the gaps.\n- That a list passed to `DictWriter` is kept as the same object.\n- TypeError for non-iterable values on both classes.\n\n`tests/test_visible.py` is unchanged and still passes.\n\n**Decision for you:** `DictWriter(f, None)` still constructs without error, as it did before; I didn't make it raise TypeError, which would follow the \"non-iterable raises TypeError\" rule literally. If you want None rejected there, it's a one-line change.\n\nAlso note I didn't run the tests against the original code to watch the new iterator tests fail first. That they would fail is my reasoning from reading the code, not something I ran: the old writer used up the iterator on the first row. The full CPython test suite wasn't run (it was out of scope), and the independent owner checks haven't run yet."
+          },
+          "original_evaluation_corrected": false,
+          "facts": {
+            "phase": "main",
+            "status": "settled",
+            "source_receipt_sha256": "a16cf837bb81bb39ce3b43533e4c556146a0683e3e93b5c3e2d39c30e67bc481",
+            "observed_models": [
+              "claude-opus-5-5"
+            ],
+            "session_ids": [
+              "ed855d84-03b8-49fb-97cb-bca7c9e8f8a0"
+            ],
+            "typed_terminal_observed": true,
+            "terminal_count": 1,
+            "actual_unique_tool_requests": 10,
+            "actual_unique_mcp_requests": 9,
+            "tools_by_name": {
+              "mcp__cp_trial__read_file": 4,
+              "mcp__cp_trial__list_files": 1,
+              "mcp__cp_trial__replace_text": 2,
+              "mcp__cp_trial__write_file": 1,
+              "mcp__cp_trial__run_tests": 1,
+              "StructuredOutput": 1
+            },
+            "invalid_stream_or_ids": [],
+            "provider_delivery_qualified_recorded": null,
+            "timed_out": false,
+            "wall_seconds": 48.18160674999672,
+            "reported_cost_usd": 0.27762000000000003,
+            "reported_usage": {
+              "input_tokens": 10,
+              "cache_creation_input_tokens": 21612,
+              "cache_read_input_tokens": 36820,
+              "output_tokens": 4866,
+              "output_tokens_details": {
+                "thinking_tokens": 1175
+              },
+              "server_tool_use": {
+                "web_search_requests": 0,
+                "web_fetch_requests": 0
+              },
+              "service_tier": "standard",
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 21612,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "inference_geo": "global",
+              "iterations": [
+                {
+                  "input_tokens": 2,
+                  "output_tokens": 944,
+                  "cache_read_input_tokens": 14447,
+                  "cache_creation_input_tokens": 8330,
+                  "cache_creation": {
+                    "ephemeral_5m_input_tokens": 0,
+                    "ephemeral_1h_input_tokens": 8330
+                  },
+                  "type": "message"
+                }
+              ],
+              "speed": "standard",
+              "fallback_credit": null
+            },
+            "reported_model_usage": {
+              "claude-opus-5-5": {
+                "inputTokens": 10,
+                "outputTokens": 4866,
+                "cacheReadInputTokens": 36820,
+                "cacheCreationInputTokens": 21612,
+                "webSearchRequests": 0,
+                "costUSD": 0.27762000000000003,
+                "contextWindow": 1000000,
+                "maxOutputTokens": 128000,
+                "thinkingTokens": 1175,
+                "canonicalModel": "claude-opus-5-5",
+                "provider": "firstParty",
+                "costBasis": "list"
+              }
+            },
+            "source_authorship": null,
+            "model_thinking_exported": false
+          },
+          "evaluation_receipt_sha256": "4c0a18218ab33f88fb4b1176aace25ecfdcec9b986f0d5851aa17bbb00d9f127"
+        }
+      ],
+      "first_artifact_complete": true,
+      "final_artifact_complete": true,
+      "final_delivery_valid": true,
+      "final_custody_qualified": true,
+      "selected_acceptance_complete": true,
+      "full_literal_prompt_coverage_verified": false,
+      "continuation_attempted": false,
+      "causal_production_repair": false,
+      "delivery_recovery": false
+    },
+    {
+      "cell_id": "cpython-pr32225--incumbent",
+      "task_id": "cpython-pr32225",
+      "arm": "incumbent",
+      "status": "closed",
+      "stages": [
+        {
+          "role": "main",
+          "artifact_complete": true,
+          "artifact_evaluation_status": "observed",
+          "delivery_valid": true,
+          "known_deadline": false,
+          "custody_qualified": true,
+          "custody_failures": [],
+          "controller_settled": true,
+          "after_source_sha256": "5fa5a908e1cbf5733eb175940cedf6458061cc43aa5e3d1ccefcecba347b67f5",
+          "before_source_sha256": "e246709ae30058b1c2903d6db2af9f8802b3e5b32ac5efac5ff8f853c6a8a444",
+          "primary_runtime_changed": true,
+          "required_gaps": [],
+          "safe_declared_completion": {
+            "complete": true,
+            "remaining": [],
+            "summary": "I fixed `csv.DictReader` and `csv.DictWriter` so a one-shot iterator passed as fieldnames is turned into a list once, when the object is created. Headers and every later row now see the same field names, in the same order. All visible and new tests pass.\n\n**The change (csv.py):** both constructors now run `if fieldnames is not None and iter(fieldnames) is fieldnames: fieldnames = list(fieldnames)` before storing the names. This matches the agreed approach of converting iterators instead of rejecting them. What it does:\n- **Reusable sequences** like lists, tuples and strings aren't iterators, so they're stored as-is and never copied. A list you update yourself after creating the reader or writer still takes effect.\n- **No fieldnames given** still works as before: the reader takes its header from the first row of the file.\n- **Non-iterable fieldnames** such as `5` now raise `TypeError` when the reader or writer is created.\n- Nothing else changed: reader `restkey`/`restval`, writer `extrasaction` (raise or ignore), quoting, Unicode and newline handling, and `Sniffer`.\n\n**Tests:** I added `tests/test_dict_fieldnames.py`, which loads the local `csv.py`, with 9 tests:\n- **Writer with an iterator:** header plus `writerow`/`writerows` across several rows, with exact output checked.\n- **Writer with a generator:** quoting, Unicode and embedded newlines, checked by reading the output back.\n- **`extrasaction`:** raising is checked twice in a row, and ignoring across two rows.\n- **Sequences not copied:** a tuple and a list keep their identity, and a list updated after construction is picked up.\n- **Rejection:** non-iterable fieldnames raise `TypeError` for both reader and writer.\n- **Reader with an iterator:** multiple rows, and `restkey`/`restval` using a generator.\n- **Reader defaults:** the header comes from the file, including a quoted comma and newline, and an externally updated list is picked up.\n\nThe visible command (`python3 -B -m unittest tests.test_visible`) passed together with the new tests: 10 tests OK, exit 0.\n\n**Not done:**\n- I didn't run the new tests against the old code to watch them fail first. The cause is clear from reading the original: the stored iterator gets used up by the header or first row.\n- I didn't change the `DictReader.fieldnames` setter, which still accepts any value, to keep the change to construction only.\n- As the task allowed, I didn't build CPython or run its full test suite."
+          },
+          "original_evaluation_corrected": false,
+          "facts": {
+            "phase": "main",
+            "status": "settled",
+            "source_receipt_sha256": "50faf936919225ff76ffe4819447e515d1b74ad6c0ad9e7f5e84ae7ee58b3d82",
+            "observed_models": [
+              "claude-opus-5-5"
+            ],
+            "session_ids": [
+              "4ce5c621-265e-40e9-a482-a34b5fc133d0"
+            ],
+            "typed_terminal_observed": true,
+            "terminal_count": 1,
+            "actual_unique_tool_requests": 10,
+            "actual_unique_mcp_requests": 9,
+            "tools_by_name": {
+              "mcp__cp_trial__read_file": 4,
+              "mcp__cp_trial__list_files": 1,
+              "mcp__cp_trial__replace_text": 2,
+              "mcp__cp_trial__write_file": 1,
+              "mcp__cp_trial__run_tests": 1,
+              "StructuredOutput": 1
+            },
+            "invalid_stream_or_ids": [],
+            "provider_delivery_qualified_recorded": null,
+            "timed_out": false,
+            "wall_seconds": 41.20222712500254,
+            "reported_cost_usd": 0.257438,
+            "reported_usage": {
+              "input_tokens": 10,
+              "cache_creation_input_tokens": 19804,
+              "cache_read_input_tokens": 35330,
+              "output_tokens": 4595,
+              "output_tokens_details": {
+                "thinking_tokens": 882
+              },
+              "server_tool_use": {
+                "web_search_requests": 0,
+                "web_fetch_requests": 0
+              },
+              "service_tier": "standard",
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 19804,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "inference_geo": "global",
+              "iterations": [
+                {
+                  "input_tokens": 2,
+                  "output_tokens": 1025,
+                  "cache_read_input_tokens": 13728,
+                  "cache_creation_input_tokens": 7961,
+                  "cache_creation": {
+                    "ephemeral_5m_input_tokens": 0,
+                    "ephemeral_1h_input_tokens": 7961
+                  },
+                  "type": "message"
+                }
+              ],
+              "speed": "standard",
+              "fallback_credit": null
+            },
+            "reported_model_usage": {
+              "claude-opus-5-5": {
+                "inputTokens": 10,
+                "outputTokens": 4595,
+                "cacheReadInputTokens": 35330,
+                "cacheCreationInputTokens": 19804,
+                "webSearchRequests": 0,
+                "costUSD": 0.257438,
+                "contextWindow": 1000000,
+                "maxOutputTokens": 128000,
+                "thinkingTokens": 882,
+                "canonicalModel": "claude-opus-5-5",
+                "provider": "firstParty",
+                "costBasis": "list"
+              }
+            },
+            "source_authorship": null,
+            "model_thinking_exported": false
+          },
+          "evaluation_receipt_sha256": "d25afafb08b7b2a1abb458dfda2f52696781ae5d52d061880b24cbbc43979b2b"
+        }
+      ],
+      "first_artifact_complete": true,
+      "final_artifact_complete": true,
+      "final_delivery_valid": true,
+      "final_custody_qualified": true,
+      "selected_acceptance_complete": true,
+      "full_literal_prompt_coverage_verified": false,
+      "continuation_attempted": false,
+      "causal_production_repair": false,
+      "delivery_recovery": false
+    }
+  ],
+  "by_arm": {
+    "incumbent": {
+      "assigned": 2,
+      "selected_frozen_acceptance_passes": 2,
+      "valid_final_delivery": 2,
+      "qualified_final_custody": 2,
+      "continuations": 0,
+      "actual_unique_all_tool_requests": 22,
+      "actual_unique_mcp_requests": 20,
+      "reported_wall_seconds": 112.83204108400241,
+      "reported_cost_usd": 0.8470814,
+      "reported_output_tokens": 11627
+    },
+    "candidate": {
+      "assigned": 2,
+      "selected_frozen_acceptance_passes": 2,
+      "valid_final_delivery": 2,
+      "qualified_final_custody": 2,
+      "continuations": 0,
+      "actual_unique_all_tool_requests": 23,
+      "actual_unique_mcp_requests": 21,
+      "reported_wall_seconds": 114.96870641699206,
+      "reported_cost_usd": 0.8037996000000001,
+      "reported_output_tokens": 11918
+    }
+  },
+  "author_stage_facts": [
+    {
+      "phase": "research",
+      "status": "settled",
+      "source_receipt_sha256": "519eb115b476f40aace9b0d73989116e08e4ac96cd91ce10ddccc5ae139abd83",
+      "observed_models": [
+        "claude-opus-5-5"
+      ],
+      "session_ids": [
+        "121a1ed1-1d4f-4e16-a498-1b4dff7d90a4"
+      ],
+      "typed_terminal_observed": true,
+      "terminal_count": 1,
+      "actual_unique_tool_requests": 31,
+      "actual_unique_mcp_requests": 9,
+      "tools_by_name": {
+        "mcp__cp_trial__list_files": 1,
+        "mcp__cp_trial__read_file": 8,
+        "WebFetch": 18,
+        "WebSearch": 3,
+        "StructuredOutput": 1
+      },
+      "invalid_stream_or_ids": [],
+      "provider_delivery_qualified_recorded": true,
+      "timed_out": false,
+      "wall_seconds": 258.1352269590061,
+      "reported_cost_usd": 1.0345354000000002,
+      "reported_usage": {
+        "input_tokens": 24,
+        "cache_creation_input_tokens": 37622,
+        "cache_read_input_tokens": 252087,
+        "output_tokens": 23253,
+        "output_tokens_details": {
+          "thinking_tokens": 6446
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 37622,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "inference_geo": "global",
+        "iterations": [
+          {
+            "input_tokens": 2,
+            "output_tokens": 18977,
+            "cache_read_input_tokens": 36857,
+            "cache_creation_input_tokens": 765,
+            "cache_creation": {
+              "ephemeral_5m_input_tokens": 0,
+              "ephemeral_1h_input_tokens": 765
+            },
+            "type": "message"
+          }
+        ],
+        "speed": "standard",
+        "fallback_credit": null
+      },
+      "reported_model_usage": {
+        "claude-opus-5-5": {
+          "inputTokens": 24,
+          "outputTokens": 23253,
+          "cacheReadInputTokens": 252087,
+          "cacheCreationInputTokens": 37622,
+          "webSearchRequests": 0,
+          "costUSD": 0.8165494000000001,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 6446,
+          "canonicalModel": "claude-opus-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        },
+        "claude-haiku-4-5-20251001": {
+          "inputTokens": 155896,
+          "outputTokens": 6418,
+          "cacheReadInputTokens": 0,
+          "cacheCreationInputTokens": 0,
+          "webSearchRequests": 3,
+          "costUSD": 0.21798599999999999,
+          "contextWindow": 200000,
+          "maxOutputTokens": 32000,
+          "thinkingTokens": 0,
+          "canonicalModel": "claude-haiku-4-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "source_authorship": null,
+      "model_thinking_exported": false
+    },
+    {
+      "phase": "initial-author",
+      "status": "settled",
+      "source_receipt_sha256": "8e2291343589eca34b30eedf800436e8ff4abd79d1b3e7a0344097cf7e21a529",
+      "observed_models": [
+        "claude-opus-5-5"
+      ],
+      "session_ids": [
+        "25f67fd7-c5a6-4e92-aca9-fb7a8206259a"
+      ],
+      "typed_terminal_observed": false,
+      "terminal_count": 0,
+      "actual_unique_tool_requests": 26,
+      "actual_unique_mcp_requests": 26,
+      "tools_by_name": {
+        "mcp__cp_trial__list_files": 1,
+        "mcp__cp_trial__read_file": 21,
+        "mcp__cp_trial__run_tests": 3,
+        "mcp__cp_trial__write_file": 1
+      },
+      "invalid_stream_or_ids": [],
+      "provider_delivery_qualified_recorded": false,
+      "timed_out": true,
+      "wall_seconds": 600.1030101776123,
+      "reported_cost_usd": null,
+      "reported_usage": null,
+      "reported_model_usage": null,
+      "source_authorship": {
+        "candidate": {
+          "SKILL.md": {
+            "sha256": "b84c876c9ab3b8ade74a920fd9f7c5e27ff1b7989357236990de9616a0a7a587",
+            "mode": 420
+          }
+        }
+      },
+      "model_thinking_exported": false
+    },
+    {
+      "phase": "author-continuation",
+      "status": "settled",
+      "source_receipt_sha256": "f305ae5b8b4e1f401ac1d7bc282fa8001d5245d5fda685efc3dd241e2828851f",
+      "observed_models": [
+        "claude-opus-5-5"
+      ],
+      "session_ids": [
+        "8c38bcc8-cccb-4c0d-bdec-b265e084fcee"
+      ],
+      "typed_terminal_observed": true,
+      "terminal_count": 1,
+      "actual_unique_tool_requests": 11,
+      "actual_unique_mcp_requests": 10,
+      "tools_by_name": {
+        "mcp__cp_trial__list_files": 1,
+        "mcp__cp_trial__write_file": 3,
+        "mcp__cp_trial__replace_text": 3,
+        "mcp__cp_trial__run_tests": 3,
+        "StructuredOutput": 1
+      },
+      "invalid_stream_or_ids": [],
+      "provider_delivery_qualified_recorded": true,
+      "timed_out": false,
+      "wall_seconds": 117.34421515464783,
+      "reported_cost_usd": 0.498269,
+      "reported_usage": {
+        "input_tokens": 14,
+        "cache_creation_input_tokens": 28900,
+        "cache_read_input_tokens": 97165,
+        "output_tokens": 12379,
+        "output_tokens_details": {
+          "thinking_tokens": 887
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 28900,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "inference_geo": "global",
+        "iterations": [
+          {
+            "input_tokens": 2,
+            "output_tokens": 1125,
+            "cache_read_input_tokens": 26340,
+            "cache_creation_input_tokens": 3726,
+            "cache_creation": {
+              "ephemeral_5m_input_tokens": 0,
+              "ephemeral_1h_input_tokens": 3726
+            },
+            "type": "message"
+          }
+        ],
+        "speed": "standard",
+        "fallback_credit": null
+      },
+      "reported_model_usage": {
+        "claude-opus-5-5": {
+          "inputTokens": 14,
+          "outputTokens": 12379,
+          "cacheReadInputTokens": 97165,
+          "cacheCreationInputTokens": 28900,
+          "webSearchRequests": 0,
+          "costUSD": 0.498269,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 887,
+          "canonicalModel": "claude-opus-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "source_authorship": {
+        "runtime": {
+          "README.md": {
+            "sha256": "28cb0fe24cd925eb628821b156c23b22d413f7e9ba60192b7881718ff8226397",
+            "mode": 420
+          },
+          "controller.py": {
+            "sha256": "1b83296c2d904551aaa12dbe93301f1102c5d91d18fdf57f9e1c7d4859056dee",
+            "mode": 420
+          },
+          "tests/test_controls.py": {
+            "sha256": "548d27cb8aa6c30e5723640e8893e603b93b5a158cefc979f3e71849d357480f",
+            "mode": 420
+          }
+        },
+        "candidate": {
+          "SKILL.md": {
+            "sha256": "b84c876c9ab3b8ade74a920fd9f7c5e27ff1b7989357236990de9616a0a7a587",
+            "mode": 420
+          }
+        }
+      },
+      "model_thinking_exported": false
+    },
+    {
+      "phase": "author-core-correction",
+      "status": "settled",
+      "source_receipt_sha256": "f0632dff6b554001f95e9629b5f94e58fadfc4b14e3f3f005009cb4d2064f638",
+      "observed_models": [
+        "claude-opus-5-5"
+      ],
+      "session_ids": [
+        "a9ec373e-f46b-4a77-8108-fc82170177b2"
+      ],
+      "typed_terminal_observed": false,
+      "terminal_count": 0,
+      "actual_unique_tool_requests": 15,
+      "actual_unique_mcp_requests": 15,
+      "tools_by_name": {
+        "mcp__cp_trial__read_file": 3,
+        "mcp__cp_trial__write_file": 3,
+        "mcp__cp_trial__replace_text": 7,
+        "mcp__cp_trial__run_tests": 2
+      },
+      "invalid_stream_or_ids": [],
+      "provider_delivery_qualified_recorded": false,
+      "timed_out": true,
+      "wall_seconds": 260.1007831096649,
+      "reported_cost_usd": null,
+      "reported_usage": null,
+      "reported_model_usage": null,
+      "source_authorship": {
+        "runtime": {
+          "README.md": {
+            "sha256": "28cb0fe24cd925eb628821b156c23b22d413f7e9ba60192b7881718ff8226397",
+            "mode": 420
+          },
+          "controller.py": {
+            "sha256": "399e3423a6140fc75da3265999da444e2006d3cd344bd45d91814f85e43ddd57",
+            "mode": 420
+          },
+          "hybrid_process_v2.py": {
+            "sha256": "631e695e36f5c000b3fef02d4f64f8c518edc31befac116db559816750d8e95f",
+            "mode": 420
+          },
+          "tests/test_controls.py": {
+            "sha256": "334f0e99404d044463db8e7b0f88fb875b5dae8282a82442c733bf2748544eaf",
+            "mode": 420
+          }
+        },
+        "candidate": {
+          "SKILL.md": {
+            "sha256": "103be278a59daea1eadca9d6fcb4bfebc88d5aa57c99d131d96367f8da86e5b8",
+            "mode": 420
+          }
+        }
+      },
+      "model_thinking_exported": false
+    }
+  ],
+  "task_model_calls": 4,
+  "task_continuation_calls": 0,
+  "author_provider_calls": 4,
+  "promotion": {
+    "promoted": false,
+    "decision": "retain-incumbent",
+    "reason": "Selected frozen acceptance ties2/2 each; no strictly greater final count. CSV None wording/coverage gap prevents claiming universal full-prompt completion."
+  },
+  "acceptance_caveat": {
+    "task": "cpython-pr32225",
+    "frozen_negative_case": 42,
+    "uncovered_none_case": "Accepted head and both identical CSV production patches preserve DictWriter(None) construction. Prompt broadly described noniterables as invalid; DictReader(None) is also an intended header-inference sentinel.",
+    "source_author_caveat": "Candidate final summary explicitly identifies literal noniterable/None mismatch.",
+    "frozen_scores_changed": false,
+    "future_contract": "NEXT-RUN-CONTRACT.json"
+  },
+  "setup_corrections": [
+    {
+      "phase": "before inference",
+      "cause": "Python3.9 FILE capture fstat metadata denied",
+      "fix": "Metadata-only allow on two custody stdout/stderr literals",
+      "task_or_owner_changed": false
+    },
+    {
+      "phase": "first incumbent external grading",
+      "cause": "Relative --study source path interpreted under child cwd",
+      "fix": "Same frozen grader checks identical captured source via absolute path",
+      "extra_solver_calls": 0,
+      "original_unknown_retained": true
+    }
+  ],
+  "comparison_limit": "Two historical bounded API slices, single paired run; no observed production repair loop and no model ranking/general unseen-knowledge claim.",
+  "native_codex_model_identity": "unobserved",
+  "provider_thinking_exported": false,
+  "reported_cost_not_invoice": true,
+  "installed_or_active_protocol_promoted": false
+}

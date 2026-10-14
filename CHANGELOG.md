@@ -2,6 +2,116 @@
 
 This file records user-visible changes to Tweed and Confidence Protocol.
 
+## [0.8.1] - 2026-10-13 (experimental, source only)
+
+- Evaluated two fresh-context Opus entrypoint alternatives on two real historical
+  task slices with fixed independent Codex checks. Neither is promoted: both
+  exceeded the registered size limit; deadlines and a disclosed scheduling
+  deviation limit comparison. Current guidance and installation are unchanged.
+  See `docs/research/2026-10-confidence/fork-flush/REPORT.md`.
+- Intake readiness: stop asking when no required choice or necessary fact blocks
+  the next authorized action; defer optional choices visibly; keep unknown
+  necessary facts as required gaps; separate reading sources from settling choices.
+- Completion pairing includes a relevant negative or boundary case where one could
+  refute the claim; a passing suite, review agreement or accepted reference does
+  not close a known counterexample.
+- Codex returns concrete requirement-affecting findings to Opus, which repairs and
+  rechecks. When Codex repairs directly, its own check is author evidence, not
+  independent post-repair review; record repair actor, paths and rerun checks.
+- Task-quality heuristics refine existing sentences: causal repairs over symptom
+  masking, correct authoritative sources, observable tests without forced red for
+  trivial docs, cheapest adequate probes, timeout attribution from observations,
+  and required gaps kept separate from accepted exclusions. Three evaluator test
+  cards are designed, not executed; see
+  `docs/research/2026-10-confidence/task-quality/README.md`.
+- Not installed automatically; 0.8.0 remains the installed version until a measured
+  comparison supports this revision. CLI, evidence schema, tests and prior study
+  records are unchanged. No accuracy, cost or autonomy improvement is claimed. See
+  `docs/research/2026-10-confidence/lean-repair/DESIGN.md`.
+
+## [0.8.0] - 2026-10-13
+
+- Return the always-loaded skill to the 0.6 baseline body, which recorded more
+  verified successes than the frozen 0.7 candidate in a small registered sample,
+  plus two targeted rules: pair each required behavior with a current executed
+  check before declaring completion, and Opus-led routing.
+- Make Opus the development lead for difficult work, running its own
+  implement/check/repair loop; keep Haiku optional for bounded discovery and out of
+  substantial implementation; keep Codex as interface, integrator, focused
+  independent checker and fallback without redoing delegated work.
+- Intent flow now recovers accepted decisions before asking, asks only the current
+  decision frontier, and rechecks every remaining prerequisite before readiness,
+  because an answer settles only what it addresses.
+- Shorten model routing and question patterns; give worker briefs and owner
+  verification one home in model routing. Update harness notes with current Claude
+  Code hook and permission limits.
+- The 0.7.1 capture fix, CLI, evidence schema, tests and all prior study records are
+  unchanged. This revision is a design judgment and has not been shown to be more
+  accurate.
+
+## [0.7.1] - 2026-10-13
+
+- Reobserve a complete source inventory a bounded number of times when exact
+  untracked protocol atomic staging files disappear during parallel publication.
+  Ordinary missing-source retries, tracked-file and type checks, unsupported
+  context refusal, and unknown binding on exhaustion remain in force.
+- Preserve the failed Python 3.14 CI observation and deterministic two-publisher
+  reproduction. This maintenance fix is outside the frozen model comparisons.
+
+## [0.7.0] - 2026-10-13
+
+- Prefer qualified Opus and Haiku workers when Codex coordinates substantial work;
+  keep Codex responsible for intent, integration, independent checks and completion.
+  Retain direct Quick work and disclose unavailable-route substitutions.
+- Add conditional question and solver patterns: neutral choices, concrete scenarios,
+  falsifiable predictions, symptom-sensitive diagnostics, independent expected
+  values, abstraction removal and deliberately contrasting designs.
+- Document actual packet-only Claude Code calls and the separately qualified tool
+  boundary needed for edits. Retain requested/observed model distinctions, partial
+  outcomes, source authority and required independent Critical roles.
+- Require the new question-pattern reference in regular-file release validation.
+
+Routing preference is user intent, not a claim that Haiku beats Luna/Terra or that
+Opus always produces better code. Controlled comparisons and their limitations are
+reported separately; no new dispatcher, dependency or evidence schema is added.
+
+## [0.6.0] - 2026-10-12
+
+- Add optional obligation dependency graphs, ancestor proof checks, and atomic
+  demotion of passed descendants when prerequisite support changes.
+- Add deterministic, read-only `next --json` planning with explicit blockers,
+  completion gaps, and recorded source scope; no command execution or telemetry.
+- Add contract-pinned opt-in review records with scoped roles, declared distinct
+  identities, artifact hashes, contract digests, captured runs and current code
+  binding. Preserve historical test design and legacy report compatibility.
+- Preserve the original evidence exclusion location in new captures so copying
+  evidence retains the original source inventory, without certifying a new checkout.
+- Bind capture metadata to a separate digest, reject contradictory stopping status,
+  disable fsmonitor execution during fingerprint reads, and recover deep JSON and
+  legacy metadata without tracebacks. Keep current capture provenance in redacted
+  support bundles.
+- Route complex-task recovery, bounded repair, current capability discovery and
+  cross-harness review guidance into optional references.
+- Use qualified lower-cost workers for bounded discovery, source maps, test
+  proposals and evidence extraction during substantial tasks; verify promoted
+  findings and escalate consequential decisions. Preserve direct Quick work,
+  explicit model requirements, unknown costs and existing proof gates.
+- Route substantial work through intent intake, checkable acceptance, task-specific
+  engineering flows, observable slices and separate requirements/standards review.
+  Reuse known decisions and authorization; keep consequential unknowns and test
+  misses explicit. Adapt pinned upstream fundamentals without adding a dispatcher.
+- Require every necessary release archive resource to be a regular file, including
+  the shipped model-routing guide; reject valid-target links and special members
+  without executing archived Python. Preserve ordinary directory entries.
+- Add dated model/harness research, auditable Opus agent receipts, public CLI
+  regressions and mutation experiments. Research artifacts are repository-only.
+
+Compatibility: contract v1/report v3 and existing captures remain readable. Legacy
+contracts keep their previous completion gates; opt into `review_policy` for
+attributable checks. Older tools ignore extension fields and cannot enforce these
+new gates. Declared identities are not authenticated; successful checks do not
+establish a general improvement in model accuracy or human effort saved.
+
 ## [0.5.0] - 2026-09-15
 
 ### Agent evidence workflow

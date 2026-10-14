@@ -1,0 +1,11 @@
+{"name": "write_file", "arguments_sha256": "8428b554a668361ce82f378eaf734e6b8298a07045e629ede8d8f07ed1b92b63", "ok": false, "error": "ValueError: Supplied protocol/envelope is immutable", "error_kind": "policy"}
+{"name": "list_files", "arguments_sha256": "4ae486c3a48f8dc732af672b138b438a1d96960304cc334d46bbc2687d169cbb", "ok": true, "wall_seconds": 0.004157291994488332}
+{"name": "write_file", "arguments_sha256": "3cf0faaa5e9ad44b257c801c1331cf4401144fafce609311cd36e8aa988edf93", "ok": true, "wall_seconds": 0.0014119580009719357}
+{"name": "replace_text", "arguments_sha256": "1e99e939cb2a1c95a51c710ded91b0c09a203a8131d9e470835489322a8298e6", "ok": true, "wall_seconds": 0.00125862500135554}
+{"name": "write_file", "arguments_sha256": "f66c4b144330c6c36a0820fc17fc34c976a64b5113d4e5ead69981d11ab18b11", "ok": true, "wall_seconds": 0.0005250000031082891}
+{"name": "replace_text", "arguments_sha256": "3b9f48b171e028681910208130b902ad6f150aa9ca60fdd7aad32e9a6534a103", "ok": true, "wall_seconds": 0.001057875000697095}
+{"name": "run_tests", "arguments_sha256": "a0a2c9e6b470acee0ae94ca48a7090c82adf5dfe445bc61800f3e159bb7f5790", "ok": true, "wall_seconds": 3.5246632080015843, "command_exit_code": 1, "command_timed_out": false}
+{"name": "run_tests", "arguments_sha256": "23b4f431b879acb669812f8c27c2ce36cb9415255c44781665a2ff4a91854dc3", "ok": true, "wall_seconds": 0.20995324999967124, "command_exit_code": 0, "command_timed_out": false}
+{"name": "replace_text", "arguments_sha256": "9814e1cc72a4f3312bb4620049f57d391b065d5153ed3b1fcfe7b58f70f13300", "ok": true, "wall_seconds": 0.0006624579982599244}
+{"name": "write_file", "arguments_sha256": "aed1d490bc757b6cd99617a6f869110cd7940afd7673a3809e12b586a17bebd0", "ok": true, "wall_seconds": 0.0006499580049421638}
+{"name": "run_tests", "arguments_sha256": "5ec5ca05794a6fb7bda6f404b4319cad984790966a321d81a91f43fbe653e48e", "ok": true, "wall_seconds": 3.4956010000023525, "command_exit_code": 0, "command_timed_out": false}

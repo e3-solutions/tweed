@@ -1,0 +1,551 @@
+{
+  "schema_version": 1,
+  "classification": "Posthoc descriptive supplement to unchanged registered analysis",
+  "baseline": "original_cp_05",
+  "scheduled": 84,
+  "independent_task_clusters": 6,
+  "repeats_per_task_arm": 2,
+  "observed_receipts": 82,
+  "interrupted_unknown_ids": [
+    "tweed-pr35--bounded_repair--r2",
+    "tweed-pr35--original_cp_05--r2"
+  ],
+  "arms": {
+    "bounded_repair": {
+      "scheduled": 12,
+      "observed_receipts": 11,
+      "verified_acceptance_lower_bound_count": 2,
+      "verified_acceptance_identification_count_bounds": [
+        2,
+        3
+      ],
+      "verified_acceptance_identification_rate_bounds": [
+        0.16666666666666666,
+        0.25
+      ],
+      "terminal_closed_lower_bound_count": 1,
+      "terminal_closed_identification_count_bounds": [
+        1,
+        2
+      ],
+      "terminal_closed_identification_rate_bounds": [
+        0.08333333333333333,
+        0.16666666666666666
+      ],
+      "interrupted_unknown_count": 1,
+      "completion_declaration_unknown_count": 11,
+      "harness_invalid_count": 1,
+      "verified_acceptance_delta_identification_bounds_vs_original": [
+        -0.16666666666666666,
+        0.0
+      ],
+      "terminal_closed_delta_identification_bounds_vs_original": [
+        0.0,
+        0.16666666666666666
+      ],
+      "complete_pair_secondary": {
+        "matched_trial_pairs": 11,
+        "excluded_unknown_pairs": [
+          {
+            "task_id": "tweed-pr35",
+            "repeat": 2
+          }
+        ],
+        "task_clusters": 6,
+        "pairs_per_task": {
+          "tweed-pr31": 2,
+          "tweed-pr32": 2,
+          "tweed-pr34": 2,
+          "tweed-pr35": 1,
+          "tweed-pr39": 2,
+          "tweed-pr40": 2
+        },
+        "accepted_baseline": 3,
+        "accepted_alternative": 2,
+        "terminal_closed_baseline": 0,
+        "terminal_closed_alternative": 1,
+        "trial_wins": 1,
+        "trial_losses": 2,
+        "trial_ties": 8,
+        "task_acceptance_deltas": {
+          "tweed-pr31": 0,
+          "tweed-pr32": 0.5,
+          "tweed-pr34": -0.5,
+          "tweed-pr35": 0,
+          "tweed-pr39": 0,
+          "tweed-pr40": -0.5
+        },
+        "mean_task_acceptance_delta": -0.08333333333333333
+      }
+    },
+    "compact_routing": {
+      "scheduled": 12,
+      "observed_receipts": 12,
+      "verified_acceptance_lower_bound_count": 4,
+      "verified_acceptance_identification_count_bounds": [
+        4,
+        4
+      ],
+      "verified_acceptance_identification_rate_bounds": [
+        0.3333333333333333,
+        0.3333333333333333
+      ],
+      "terminal_closed_lower_bound_count": 0,
+      "terminal_closed_identification_count_bounds": [
+        0,
+        0
+      ],
+      "terminal_closed_identification_rate_bounds": [
+        0.0,
+        0.0
+      ],
+      "interrupted_unknown_count": 0,
+      "completion_declaration_unknown_count": 12,
+      "harness_invalid_count": 0,
+      "verified_acceptance_delta_identification_bounds_vs_original": [
+        0.0,
+        0.08333333333333331
+      ],
+      "terminal_closed_delta_identification_bounds_vs_original": [
+        -0.08333333333333333,
+        0.0
+      ],
+      "complete_pair_secondary": {
+        "matched_trial_pairs": 11,
+        "excluded_unknown_pairs": [
+          {
+            "task_id": "tweed-pr35",
+            "repeat": 2
+          }
+        ],
+        "task_clusters": 6,
+        "pairs_per_task": {
+          "tweed-pr31": 2,
+          "tweed-pr32": 2,
+          "tweed-pr34": 2,
+          "tweed-pr35": 1,
+          "tweed-pr39": 2,
+          "tweed-pr40": 2
+        },
+        "accepted_baseline": 3,
+        "accepted_alternative": 3,
+        "terminal_closed_baseline": 0,
+        "terminal_closed_alternative": 0,
+        "trial_wins": 1,
+        "trial_losses": 1,
+        "trial_ties": 9,
+        "task_acceptance_deltas": {
+          "tweed-pr31": 0,
+          "tweed-pr32": 0.5,
+          "tweed-pr34": 0,
+          "tweed-pr35": 0,
+          "tweed-pr39": 0,
+          "tweed-pr40": -0.5
+        },
+        "mean_task_acceptance_delta": 0.0
+      }
+    },
+    "counterexample_first": {
+      "scheduled": 12,
+      "observed_receipts": 12,
+      "verified_acceptance_lower_bound_count": 4,
+      "verified_acceptance_identification_count_bounds": [
+        4,
+        4
+      ],
+      "verified_acceptance_identification_rate_bounds": [
+        0.3333333333333333,
+        0.3333333333333333
+      ],
+      "terminal_closed_lower_bound_count": 0,
+      "terminal_closed_identification_count_bounds": [
+        0,
+        0
+      ],
+      "terminal_closed_identification_rate_bounds": [
+        0.0,
+        0.0
+      ],
+      "interrupted_unknown_count": 0,
+      "completion_declaration_unknown_count": 12,
+      "harness_invalid_count": 1,
+      "verified_acceptance_delta_identification_bounds_vs_original": [
+        0.0,
+        0.08333333333333331
+      ],
+      "terminal_closed_delta_identification_bounds_vs_original": [
+        -0.08333333333333333,
+        0.0
+      ],
+      "complete_pair_secondary": {
+        "matched_trial_pairs": 11,
+        "excluded_unknown_pairs": [
+          {
+            "task_id": "tweed-pr35",
+            "repeat": 2
+          }
+        ],
+        "task_clusters": 6,
+        "pairs_per_task": {
+          "tweed-pr31": 2,
+          "tweed-pr32": 2,
+          "tweed-pr34": 2,
+          "tweed-pr35": 1,
+          "tweed-pr39": 2,
+          "tweed-pr40": 2
+        },
+        "accepted_baseline": 3,
+        "accepted_alternative": 4,
+        "terminal_closed_baseline": 0,
+        "terminal_closed_alternative": 0,
+        "trial_wins": 2,
+        "trial_losses": 1,
+        "trial_ties": 8,
+        "task_acceptance_deltas": {
+          "tweed-pr31": 0,
+          "tweed-pr32": 0.5,
+          "tweed-pr34": 0,
+          "tweed-pr35": 1,
+          "tweed-pr39": 0,
+          "tweed-pr40": -0.5
+        },
+        "mean_task_acceptance_delta": 0.16666666666666666
+      }
+    },
+    "current_cp_06": {
+      "scheduled": 12,
+      "observed_receipts": 12,
+      "verified_acceptance_lower_bound_count": 4,
+      "verified_acceptance_identification_count_bounds": [
+        4,
+        4
+      ],
+      "verified_acceptance_identification_rate_bounds": [
+        0.3333333333333333,
+        0.3333333333333333
+      ],
+      "terminal_closed_lower_bound_count": 1,
+      "terminal_closed_identification_count_bounds": [
+        1,
+        1
+      ],
+      "terminal_closed_identification_rate_bounds": [
+        0.08333333333333333,
+        0.08333333333333333
+      ],
+      "interrupted_unknown_count": 0,
+      "completion_declaration_unknown_count": 10,
+      "harness_invalid_count": 0,
+      "verified_acceptance_delta_identification_bounds_vs_original": [
+        0.0,
+        0.08333333333333331
+      ],
+      "terminal_closed_delta_identification_bounds_vs_original": [
+        0.0,
+        0.08333333333333333
+      ],
+      "complete_pair_secondary": {
+        "matched_trial_pairs": 11,
+        "excluded_unknown_pairs": [
+          {
+            "task_id": "tweed-pr35",
+            "repeat": 2
+          }
+        ],
+        "task_clusters": 6,
+        "pairs_per_task": {
+          "tweed-pr31": 2,
+          "tweed-pr32": 2,
+          "tweed-pr34": 2,
+          "tweed-pr35": 1,
+          "tweed-pr39": 2,
+          "tweed-pr40": 2
+        },
+        "accepted_baseline": 3,
+        "accepted_alternative": 3,
+        "terminal_closed_baseline": 0,
+        "terminal_closed_alternative": 1,
+        "trial_wins": 0,
+        "trial_losses": 0,
+        "trial_ties": 11,
+        "task_acceptance_deltas": {
+          "tweed-pr31": 0,
+          "tweed-pr32": 0,
+          "tweed-pr34": 0,
+          "tweed-pr35": 0,
+          "tweed-pr39": 0,
+          "tweed-pr40": 0
+        },
+        "mean_task_acceptance_delta": 0
+      }
+    },
+    "dependency_slicing": {
+      "scheduled": 12,
+      "observed_receipts": 12,
+      "verified_acceptance_lower_bound_count": 3,
+      "verified_acceptance_identification_count_bounds": [
+        3,
+        3
+      ],
+      "verified_acceptance_identification_rate_bounds": [
+        0.25,
+        0.25
+      ],
+      "terminal_closed_lower_bound_count": 0,
+      "terminal_closed_identification_count_bounds": [
+        0,
+        0
+      ],
+      "terminal_closed_identification_rate_bounds": [
+        0.0,
+        0.0
+      ],
+      "interrupted_unknown_count": 0,
+      "completion_declaration_unknown_count": 9,
+      "harness_invalid_count": 1,
+      "verified_acceptance_delta_identification_bounds_vs_original": [
+        -0.08333333333333331,
+        0.0
+      ],
+      "terminal_closed_delta_identification_bounds_vs_original": [
+        -0.08333333333333333,
+        0.0
+      ],
+      "complete_pair_secondary": {
+        "matched_trial_pairs": 11,
+        "excluded_unknown_pairs": [
+          {
+            "task_id": "tweed-pr35",
+            "repeat": 2
+          }
+        ],
+        "task_clusters": 6,
+        "pairs_per_task": {
+          "tweed-pr31": 2,
+          "tweed-pr32": 2,
+          "tweed-pr34": 2,
+          "tweed-pr35": 1,
+          "tweed-pr39": 2,
+          "tweed-pr40": 2
+        },
+        "accepted_baseline": 3,
+        "accepted_alternative": 2,
+        "terminal_closed_baseline": 0,
+        "terminal_closed_alternative": 0,
+        "trial_wins": 0,
+        "trial_losses": 1,
+        "trial_ties": 10,
+        "task_acceptance_deltas": {
+          "tweed-pr31": 0,
+          "tweed-pr32": 0,
+          "tweed-pr34": 0,
+          "tweed-pr35": 0,
+          "tweed-pr39": 0,
+          "tweed-pr40": -0.5
+        },
+        "mean_task_acceptance_delta": -0.08333333333333333
+      }
+    },
+    "independent_review": {
+      "scheduled": 12,
+      "observed_receipts": 12,
+      "verified_acceptance_lower_bound_count": 4,
+      "verified_acceptance_identification_count_bounds": [
+        4,
+        4
+      ],
+      "verified_acceptance_identification_rate_bounds": [
+        0.3333333333333333,
+        0.3333333333333333
+      ],
+      "terminal_closed_lower_bound_count": 0,
+      "terminal_closed_identification_count_bounds": [
+        0,
+        0
+      ],
+      "terminal_closed_identification_rate_bounds": [
+        0.0,
+        0.0
+      ],
+      "interrupted_unknown_count": 0,
+      "completion_declaration_unknown_count": 12,
+      "harness_invalid_count": 0,
+      "verified_acceptance_delta_identification_bounds_vs_original": [
+        0.0,
+        0.08333333333333331
+      ],
+      "terminal_closed_delta_identification_bounds_vs_original": [
+        -0.08333333333333333,
+        0.0
+      ],
+      "complete_pair_secondary": {
+        "matched_trial_pairs": 11,
+        "excluded_unknown_pairs": [
+          {
+            "task_id": "tweed-pr35",
+            "repeat": 2
+          }
+        ],
+        "task_clusters": 6,
+        "pairs_per_task": {
+          "tweed-pr31": 2,
+          "tweed-pr32": 2,
+          "tweed-pr34": 2,
+          "tweed-pr35": 1,
+          "tweed-pr39": 2,
+          "tweed-pr40": 2
+        },
+        "accepted_baseline": 3,
+        "accepted_alternative": 3,
+        "terminal_closed_baseline": 0,
+        "terminal_closed_alternative": 0,
+        "trial_wins": 1,
+        "trial_losses": 1,
+        "trial_ties": 9,
+        "task_acceptance_deltas": {
+          "tweed-pr31": 0,
+          "tweed-pr32": 0,
+          "tweed-pr34": 0,
+          "tweed-pr35": 1,
+          "tweed-pr39": 0,
+          "tweed-pr40": -0.5
+        },
+        "mean_task_acceptance_delta": 0.08333333333333333
+      }
+    },
+    "original_cp_05": {
+      "scheduled": 12,
+      "observed_receipts": 11,
+      "verified_acceptance_lower_bound_count": 3,
+      "verified_acceptance_identification_count_bounds": [
+        3,
+        4
+      ],
+      "verified_acceptance_identification_rate_bounds": [
+        0.25,
+        0.3333333333333333
+      ],
+      "terminal_closed_lower_bound_count": 0,
+      "terminal_closed_identification_count_bounds": [
+        0,
+        1
+      ],
+      "terminal_closed_identification_rate_bounds": [
+        0.0,
+        0.08333333333333333
+      ],
+      "interrupted_unknown_count": 1,
+      "completion_declaration_unknown_count": 10,
+      "harness_invalid_count": 1
+    }
+  },
+  "retrospective_workflow_audits": [
+    {
+      "task_id": "tweed-pr32",
+      "scheduled": 14,
+      "registered_oracle_acceptances": 3,
+      "retrospective_workflow_acceptances": 4,
+      "changed_identities": [
+        {
+          "trial_id": "tweed-pr32--current_cp_06--r1",
+          "registered_oracle_passed": false,
+          "retrospective_workflow_passed": true
+        }
+      ],
+      "classification": "Posthoc separate workflow audit; original scores unchanged; no efficacy inference"
+    },
+    {
+      "task_id": "tweed-pr40",
+      "scheduled": 14,
+      "registered_oracle_acceptances": 2,
+      "retrospective_workflow_acceptances": 14,
+      "changed_identities": [
+        {
+          "trial_id": "tweed-pr40--bounded_repair--r1",
+          "registered_oracle_passed": false,
+          "retrospective_workflow_passed": true
+        },
+        {
+          "trial_id": "tweed-pr40--bounded_repair--r2",
+          "registered_oracle_passed": false,
+          "retrospective_workflow_passed": true
+        },
+        {
+          "trial_id": "tweed-pr40--compact_routing--r1",
+          "registered_oracle_passed": false,
+          "retrospective_workflow_passed": true
+        },
+        {
+          "trial_id": "tweed-pr40--compact_routing--r2",
+          "registered_oracle_passed": false,
+          "retrospective_workflow_passed": true
+        },
+        {
+          "trial_id": "tweed-pr40--counterexample_first--r1",
+          "registered_oracle_passed": false,
+          "retrospective_workflow_passed": true
+        },
+        {
+          "trial_id": "tweed-pr40--counterexample_first--r2",
+          "registered_oracle_passed": false,
+          "retrospective_workflow_passed": true
+        },
+        {
+          "trial_id": "tweed-pr40--current_cp_06--r1",
+          "registered_oracle_passed": false,
+          "retrospective_workflow_passed": true
+        },
+        {
+          "trial_id": "tweed-pr40--dependency_slicing--r1",
+          "registered_oracle_passed": false,
+          "retrospective_workflow_passed": true
+        },
+        {
+          "trial_id": "tweed-pr40--dependency_slicing--r2",
+          "registered_oracle_passed": false,
+          "retrospective_workflow_passed": true
+        },
+        {
+          "trial_id": "tweed-pr40--independent_review--r1",
+          "registered_oracle_passed": false,
+          "retrospective_workflow_passed": true
+        },
+        {
+          "trial_id": "tweed-pr40--independent_review--r2",
+          "registered_oracle_passed": false,
+          "retrospective_workflow_passed": true
+        },
+        {
+          "trial_id": "tweed-pr40--original_cp_05--r1",
+          "registered_oracle_passed": false,
+          "retrospective_workflow_passed": true
+        }
+      ],
+      "classification": "Posthoc separate workflow audit; original scores unchanged; no efficacy inference"
+    }
+  ],
+  "definitions": {
+    "verified_acceptance_lower_bound": "passed=true and harness_invalid is not true; unknowns remain null in inputs, contribute no observed verified acceptance",
+    "terminal_closed": "Verified acceptance AND observed declared_complete=true AND remaining is exactly []; this assesses a final declaration, not independent proof-packet sufficiency or all peer-call closure",
+    "complete_pair_secondary": "Retain matched task/repeat pairs only when BOTH primary passed fields are boolean. Observed invalid-harness receipts stay nonsuccesses; unknown pairs are excluded. Average repeated-pair differences within each task, then weight retained task clusters equally",
+    "identification_bounds": "Each externally interrupted missing outcome may be 0 or 1, without filling any input field. Bounds are marginal logically possible rates/deltas, not confidence intervals or probabilities. Timeouts with recorded missing final declarations do not acquire a fabricated declaration",
+    "proof_packet_sufficiency": "Unassessed; proof_packet_grade remains null. Passing an oracle or receiving a complete declaration does not establish all protocol proof obligations"
+  },
+  "limitations": [
+    "Six selected historical PR tasks from one repository; not a general efficacy estimate",
+    "Repeated attempts do not add independent task clusters",
+    "External interruption may bias observed lower-bound arm deltas",
+    "Workflow audits were designed after observations and are reported separately without rescoring",
+    "No hypothesis tests or causal improvement claim; complete-case selection and temporal service drift remain limitations"
+  ],
+  "generated_at_utc": "2026-10-12T17:33:20.244896+00:00",
+  "input_file_sha256": {
+    "normalized_receipts": "d49982e2f9888f16bbb95a55635440dde710417dd99d0f6ae6da2e0df706c852",
+    "schedule": "f230f71992ee5f0518d6b000e10f61378d9a96be285e9e050aed02f446fb87fd",
+    "unchanged_registered_analysis": "ccc8c45ae22e272b965aff2ee026af447692380fa1268d7f3fafe356a4b9e40a",
+    "interruption_audit": "06012f73332544daac3a8119374e50e46c4a0a16df536497c231b1f037288afb",
+    "retrospective_workflow_audit_tweed-pr32": "3663935c1a497197b86388a3ad648c6b4e44f4f5c33a5e58e317539193529fa5",
+    "retrospective_workflow_audit_tweed-pr40": "53fd3aa1864a442f6d806c36b3e52d4407f81a732179241c747ca5a17cf8664d"
+  },
+  "supplement_script_sha256": "a1e81e86d3c82a018305bb5008c80d90e3b92458ded3828a229cb263596bf0b0"
+}

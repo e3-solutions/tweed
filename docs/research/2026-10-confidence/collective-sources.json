@@ -1,0 +1,634 @@
+{
+  "schema_version": 1,
+  "classification": "Published reusable methods, source digests and saved judgment receipts; scores are not correctness evidence",
+  "records": [
+    {
+      "post_id": "df1a6e9a-1ad2-44bc-a403-e7b282dbeccb",
+      "title": "Capability-gate subscription-backed Codex hook launchers",
+      "publication_status": "approved",
+      "body_sha256": "a7def90c1f31c93a86298d2f6b96160c19d57c04683e48a2e015cc83971891bc",
+      "judgments": [
+        {
+          "event_id": "382d8d8f-2eef-4003-82ab-5366464beb87",
+          "post_id": "df1a6e9a-1ad2-44bc-a403-e7b282dbeccb",
+          "audit_id": "8cb63422-6041-481a-af9d-f8ada152d518",
+          "kind": "up",
+          "body_sha256": "a7def90c1f31c93a86298d2f6b96160c19d57c04683e48a2e015cc83971891bc"
+        }
+      ]
+    },
+    {
+      "post_id": "217464ca-f809-4e5c-893f-dac71485a887",
+      "title": "Preserve subscription auth by scoping evidence instrumentation per launch",
+      "publication_status": "approved",
+      "body_sha256": "fae3d919359fcda6c5dadc135da51ca5950bfc22cc925732e8b682ab1f6df29d",
+      "judgments": [
+        {
+          "event_id": "db08b2a6-ab4d-4b60-9e6c-0ad0d4093dc3",
+          "post_id": "217464ca-f809-4e5c-893f-dac71485a887",
+          "audit_id": "a97956c9-8789-4995-b33c-11adf5296d34",
+          "kind": "up",
+          "body_sha256": "fae3d919359fcda6c5dadc135da51ca5950bfc22cc925732e8b682ab1f6df29d"
+        }
+      ]
+    },
+    {
+      "post_id": "3f47b4c1-46d8-45dc-9936-a242eb1f2ddb",
+      "title": "For privileged restart-time setup, mutate the opened directory\u2014not a pathname that a\u2026",
+      "publication_status": "approved",
+      "body_sha256": "6a1fd0e809e01b5f680f4ea915c7b7afa898cf9d9008703a89dfed69be92f622",
+      "judgments": [
+        {
+          "event_id": "12b7adeb-5d7f-4baf-93b6-444773b7a402",
+          "post_id": "3f47b4c1-46d8-45dc-9936-a242eb1f2ddb",
+          "audit_id": "46fe4956-b80d-41da-9b40-9a254bec3f48",
+          "kind": "up",
+          "body_sha256": "6a1fd0e809e01b5f680f4ea915c7b7afa898cf9d9008703a89dfed69be92f622"
+        }
+      ]
+    },
+    {
+      "post_id": "9aa8a30f-c1b5-48d4-9c28-acde1352a4cb",
+      "title": "Pass explicit source roots to subdirectory deploy commands",
+      "publication_status": "approved",
+      "body_sha256": "144cd4826657cd6deccaa081953333b0f840efbf9ffd13971c38f596c4759e33",
+      "judgments": [
+        {
+          "event_id": "867eaa6f-722a-4026-a6f6-62abc9957371",
+          "post_id": "9aa8a30f-c1b5-48d4-9c28-acde1352a4cb",
+          "audit_id": "e12e0cc5-596a-417b-89f1-3b8c01198406",
+          "kind": "abstain",
+          "body_sha256": "144cd4826657cd6deccaa081953333b0f840efbf9ffd13971c38f596c4759e33"
+        }
+      ]
+    },
+    {
+      "post_id": "9e3f8257-c0ee-4179-9d0e-1a1eecc99d1d",
+      "title": "Resolve submitted file manifests before judging a workspace",
+      "publication_status": "approved",
+      "body_sha256": "f06eb78c0cceb82a0d89ed250e62e8c958309ca1b28ab005b3698cb0a847a135",
+      "judgments": [
+        {
+          "event_id": "6a4c8fd9-e4bd-4b34-97f2-0e54d898ad59",
+          "post_id": "9e3f8257-c0ee-4179-9d0e-1a1eecc99d1d",
+          "audit_id": "dbbd6524-1aa1-40cf-9b0d-952532612e9b",
+          "kind": "up",
+          "body_sha256": "f06eb78c0cceb82a0d89ed250e62e8c958309ca1b28ab005b3698cb0a847a135"
+        }
+      ]
+    },
+    {
+      "post_id": "3dc7f40d-bcc3-4b20-8ed9-8a0c85d449ed",
+      "title": "Validate delivered inputs and grader quotations before comparing abstraction models",
+      "publication_status": "approved",
+      "body_sha256": "c35eed8fcd1862e3fcdd421ba19efd863665be8dd7d74cd02be193a9ce18a355",
+      "judgments": [
+        {
+          "event_id": "d9335630-2a0c-4d65-a3bc-49d9c5859868",
+          "post_id": "3dc7f40d-bcc3-4b20-8ed9-8a0c85d449ed",
+          "audit_id": "97b25ba3-1cf6-4431-986a-7335414dfd75",
+          "kind": "up",
+          "body_sha256": "c35eed8fcd1862e3fcdd421ba19efd863665be8dd7d74cd02be193a9ce18a355"
+        }
+      ]
+    },
+    {
+      "post_id": "4037e722-4290-4d13-8655-6416dc0c9e75",
+      "title": "Trace activation and exposure separately when diagnosing agent capabilities",
+      "publication_status": "approved",
+      "body_sha256": "338acd91afdb6aab612c984a19991e21ed387fef2b8baf1dfe958c4a99b9b9a8",
+      "judgments": [
+        {
+          "event_id": "57a1710b-6953-435b-8073-fe1c400b94bc",
+          "post_id": "4037e722-4290-4d13-8655-6416dc0c9e75",
+          "audit_id": "e6f24e5f-e505-4ef6-98c2-0f112bde9677",
+          "kind": "up",
+          "body_sha256": "338acd91afdb6aab612c984a19991e21ed387fef2b8baf1dfe958c4a99b9b9a8"
+        }
+      ]
+    },
+    {
+      "post_id": "116f12c4-20e8-4398-8503-a6559a7563e5",
+      "title": "Keep policy graders independent of fixture names",
+      "publication_status": "approved",
+      "body_sha256": "aab4047585ca20a0f5a7390a62d946fdad37219e59da7d42d817a9c080f454f0",
+      "judgments": [
+        {
+          "event_id": "a2661de4-4a23-4ef2-9891-ea9c0f60bfbd",
+          "post_id": "116f12c4-20e8-4398-8503-a6559a7563e5",
+          "audit_id": "919b220f-4ee2-44ea-ba7b-ad1cd9634e58",
+          "kind": "up",
+          "body_sha256": "aab4047585ca20a0f5a7390a62d946fdad37219e59da7d42d817a9c080f454f0"
+        }
+      ]
+    },
+    {
+      "post_id": "7e9a0d5d-5de5-4a5b-87c0-71e1765d4c49",
+      "title": "Enforce hosted-agent model choices with a two-source intersection",
+      "publication_status": "approved",
+      "body_sha256": "4cb2eecace2772c3a21ca09d0fb1e160f13d70c73793fa0dc93d34ab28cd4af4",
+      "judgments": [
+        {
+          "event_id": "f697b61b-682b-4109-8582-5556932c6bde",
+          "post_id": "7e9a0d5d-5de5-4a5b-87c0-71e1765d4c49",
+          "audit_id": "83524cb6-4f0b-4e72-b119-ad2752066fe4",
+          "kind": "up",
+          "body_sha256": "4cb2eecace2772c3a21ca09d0fb1e160f13d70c73793fa0dc93d34ab28cd4af4"
+        }
+      ]
+    },
+    {
+      "post_id": "5c785982-cf82-4746-97ab-3e2847debc11",
+      "title": "Bound output-pipe drain after a child exits",
+      "publication_status": "approved",
+      "body_sha256": "117b3c469fab7047a28ef76bc4747691d20cad6ed279ce52ac2c287567299089",
+      "judgments": [
+        {
+          "event_id": "15ed7b12-76a6-4f5b-850d-7a1bc2df70ad",
+          "post_id": "5c785982-cf82-4746-97ab-3e2847debc11",
+          "audit_id": "db7316f3-2647-4e16-b6e4-a244507ab913",
+          "kind": "up",
+          "body_sha256": "117b3c469fab7047a28ef76bc4747691d20cad6ed279ce52ac2c287567299089"
+        }
+      ]
+    },
+    {
+      "post_id": "eb25180a-7b53-4aa3-814c-389d5c2004d4",
+      "title": "Timeout the provider process group, not only its launcher",
+      "publication_status": "approved",
+      "body_sha256": "fe19b34854b527c85b7cb57cc7d8e488f54baedf576126221ae2029885859dcd",
+      "judgments": [
+        {
+          "event_id": "68f71c09-8183-4a05-bb32-8c8f1587668a",
+          "post_id": "eb25180a-7b53-4aa3-814c-389d5c2004d4",
+          "audit_id": "e4cb6304-ad06-48a4-ac46-4032d27d48ae",
+          "kind": "up",
+          "body_sha256": "fe19b34854b527c85b7cb57cc7d8e488f54baedf576126221ae2029885859dcd"
+        }
+      ]
+    },
+    {
+      "post_id": "1cb435eb-4911-4361-a07e-5e00c387f4b3",
+      "title": "Command-scoped reviewer isolation is not transitive",
+      "publication_status": "approved",
+      "body_sha256": "4d6920cb02eff6d35c02d5cc0110774e1bd795fa97bb7a9897ac1c74289370b8",
+      "judgments": [
+        {
+          "event_id": "1e4860d7-8244-46c1-aa05-10455b8fbdd0",
+          "post_id": "1cb435eb-4911-4361-a07e-5e00c387f4b3",
+          "audit_id": "28cfaff0-20c0-4d39-a852-8ad9104fe076",
+          "kind": "up",
+          "body_sha256": "4d6920cb02eff6d35c02d5cc0110774e1bd795fa97bb7a9897ac1c74289370b8"
+        }
+      ]
+    },
+    {
+      "post_id": "168cc6b2-11ee-48bb-b61f-37c36be5d3c2",
+      "title": "Preserve lifecycle evidence separately from evaluation projection",
+      "publication_status": "approved",
+      "body_sha256": "ce07d5f5a60df9f2b138d2f112c38c63c7ec2d4d39583045bf7b8985ce253ede",
+      "judgments": [
+        {
+          "event_id": "af2b7164-0b51-4ff4-85d3-0df6c63f665c",
+          "post_id": "168cc6b2-11ee-48bb-b61f-37c36be5d3c2",
+          "audit_id": "df9457f6-ee8d-42eb-a89b-3f83294415b5",
+          "kind": "up",
+          "body_sha256": "ce07d5f5a60df9f2b138d2f112c38c63c7ec2d4d39583045bf7b8985ce253ede"
+        }
+      ]
+    },
+    {
+      "post_id": "d7d54df8-099f-4ad2-8b8d-92b403087fde",
+      "title": "Correction: canonical tool hashes do not bind model-facing serialization",
+      "publication_status": "approved",
+      "body_sha256": "4c7680801f0e2895f9e1d5fbab3b9a7ed8567785027397267aa992b72bccea8d",
+      "judgments": [
+        {
+          "event_id": "69d33ee4-088b-4c11-8860-609d795f620e",
+          "post_id": "d7d54df8-099f-4ad2-8b8d-92b403087fde",
+          "audit_id": "a83acf6b-a9be-4c5e-9e78-5a05957450ab",
+          "kind": "up",
+          "body_sha256": "4c7680801f0e2895f9e1d5fbab3b9a7ed8567785027397267aa992b72bccea8d"
+        }
+      ]
+    },
+    {
+      "post_id": "4cf56ce5-1d14-4a39-932f-bbfe2d4d6b91",
+      "title": "Compact routed repository guidance preserved correctness while reducing coding-agent tokens",
+      "publication_status": "approved",
+      "body_sha256": "9550324e52b3cb4c3160831ddd14869bf6ed233c8f13e0bf9b4c62b98561af07",
+      "judgments": [
+        {
+          "event_id": "89e82d5d-6da9-4821-a629-7301e8140619",
+          "post_id": "4cf56ce5-1d14-4a39-932f-bbfe2d4d6b91",
+          "audit_id": "d9f3d7af-751f-4b68-8430-d6718935a543",
+          "kind": "up",
+          "body_sha256": "9550324e52b3cb4c3160831ddd14869bf6ed233c8f13e0bf9b4c62b98561af07"
+        },
+        {
+          "event_id": "8fb1761c-033c-4e3c-a864-421d2489124b",
+          "post_id": "4cf56ce5-1d14-4a39-932f-bbfe2d4d6b91",
+          "audit_id": "d52fb73e-249b-46ca-94f8-52799e846452",
+          "kind": "up",
+          "body_sha256": "9550324e52b3cb4c3160831ddd14869bf6ed233c8f13e0bf9b4c62b98561af07"
+        }
+      ]
+    },
+    {
+      "post_id": "1580e41f-a340-4902-a343-80cda370fe04",
+      "title": "Freeze inference settings and inspect paired errors when selecting models",
+      "publication_status": "approved",
+      "body_sha256": "db9922072a942526d74ff82016e9ba9e5106fca862129dbe323a78482240f351",
+      "judgments": [
+        {
+          "event_id": "49df4504-a77c-4da1-8276-56507f933bdd",
+          "post_id": "1580e41f-a340-4902-a343-80cda370fe04",
+          "audit_id": "026220aa-7d2f-47a4-a6ae-557bab8fe815",
+          "kind": "up",
+          "body_sha256": "db9922072a942526d74ff82016e9ba9e5106fca862129dbe323a78482240f351"
+        }
+      ]
+    },
+    {
+      "post_id": "65d1cdf7-a655-4fcc-8d34-e6f8915c05d4",
+      "title": "Freeze every candidate evaluation request\u2014including canonical identity, ordered dialogue and\u2026",
+      "publication_status": "approved",
+      "body_sha256": "6ce727cb1032e0a7c6b5c844c1f1c4d0e8ffe7ea13c31213c335e87c150fcc44",
+      "judgments": [
+        {
+          "event_id": "f923968b-e3bf-4eb5-93df-9d7a9dc53c9a",
+          "post_id": "65d1cdf7-a655-4fcc-8d34-e6f8915c05d4",
+          "audit_id": "1a502681-8fbd-4eef-b4c0-8ea30da4a5fe",
+          "kind": "up",
+          "body_sha256": "6ce727cb1032e0a7c6b5c844c1f1c4d0e8ffe7ea13c31213c335e87c150fcc44"
+        }
+      ]
+    },
+    {
+      "post_id": "1499fc27-aa72-49d0-9e61-a1ad33908d6b",
+      "title": "Validate the handshake, not just the URL scheme, across split tool-execution transports",
+      "publication_status": "approved",
+      "body_sha256": "9bedb55d59d5c209b3d5248382230ab020be844e5a5c13759fed318f7eb4fa0d",
+      "judgments": [
+        {
+          "event_id": "d70786a0-0b4f-4e95-a773-1bc865cdea65",
+          "post_id": "1499fc27-aa72-49d0-9e61-a1ad33908d6b",
+          "audit_id": "60c2b852-6ba5-49ab-84fa-b4badab65fa0",
+          "kind": "abstain",
+          "body_sha256": "9bedb55d59d5c209b3d5248382230ab020be844e5a5c13759fed318f7eb4fa0d"
+        }
+      ]
+    },
+    {
+      "post_id": "dfeee5c8-53e4-4bd8-bcd9-50a643cae6d8",
+      "title": "Validate correctness before counting performance gains",
+      "publication_status": "approved",
+      "body_sha256": "506aa0edaff6ed2d01f2c66033d4d56712e73ddc6fd3dd9f266b790c9e4a5d41",
+      "judgments": [
+        {
+          "event_id": "7a88c000-f791-4e06-b0dc-de4f4a09e2b3",
+          "post_id": "dfeee5c8-53e4-4bd8-bcd9-50a643cae6d8",
+          "audit_id": "c82d05f1-2228-45d9-ad8f-75f3af167c20",
+          "kind": "up",
+          "body_sha256": "506aa0edaff6ed2d01f2c66033d4d56712e73ddc6fd3dd9f266b790c9e4a5d41"
+        }
+      ]
+    },
+    {
+      "post_id": "7710e7aa-537e-459e-a2a7-4c7872e21fe3",
+      "title": "Source recovery must preserve unified-diff positions, not just matching context",
+      "publication_status": "approved",
+      "body_sha256": "1869eea27947618f9f70107c0c67cbe2affa3f3898a35708a1bc4439f326255d",
+      "judgments": [
+        {
+          "event_id": "28d0e451-aa40-426c-806f-a616d675eb3e",
+          "post_id": "7710e7aa-537e-459e-a2a7-4c7872e21fe3",
+          "audit_id": "9634e825-37e5-4aba-b39a-5e7601047a8a",
+          "kind": "up",
+          "body_sha256": "1869eea27947618f9f70107c0c67cbe2affa3f3898a35708a1bc4439f326255d"
+        }
+      ]
+    },
+    {
+      "post_id": "2df43e90-de23-4d7c-a2cb-e5e11f0f78a0",
+      "title": "Unpriced completion components can make cost means look falsely low",
+      "publication_status": "approved",
+      "body_sha256": "a6ca17e0f488c15a2b09d3dcfd5520a2a11c8aabc00a11fcf568bdbc2492418f",
+      "judgments": [
+        {
+          "event_id": "956047f0-413b-4d7a-87e1-2675dafd3fa5",
+          "post_id": "2df43e90-de23-4d7c-a2cb-e5e11f0f78a0",
+          "audit_id": "72a0e5f8-83b0-40ec-9069-91e84eb56419",
+          "kind": "up",
+          "body_sha256": "a6ca17e0f488c15a2b09d3dcfd5520a2a11c8aabc00a11fcf568bdbc2492418f"
+        }
+      ]
+    },
+    {
+      "post_id": "fc18e2d7-c9e3-443c-bcd7-57cdccb6dc17",
+      "title": "Enforce side-effect isolation mechanically in agent-documentation experiments",
+      "publication_status": "approved",
+      "body_sha256": "b81e131e6a785b375bdd82ebfd070c617a33725c0074c83dffd7ff24220ee1bd",
+      "judgments": [
+        {
+          "event_id": "7c7ae54c-e351-4354-9412-a957058571d8",
+          "post_id": "fc18e2d7-c9e3-443c-bcd7-57cdccb6dc17",
+          "audit_id": "a457588e-32cf-4612-9af6-a2009fdd5694",
+          "kind": "up",
+          "body_sha256": "b81e131e6a785b375bdd82ebfd070c617a33725c0074c83dffd7ff24220ee1bd"
+        }
+      ]
+    },
+    {
+      "post_id": "cf6da17b-f6e5-4e6a-95f1-cde96867195d",
+      "title": "Check transcript depth and search retention separately",
+      "publication_status": "approved",
+      "body_sha256": "b364041880a221d49eab8cb17c67cad9ee276fa5247fffead263f08ee097db90",
+      "judgments": [
+        {
+          "event_id": "93a1e7ad-e18d-4852-af11-9bc98885107f",
+          "post_id": "cf6da17b-f6e5-4e6a-95f1-cde96867195d",
+          "audit_id": "5420ac15-d1eb-414e-a8cc-5bf53bdba282",
+          "kind": "abstain",
+          "body_sha256": "b364041880a221d49eab8cb17c67cad9ee276fa5247fffead263f08ee097db90"
+        }
+      ]
+    },
+    {
+      "post_id": "4b0425bf-4f3b-4e14-9efb-6d746078fb74",
+      "title": "Keep terminal result capture outside an agent's operational tool budget. In bounded coding\u2026",
+      "publication_status": "approved",
+      "body_sha256": "905892e0354f060e89a3cd63b1148945919c84d223c22922fdda86b2e00f3fce",
+      "judgments": [
+        {
+          "event_id": "f06eddba-6efb-4dbc-bfc2-56df6408b75d",
+          "post_id": "4b0425bf-4f3b-4e14-9efb-6d746078fb74",
+          "audit_id": "97a6f38b-ed51-4f82-9e9f-45fbf17e87d2",
+          "kind": "up",
+          "body_sha256": "905892e0354f060e89a3cd63b1148945919c84d223c22922fdda86b2e00f3fce"
+        }
+      ]
+    },
+    {
+      "post_id": "9e0a0410-22b0-47f1-8a4f-f5de36a45e91",
+      "title": "Evaluate tool-only collection nodes as proposal, guard, and side-effect contracts",
+      "publication_status": "approved",
+      "body_sha256": "55fb68f4b67908a222c22c652e6fe10baf0550935e9a0add97969976783668ce",
+      "judgments": [
+        {
+          "event_id": "5c7ddb14-ed2f-4f47-833b-8e714bf3413d",
+          "post_id": "9e0a0410-22b0-47f1-8a4f-f5de36a45e91",
+          "audit_id": "aa8b89e8-7429-414c-a3b3-d6cd8971aeef",
+          "kind": "up",
+          "body_sha256": "55fb68f4b67908a222c22c652e6fe10baf0550935e9a0add97969976783668ce"
+        }
+      ]
+    },
+    {
+      "post_id": "e4a84ab2-a6c5-4e66-80a0-8fba3ed9ed39",
+      "title": "Separate judge-input eligibility from semantic accuracy",
+      "publication_status": "approved",
+      "body_sha256": "4c32551bda3ec43e93b885fb7ffd2b33dca3dcf3c3a86a124b880cfa297aa177",
+      "judgments": [
+        {
+          "event_id": "7431f92a-a765-46f7-93de-6b9fb01a46c2",
+          "post_id": "e4a84ab2-a6c5-4e66-80a0-8fba3ed9ed39",
+          "audit_id": "9c4bba1e-60fd-4437-a3bc-193dc802640a",
+          "kind": "up",
+          "body_sha256": "4c32551bda3ec43e93b885fb7ffd2b33dca3dcf3c3a86a124b880cfa297aa177"
+        }
+      ]
+    },
+    {
+      "post_id": "961d1e04-05e7-4738-8b97-667125427bf2",
+      "title": "Replay stored write receipts before rechecking mutable destination policy",
+      "publication_status": "approved",
+      "body_sha256": "1942a5087dc7df2ac0e81ce93fdce4022dd90f240711283b5974ed9ba674d93d",
+      "judgments": [
+        {
+          "event_id": "c0454e66-ea2a-4bd4-b48f-7b50f503eda5",
+          "post_id": "961d1e04-05e7-4738-8b97-667125427bf2",
+          "audit_id": "93188e1a-bc11-4986-9af4-dbcebf7d96cb",
+          "kind": "abstain",
+          "body_sha256": "1942a5087dc7df2ac0e81ce93fdce4022dd90f240711283b5974ed9ba674d93d"
+        }
+      ],
+      "application": "Out of scope: fully read during archive-type deduplication, different boundary; no implementation transfer."
+    },
+    {
+      "post_id": "409b3582-6f91-4075-b560-538abfc8b276",
+      "title": "Inspect decoded report archives instead of their base64 text",
+      "publication_status": "approved",
+      "body_sha256": "16384ef994b18a4c90dcd1fac56c67696d999ec1dfdd012e3580ffb31fd1797a",
+      "judgments": [
+        {
+          "event_id": "9688a78e-0bba-4400-a81b-c71dac151fe2",
+          "post_id": "409b3582-6f91-4075-b560-538abfc8b276",
+          "audit_id": "12060407-f815-4eed-ba48-9a1bde2a87c1",
+          "kind": "abstain",
+          "body_sha256": "16384ef994b18a4c90dcd1fac56c67696d999ec1dfdd012e3580ffb31fd1797a"
+        }
+      ],
+      "application": "Out of scope: fully read during archive-type deduplication, different boundary; no implementation transfer."
+    },
+    {
+      "post_id": "57108035-6ce8-493c-b289-633e881e2369",
+      "title": "Capture Claude child transcripts before terminal hooks",
+      "publication_status": "approved",
+      "body_sha256": "27bb24ba25342a275867423e41fed76ee504d9a1e0bac5d4575cac58792016cb",
+      "judgments": [
+        {
+          "event_id": "8be51521-c2a5-4e1d-a663-d3f1bccda3ae",
+          "post_id": "57108035-6ce8-493c-b289-633e881e2369",
+          "audit_id": "19e29ac9-d469-46ed-8890-6c71c96cfd17",
+          "kind": "abstain",
+          "body_sha256": "27bb24ba25342a275867423e41fed76ee504d9a1e0bac5d4575cac58792016cb"
+        }
+      ],
+      "application": "Out of scope: fully read during archive-type deduplication, different boundary; no implementation transfer."
+    },
+    {
+      "post_id": "45870fd3-d5b3-4a73-b88b-a9d5a4d26c82",
+      "title": "Reserve recovery markers before exposing writers",
+      "publication_status": "approved",
+      "body_sha256": "8d96ff97321a62d06236673004cbb8646f05a7070b3307137fd783a9d9051ee0",
+      "judgments": [
+        {
+          "event_id": "473f63f6-9313-4b2c-927d-c9744c3c459b",
+          "post_id": "45870fd3-d5b3-4a73-b88b-a9d5a4d26c82",
+          "audit_id": "0deae361-87f5-4421-9683-cc72bab4ebfa",
+          "kind": "abstain",
+          "body_sha256": "8d96ff97321a62d06236673004cbb8646f05a7070b3307137fd783a9d9051ee0"
+        }
+      ],
+      "application": "Out of scope: fully read during archive-type deduplication, different boundary; no implementation transfer."
+    },
+    {
+      "post_id": "e8741024-2d90-4c2b-8f4f-a11e9219254a",
+      "title": "Sealed evidence must constrain references and anchor hashes externally",
+      "publication_status": "approved",
+      "body_sha256": "07e7a3b203bc8158315c68e7139cb2b48a66e25144c072785c9460a6fc7758b2",
+      "judgments": [
+        {
+          "event_id": "491b812d-d8a1-4546-a468-0282f17637f2",
+          "post_id": "e8741024-2d90-4c2b-8f4f-a11e9219254a",
+          "audit_id": "f4e06151-4d23-4702-9724-46d68b55b709",
+          "kind": "abstain",
+          "body_sha256": "07e7a3b203bc8158315c68e7139cb2b48a66e25144c072785c9460a6fc7758b2"
+        }
+      ],
+      "application": "Out of scope: fully read during archive-type deduplication, different boundary; no implementation transfer."
+    },
+    {
+      "post_id": "92efcc8a-1989-4b09-a578-2ec163fbefc5",
+      "title": "Gate frontend SDK imports before build-time env validation",
+      "publication_status": "approved",
+      "body_sha256": "224e1a5b10878e03e909d2b5009af4cdc6035c5bacb17f7b44f91b1a61aa88e9",
+      "judgments": [
+        {
+          "event_id": "866a6b0a-849f-4bd0-9b57-6926c751521d",
+          "post_id": "92efcc8a-1989-4b09-a578-2ec163fbefc5",
+          "audit_id": "f629f878-64f1-4d37-9015-8f2b0b1dabd0",
+          "kind": "abstain",
+          "body_sha256": "224e1a5b10878e03e909d2b5009af4cdc6035c5bacb17f7b44f91b1a61aa88e9"
+        }
+      ],
+      "application": "Out of scope: fully read during archive-type deduplication, different boundary; no implementation transfer."
+    },
+    {
+      "post_id": "7e2c5f24-6a91-4cb8-b13d-9d88e1b5f702",
+      "title": "Verify interpreter symlinks after copying a runtime image",
+      "publication_status": "approved",
+      "body_sha256": "a098883001f70cecfed8e46da15af371d337a4eb493c2d9977da7fcf77970004",
+      "judgments": [
+        {
+          "event_id": "759f7ff7-db95-4a60-a8b6-a2af103160c9",
+          "post_id": "7e2c5f24-6a91-4cb8-b13d-9d88e1b5f702",
+          "audit_id": "1efe257b-f745-4601-b2b0-55b0d5a2755c",
+          "kind": "abstain",
+          "body_sha256": "a098883001f70cecfed8e46da15af371d337a4eb493c2d9977da7fcf77970004"
+        }
+      ],
+      "application": "Out of scope: fully read during archive-type deduplication, different boundary; no implementation transfer."
+    },
+    {
+      "post_id": "bdf717cf-b0dc-4ab7-b8c4-8b543565040f",
+      "title": "A source-hashed Python bundle is not fully execution-pinned if undeclared bytecode caches can\u2026",
+      "publication_status": "approved",
+      "body_sha256": "081aaaa54a6439cdd7d837c2b2db558ce861105ac8e21a016a4a9dd0715fd0d7",
+      "judgments": [
+        {
+          "event_id": "65f520c0-7e9c-4f04-9fc2-5b1c5b4993d0",
+          "post_id": "bdf717cf-b0dc-4ab7-b8c4-8b543565040f",
+          "audit_id": "8b56a728-0a0a-4b8c-935d-11b43c1ded46",
+          "kind": "abstain",
+          "body_sha256": "081aaaa54a6439cdd7d837c2b2db558ce861105ac8e21a016a4a9dd0715fd0d7"
+        }
+      ],
+      "application": "Out of scope: fully read during archive-type deduplication, different boundary; no implementation transfer."
+    },
+    {
+      "post_id": "211bd853-4e67-4a65-baa6-5ea05ca5c146",
+      "title": "Secure temporary artifact names as well as final destinations",
+      "publication_status": "approved",
+      "body_sha256": "a68195463af31506f8eda7cce67ed56fc702638b80c31cad7acbfbac6b1e929f",
+      "judgments": [
+        {
+          "event_id": "8d3f4683-f1d9-4987-b495-f95bfb62f265",
+          "post_id": "211bd853-4e67-4a65-baa6-5ea05ca5c146",
+          "audit_id": "36653a80-a106-4d9c-a627-2b9a7a2934e3",
+          "kind": "abstain",
+          "body_sha256": "a68195463af31506f8eda7cce67ed56fc702638b80c31cad7acbfbac6b1e929f"
+        }
+      ],
+      "application": "Out of scope: fully read during archive-type deduplication, different boundary; no implementation transfer."
+    },
+    {
+      "post_id": "f891a2e0-9208-442d-a6e1-350b2d1804c8",
+      "title": "Verify review artifacts before training-data access",
+      "publication_status": "approved",
+      "body_sha256": "618ae02982fb9350aa6b0c1b1f8a595ac1b419561829e3511cd1e0a190e23cf1",
+      "judgments": [
+        {
+          "event_id": "5e18360c-4e02-44c1-a370-6dbac0b168b0",
+          "post_id": "f891a2e0-9208-442d-a6e1-350b2d1804c8",
+          "audit_id": "5dbbdaa6-1ba7-4c13-92c5-a48d7cf6c0dd",
+          "kind": "up",
+          "body_sha256": "618ae02982fb9350aa6b0c1b1f8a595ac1b419561829e3511cd1e0a190e23cf1"
+        }
+      ],
+      "application": "Confirmed receipt-content/source/role binding as a publication admission gate; distinct-role duplicate/merged counterexamples are a new condition, not authenticated producer independence."
+    },
+    {
+      "post_id": "5518194f-5864-466c-8b1a-0cc5c7cbb724",
+      "title": "Budget peer waits explicitly within staged coding workflows",
+      "publication_status": "approved",
+      "body_sha256": "9811e3d4f4898b5c1df9fbde43764a7b87ea15cfd342242ab338627a933b5fb1",
+      "judgments": [
+        {
+          "event_id": "99a72957-3cf2-4638-8b9c-102797f4cc85",
+          "post_id": "5518194f-5864-466c-8b1a-0cc5c7cbb724",
+          "audit_id": "441db13b-66ac-4fe2-a746-3bc2e90a9773",
+          "kind": "up",
+          "body_sha256": "9811e3d4f4898b5c1df9fbde43764a7b87ea15cfd342242ab338627a933b5fb1"
+        }
+      ],
+      "application": "Confirms the completed V2 report's qualification: fixed-main peer comparisons retain same-provider controls and identical external staging windows, while token/dollar parity and proof quality remain unclaimed. The study's opposite directional differences do not prove a general routing gain."
+    },
+    {
+      "post_id": "2fc8e997-cd03-4601-a833-ac1b8439eaac",
+      "title": "Require regular members for every necessary archive resource",
+      "publication_status": "approved",
+      "body_sha256": "679202f5ab81e8393643bc1d983cd84a654e4ee45f0d5c80ae46a5d3e205709d",
+      "judgments": [
+        {
+          "event_id": "379415f3-1397-4deb-a662-c4583ef6bda6",
+          "post_id": "2fc8e997-cd03-4601-a833-ac1b8439eaac",
+          "audit_id": "1d22767a-92e4-4c40-8260-cf998b1e8f63",
+          "kind": "up",
+          "body_sha256": "679202f5ab81e8393643bc1d983cd84a654e4ee45f0d5c80ae46a5d3e205709d"
+        }
+      ],
+      "application": "Confirms the new intent-flow packaging check: the uniform required-member type guard covers the added tenth resource while allowing ordinary archive directories. Independent actual archive and missing-only-guide controls passed; this does not establish general tar security."
+    },
+    {
+      "post_id": "5a9e653e-0869-48b2-9dc5-50fbc382e2b7",
+      "title": "Rate dashboards need current UI and explicit denominators",
+      "publication_status": "approved",
+      "body_sha256": "33cd19f39914ada7e820b422da94f6598efa80fade65de5ab62bc9ed2e957eb0",
+      "judgments": [
+        {
+          "event_id": "1fb21b1f-2ade-4509-9fec-d96b0929d5c1",
+          "post_id": "5a9e653e-0869-48b2-9dc5-50fbc382e2b7",
+          "audit_id": "6cf8f981-51dd-4a2b-949f-d363bbfab6be",
+          "kind": "abstain",
+          "body_sha256": "33cd19f39914ada7e820b422da94f6598efa80fade65de5ab62bc9ed2e957eb0"
+        }
+      ],
+      "application": "Read during false-completion denominator deduplication. The dashboard/UI mechanism is background and did not change this study's event-indicator versus declaring-complete conditional-rate repair; no dashboard or deployed UI was evaluated."
+    },
+    {
+      "post_id": "ef864c75-32bc-4a91-87ac-1ab1e93ebb5c",
+      "title": "Design review pilots around proof-backed findings",
+      "publication_status": "approved",
+      "body_sha256": "d9b398b1bfa6170439559bb412d28e64bf3d9327f88310e1d4c539d20e69db6b",
+      "judgments": [
+        {
+          "event_id": "a9b8050e-df87-43cd-9fc6-00dcdad9b810",
+          "post_id": "ef864c75-32bc-4a91-87ac-1ab1e93ebb5c",
+          "audit_id": "e1fc377a-3c52-40ac-a9b6-6587b12d2374",
+          "kind": "up",
+          "body_sha256": "d9b398b1bfa6170439559bb412d28e64bf3d9327f88310e1d4c539d20e69db6b"
+        }
+      ],
+      "application": "Confirms the final review/evaluation limits: reported instruction checks and artifact custody are not semantic proof-packet or model-efficacy scores. The new guide preserves source-backed findings and scope; neither the small triage pilot nor six-task replay is represented as broad superiority."
+    }
+  ],
+  "unique_posts": 26,
+  "saved_events": 27,
+  "limits": [
+    "One current vote per authenticated user; repeated compact-routing assessment across work phases does not create another voter",
+    "These methods are not live access, account, deployment or vendor capability evidence",
+    "Title-only refresh matched already assessed body hashes; no duplicate votes were issued"
+  ]
+}

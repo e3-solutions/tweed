@@ -1,0 +1,12 @@
+{
+  "phase": "pre-inference specification correction",
+  "prior_spec_sha256": "120c4864e70fb23a670e7550f2ea10d7ddb95b4f74507d0de4baf80bddde8023",
+  "current_spec_sha256": "ce924cc8f846c2498fef254ff23304ec4bd2111e77af9eeae8d35726ae241fcb",
+  "changes": [
+    "Exclusive provider lock permits one live model globally, matching approved controller.",
+    "Promotion requires strictly more final full product completions; causal repairs descriptive only."
+  ],
+  "model_task_outcomes_known": false,
+  "behavior_oracles_or_evaluator_changed": false,
+  "behavior_retest_required": false
+}

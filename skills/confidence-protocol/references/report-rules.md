@@ -28,7 +28,13 @@ Use `confidence.py run` for deterministic checks. The runner records command arg
 
 Every `pass` evidence item must reference at least one captured run that exited with zero. Validation resolves each run ID and recomputes its log hash. A hash match proves that the stored output did not drift after capture. It does not prove that the chosen command was sufficient.
 
-The hash is not a security signature. Anyone who can replace both the log and its record can forge it. The protocol protects against accidental drift and unsupported self-reporting, not a malicious writer with full access to the evidence directory.
+The hashes are not security signatures. New captures also bind recorded execution
+metadata, source observations and the exclusion location to `capture_sha256`.
+Changing only the exit code, command or exclusion location breaks that binding;
+impossible timeout/log-limit statuses are refused. A writer who rewrites records
+and recomputes hashes can still forge claims without changing a log, and replacing
+both log and record can forge output. The protocol detects integrity drift relative
+to retained metadata, not a malicious writer controlling the evidence directory.
 
 For bugs, prefer two runs bound to the same obligation:
 

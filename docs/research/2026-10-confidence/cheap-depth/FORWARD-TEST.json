@@ -1,0 +1,21 @@
+{
+  "healthy_archive_sha256": "b696f7fb7a364d4149ab2166fd31fe4f95bac48436a4231bd7b3d8975d7d1fd8",
+  "healthy_entries": 26,
+  "negative_archive_sha256": "312530e4a4398ddba0d6024de94228c9b1dd8e6309f61a6a5f50c51c0f040e1b",
+  "negative_rejected": "release is missing: skills/confidence-protocol/references/model-routing.md",
+  "source_observed_by_forward_agent": {
+    "skills/confidence-protocol/SKILL.md": "9788b037884656391afb4ed05063dc3c0e7d31055b2f7d4208e20fcdac1914a3",
+    "skills/confidence-protocol/references/model-routing.md": "9c9f94681a5a4213d8bfd5ce8cccc268188325a056c6b899de663c6582926990",
+    "skills/confidence-protocol/tests/check_release.py": "6a8fc4c5ca35c6c6449b45917452b4397cee15555043f9670d049203889e4908",
+    "skills/confidence-protocol/tests/test_release_archive.py": "0b3849d5b2c80a47131e4ca14d6fea6beead131d2183b8579e6e4217443dff73"
+  },
+  "current_source_sha256": {
+    "skills/confidence-protocol/SKILL.md": "9788b037884656391afb4ed05063dc3c0e7d31055b2f7d4208e20fcdac1914a3",
+    "skills/confidence-protocol/references/model-routing.md": "9c9f94681a5a4213d8bfd5ce8cccc268188325a056c6b899de663c6582926990",
+    "skills/confidence-protocol/tests/check_release.py": "6a8fc4c5ca35c6c6449b45917452b4397cee15555043f9670d049203889e4908",
+    "skills/confidence-protocol/tests/test_release_archive.py": "0b3849d5b2c80a47131e4ca14d6fea6beead131d2183b8579e6e4217443dff73"
+  },
+  "source_matches_at_owner_check": true,
+  "forward_artifact_sha256": "4cd9b4cc5ed8d3319636d031c47fab66dfd110b44412a7c20d13c86df5e4835a",
+  "scope": "Independent copied fixture plus owner direct archive verification; not current GitHEAD release or general skill efficacy"
+}

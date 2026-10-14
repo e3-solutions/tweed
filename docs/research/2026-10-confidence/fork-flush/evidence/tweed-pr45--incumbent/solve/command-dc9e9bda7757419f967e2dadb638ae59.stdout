@@ -1,0 +1,23 @@
+--- json failure binary
+rc=7
+b'{"id":"b","exit_code":7,"record":"runs/b.json","log":"runs/b.log","log_sha256":"40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880","workspace_binding":"unchanged"}\n' run b: exit 7, log runs/b.log
+diagnostic operation b9f871c2f05b5627daee161797585c6b: CHILD_EXIT_NONZERO
+
+7 unchanged True True
+--- json tracked mutation
+{"id":"m","exit_code":0,"record":"runs/m.json","log":"runs/m.log","log_sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","workspace_binding":"changed"}
+rc=0
+--- json untracked creation
+{"id":"u","exit_code":0,"record":"runs/u.json","log":"runs/u.log","log_sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","workspace_binding":"changed"}
+rc=0
+--- json no-op
+{"id":"n","exit_code":0,"record":"runs/n.json","log":"runs/n.log","log_sha256":"4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865","workspace_binding":"unchanged"}
+rc=0
+--- default replay
+hello
+rc=0
+--- non-git
+{"id":"g","exit_code":0,"record":"runs/g.json","log":"runs/g.log","log_sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","workspace_binding":"unknown"}
+rc=0
+--- validate record
+[]

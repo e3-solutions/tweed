@@ -1,0 +1,1413 @@
+{
+  "review_id": "v08-small-anonymous-native-codex",
+  "created_utc": "2026-10-13T20:21:07.392580+00:00",
+  "scope": "Only review-packets C01-C08 production snapshots/requirements/patches and I01-I04 interviews. Qualitative independent review; no policy ranking.",
+  "reviewer": {
+    "kind": "native Codex reviewer",
+    "actual_model": "unobserved",
+    "nominal_anonymity": "Candidate labels only; no mapping, policy, grades, study results, previous juries or conversation outcomes read. This is an instruction boundary, not OS-enforced confinement."
+  },
+  "limitations": [
+    "Qualitative evidence, not sole-authority correctness or benchmark claim.",
+    "No production files changed; no provider workflows, hosted model calls, external services, new benchmark, publication or large test suite.",
+    "Packet snapshots omit dependency/test fixtures; visible unittest commands not run because reading outside the packet is disallowed.",
+    "All production files parsed as Python; narrow AST-extracted function checks use stdlib-only namespaces and stubs, not integration execution.",
+    "Source locations and behavior findings are bounded to packet content. No definite defect found does not certify absence of defects.",
+    "Scripted interview ledger is incomplete intent and keyword matching can miss valid phrasing; asked questions, received answers and readiness assessed separately."
+  ],
+  "checks": {
+    "syntax": {
+      "files": 16,
+      "result": "all parsed"
+    },
+    "budget_parse": {
+      "C01": "numeric off rejected; explicit disable None; 12 overrides env off; omitted resume None",
+      "C05": "numeric off rejected; explicit disable None; 12 overrides env off; omitted resume None",
+      "C06": "numeric off rejected; explicit disable None; 12 overrides env off; omitted resume None",
+      "C08": "numeric off accepted as None; explicit disable None; 12 overrides env off; omitted resume None"
+    },
+    "routing_functions": {
+      "C02": "driver: child ignored; legacy active returned; legacy other ignored; coordinator stale returned and run loop raises by source",
+      "C03": "child ignored; legacy active accepted; legacy other ignored; coordinator stale ignored",
+      "C04": "child ignored; legacy active accepted; legacy other ignored; coordinator stale raises",
+      "C07": "child ignored; legacy active accepted; legacy other ignored; coordinator stale raises"
+    }
+  },
+  "production_candidates": [
+    {
+      "candidate": "C01",
+      "task": "T2",
+      "confirmed_missed_requirements": [],
+      "observations": [
+        {
+          "observation": "Numeric CLI input has a strict positive finite validator; optional runtime budget maps None/off to disabled; new checkpoint serializes disabled as null.",
+          "evidence": [
+            {
+              "path": "review-packets/C01/production/bonaparte",
+              "line_start": 777,
+              "line_end": 817
+            },
+            {
+              "path": "review-packets/C01/production/bonaparte",
+              "line_start": 1347,
+              "line_end": 1349
+            },
+            {
+              "path": "review-packets/C01/production/bonaparte_checkpoint.py",
+              "line_start": 219,
+              "line_end": 233
+            }
+          ]
+        },
+        {
+          "observation": "Disabled run_phase builds no deadline, waits with timeout None, and bypasses steering on TimeoutError. Resume uses a distinct off marker for explicit disable and preserves persisted value when override is omitted.",
+          "evidence": [
+            {
+              "path": "review-packets/C01/production/bonaparte",
+              "line_start": 1065,
+              "line_end": 1109
+            },
+            {
+              "path": "review-packets/C01/production/bonaparte",
+              "line_start": 1505,
+              "line_end": 1511
+            },
+            {
+              "path": "review-packets/C01/production/bonaparte",
+              "line_start": 1539,
+              "line_end": 1563
+            },
+            {
+              "path": "review-packets/C01/production/bonaparte",
+              "line_start": 1749,
+              "line_end": 1758
+            }
+          ]
+        }
+      ],
+      "complexity": {
+        "observation": "The strict/optional/default resolvers and resume marker add several small adapters, but the distinctions serve numeric-only CLI validation and omitted-versus-disabled resume behavior. No clearly unnecessary machinery identified.",
+        "evidence": [
+          {
+            "path": "review-packets/C01/production/bonaparte",
+            "line_start": 777,
+            "line_end": 817
+          }
+        ]
+      }
+    },
+    {
+      "candidate": "C02",
+      "task": "T1",
+      "confirmed_missed_requirements": [],
+      "observations": [
+        {
+          "observation": "Driver ownership filter suppresses a child thread terminal and a legacy nonactive terminal before the run loop; active legacy terminal remains accepted. Agent receipt capture also checks turn identity and ownership while progress is still fed.",
+          "evidence": [
+            {
+              "path": "review-packets/C02/production/bonaparte_native.py",
+              "line_start": 100,
+              "line_end": 114
+            },
+            {
+              "path": "review-packets/C02/production/bonaparte_native.py",
+              "line_start": 301,
+              "line_end": 330
+            }
+          ]
+        },
+        {
+          "observation": "Final receipt fallback and finally-based driver cleanup remain present.",
+          "evidence": [
+            {
+              "path": "review-packets/C02/production/bonaparte",
+              "line_start": 666,
+              "line_end": 692
+            }
+          ]
+        }
+      ],
+      "interpretation_risks": [
+        {
+          "observation": "A completion on the coordinator thread with a stale turn ID is still returned and causes the run loop to raise. This preserves the prepatch wrong-turn guard, but the broad phrase only active thread/turn may establish outcome could instead require ignoring stale coordinator turns. Not classified as a confirmed miss without resolving that interpretation.",
+          "evidence": [
+            {
+              "path": "review-packets/C02/production/bonaparte_native.py",
+              "line_start": 108,
+              "line_end": 114
+            },
+            {
+              "path": "review-packets/C02/production/bonaparte",
+              "line_start": 650,
+              "line_end": 654
+            }
+          ]
+        }
+      ],
+      "complexity": {
+        "observation": "One ownership helper reused for terminal and receipt selection; no substantial unrelated complexity.",
+        "evidence": [
+          {
+            "path": "review-packets/C02/production/bonaparte_native.py",
+            "line_start": 100,
+            "line_end": 114
+          },
+          {
+            "path": "review-packets/C02/production/bonaparte_native.py",
+            "line_start": 301,
+            "line_end": 330
+          }
+        ]
+      }
+    },
+    {
+      "candidate": "C03",
+      "task": "T1",
+      "confirmed_missed_requirements": [],
+      "observations": [
+        {
+          "observation": "Both event-loop paths accept only the active turn and reject a conflicting thread identity from params or completed_turn. Legacy active-turn completion is accepted; stale coordinator completion is ignored.",
+          "evidence": [
+            {
+              "path": "review-packets/C03/production/bonaparte",
+              "line_start": 412,
+              "line_end": 428
+            },
+            {
+              "path": "review-packets/C03/production/bonaparte",
+              "line_start": 630,
+              "line_end": 635
+            },
+            {
+              "path": "review-packets/C03/production/bonaparte",
+              "line_start": 667,
+              "line_end": 670
+            }
+          ]
+        },
+        {
+          "observation": "Existing receipt capture remains scoped to exact thread and turn; final receipt fallback and driver cleanup remain intact.",
+          "evidence": [
+            {
+              "path": "review-packets/C03/production/bonaparte_native.py",
+              "line_start": 284,
+              "line_end": 309
+            },
+            {
+              "path": "review-packets/C03/production/bonaparte",
+              "line_start": 688,
+              "line_end": 710
+            }
+          ]
+        }
+      ],
+      "complexity": {
+        "observation": "Single boolean helper; examining both possible thread containers is conservative and inexpensive. No clearly unnecessary expansion identified.",
+        "evidence": [
+          {
+            "path": "review-packets/C03/production/bonaparte",
+            "line_start": 412,
+            "line_end": 428
+          }
+        ]
+      }
+    },
+    {
+      "candidate": "C04",
+      "task": "T1",
+      "confirmed_missed_requirements": [],
+      "observations": [
+        {
+          "observation": "Filters child terminals in both polling paths; accepts active legacy completion with no thread identity; an additional terminal-is-None guard prevents later matching terminals replacing an already selected terminal while waiting for steer acknowledgement.",
+          "evidence": [
+            {
+              "path": "review-packets/C04/production/bonaparte",
+              "line_start": 412,
+              "line_end": 433
+            },
+            {
+              "path": "review-packets/C04/production/bonaparte",
+              "line_start": 635,
+              "line_end": 640
+            },
+            {
+              "path": "review-packets/C04/production/bonaparte",
+              "line_start": 672,
+              "line_end": 677
+            }
+          ]
+        },
+        {
+          "observation": "Scoped receipt capture, final receipt fallback and finally cleanup remain present.",
+          "evidence": [
+            {
+              "path": "review-packets/C04/production/bonaparte_native.py",
+              "line_start": 284,
+              "line_end": 309
+            },
+            {
+              "path": "review-packets/C04/production/bonaparte",
+              "line_start": 695,
+              "line_end": 716
+            }
+          ]
+        }
+      ],
+      "interpretation_risks": [
+        {
+          "observation": "Stale coordinator turn IDs raise rather than being ignored. This is the prepatch guard, with the same unresolved broad-requirement interpretation as C02. If params.threadId and completed_turn.threadId conflict, params takes precedence; the packet does not establish that such contradictory events are supported.",
+          "evidence": [
+            {
+              "path": "review-packets/C04/production/bonaparte",
+              "line_start": 423,
+              "line_end": 433
+            }
+          ]
+        }
+      ],
+      "complexity": {
+        "observation": "A small helper plus a terminal replacement guard is proportionate; no clearly unnecessary machinery identified.",
+        "evidence": [
+          {
+            "path": "review-packets/C04/production/bonaparte",
+            "line_start": 412,
+            "line_end": 433
+          },
+          {
+            "path": "review-packets/C04/production/bonaparte",
+            "line_start": 672,
+            "line_end": 677
+          }
+        ]
+      }
+    },
+    {
+      "candidate": "C05",
+      "task": "T2",
+      "confirmed_missed_requirements": [],
+      "observations": [
+        {
+          "observation": "Uses an identity sentinel for explicit resume disable, converts it to None for checkpoint persistence, and keeps omission separate. Disabled runtime has no deadline and guards steering; CLI numeric off is rejected.",
+          "evidence": [
+            {
+              "path": "review-packets/C05/production/bonaparte",
+              "line_start": 784,
+              "line_end": 819
+            },
+            {
+              "path": "review-packets/C05/production/bonaparte",
+              "line_start": 1065,
+              "line_end": 1100
+            },
+            {
+              "path": "review-packets/C05/production/bonaparte",
+              "line_start": 1504,
+              "line_end": 1510
+            },
+            {
+              "path": "review-packets/C05/production/bonaparte",
+              "line_start": 1538,
+              "line_end": 1562
+            }
+          ]
+        },
+        {
+          "observation": "Checkpoint validator permits null; new-question checkpoint passes the optional resolver. CLI mutually exclusive group separates numeric and disable flags.",
+          "evidence": [
+            {
+              "path": "review-packets/C05/production/bonaparte_checkpoint.py",
+              "line_start": 219,
+              "line_end": 233
+            },
+            {
+              "path": "review-packets/C05/production/bonaparte",
+              "line_start": 1346,
+              "line_end": 1348
+            },
+            {
+              "path": "review-packets/C05/production/bonaparte",
+              "line_start": 1726,
+              "line_end": 1759
+            }
+          ]
+        }
+      ],
+      "complexity": {
+        "observation": "Custom sentinel class is more ceremony than a bare object but its repr aids debugging; repeated normalization around resume is local and justified by retaining omitted/disabled distinction. No material unnecessary complexity found.",
+        "evidence": [
+          {
+            "path": "review-packets/C05/production/bonaparte",
+            "line_start": 59,
+            "line_end": 67
+          },
+          {
+            "path": "review-packets/C05/production/bonaparte",
+            "line_start": 1504,
+            "line_end": 1510
+          },
+          {
+            "path": "review-packets/C05/production/bonaparte",
+            "line_start": 1538,
+            "line_end": 1541
+          }
+        ]
+      }
+    },
+    {
+      "candidate": "C06",
+      "task": "T2",
+      "confirmed_missed_requirements": [],
+      "observations": [
+        {
+          "observation": "Disabled runtime waits without deadline/steering. Resume normalizes the sentinel to null but separately records whether an override was supplied, so numeric override and disabled override both persist.",
+          "evidence": [
+            {
+              "path": "review-packets/C06/production/bonaparte",
+              "line_start": 1065,
+              "line_end": 1085
+            },
+            {
+              "path": "review-packets/C06/production/bonaparte",
+              "line_start": 1510,
+              "line_end": 1516
+            },
+            {
+              "path": "review-packets/C06/production/bonaparte",
+              "line_start": 1544,
+              "line_end": 1547
+            }
+          ]
+        },
+        {
+          "observation": "CLI uses manual mutual-exclusion validation and a budget parsing helper; numeric off is rejected, numeric CLI overrides environment off, omission on resume preserves saved choice.",
+          "evidence": [
+            {
+              "path": "review-packets/C06/production/bonaparte",
+              "line_start": 1741,
+              "line_end": 1767
+            },
+            {
+              "path": "review-packets/C06/production/bonaparte",
+              "line_start": 1813,
+              "line_end": 1820
+            },
+            {
+              "path": "review-packets/C06/production/bonaparte_checkpoint.py",
+              "line_start": 219,
+              "line_end": 233
+            }
+          ]
+        }
+      ],
+      "complexity": {
+        "observation": "Custom sentinel and explicit override boolean encode the necessary third state. Manual conflict validation duplicates an argparse capability but is a minor local choice, not material overengineering.",
+        "evidence": [
+          {
+            "path": "review-packets/C06/production/bonaparte",
+            "line_start": 772,
+            "line_end": 802
+          },
+          {
+            "path": "review-packets/C06/production/bonaparte",
+            "line_start": 1510,
+            "line_end": 1516
+          },
+          {
+            "path": "review-packets/C06/production/bonaparte",
+            "line_start": 1754,
+            "line_end": 1765
+          }
+        ]
+      }
+    },
+    {
+      "candidate": "C07",
+      "task": "T1",
+      "confirmed_missed_requirements": [],
+      "observations": [
+        {
+          "observation": "Both event-loop paths filter child thread completion and accept only matching active-turn legacy completion. Existing receipt selection and cleanup are preserved.",
+          "evidence": [
+            {
+              "path": "review-packets/C07/production/bonaparte",
+              "line_start": 412,
+              "line_end": 431
+            },
+            {
+              "path": "review-packets/C07/production/bonaparte",
+              "line_start": 633,
+              "line_end": 639
+            },
+            {
+              "path": "review-packets/C07/production/bonaparte",
+              "line_start": 671,
+              "line_end": 677
+            },
+            {
+              "path": "review-packets/C07/production/bonaparte_native.py",
+              "line_start": 284,
+              "line_end": 309
+            },
+            {
+              "path": "review-packets/C07/production/bonaparte",
+              "line_start": 695,
+              "line_end": 716
+            }
+          ]
+        }
+      ],
+      "interpretation_risks": [
+        {
+          "observation": "Stale coordinator turn IDs retain the prepatch RuntimeError behavior. Helper reads thread identity only from params; nested-only threadId attribution is not established by the packet requirements, so this is not counted as a confirmed defect.",
+          "evidence": [
+            {
+              "path": "review-packets/C07/production/bonaparte",
+              "line_start": 423,
+              "line_end": 431
+            }
+          ]
+        }
+      ],
+      "complexity": {
+        "observation": "One dict-or-None helper reused across both paths; no clearly unnecessary machinery identified.",
+        "evidence": [
+          {
+            "path": "review-packets/C07/production/bonaparte",
+            "line_start": 412,
+            "line_end": 431
+          }
+        ]
+      }
+    },
+    {
+      "candidate": "C08",
+      "task": "T2",
+      "confirmed_missed_requirements": [
+        {
+          "id": "C08-numeric-off",
+          "severity": "medium",
+          "requirement": "--soft-phase-budget-seconds remains restricted to positive finite numbers; invalid input is rejected before provider invocation.",
+          "finding": "The general resolver accepts string off as disabled, and parse sends the numeric CLI flag through that resolver. --soft-phase-budget-seconds off scope fixture returns a disabled None budget instead of rejecting invalid numeric input. On resume the same None is interpreted as no override, so it may silently preserve a positive saved budget.",
+          "evidence": [
+            {
+              "path": "review-packets/C08/production/bonaparte",
+              "line_start": 777,
+              "line_end": 780
+            },
+            {
+              "path": "review-packets/C08/production/bonaparte",
+              "line_start": 1789,
+              "line_end": 1793
+            },
+            {
+              "path": "review-packets/C08/production/bonaparte",
+              "line_start": 1500,
+              "line_end": 1505
+            },
+            {
+              "path": "review-packets/C08/production/bonaparte",
+              "line_start": 1533,
+              "line_end": 1536
+            },
+            {
+              "path": "review-packets/C08/requirements.json",
+              "json_pointer": "/requirements"
+            }
+          ],
+          "verification": "AST-extracted production parse and resolver returned None for --soft-phase-budget-seconds off; no provider/import execution."
+        }
+      ],
+      "observations": [
+        {
+          "observation": "Correct disable flag uses a resume marker; runtime None disables deadline/steering and checkpoint validator accepts null. Explicit positive numeric CLI overrides environment off.",
+          "evidence": [
+            {
+              "path": "review-packets/C08/production/bonaparte",
+              "line_start": 1058,
+              "line_end": 1080
+            },
+            {
+              "path": "review-packets/C08/production/bonaparte",
+              "line_start": 1783,
+              "line_end": 1793
+            },
+            {
+              "path": "review-packets/C08/production/bonaparte_checkpoint.py",
+              "line_start": 219,
+              "line_end": 233
+            }
+          ]
+        }
+      ],
+      "interpretation_risks": [
+        {
+          "observation": "Omitted resume option still evaluates environment default before discarding it. An invalid environment value therefore prevents resuming even if the saved budget is valid; whether unused environment inputs must be rejected is not explicit enough to count as a second confirmed miss.",
+          "evidence": [
+            {
+              "path": "review-packets/C08/production/bonaparte",
+              "line_start": 1791,
+              "line_end": 1793
+            }
+          ]
+        }
+      ],
+      "complexity": {
+        "observation": "Reusing one permissive resolver for runtime and numeric-only CLI conflates different contracts. Duplicate prevalidation/normalization on resume is minor; the main problem is insufficient separation of input semantics.",
+        "evidence": [
+          {
+            "path": "review-packets/C08/production/bonaparte",
+            "line_start": 777,
+            "line_end": 795
+          },
+          {
+            "path": "review-packets/C08/production/bonaparte",
+            "line_start": 1503,
+            "line_end": 1505
+          },
+          {
+            "path": "review-packets/C08/production/bonaparte",
+            "line_start": 1533,
+            "line_end": 1536
+          }
+        ]
+      }
+    }
+  ],
+  "interview_candidates": [
+    {
+      "candidate": "I01",
+      "question_rounds": [
+        {
+          "history_index": 0,
+          "question_count": 5,
+          "ready": false,
+          "evidence": {
+            "path": "review-packets/I01/interview.json",
+            "json_pointer": "/actual_history/0/assistant"
+          }
+        },
+        {
+          "history_index": 2,
+          "question_count": 2,
+          "ready": false,
+          "evidence": {
+            "path": "review-packets/I01/interview.json",
+            "json_pointer": "/actual_history/2/assistant"
+          }
+        },
+        {
+          "history_index": 4,
+          "question_count": 2,
+          "ready": false,
+          "evidence": {
+            "path": "review-packets/I01/interview.json",
+            "json_pointer": "/actual_history/4/assistant"
+          }
+        }
+      ],
+      "actual_answers": [
+        {
+          "history_index": 1,
+          "received": [
+            "Accept a legacy completion without threadId only when its turnId is the active coordinator turn.",
+            "Keep child progress visible, but it must never replace the coordinator final receipt.",
+            "Only the active coordinator thread and turn can establish its completion."
+          ],
+          "evidence": {
+            "path": "review-packets/I01/interview.json",
+            "json_pointer": "/actual_history/1/user"
+          }
+        },
+        {
+          "history_index": 3,
+          "received": [
+            "Only the active coordinator thread and turn can establish its completion."
+          ],
+          "evidence": {
+            "path": "review-packets/I01/interview.json",
+            "json_pointer": "/actual_history/3/user"
+          }
+        },
+        {
+          "history_index": 5,
+          "received": [
+            "No new consequential decision was recognized. Use known source facts and ask the missing behavior choice."
+          ],
+          "evidence": {
+            "path": "review-packets/I01/interview.json",
+            "json_pointer": "/actual_history/5/user"
+          }
+        }
+      ],
+      "known_facts_respected": true,
+      "asked": {
+        "observation": "Asked ownership, no-threadId legacy handling and child visibility in round 1, plus affected UI/API/alerts and unknown-event disposition.",
+        "evidence": [
+          {
+            "path": "review-packets/I01/interview.json",
+            "json_pointer": "/actual_history/0/assistant/questions"
+          }
+        ]
+      },
+      "settled": {
+        "observation": "All three scripted routing decisions were actually received and accurately recorded; later ownership repetition added no new decision.",
+        "evidence": [
+          {
+            "path": "review-packets/I01/interview.json",
+            "json_pointer": "/actual_history/1/user"
+          },
+          {
+            "path": "review-packets/I01/interview.json",
+            "json_pointer": "/actual_history/2/assistant/settled"
+          },
+          {
+            "path": "review-packets/I01/interview.json",
+            "json_pointer": "/actual_history/3/user"
+          }
+        ]
+      },
+      "safely_unresolved": {
+        "observation": "Affected surfaces and logging/display of unrelated events received no direct answer; keeping those unresolved is honest. Their treatment could be deferred by preserving existing behavior if source inspection confirms the routing fix needs no broader changes.",
+        "evidence": [
+          {
+            "path": "review-packets/I01/interview.json",
+            "json_pointer": "/actual_history/4/assistant/missing"
+          }
+        ]
+      },
+      "redundancy": {
+        "observation": "The two unanswered scope/disposition questions recur. They do not re-ask settled legacy, ownership or progress rules, but expand the intake beyond the minimum routing rule and continue blocking readiness on potentially optional choices.",
+        "evidence": [
+          {
+            "path": "review-packets/I01/interview.json",
+            "json_pointer": "/actual_history/2/assistant/questions"
+          },
+          {
+            "path": "review-packets/I01/interview.json",
+            "json_pointer": "/actual_history/4/assistant/questions"
+          }
+        ]
+      },
+      "readiness": {
+        "observation": "Reports ready=false in every round. Core routing choices are settled; full-scope readiness cannot be decided from these source facts alone. No false ready claim.",
+        "evidence": [
+          {
+            "path": "review-packets/I01/interview.json",
+            "json_pointer": "/actual_history/4/assistant/ready"
+          }
+        ]
+      },
+      "short_quotes": [
+        {
+          "quote": "Older notifications sometimes have no threadId.",
+          "evidence": {
+            "path": "review-packets/I01/interview.json",
+            "json_pointer": "/actual_history/0/assistant/questions/1"
+          }
+        },
+        {
+          "quote": "Keep child progress visible, but it must never replace the coordinator final receipt.",
+          "evidence": {
+            "path": "review-packets/I01/interview.json",
+            "json_pointer": "/actual_history/1/user/1"
+          }
+        },
+        {
+          "quote": "Which places must apply the coordinator-only completion rule:",
+          "evidence": {
+            "path": "review-packets/I01/interview.json",
+            "json_pointer": "/actual_history/4/assistant/questions/0"
+          }
+        }
+      ]
+    },
+    {
+      "candidate": "I02",
+      "question_rounds": [
+        {
+          "history_index": 0,
+          "question_count": 6,
+          "ready": false,
+          "evidence": {
+            "path": "review-packets/I02/interview.json",
+            "json_pointer": "/actual_history/0/assistant"
+          }
+        },
+        {
+          "history_index": 2,
+          "question_count": 6,
+          "ready": false,
+          "evidence": {
+            "path": "review-packets/I02/interview.json",
+            "json_pointer": "/actual_history/2/assistant"
+          }
+        },
+        {
+          "history_index": 4,
+          "question_count": 6,
+          "ready": false,
+          "evidence": {
+            "path": "review-packets/I02/interview.json",
+            "json_pointer": "/actual_history/4/assistant"
+          }
+        }
+      ],
+      "actual_answers": [
+        {
+          "history_index": 1,
+          "received": [
+            "When the resume option is omitted, preserve the saved budget choice, including disabled.",
+            "An environment setting must not silently replace an explicit choice stored in a checkpoint."
+          ],
+          "evidence": {
+            "path": "review-packets/I02/interview.json",
+            "json_pointer": "/actual_history/1/user"
+          }
+        },
+        {
+          "history_index": 3,
+          "received": [
+            "An environment setting must not silently replace an explicit choice stored in a checkpoint."
+          ],
+          "evidence": {
+            "path": "review-packets/I02/interview.json",
+            "json_pointer": "/actual_history/3/user"
+          }
+        },
+        {
+          "history_index": 5,
+          "received": [
+            "An environment setting must not silently replace an explicit choice stored in a checkpoint."
+          ],
+          "evidence": {
+            "path": "review-packets/I02/interview.json",
+            "json_pointer": "/actual_history/5/user"
+          }
+        }
+      ],
+      "known_facts_respected": true,
+      "asked": {
+        "observation": "Asked source precedence, disable representation, persistence, invalid inputs, meaning of reliable resume and startup display. Later questions directly ask whether explicit CLI on resume replaces a saved disabled choice; valid semantic wording even though numeric-over-saved scripted answer was never received.",
+        "evidence": [
+          {
+            "path": "review-packets/I02/interview.json",
+            "json_pointer": "/actual_history/0/assistant/questions"
+          },
+          {
+            "path": "review-packets/I02/interview.json",
+            "json_pointer": "/actual_history/2/assistant/questions/0"
+          },
+          {
+            "path": "review-packets/I02/interview.json",
+            "json_pointer": "/actual_history/4/assistant/questions/0"
+          }
+        ]
+      },
+      "settled": {
+        "observation": "Only omitted-preserves and no-silent-environment-replacement were received. No explicit numeric override answer appears in actual user messages.",
+        "evidence": [
+          {
+            "path": "review-packets/I02/interview.json",
+            "json_pointer": "/actual_history/1/user"
+          },
+          {
+            "path": "review-packets/I02/interview.json",
+            "json_pointer": "/actual_history/3/user"
+          },
+          {
+            "path": "review-packets/I02/interview.json",
+            "json_pointer": "/actual_history/5/user"
+          }
+        ]
+      },
+      "safely_unresolved": {
+        "observation": "Explicit CLI precedence, off spelling/form, invalid-value policy, missing/default checkpoint behavior and fresh environment default remain unanswered. Distinguishes no silent replacement from ignore/warn/refuse policy without inventing an answer.",
+        "evidence": [
+          {
+            "path": "review-packets/I02/interview.json",
+            "json_pointer": "/actual_history/4/assistant/missing"
+          }
+        ]
+      },
+      "redundancy": {
+        "observation": "Rounds 2 and 3 repeat six largely unchanged unanswered questions; this is repetitive intake, not redundancy with actually settled answers. Startup display and wider reliable-resume scope are optional expansion candidates and should not automatically block a minimal fix.",
+        "evidence": [
+          {
+            "path": "review-packets/I02/interview.json",
+            "json_pointer": "/actual_history/2/assistant/questions"
+          },
+          {
+            "path": "review-packets/I02/interview.json",
+            "json_pointer": "/actual_history/4/assistant/questions"
+          }
+        ]
+      },
+      "readiness": {
+        "observation": "ready=false is defensible: important behavior choices have no received answers. Do not equate the simulator failing to supply numeric-over-saved with the assistant failing to ask that choice.",
+        "evidence": [
+          {
+            "path": "review-packets/I02/interview.json",
+            "json_pointer": "/actual_history/4/assistant/ready"
+          }
+        ]
+      },
+      "short_quotes": [
+        {
+          "quote": "should that CLI value replace the budget saved in the checkpoint, including turning a disabled budget back on",
+          "evidence": {
+            "path": "review-packets/I02/interview.json",
+            "json_pointer": "/actual_history/2/assistant/questions/0"
+          }
+        },
+        {
+          "quote": "When the resume option is omitted, preserve the saved budget choice, including disabled.",
+          "evidence": {
+            "path": "review-packets/I02/interview.json",
+            "json_pointer": "/actual_history/1/user/0"
+          }
+        },
+        {
+          "quote": "Whether a budget option passed on resume replaces the budget saved in the checkpoint.",
+          "evidence": {
+            "path": "review-packets/I02/interview.json",
+            "json_pointer": "/actual_history/4/assistant/missing/0"
+          }
+        }
+      ]
+    },
+    {
+      "candidate": "I03",
+      "question_rounds": [
+        {
+          "history_index": 0,
+          "question_count": 4,
+          "ready": false,
+          "evidence": {
+            "path": "review-packets/I03/interview.json",
+            "json_pointer": "/actual_history/0/assistant"
+          }
+        },
+        {
+          "history_index": 2,
+          "question_count": 1,
+          "ready": false,
+          "evidence": {
+            "path": "review-packets/I03/interview.json",
+            "json_pointer": "/actual_history/2/assistant"
+          }
+        },
+        {
+          "history_index": 4,
+          "question_count": 1,
+          "ready": false,
+          "evidence": {
+            "path": "review-packets/I03/interview.json",
+            "json_pointer": "/actual_history/4/assistant"
+          }
+        }
+      ],
+      "actual_answers": [
+        {
+          "history_index": 1,
+          "received": [
+            "Accept a legacy completion without threadId only when its turnId is the active coordinator turn.",
+            "Keep child progress visible, but it must never replace the coordinator final receipt.",
+            "Only the active coordinator thread and turn can establish its completion."
+          ],
+          "evidence": {
+            "path": "review-packets/I03/interview.json",
+            "json_pointer": "/actual_history/1/user"
+          }
+        },
+        {
+          "history_index": 3,
+          "received": [
+            "Keep child progress visible, but it must never replace the coordinator final receipt.",
+            "Only the active coordinator thread and turn can establish its completion."
+          ],
+          "evidence": {
+            "path": "review-packets/I03/interview.json",
+            "json_pointer": "/actual_history/3/user"
+          }
+        },
+        {
+          "history_index": 5,
+          "received": [
+            "Keep child progress visible, but it must never replace the coordinator final receipt.",
+            "Only the active coordinator thread and turn can establish its completion."
+          ],
+          "evidence": {
+            "path": "review-packets/I03/interview.json",
+            "json_pointer": "/actual_history/5/user"
+          }
+        }
+      ],
+      "known_facts_respected": true,
+      "asked": {
+        "observation": "Round 1 asks coordinator completion versus waiting for children, legacy attribution, child visibility, and active-turn matching. Later rounds focus on the child-wait decision.",
+        "evidence": [
+          {
+            "path": "review-packets/I03/interview.json",
+            "json_pointer": "/actual_history/0/assistant/questions"
+          },
+          {
+            "path": "review-packets/I03/interview.json",
+            "json_pointer": "/actual_history/2/assistant/questions"
+          },
+          {
+            "path": "review-packets/I03/interview.json",
+            "json_pointer": "/actual_history/4/assistant/questions"
+          }
+        ]
+      },
+      "settled": {
+        "observation": "Legacy matching, progress visibility and active ownership were received, recognized, and not re-asked as unanswered.",
+        "evidence": [
+          {
+            "path": "review-packets/I03/interview.json",
+            "json_pointer": "/actual_history/1/user"
+          },
+          {
+            "path": "review-packets/I03/interview.json",
+            "json_pointer": "/actual_history/2/assistant/settled"
+          }
+        ]
+      },
+      "safely_unresolved": {
+        "observation": "User replies identify which event owns completion but never explicitly decide whether completion waits for outstanding children. The transcript correctly separates owner identity from a lifecycle barrier. The scripted ledger contains no direct answer to that barrier.",
+        "evidence": [
+          {
+            "path": "review-packets/I03/interview.json",
+            "json_pointer": "/actual_history/3/user"
+          },
+          {
+            "path": "review-packets/I03/interview.json",
+            "json_pointer": "/actual_history/4/assistant/missing"
+          },
+          {
+            "path": "review-packets/I03/interview.json",
+            "json_pointer": "/scripted_decisions"
+          }
+        ]
+      },
+      "redundancy": {
+        "observation": "The single waiting-for-children question is repeated after nonresponsive scripted answers. It remains unanswered, so repetition is not re-asking an already settled choice. A barrier may be unnecessary scope expansion if existing lifecycle is to be preserved; the packet supplies no baseline lifecycle fact.",
+        "evidence": [
+          {
+            "path": "review-packets/I03/interview.json",
+            "json_pointer": "/actual_history/2/assistant/questions/0"
+          },
+          {
+            "path": "review-packets/I03/interview.json",
+            "json_pointer": "/actual_history/4/assistant/questions/0"
+          }
+        ]
+      },
+      "readiness": {
+        "observation": "ready=false honestly reflects its remaining consequential lifecycle question; core routing identity decisions are ready. Ledger completion alone cannot establish overall readiness.",
+        "evidence": [
+          {
+            "path": "review-packets/I03/interview.json",
+            "json_pointer": "/actual_history/4/assistant/ready"
+          }
+        ]
+      },
+      "short_quotes": [
+        {
+          "quote": "should it count as complete right away, even if child turns are still running?",
+          "evidence": {
+            "path": "review-packets/I03/interview.json",
+            "json_pointer": "/actual_history/2/assistant/questions/0"
+          }
+        },
+        {
+          "quote": "Only the active coordinator thread and turn can establish its completion.",
+          "evidence": {
+            "path": "review-packets/I03/interview.json",
+            "json_pointer": "/actual_history/3/user/1"
+          }
+        },
+        {
+          "quote": "says which event can trigger it, not whether it waits for children.",
+          "evidence": {
+            "path": "review-packets/I03/interview.json",
+            "json_pointer": "/actual_history/4/assistant/missing/0"
+          }
+        }
+      ]
+    },
+    {
+      "candidate": "I04",
+      "question_rounds": [
+        {
+          "history_index": 0,
+          "question_count": 8,
+          "ready": false,
+          "evidence": {
+            "path": "review-packets/I04/interview.json",
+            "json_pointer": "/actual_history/0/assistant"
+          }
+        },
+        {
+          "history_index": 2,
+          "question_count": 8,
+          "ready": false,
+          "evidence": {
+            "path": "review-packets/I04/interview.json",
+            "json_pointer": "/actual_history/2/assistant"
+          }
+        },
+        {
+          "history_index": 4,
+          "question_count": 7,
+          "ready": false,
+          "evidence": {
+            "path": "review-packets/I04/interview.json",
+            "json_pointer": "/actual_history/4/assistant"
+          }
+        }
+      ],
+      "actual_answers": [
+        {
+          "history_index": 1,
+          "received": [
+            "An environment setting must not silently replace an explicit choice stored in a checkpoint."
+          ],
+          "evidence": {
+            "path": "review-packets/I04/interview.json",
+            "json_pointer": "/actual_history/1/user"
+          }
+        },
+        {
+          "history_index": 3,
+          "received": [
+            "When the resume option is omitted, preserve the saved budget choice, including disabled.",
+            "An environment setting must not silently replace an explicit choice stored in a checkpoint."
+          ],
+          "evidence": {
+            "path": "review-packets/I04/interview.json",
+            "json_pointer": "/actual_history/3/user"
+          }
+        },
+        {
+          "history_index": 5,
+          "received": [
+            "When the resume option is omitted, preserve the saved budget choice, including disabled.",
+            "An environment setting must not silently replace an explicit choice stored in a checkpoint."
+          ],
+          "evidence": {
+            "path": "review-packets/I04/interview.json",
+            "json_pointer": "/actual_history/5/user"
+          }
+        }
+      ],
+      "known_facts_respected": true,
+      "asked": {
+        "observation": "Asked off representation, full precedence, resume persistence/reactivation, mismatch policy, invalid values, checkpoint effective value and broader reliable-resume scope. Later explicit-CLI versus saved questions cover positive reactivation semantically, even without the exact numeric keyword trigger.",
+        "evidence": [
+          {
+            "path": "review-packets/I04/interview.json",
+            "json_pointer": "/actual_history/0/assistant/questions"
+          },
+          {
+            "path": "review-packets/I04/interview.json",
+            "json_pointer": "/actual_history/2/assistant/questions/2"
+          },
+          {
+            "path": "review-packets/I04/interview.json",
+            "json_pointer": "/actual_history/4/assistant/questions/1"
+          }
+        ]
+      },
+      "settled": {
+        "observation": "Initially receives only no-silent-env-replacement, then omitted-preserves. No numeric-over-saved answer is actually received. Latest settled list recognizes that omission preserves disabled and does not claim explicit CLI precedence is known.",
+        "evidence": [
+          {
+            "path": "review-packets/I04/interview.json",
+            "json_pointer": "/actual_history/1/user"
+          },
+          {
+            "path": "review-packets/I04/interview.json",
+            "json_pointer": "/actual_history/3/user"
+          },
+          {
+            "path": "review-packets/I04/interview.json",
+            "json_pointer": "/actual_history/4/assistant/settled"
+          }
+        ]
+      },
+      "safely_unresolved": {
+        "observation": "Off form, explicit CLI mismatch policy, invalid handling, fresh CLI/env priority and saved-default provenance remain unanswered. Warning/refusal on conflicting unused env remains a product choice; the answer about preserving saved budget does settle value selection when CLI is omitted.",
+        "evidence": [
+          {
+            "path": "review-packets/I04/interview.json",
+            "json_pointer": "/actual_history/4/assistant/missing"
+          }
+        ]
+      },
+      "redundancy": {
+        "observation": "Several precedence questions overlap initially and recur because answers are absent. After omission is answered, the main omitted-resume selection is no longer asked, but logging/refusal and saved-explicit provenance remain expanded decisions. No re-asking of existing flag names.",
+        "evidence": [
+          {
+            "path": "review-packets/I04/interview.json",
+            "json_pointer": "/actual_history/0/assistant/questions"
+          },
+          {
+            "path": "review-packets/I04/interview.json",
+            "json_pointer": "/actual_history/4/assistant/questions"
+          }
+        ]
+      },
+      "readiness": {
+        "observation": "ready=false is appropriate for unanswered disable/explicit-CLI/invalid policies. The interview asks more ancillary choices than needed to settle basic resume selection, but nonrecognition by the keyword simulator is not proof of failure to ask.",
+        "evidence": [
+          {
+            "path": "review-packets/I04/interview.json",
+            "json_pointer": "/actual_history/4/assistant/ready"
+          }
+        ]
+      },
+      "short_quotes": [
+        {
+          "quote": "should the CLI value (A) win quietly, (B) win with a warning, (C) lose to the checkpoint",
+          "evidence": {
+            "path": "review-packets/I04/interview.json",
+            "json_pointer": "/actual_history/2/assistant/questions/2"
+          }
+        },
+        {
+          "quote": "When the resume option is omitted, preserve the saved budget choice, including disabled.",
+          "evidence": {
+            "path": "review-packets/I04/interview.json",
+            "json_pointer": "/actual_history/3/user/0"
+          }
+        },
+        {
+          "quote": "This rules out quiet env-over-checkpoint replacement.",
+          "evidence": {
+            "path": "review-packets/I04/interview.json",
+            "json_pointer": "/actual_history/2/assistant/settled/1"
+          }
+        }
+      ]
+    }
+  ],
+  "source_manifest": [
+    {
+      "path": "review-packets/C01/change.patch",
+      "sha256": "82e760537f1230b5c0365f5e20aa3832bf8966f34dd2699ac200d4d69a82ff4a",
+      "bytes": 10680,
+      "review_use": "requirements and full patch"
+    },
+    {
+      "path": "review-packets/C01/production/bonaparte",
+      "sha256": "89539e73418eb83a10cbcc793bc822076ae1790dc267393d4b6c2e9187078ede",
+      "bytes": 75543,
+      "review_use": "full AST syntax parse; relevant source paths and changed behavior inspection"
+    },
+    {
+      "path": "review-packets/C01/production/bonaparte_checkpoint.py",
+      "sha256": "51c0d420560bb8f1aa74dbcea7b939515630a1c0db6cd49b7bed244d9c320f8f",
+      "bytes": 13005,
+      "review_use": "full AST syntax parse; relevant source paths and changed behavior inspection"
+    },
+    {
+      "path": "review-packets/C01/requirements.json",
+      "sha256": "a8ffef828d27366c789197b8b75bec75aebcc8254197bf4e8dead5801aa5c471",
+      "bytes": 1533,
+      "review_use": "requirements and full patch"
+    },
+    {
+      "path": "review-packets/C02/change.patch",
+      "sha256": "a55072c7010b05a6a67dced2d599399366a85ef321176fd60d4742b9b8ae0177",
+      "bytes": 2152,
+      "review_use": "requirements and full patch"
+    },
+    {
+      "path": "review-packets/C02/production/bonaparte",
+      "sha256": "76f2b5fe9885de86e697729431e4a582f9cb8ee06d339d6ce5b6f9be72822681",
+      "bytes": 54147,
+      "review_use": "full AST syntax parse; relevant source paths and changed behavior inspection"
+    },
+    {
+      "path": "review-packets/C02/production/bonaparte_native.py",
+      "sha256": "9aa463459dd8198143941013d5cfcb53ee52b2df7bf22323184379a580b1937c",
+      "bytes": 13484,
+      "review_use": "full AST syntax parse; relevant source paths and changed behavior inspection"
+    },
+    {
+      "path": "review-packets/C02/requirements.json",
+      "sha256": "957931767a13a4f13be52485e3c3bb13631c136a16e70d104ae1817a8266cee6",
+      "bytes": 1100,
+      "review_use": "requirements and full patch"
+    },
+    {
+      "path": "review-packets/C03/change.patch",
+      "sha256": "9d3a0edb2c1aabfcf0e017ed54d6e675d03de0811dcfedf0d7c623a751aa21ff",
+      "bytes": 2583,
+      "review_use": "requirements and full patch"
+    },
+    {
+      "path": "review-packets/C03/production/bonaparte",
+      "sha256": "ee2af0bb6ba113249fea74a2939d3ffa32227228fa2b02cfe14545f9c6afec57",
+      "bytes": 54687,
+      "review_use": "full AST syntax parse; relevant source paths and changed behavior inspection"
+    },
+    {
+      "path": "review-packets/C03/production/bonaparte_native.py",
+      "sha256": "c54429978edfb982644463623d2ae5de081d21fe3506b775e73d01009fd08355",
+      "bytes": 12536,
+      "review_use": "full AST syntax parse; relevant source paths and changed behavior inspection"
+    },
+    {
+      "path": "review-packets/C03/requirements.json",
+      "sha256": "957931767a13a4f13be52485e3c3bb13631c136a16e70d104ae1817a8266cee6",
+      "bytes": 1100,
+      "review_use": "requirements and full patch"
+    },
+    {
+      "path": "review-packets/C04/change.patch",
+      "sha256": "5f3a3fd0da35a138bd8d13dc5aff80c5037874b5091bd30fda511ca1dff7df3c",
+      "bytes": 2841,
+      "review_use": "requirements and full patch"
+    },
+    {
+      "path": "review-packets/C04/production/bonaparte",
+      "sha256": "781a89c328697382bc600e66bbc74a9a0be86f1bc1f703e5599c93f4b201cc11",
+      "bytes": 54938,
+      "review_use": "full AST syntax parse; relevant source paths and changed behavior inspection"
+    },
+    {
+      "path": "review-packets/C04/production/bonaparte_native.py",
+      "sha256": "c54429978edfb982644463623d2ae5de081d21fe3506b775e73d01009fd08355",
+      "bytes": 12536,
+      "review_use": "full AST syntax parse; relevant source paths and changed behavior inspection"
+    },
+    {
+      "path": "review-packets/C04/requirements.json",
+      "sha256": "957931767a13a4f13be52485e3c3bb13631c136a16e70d104ae1817a8266cee6",
+      "bytes": 1100,
+      "review_use": "requirements and full patch"
+    },
+    {
+      "path": "review-packets/C05/change.patch",
+      "sha256": "b5d87473743fdb4088c9eae56292ddb9ebdc1be3dcd26d786fb5a9c86a282b1c",
+      "bytes": 8859,
+      "review_use": "requirements and full patch"
+    },
+    {
+      "path": "review-packets/C05/production/bonaparte",
+      "sha256": "17343fbf5a2ec44e07acd66b99e39a422aafeea6c092bb4a10c23e5935912474",
+      "bytes": 75163,
+      "review_use": "full AST syntax parse; relevant source paths and changed behavior inspection"
+    },
+    {
+      "path": "review-packets/C05/production/bonaparte_checkpoint.py",
+      "sha256": "df1bb60552e99fa1007da90d0893aa32774cdce9f694b5cda838c7c3a25c7a11",
+      "bytes": 12958,
+      "review_use": "full AST syntax parse; relevant source paths and changed behavior inspection"
+    },
+    {
+      "path": "review-packets/C05/requirements.json",
+      "sha256": "a8ffef828d27366c789197b8b75bec75aebcc8254197bf4e8dead5801aa5c471",
+      "bytes": 1533,
+      "review_use": "requirements and full patch"
+    },
+    {
+      "path": "review-packets/C06/change.patch",
+      "sha256": "74c5fa315cf8049308bf8840ff9aa309be3ca8cec0143fe2c65342b0f0f2cd92",
+      "bytes": 10216,
+      "review_use": "requirements and full patch"
+    },
+    {
+      "path": "review-packets/C06/production/bonaparte",
+      "sha256": "a86051e5c6abd25be4ce74bbb701095ebd92cabc02673e06e509bf6110aea810",
+      "bytes": 75583,
+      "review_use": "full AST syntax parse; relevant source paths and changed behavior inspection"
+    },
+    {
+      "path": "review-packets/C06/production/bonaparte_checkpoint.py",
+      "sha256": "cce3b611bac78a2ebb004ffd3e6176e53486eb47dd992270b6a2d5f6cb12bfc3",
+      "bytes": 13016,
+      "review_use": "full AST syntax parse; relevant source paths and changed behavior inspection"
+    },
+    {
+      "path": "review-packets/C06/requirements.json",
+      "sha256": "a8ffef828d27366c789197b8b75bec75aebcc8254197bf4e8dead5801aa5c471",
+      "bytes": 1533,
+      "review_use": "requirements and full patch"
+    },
+    {
+      "path": "review-packets/C07/change.patch",
+      "sha256": "4fec4078d523894a2f7ff9e468f128639000eef2dc630c7a60e929495a50492e",
+      "bytes": 2786,
+      "review_use": "requirements and full patch"
+    },
+    {
+      "path": "review-packets/C07/production/bonaparte",
+      "sha256": "f3442ec95f99a2538c7816612ec9c0b870b23b7bea2543a473d8e3778c959fcb",
+      "bytes": 54985,
+      "review_use": "full AST syntax parse; relevant source paths and changed behavior inspection"
+    },
+    {
+      "path": "review-packets/C07/production/bonaparte_native.py",
+      "sha256": "c54429978edfb982644463623d2ae5de081d21fe3506b775e73d01009fd08355",
+      "bytes": 12536,
+      "review_use": "full AST syntax parse; relevant source paths and changed behavior inspection"
+    },
+    {
+      "path": "review-packets/C07/requirements.json",
+      "sha256": "957931767a13a4f13be52485e3c3bb13631c136a16e70d104ae1817a8266cee6",
+      "bytes": 1100,
+      "review_use": "requirements and full patch"
+    },
+    {
+      "path": "review-packets/C08/change.patch",
+      "sha256": "957e328f0c04058c94c78c2a837a7be03f49946ec87d5aa621913b1cadfcea62",
+      "bytes": 9418,
+      "review_use": "requirements and full patch"
+    },
+    {
+      "path": "review-packets/C08/production/bonaparte",
+      "sha256": "17e30d429ee857628a9da51f0ff98980da0c1dfa839278f323c32389a95cbf65",
+      "bytes": 75280,
+      "review_use": "full AST syntax parse; relevant source paths and changed behavior inspection"
+    },
+    {
+      "path": "review-packets/C08/production/bonaparte_checkpoint.py",
+      "sha256": "df1bb60552e99fa1007da90d0893aa32774cdce9f694b5cda838c7c3a25c7a11",
+      "bytes": 12958,
+      "review_use": "full AST syntax parse; relevant source paths and changed behavior inspection"
+    },
+    {
+      "path": "review-packets/C08/requirements.json",
+      "sha256": "a8ffef828d27366c789197b8b75bec75aebcc8254197bf4e8dead5801aa5c471",
+      "bytes": 1533,
+      "review_use": "requirements and full patch"
+    },
+    {
+      "path": "review-packets/I01/interview.json",
+      "sha256": "297c27afcf3e4b8f2d52667059e847e9cb97a4a130fcf6e5bb0a0f10247b98b4",
+      "bytes": 7577,
+      "review_use": "full transcript and structured history"
+    },
+    {
+      "path": "review-packets/I02/interview.json",
+      "sha256": "c7642a1bf3591400fe1c7a6953e2c8ccb89923be74540693cd649a06d8a26dc5",
+      "bytes": 10666,
+      "review_use": "full transcript and structured history"
+    },
+    {
+      "path": "review-packets/I03/interview.json",
+      "sha256": "76e6940900157d193f36977ee4ced2d8e74bdeab930f2a5be35202d64c31f4cb",
+      "bytes": 7547,
+      "review_use": "full transcript and structured history"
+    },
+    {
+      "path": "review-packets/I04/interview.json",
+      "sha256": "e1bf3d56a39810e2963db2f52be3999f7086154d526b5c2b8658eeeb53f9fa2b",
+      "bytes": 11560,
+      "review_use": "full transcript and structured history"
+    }
+  ]
+}

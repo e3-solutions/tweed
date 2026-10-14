@@ -1,0 +1,62 @@
+diff --git a/bonaparte b/bonaparte
+index 26a168f..a634245 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -610,10 +610,6 @@ def run_phase(
+                     if "method" in message:
+                         _method, completed_turn = driver.observe_notification(message)
+                         if completed_turn is not None:
+-                            if completed_turn.get("id") != turn_id:
+-                                raise RuntimeError(
+-                                    "Codex app-server completed the wrong turn"
+-                                )
+                             terminal = completed_turn
+                         continue
+                     raise RuntimeError("Codex app-server response correlation failed")
+@@ -632,7 +628,11 @@ def run_phase(
+                     params = message.get("params")
+                     item = params.get("item") if isinstance(params, dict) else None
+                     item_type = item.get("type") if isinstance(item, dict) else None
+-                    if isinstance(params, dict) and params.get("threadId") == session_id:
++                    if (
++                        isinstance(params, dict)
++                        and params.get("threadId") == session_id
++                        and ("turnId" not in params or params["turnId"] == turn_id)
++                    ):
+                         post_steer_work = post_steer_work or item_type in {
+                             "commandExecution",
+                             "dynamicToolCall",
+@@ -648,9 +648,7 @@ def run_phase(
+                             and item.get("kind") == "started"
+                         )
+                 _method, completed_turn = driver.observe_notification(message)
+-                if completed_turn is not None:
+-                    if completed_turn.get("id") != turn_id:
+-                        raise RuntimeError("Codex app-server completed the wrong turn")
++                if completed_turn is not None and terminal is None:
+                     terminal = completed_turn
+                 continue
+             if not steered or message.get("id") != steer_id:
+diff --git a/bonaparte_native.py b/bonaparte_native.py
+index 8ec992a..c2bb6a7 100644
+--- a/bonaparte_native.py
++++ b/bonaparte_native.py
+@@ -303,9 +303,18 @@ class AppServerPhaseDriver:
+                 )
+             )
+         if method == "turn/completed":
++            # Native child threads share this stream. Only an omitted threadId
++            # gets legacy turn-only correlation; explicit foreign IDs do not.
++            if (
++                self._receipt_turn_id is None
++                or ("threadId" in params and params["threadId"] != self._receipt_thread_id)
++            ):
++                return method, None
+             turn = params.get("turn")
+             if not isinstance(turn, dict):
+                 raise RuntimeError("Codex app-server turn completion is malformed")
++            if turn.get("id") != self._receipt_turn_id:
++                return method, None
+             return method, turn
+         return method, None
+ 

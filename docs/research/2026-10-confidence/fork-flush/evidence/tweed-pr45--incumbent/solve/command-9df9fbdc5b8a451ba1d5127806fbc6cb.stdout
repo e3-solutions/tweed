@@ -1,0 +1,61 @@
+307:    def test_run_records_failure_and_returns_child_status(self) -> None:
+308-        with tempfile.TemporaryDirectory() as name:
+309-            root = Path(name)
+310-            directory = root / ".confidence"
+311-            result = subprocess.run(
+312-                [
+313-                    sys.executable,
+314-                    str(SCRIPT),
+315-                    "run",
+316-                    "--id",
+317-                    "failed",
+318-                    "--directory",
+319-                    str(directory),
+320-                    "--",
+321-                    sys.executable,
+322-                    "-c",
+323-                    "raise SystemExit(7)",
+324-                ],
+325-                capture_output=True,
+326-                text=True,
+327-            )
+328-            self.assertEqual(result.returncode, 7)
+329-            record = json.loads((directory / "runs" / "failed.json").read_text())
+330-            self.assertEqual(record["exit_code"], 7)
+331-
+332-    def test_run_times_out_and_records_the_stop_reason(self) -> None:
+333-        with tempfile.TemporaryDirectory() as name:
+334-            directory = Path(name) / ".confidence"
+335-            result = subprocess.run(
+336-                [
+337-                    sys.executable,
+338-                    str(SCRIPT),
+339-                    "run",
+340-                    "--id",
+341-                    "timeout",
+342-                    "--directory",
+343-                    str(directory),
+344-                    "--timeout-seconds",
+345-                    "0.05",
+346-                    "--",
+347-                    sys.executable,
+348-                    "-c",
+349-                    "import time; time.sleep(2)",
+350-                ],
+351-                capture_output=True,
+352-                text=True,
+12:SCRIPT = Path(__file__).parents[1] / "scripts" / "confidence.py"
+13:SPEC = importlib.util.spec_from_file_location("confidence", SCRIPT)
+237:                    str(SCRIPT),
+280:                    str(SCRIPT),
+314:                    str(SCRIPT),
+338:                    str(SCRIPT),
+365:                    str(SCRIPT),
+398:                    str(SCRIPT),
+429:                    str(SCRIPT),
+452:                str(SCRIPT),
+481:                    str(SCRIPT),
+555:                    str(SCRIPT),
+578:                    str(SCRIPT),
+641:                    str(SCRIPT),
+660:                str(SCRIPT),

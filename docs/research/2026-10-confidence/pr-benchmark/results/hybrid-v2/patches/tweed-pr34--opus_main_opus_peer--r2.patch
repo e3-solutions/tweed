@@ -1,0 +1,49 @@
+diff --git a/bonaparte b/bonaparte
+index cdc8a50..d26e50f 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -259,6 +259,12 @@ def select_handoff(
+         context["intake"] = issue["description"]
+         if isinstance(current_record.get("id"), str):
+             context["existing_comment_id"] = current_record["id"]
++    if phase == "publish" and current:
++        if isinstance(current_record.get("id"), str):
++            context["existing_comment_id"] = current_record["id"]
++        review = latest_comment(comments, PHASE_HEADERS["review"])
++        if review:
++            context["review"] = review
+     key = f"scope:{kind}" if phase == "scope" else phase
+     if not current and key not in PHASE_INPUTS:
+         context = {"missing": "**Kind:** Bug | Feature"}
+diff --git a/workflows/publish.md b/workflows/publish.md
+index 9840ecb..f6b6031 100644
+--- a/workflows/publish.md
++++ b/workflows/publish.md
+@@ -1,17 +1,22 @@
+ # Bonaparte Publish
+ 
+ Finalize the reviewed Bonaparte draft pull request, mark it ready for review, and
+-record it in Linear. The runner supplies only the latest review or existing
+-publish result plus issue metadata. Use authenticated `git` and `gh` for GitHub.
++record it in Linear. The runner supplies the latest complete review, and when
++reconciling, the existing publish result with its stable `existing_comment_id`,
++plus issue metadata. Use authenticated `git` and `gh` for GitHub.
+ Do not spawn subagents, change code, push commits, create another PR,
+ merge, deploy, delete branches, or mutate anything outside the existing PR's
+ metadata, readiness, and final Linear comment.
+ 
+ ## Preconditions
+ 
+-- Existing publish result: reverify its exact ready PR and Linear delivery
+-  comment, then return it without another write. If either is stale or missing,
+-  return `blocked` with that fact.
++- Existing publish result: use the supplied latest review to identify the exact
++  reviewed branch, commit, and PR. If no review is supplied, use the delivery
++  facts recorded in the existing publish comment instead. Then reverify the exact ready PR and the
++  Linear delivery comment identified by `existing_comment_id`, and return it
++  without another write. Never post a second delivery comment. If the PR or
++  comment is stale, missing, or does not match the reviewed handoff, return
++  `blocked` with that fact.
+ - New publish: require a complete `## Bonaparte · Implementation Review` as the
+   publish handoff.
+ - Extract the exact reviewed branch and commit. Require a clean local worktree

@@ -1,0 +1,175 @@
+diff --git a/bonaparte b/bonaparte
+index 888b766..adb4c49 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -431,6 +431,7 @@ def run_phase(
+     observation: dict | None = None,
+     replayed_answer: bool = False,
+     soft_phase_budget_seconds: float = DEFAULT_SOFT_PHASE_BUDGET_SECONDS,
++    canonical_branch: str | None = None,
+ ) -> dict:
+     soft_phase_budget_seconds = resolve_soft_phase_budget(soft_phase_budget_seconds)
+     workflow_name, assignment = WORKFLOWS[phase]
+@@ -451,7 +452,7 @@ def run_phase(
+         }
+         for role, description in child_configs.items()
+     }
+-    expected_branch = None
++    expected_branch = canonical_branch
+     if resume_session_id:
+         replay_policy = (
+             "This clarification may be an at-least-once replay after an ambiguous "
+@@ -481,8 +482,7 @@ def run_phase(
+                 phase,
+                 values[1] if len(values) == 2 else None,
+             )
+-            if phase == "implement":
+-                expected_branch = handoff["issue"]["git_branch_name"]
++            expected_branch = handoff["issue"]["git_branch_name"]
+             phase_input = json.dumps(handoff, ensure_ascii=False)
+             context_policy = (
+                 "\n\n# Context policy\n\n"
+@@ -559,6 +559,9 @@ def run_phase(
+     failed = True
+     try:
+         driver = AppServerPhaseDriver(repository, observer)
++        driver.canonical_branch = expected_branch
++        if observation is not None:
++            observation["canonical_branch"] = expected_branch
+         driver.request(
+             "initialize", {"clientInfo": {"name": "bonaparte", "version": "1"}}
+         )
+@@ -702,6 +705,7 @@ def run_phase(
+         if not driver.last_agent_message:
+             raise RuntimeError("Codex app-server returned no final receipt")
+         receipt = json.loads(driver.last_agent_message)
++        driver.archive_on_close = receipt.get("state") != "needs-input"
+         failed = False
+     finally:
+         observed = observer.finish()
+@@ -873,7 +877,10 @@ def new_question_checkpoint(
+         ),
+         "question": receipt["question"],
+         "pending_answer": None,
+-        "receipt": _coordinator_receipt(receipt),
++        "receipt": {
++            **_coordinator_receipt(receipt),
++            "canonical_branch": observation.get("canonical_branch"),
++        },
+         "branch": current_git.get("branch"),
+         "files_changed": current_git["files_changed"],
+         "files_changed_total_count": current_git["files_changed_total_count"],
+@@ -1077,6 +1084,7 @@ def resume_checkpoint(
+             observation,
+             replayed_answer,
+             checkpoint["soft_phase_budget_seconds"],
++            canonical_branch=checkpoint["receipt"].get("canonical_branch"),
+         )
+     except KeyboardInterrupt:
+         _update_checkpoint_observation(checkpoint, observation)
+@@ -1096,7 +1104,10 @@ def resume_checkpoint(
+ 
+     _update_checkpoint_observation(checkpoint, observation)
+     checkpoint.update(
+-        receipt=_coordinator_receipt(receipt),
++        receipt={
++            **_coordinator_receipt(receipt),
++            "canonical_branch": checkpoint["receipt"].get("canonical_branch"),
++        },
+         pending_answer=None,
+         remote_state_changed=_combine_remote(
+             checkpoint.get("remote_state_changed"),
+diff --git a/bonaparte_native.py b/bonaparte_native.py
+index e9a607c..a0fe580 100644
+--- a/bonaparte_native.py
++++ b/bonaparte_native.py
+@@ -118,6 +118,10 @@ class AppServerPhaseDriver:
+             raise RuntimeError("Codex app-server pipes are unavailable")
+         self._messages: queue.Queue = queue.Queue(maxsize=64)
+         self._request_id = 0
++        self._started_threads: dict[str, str | None] = {}
++        self._root_thread_id: str | None = None
++        self.canonical_branch: str | None = None
++        self.archive_on_close = True
+         self._last_agent_message: str | None = None
+         self._receipt_thread_id: str | None = None
+         self._receipt_turn_id: str | None = None
+@@ -273,7 +277,18 @@ class AppServerPhaseDriver:
+             raise RuntimeError(f"unsupported app-server request: {method}")
+         if method == "thread/started":
+             thread = params.get("thread")
+-            if isinstance(thread, dict) and isinstance(thread.get("id"), str):
++            if (
++                isinstance(thread, dict)
++                and isinstance(thread.get("id"), str)
++                and thread["id"]
++            ):
++                source = thread.get("source")
++                subagent = source.get("subAgent") if isinstance(source, dict) else None
++                spawn = subagent.get("thread_spawn") if isinstance(subagent, dict) else None
++                parent = spawn.get("parent_thread_id") if isinstance(spawn, dict) else None
++                self._started_threads.setdefault(
++                    thread["id"], parent if isinstance(parent, str) and parent else None
++                )
+                 self.observer.feed(
+                     json.dumps({"type": "thread.started", "thread_id": thread["id"]})
+                 )
+@@ -339,6 +354,10 @@ class AppServerPhaseDriver:
+             result = message.get("result")
+             if not isinstance(result, dict):
+                 raise RuntimeError(f"Codex app-server returned no result for {method}")
++            if method in {"thread/start", "thread/resume"}:
++                thread = result.get("thread")
++                if isinstance(thread, dict) and isinstance(thread.get("id"), str):
++                    self._root_thread_id = thread["id"]
+             return result
+ 
+     @property
+@@ -346,4 +365,46 @@ class AppServerPhaseDriver:
+         return self._last_agent_message
+ 
+     def close(self, *, failed: bool) -> None:
+-        terminate_and_reap(self.process)
++        errors = []
++        try:
++            root = getattr(self, "_root_thread_id", None)
++            started = getattr(self, "_started_threads", {})
++            if (
++                not failed
++                and getattr(self, "archive_on_close", True)
++                and root in started
++            ):
++                # Only a chain of actual start events establishes ownership.
++                owned = {root}
++                while True:
++                    children = {
++                        identifier for identifier, parent in started.items()
++                        if parent in owned and identifier not in owned
++                    }
++                    if not children:
++                        break
++                    owned.update(children)
++                branch = getattr(self, "canonical_branch", None)
++                for identifier in sorted(owned - {root}):
++                    if not branch:
++                        continue
++                    try:
++                        self.request(
++                            "thread/metadata/update",
++                            {"threadId": identifier, "gitInfo": {"branch": branch}},
++                        )
++                    except Exception as error:
++                        errors.append(error)
++                try:
++                    self.request("thread/archive", {"threadId": root})
++                except Exception as error:
++                    errors.append(error)
++        finally:
++            try:
++                terminate_and_reap(self.process)
++            except Exception as error:
++                errors.append(error)
++        if errors:
++            if len(errors) == 1:
++                raise errors[0]
++            raise ExceptionGroup("native session cleanup failed", errors)

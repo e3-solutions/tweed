@@ -1,0 +1,92 @@
+{
+  "verdict": "PASS_PRELAUNCH_READINESS",
+  "reviewer": "Independent native Codex; actual native model unobserved",
+  "scope": "Exactly two historical tasks, two arms, four assigned mains, at most one registered conditional continuation per cell",
+  "registration_sha256": "46a74c49b458afcca84ff85bf07c656869126629c7ff5c93da21b73aa8e9ae71",
+  "prior_registration_sha256": "13e2ba682f1c5bb371e685f5524e70d9eae6d24baf8b6efa88024201fce5fec4",
+  "sealed_file_count": 61,
+  "cells": [
+    {
+      "cell_id": "cpython-pr156382--incumbent",
+      "prefix_sha256": "b3909f1dad61e5ede36a6de4e8d272d010593e850e01c20731474c4bfa17493f",
+      "seal_sha256": "cf7c26f1e6f17c0a9d9bc43d44c64a85b6e53809873b9ed6a3c2c3baf2fc3253",
+      "baseline_passed": true,
+      "denials_passed": true,
+      "source_unchanged": true,
+      "group_absent": true
+    },
+    {
+      "cell_id": "cpython-pr156382--candidate",
+      "prefix_sha256": "cec54eaf454f70984dd49248c0fb3dd9b97a90560024ab1b3de5003b808c0ce3",
+      "seal_sha256": "b7de7844b94509702c485b6f93fa48a901da882d620e8a6202fa2e397b8ffe46",
+      "baseline_passed": true,
+      "denials_passed": true,
+      "source_unchanged": true,
+      "group_absent": true
+    },
+    {
+      "cell_id": "cpython-pr32225--candidate",
+      "prefix_sha256": "496cc4675d3ef8b8d4d3aeebec14846be7fd7f17c5a4cc62deab9d407c0ef622",
+      "seal_sha256": "84e60d092090c6f7433e88f106a469008f67647fe5da4e6c0a6c03bead43f31e",
+      "baseline_passed": true,
+      "denials_passed": true,
+      "source_unchanged": true,
+      "group_absent": true
+    },
+    {
+      "cell_id": "cpython-pr32225--incumbent",
+      "prefix_sha256": "8c20c097e8747fb9581c36fbb5d7f405475ffa01c349ec6791b976fcfd1e9b44",
+      "seal_sha256": "8547fb6b6a03ffdb2f95745892081809c3cec581d37c47556816e059ba18b271",
+      "baseline_passed": true,
+      "denials_passed": true,
+      "source_unchanged": true,
+      "group_absent": true
+    }
+  ],
+  "limits": {
+    "main": {
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "seconds": 300,
+      "usd": 3.0
+    },
+    "continuation": {
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "seconds": 180,
+      "usd": 2.0
+    },
+    "global_model_limit": 1
+  },
+  "pins": {
+    "runtime/controller.py": "399e3423a6140fc75da3265999da444e2006d3cd344bd45d91814f85e43ddd57",
+    "runtime/hybrid_process_v2.py": "631e695e36f5c000b3fef02d4f64f8c518edc31befac116db559816750d8e95f",
+    "runtime_adapter.py": "99024867cec32e7acf5771f882337aa58db6f20b836ccee2ef8a9da99c228fbb",
+    "run_tasks.py": "21dcf60c1ec892f116db59d2e432e8d0ef3f00e03ea8132b972881203fbe3962",
+    "TASKS.json": "2495f12cc27d6f5c1ed349db1d72d5bcc01f5799e868fc119c16215509b04d22",
+    "evaluate.py": "060fcad2bd5fccdb3ed31e3cf350b6154aa7e065202f12b2146b6c591052ab3e",
+    "EVALUATOR.md": "1193f012a4c43bcdc44e496afdf54d17652027031686c6271a19e44463353eff",
+    "PREFLIGHT.json": "419e2d916f11c7e80dc0cfa7fce1c183d7bb4ec3554646dcf5e856003b52bf47",
+    "policies/incumbent/SKILL.md": "26b8c7ce5dcf06f8f3129c7e7794f77dee5b0c2ba5b50e882c6939b558064950",
+    "policies/candidate/SKILL.md": "103be278a59daea1eadca9d6fcb4bfebc88d5aa57c99d131d96367f8da86e5b8",
+    "scope-amendment/CONTROL.json": "48b639975cfecd4c6450eb385672fc6ecbb750b6896b9ed66aca1baaae567b17"
+  },
+  "qualification": {
+    "historical_source_and_base_reference_controls": true,
+    "conventional_test_scope_corrected_prospectively": true,
+    "actual_task_MCP_child_prefixes": true,
+    "same_global_serial_provider_guard": true,
+    "source_capture_grade_equality_guard": true,
+    "delivery_guard_counterexamples": true,
+    "policy_only_entrypoint_variation": true,
+    "no_task_inference_yet": true
+  },
+  "limitations": [
+    "Actual Opus final author patch is a retained partial timeout delivery; source readiness derives from independent review and CPU controls, not a successful author terminal.",
+    "Bare authored controller omits a delivery-validity guard; Native Codex driver composition explicitly supplies it, with exact core bytes preserved.",
+    "Fourteen prior owner behavior controls were not rerun after the scope-only change; targeted control and syntax-tree comparison bind the minimal amendment.",
+    "Provider stage/model/session/tool/delivery qualification remains to be observed on actual task calls; no live service-health promise or universal efficacy claim.",
+    "This is serial workspace-preserving fresh-context continuation, not full parallel paper replication."
+  ],
+  "dispatch_condition": "Root prospective public commit and exact registration-bound authorization before provider calls; no fallback or additional cells."
+}

@@ -1,0 +1,165 @@
+diff --git a/bonaparte b/bonaparte
+index 888b766..c08aa5e 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -452,6 +452,7 @@ def run_phase(
+         for role, description in child_configs.items()
+     }
+     expected_branch = None
++    canonical_branch = None
+     if resume_session_id:
+         replay_policy = (
+             "This clarification may be an at-least-once replay after an ambiguous "
+@@ -481,8 +482,9 @@ def run_phase(
+                 phase,
+                 values[1] if len(values) == 2 else None,
+             )
++            canonical_branch = handoff["issue"]["git_branch_name"]
+             if phase == "implement":
+-                expected_branch = handoff["issue"]["git_branch_name"]
++                expected_branch = canonical_branch
+             phase_input = json.dumps(handoff, ensure_ascii=False)
+             context_policy = (
+                 "\n\n# Context policy\n\n"
+@@ -702,6 +704,13 @@ def run_phase(
+         if not driver.last_agent_message:
+             raise RuntimeError("Codex app-server returned no final receipt")
+         receipt = json.loads(driver.last_agent_message)
++        # A needs-input root stays resumable; any other receipt ends the root,
++        # so its started owned descendants and the root itself are torn down.
++        driver.root_thread_id = session_id
++        driver.canonical_branch = canonical_branch
++        driver.archive_root = not (
++            isinstance(receipt, dict) and receipt.get("state") == "needs-input"
++        )
+         failed = False
+     finally:
+         observed = observer.finish()
+diff --git a/bonaparte_native.py b/bonaparte_native.py
+index e9a607c..639dd91 100644
+--- a/bonaparte_native.py
++++ b/bonaparte_native.py
+@@ -97,6 +97,33 @@ def terminate_and_reap(process: subprocess.Popen) -> None:
+                     pass
+ 
+ 
++def thread_parent(thread: dict, params: dict) -> str | None:
++    """Return the parent thread named by a native thread/started event."""
++    for candidate in (
++        thread.get("parentThreadId"),
++        thread.get("parent_thread_id"),
++        params.get("parentThreadId"),
++    ):
++        if isinstance(candidate, str) and candidate:
++            return candidate
++    source = thread.get("source")
++    if not isinstance(source, dict):
++        return None
++    for agent_key in ("subAgent", "sub_agent", "subagent"):
++        sub_agent = source.get(agent_key)
++        if not isinstance(sub_agent, dict):
++            continue
++        for spawn_key in ("thread_spawn", "threadSpawn"):
++            spawn = sub_agent.get(spawn_key)
++            if not isinstance(spawn, dict):
++                continue
++            for name in ("parent_thread_id", "parentThreadId"):
++                parent = spawn.get(name)
++                if isinstance(parent, str) and parent:
++                    return parent
++    return None
++
++
+ class AppServerPhaseDriver:
+     """Drive one native app-server turn without retaining its raw event stream."""
+ 
+@@ -121,6 +148,13 @@ class AppServerPhaseDriver:
+         self._last_agent_message: str | None = None
+         self._receipt_thread_id: str | None = None
+         self._receipt_turn_id: str | None = None
++        # Threads announced by native thread/started events, mapped to the
++        # parent thread the event identifies (None for roots/unknown).
++        self._started_threads: dict[str, str | None] = {}
++        # Set by the phase runner once the root turn reaches a terminal receipt.
++        self.root_thread_id: str | None = None
++        self.archive_root = False
++        self.canonical_branch: str | None = None
+         self._reader = threading.Thread(target=self._read, daemon=True)
+         self._reader.start()
+ 
+@@ -192,6 +226,11 @@ class AppServerPhaseDriver:
+         except queue.Empty as error:
+             raise TimeoutError from error
+         if message is self._EOF:
++            try:
++                # Keep end-of-stream visible to later teardown requests.
++                self._messages.put_nowait(self._EOF)
++            except queue.Full:
++                pass
+             raise RuntimeError("Codex app-server stopped")
+         if isinstance(message, BaseException):
+             if isinstance(message, RuntimeError):
+@@ -274,6 +313,9 @@ class AppServerPhaseDriver:
+         if method == "thread/started":
+             thread = params.get("thread")
+             if isinstance(thread, dict) and isinstance(thread.get("id"), str):
++                self.__dict__.setdefault("_started_threads", {})[thread["id"]] = (
++                    thread_parent(thread, params)
++                )
+                 self.observer.feed(
+                     json.dumps({"type": "thread.started", "thread_id": thread["id"]})
+                 )
+@@ -345,5 +387,52 @@ class AppServerPhaseDriver:
+     def last_agent_message(self) -> str | None:
+         return self._last_agent_message
+ 
++    def owned_descendants(self, root: str) -> list[str]:
++        """Return started threads whose started ancestry reaches the started root."""
++        started = self._started_threads
++        if root not in started:
++            return []
++        owned: list[str] = []
++        for thread_id in started:
++            seen = {thread_id}
++            parent = started[thread_id]
++            while parent in started and parent not in seen and parent != root:
++                seen.add(parent)
++                parent = started[parent]
++            if thread_id != root and parent == root:
++                owned.append(thread_id)
++        return owned
++
++    def _finish_root(self) -> list[tuple[str, BaseException]]:
++        root = self.root_thread_id
++        failures: list[tuple[str, BaseException]] = []
++        if not root or root not in self._started_threads:
++            return failures
++        branch = self.canonical_branch
++        if isinstance(branch, str) and branch:
++            for child in self.owned_descendants(root):
++                try:
++                    self.request(
++                        "thread/metadata/update",
++                        {"threadId": child, "gitInfo": {"branch": branch}},
++                    )
++                except Exception as error:
++                    failures.append((f"metadata update for {child}", error))
++        try:
++            self.request("thread/archive", {"threadId": root})
++        except Exception as error:
++            failures.append((f"archive of {root}", error))
++        return failures
++
+     def close(self, *, failed: bool) -> None:
+-        terminate_and_reap(self.process)
++        failures: list[tuple[str, BaseException]] = []
++        try:
++            if not failed and getattr(self, "archive_root", False):
++                failures = self._finish_root()
++        finally:
++            terminate_and_reap(self.process)
++        if failures:
++            detail = "; ".join(f"{name}: {error}" for name, error in failures)
++            raise RuntimeError(
++                f"Codex app-server session cleanup failed: {detail}"
++            ) from failures[0][1]

@@ -1,0 +1,63 @@
+    def test_run_captures_success_and_returns_child_status(self) -> None:
+        with tempfile.TemporaryDirectory() as name:
+            root = Path(name)
+            directory = root / ".confidence"
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPT),
+                    "run",
+                    "--id",
+                    "captured",
+                    "--directory",
+                    str(directory),
+                    "--cwd",
+                    str(root),
+                    "--",
+                    sys.executable,
+                    "-c",
+                    "print('proof')",
+                ],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(result.stdout, "proof\n")
+            record = json.loads(
+                (directory / "runs" / "captured.json").read_text()
+            )
+            self.assertEqual(record["exit_code"], 0)
+            self.assertEqual(
+                record["log_sha256"],
+                confidence.sha256_file(directory / "runs" / "captured.log"),
+            )
+
+    def test_run_records_failure_and_returns_child_status(self) -> None:
+        with tempfile.TemporaryDirectory() as name:
+            root = Path(name)
+            directory = root / ".confidence"
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPT),
+                    "run",
+                    "--id",
+                    "failed",
+                    "--directory",
+                    str(directory),
+                    "--",
+                    sys.executable,
+                    "-c",
+                    "raise SystemExit(7)",
+                ],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(result.returncode, 7)
+            record = json.loads((directory / "runs" / "failed.json").read_text())
+            self.assertEqual(record["exit_code"], 7)
+
+    def test_run_times_out_and_records_the_stop_reason(self) -> None:
+        with tempfile.TemporaryDirectory() as name:
+            directory = Path(name) / ".confidence"
+            result = subprocess.run(

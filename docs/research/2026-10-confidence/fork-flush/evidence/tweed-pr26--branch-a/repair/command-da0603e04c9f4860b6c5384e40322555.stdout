@@ -1,0 +1,65 @@
+diff --git a/tests/test_bonaparte.py b/tests/test_bonaparte.py
+index dcc3a09..d0e310e 100644
+--- a/tests/test_bonaparte.py
++++ b/tests/test_bonaparte.py
+@@ -1490,6 +1490,60 @@ class BonaparteRunnerTests(unittest.TestCase):
+         with self.assertRaisesRegex(RuntimeError, "receipt exceeded 4 KiB"):
+             RUNNER.serialize_review_receipt(baseline_accepted)
+ 
++    def test_non_review_receipt_limit_covers_emitted_line(self):
++        def line(value):
++            return (
++                json.dumps(value, ensure_ascii=False, separators=(",", ":")) + "\n"
++            ).encode("utf-8")
++
++        def run_main(receipt):
++            stdout = io.StringIO()
++            with (
++                mock.patch.dict(os.environ, {RUNNER.PHASE_CHILD_ENV: ""}, clear=False),
++                mock.patch.object(
++                    RUNNER,
++                    "parse",
++                    return_value=(ROOT, "implement", "Go.", None, None, "medium"),
++                ),
++                mock.patch.object(
++                    RUNNER,
++                    "acquire_progress_reporter",
++                    return_value=RUNNER.ProgressReporter(None),
++                ),
++                mock.patch.object(RUNNER, "run_and_checkpoint", return_value=receipt),
++                mock.patch.object(sys, "stdout", stdout),
++            ):
++                exit_code = RUNNER.main()
++            return exit_code, stdout.getvalue()
++
++        limit = RUNNER.RECEIPT_MAX_BYTES
++        multibyte_fit = {"x": "a" * 4085 + "é"}
++        multibyte_over = {"x": "a" * 4086 + "é"}
++        self.assertEqual(len(line(multibyte_fit)), limit)
++        self.assertEqual(len(line(multibyte_over)), limit + 1)
++        serialized = RUNNER.serialize_receipt(multibyte_fit)
++        self.assertEqual((serialized + "\n").encode("utf-8"), line(multibyte_fit))
++        with self.assertRaisesRegex(RuntimeError, "receipt exceeded 4 KiB"):
++            RUNNER.serialize_receipt(multibyte_over)
++
++        oversized = {"phase": "implement", "state": "completed", "summary": ""}
++        oversized["summary"] = "Z" * (limit + 1 - len(line(oversized)))
++        self.assertEqual(len(line(oversized)), limit + 1)
++        exit_code, output = run_main(oversized)
++        self.assertEqual(exit_code, 1)
++        self.assertNotIn("ZZZZ", output)
++        self.assertEqual(output.count("\n"), 1)
++        self.assertLessEqual(len(output.encode("utf-8")), limit)
++        failure = json.loads(output)
++        self.assertEqual(failure["state"], "failed")
++        self.assertIn("4 KiB", failure["summary"])
++
++        exact = {**oversized, "summary": oversized["summary"][:-3] + "é"}
++        self.assertEqual(len(line(exact)), limit)
++        exit_code, output = run_main(exact)
++        self.assertEqual(exit_code, 0)
++        self.assertEqual(output.encode("utf-8"), line(exact))
++
+     def test_main_uses_review_serializer_only_after_review_is_selected(self):
+         cases = (
+             (RuntimeError("parse failed"), 1),

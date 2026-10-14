@@ -1,0 +1,62 @@
+diff --git a/bonaparte-launcher b/bonaparte-launcher
+index 67681b7..6d6b064 100755
+--- a/bonaparte-launcher
++++ b/bonaparte-launcher
+@@ -94,7 +94,17 @@ def latest_tag() -> tuple[str, str]:
+ 
+ 
+ def validate_release(release: Path) -> None:
+-    missing = [name for name in REQUIRED if not (release / name).exists()]
++    root = release.resolve()
++
++    def valid(name: str) -> bool:
++        path = release / name
++        return (
++            not path.is_symlink()
++            and path.is_file()
++            and path.resolve().is_relative_to(root)
++        )
++
++    missing = [name for name in REQUIRED if not valid(name)]
+     if missing:
+         raise RuntimeError(f"release is missing {', '.join(missing)}")
+     for name in (
+@@ -109,6 +119,7 @@ def validate_release(release: Path) -> None:
+         compile(source.read_text(), str(source), "exec")
+     environment = updater_environment()
+     environment["BONAPARTE_AUTO_UPDATE"] = "0"
++    environment["PYTHONDONTWRITEBYTECODE"] = "1"
+     subprocess.run(
+         [sys.executable, str(release / "bonaparte"), "--help"],
+         check=True,
+@@ -189,9 +200,30 @@ def automatic_update(home: Path) -> None:
+         print(f"bonaparte: automatic update failed: {error}", file=sys.stderr)
+ 
+ 
++def status(home: Path) -> int:
++    """Report installed and latest stable release without changing any state."""
++
++    installed = current_release(home).name
++    print(f"installed: {installed}")
++    try:
++        latest, _ = latest_tag()
++    except Exception as error:
++        print("latest: unavailable")
++        print("current: unknown")
++        print(f"bonaparte: cannot resolve latest release: {error}", file=sys.stderr)
++        return 1
++    installed_version = tag_version(installed)
++    is_current = bool(installed_version and installed_version >= tag_version(latest))
++    print(f"latest: {latest}")
++    print(f"current: {'yes' if is_current else 'no'}")
++    return 0
++
++
+ def main() -> int:
+     home = bonaparte_home()
+     try:
++        if sys.argv[1:] == ["status"]:
++            return status(home)
+         migrate_autoresearch_link(home)
+         if sys.argv[1:] == ["update"]:
+             tag = update(home)

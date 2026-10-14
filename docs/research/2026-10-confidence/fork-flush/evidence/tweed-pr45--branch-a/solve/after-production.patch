@@ -1,0 +1,97 @@
+diff --git a/skills/confidence-protocol/scripts/confidence.py b/skills/confidence-protocol/scripts/confidence.py
+index 6fca7f3..5e20e70 100644
+--- a/skills/confidence-protocol/scripts/confidence.py
++++ b/skills/confidence-protocol/scripts/confidence.py
+@@ -248,6 +248,24 @@ def git_workspace_fingerprint(cwd: Path, evidence_directory: Path) -> dict[str,
+     return {"kind": "git", "root": str(root), "sha256": digest.hexdigest()}
+ 
+ 
++def observe_workspace(cwd: Path, evidence_directory: Path) -> dict[str, str] | None:
++    """Fingerprint the workspace, treating an unavailable Git as unknown."""
++    try:
++        return git_workspace_fingerprint(cwd, evidence_directory)
++    except OSError:
++        return None
++
++
++def workspace_binding(
++    before: dict[str, str] | None, after: dict[str, str] | None
++) -> str:
++    if before is None or after is None:
++        return "unknown"
++    if before["root"] == after["root"] and before["sha256"] == after["sha256"]:
++        return "unchanged"
++    return "changed"
++
++
+ def stop_process(process: subprocess.Popen[bytes]) -> None:
+     if os.name != "posix":
+         if process.poll() is not None:
+@@ -761,6 +779,7 @@ def command_run(args: argparse.Namespace) -> int:
+         print(f"run cwd is not a directory: {cwd}", file=sys.stderr)
+         return 125
+ 
++    workspace_before = observe_workspace(cwd, directory)
+     started_at = utc_now()
+     try:
+         log = log_path.open("xb")
+@@ -844,7 +863,8 @@ def command_run(args: argparse.Namespace) -> int:
+             output.write(f"\n[confidence runner stopped: {termination_reason}]\n".encode())
+ 
+     digest = hashlib.sha256()
+-    stream_to_terminal = True
++    # JSON mode suppresses replay only; the full log is still captured and hashed.
++    stream_to_terminal = not args.json
+     try:
+         with log_path.open("rb") as captured:
+             for chunk in iter(lambda: captured.read(65536), b""):
+@@ -866,7 +886,8 @@ def command_run(args: argparse.Namespace) -> int:
+         return 125
+ 
+     ended_at = utc_now()
+-    workspace = git_workspace_fingerprint(cwd, directory)
++    workspace = observe_workspace(cwd, directory)
++    binding = workspace_binding(workspace_before, workspace)
+     record = {
+         "version": 1,
+         "id": run_id,
+@@ -879,6 +900,7 @@ def command_run(args: argparse.Namespace) -> int:
+         "resolved_executable": shutil.which(argv[0])
+         or str((cwd / argv[0]).resolve()),
+         "workspace": workspace,
++        "workspace_binding": binding,
+         "log": f"runs/{run_id}.log",
+         "log_sha256": digest.hexdigest(),
+     }
+@@ -891,6 +913,19 @@ def command_run(args: argparse.Namespace) -> int:
+             file=sys.stderr,
+         )
+         return 125
++    if args.json:
++        receipt = {
++            "id": run_id,
++            "exit_code": exit_code,
++            "record": f"runs/{run_id}.json",
++            "log": record["log"],
++            "workspace_binding": binding,
++        }
++        try:
++            sys.stdout.write(json.dumps(receipt, separators=(",", ":")) + "\n")
++            sys.stdout.flush()
++        except BrokenPipeError:
++            pass
+     print(
+         f"run {run_id}: exit {exit_code}, log {record['log']}",
+         file=sys.stderr,
+@@ -1140,6 +1175,11 @@ def parser() -> argparse.ArgumentParser:
+         type=positive_int,
+         default=DEFAULT_MAX_LOG_BYTES,
+     )
++    run.add_argument(
++        "--json",
++        action="store_true",
++        help="print a compact JSON receipt instead of replaying captured output",
++    )
+     run.add_argument("command", nargs=argparse.REMAINDER)
+     run.set_defaults(handler=command_run)
+ 

@@ -1,0 +1,1 @@
+{"id": "fa1ea77618764c8d967eeac91de4bd09", "argv": ["/bin/bash", "-c", "sed -n 200,250p bonaparte; grep -n 'serialize_receipt\\|serialize_review_receipt\\|emit_serialized\\|emit(' bonaparte; grep -n 'serialize_receipt\\|4096\\|RECEIPT_MAX\\|too large\\|exceeds' tests/test_bonaparte.py | head -40"], "timeout": 90.0}

@@ -1,0 +1,71 @@
+{
+  "kind": "focused adversarial review receipt",
+  "observed_at_utc": "2026-10-13T19:25:38.010522+00:00",
+  "reviewer": "/root/opus_revision_review",
+  "model": "unknown (no reviewer runtime model receipt available)",
+  "harness": "Codex native collaboration subagent; visible functions/exec tools",
+  "independent": true,
+  "scope": [
+    "C1",
+    "C2",
+    "C3",
+    "C4"
+  ],
+  "status": "pass",
+  "judgment_scope": "No concrete guidance/source blockers after correction; not overall obligation completion, release/install success or efficacy.",
+  "question": "Does the actual final guidance/source violate C1\u2013C4 invariants or produce a rejecting action in the four independently designed scenarios?",
+  "findings": [],
+  "corrected_finding_reference": "initial-findings.md",
+  "source_head": "8f2a1ceb5756da134b79032d84c6748e63105fe2",
+  "selected_source_sha256": {
+    ".codex-plugin/plugin.json": "cc54347f015adde7227e01fc51181143b99836db52d2fd2193078d56410c4794",
+    "CHANGELOG.md": "7d502e2046056615b6d70c520fb463dfdb94858bd7fe8c39a7380b95d86cde79",
+    "README.md": "8243b57c1812282f563c7e79e4799b2cffef2c021b1bfc5243779088b74686c3",
+    "docs/research/2026-10-confidence/opus-led-redesign.md": "1a912cdc805f380a537963e374043b165ee4628c2d8bfb098b6d2fcb1f15b85f",
+    "skills/confidence-protocol/SKILL.md": "3215e7572ebdfb3f41c26441541debf58592ae84b6128b34aa2e3546ff881902",
+    "skills/confidence-protocol/references/harnesses.md": "3cb6f983e02552edd44103e286d699cfcf98deaf398dfd0a7e4192e152062b53",
+    "skills/confidence-protocol/references/intent-flows.md": "f7aa43381554017d37e24db403235b655993587d461f51a665a90201d0305ff3",
+    "skills/confidence-protocol/references/model-routing.md": "1be78cca99eee035999944b103002f661d3294db4a3ed08af6ce8b675d914092",
+    "skills/confidence-protocol/references/question-patterns.md": "d4815150b8418b5f747f909f4e141f8f42e6ee2890c70cf220a1ac8cf6973295",
+    "skills/confidence-protocol/scripts/diagnostics.py": "f54829b6ed7cc7b74c3ef50c06b1db0079cd5d1bd9ac6bda814e70fd8ebfdb82"
+  },
+  "contract_sha256": "bdaa89c25d79130a097a5b99834a6cd2344f44ef6c2e7c61ccad0d712b376566",
+  "artifact_sha256": {
+    "REVIEW.md": "7523d47d7297df9318b76990ffa6c6909e540b698f0618ce1302c4f163e65d68",
+    "scenario-pass.json": "b0b7e5f2e719133aa7fb713045e8c8958991882a580e889f06857824133ec8f9",
+    "source-inspection.json": "d670e71608e04e956443af65c1bf2584a90853652cfea7b876807432a4cf6a0d",
+    "initial-findings.md": "3c95bb8a47c2005d8b746080eb1e94515243ec1b438c7f1ab79bd0db94adf9be"
+  },
+  "limits": "Focused source/link/receipt inspection and one qualitative scenario pass. No model efficacy trial, component execution, new tests, full suite, release/archive/install/doctor/CI checks.",
+  "selected_source_stable_at_seal": true,
+  "source_head_at_final_seal": "04d70c3d0a1cda99656ecdee5b640b54dafad649",
+  "opus_receipts": [
+    {
+      "sha256": "01253622f6f5473035ee08f7092184b4a9742695798de0e12f32dd2d80196927",
+      "exit_code": 0,
+      "observed_models": [
+        "claude-opus-5-5"
+      ],
+      "timed_out": false,
+      "terminal_subtype": "success",
+      "terminal_is_error": false,
+      "permission_denials": [],
+      "stream_sha256": "f6b9c2ef9acfcb79af23a53ca654c6cb3f1e67b0d7d46e5865423d87c10d5464"
+    },
+    {
+      "sha256": "efe2ce405eb6421d6308746abf45e11bfd97e2718187f2b76ce326412b250261",
+      "exit_code": 0,
+      "observed_models": [
+        "claude-opus-5-5"
+      ],
+      "timed_out": false,
+      "terminal_subtype": "success",
+      "terminal_is_error": false,
+      "permission_denials": [],
+      "stream_sha256": "4caaf06be67d088c2f92ed362ed5e8f94ef00108a47cfd17b933482c7578001f"
+    }
+  ],
+  "original_receipt_sha256": "dcb4be28c29a089fef5f025506fe357ab00dd8c8763be973485718642f19d887",
+  "published_review_sha256": "a36a88d3a14d3757bfd884bfca162d4b176edd2ee90d14829900d59749733e02",
+  "redaction": "Local absolute source/receipt paths removed; actual original artifact digests retained."
+}

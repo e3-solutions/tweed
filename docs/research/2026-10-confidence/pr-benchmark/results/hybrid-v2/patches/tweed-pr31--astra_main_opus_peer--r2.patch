@@ -1,0 +1,163 @@
+diff --git a/bonaparte b/bonaparte
+index 26a168f..9c4b077 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -409,6 +409,10 @@ def require_pull_request(receipt: dict, phase: str) -> None:
+         raise RuntimeError(f"completed {phase} is missing its pull request")
+ 
+ 
++class PhaseProtocolError(RuntimeError):
++    """An uncorrelated protocol response cannot establish a recovery point."""
++
++
+ def run_phase(
+     repository: Path,
+     phase: str,
+@@ -544,6 +548,7 @@ def run_phase(
+         )
+     observer = EventObserver(_ACTIVE_PROGRESS)
+     driver = None
++    validated_session_id = None
+     failed = True
+     try:
+         driver = AppServerPhaseDriver(repository, observer)
+@@ -572,9 +577,10 @@ def run_phase(
+         if not isinstance(thread, dict) or not isinstance(thread.get("id"), str):
+             raise RuntimeError("Codex app-server returned no thread identity")
+         session_id = thread["id"]
+-        observer.observation["session_id"] = session_id
+         if resume_session_id and session_id != resume_session_id:
+             raise RuntimeError("Codex resumed a different session")
++        validated_session_id = session_id
++        observer.observation["session_id"] = session_id
+         turn_params = {
+             "threadId": session_id,
+             "input": [{"type": "text", "text": prompt}],
+@@ -611,12 +617,13 @@ def run_phase(
+                         _method, completed_turn = driver.observe_notification(message)
+                         if completed_turn is not None:
+                             if completed_turn.get("id") != turn_id:
+-                                raise RuntimeError(
++                                raise PhaseProtocolError(
+                                     "Codex app-server completed the wrong turn"
+                                 )
+                             terminal = completed_turn
+                         continue
+-                    raise RuntimeError("Codex app-server response correlation failed")
++                    raise PhaseProtocolError("Codex app-server response correlation failed")
++                observer.observation["steered"] = True
+                 steer_id = driver.send(
+                     "turn/steer",
+                     {
+@@ -650,11 +657,11 @@ def run_phase(
+                 _method, completed_turn = driver.observe_notification(message)
+                 if completed_turn is not None:
+                     if completed_turn.get("id") != turn_id:
+-                        raise RuntimeError("Codex app-server completed the wrong turn")
++                        raise PhaseProtocolError("Codex app-server completed the wrong turn")
+                     terminal = completed_turn
+                 continue
+             if not steered or message.get("id") != steer_id:
+-                raise RuntimeError("Codex app-server response correlation failed")
++                raise PhaseProtocolError("Codex app-server response correlation failed")
+             if "error" in message:
+                 raise RuntimeError(
+                     f"Codex app-server rejected turn/steer: {message['error']}"
+@@ -687,6 +694,8 @@ def run_phase(
+         observed = observer.finish()
+         if observation is not None:
+             observation.update(observed)
++            # Progress notifications are not authoritative thread identities.
++            observation["session_id"] = validated_session_id
+         if driver is not None:
+             try:
+                 driver.close(failed=failed)
+@@ -1112,6 +1121,15 @@ def resume_checkpoint(
+     return receipt, 0
+ 
+ 
++class CheckpointedPhaseFailure(Exception):
++    """A failed phase whose continuation has already been saved durably."""
++
++    def __init__(self, receipt: dict, exit_code: int):
++        super().__init__(receipt["summary"])
++        self.receipt = receipt
++        self.exit_code = exit_code
++
++
+ def run_and_checkpoint(
+     repository: Path,
+     phase: str,
+@@ -1123,16 +1141,49 @@ def run_and_checkpoint(
+ ) -> dict:
+     base_git = capture_git_state(repository) if session_id is None else None
+     observation: dict = {}
+-    receipt = run_phase(
+-        repository,
+-        phase,
+-        phase_input,
+-        session_id,
+-        model,
+-        reasoning,
+-        observation=observation,
+-        soft_phase_budget_seconds=soft_phase_budget_seconds,
+-    )
++    try:
++        receipt = run_phase(
++            repository,
++            phase,
++            phase_input,
++            session_id,
++            model,
++            reasoning,
++            observation=observation,
++            soft_phase_budget_seconds=soft_phase_budget_seconds,
++        )
++    except (Exception, KeyboardInterrupt) as error:
++        coordinator_session = observation.get("session_id")
++        interrupted = isinstance(error, KeyboardInterrupt)
++        if (
++            isinstance(error, PhaseProtocolError)
++            or not coordinator_session
++            or (session_id is not None and coordinator_session != session_id)
++            or not (interrupted or observation.get("steered"))
++        ):
++            raise
++        summary = (
++            "Bonaparte was interrupted."
++            if interrupted
++            else str(error).replace("\n", " ")[:800]
++        )
++        receipt = fail(summary)
++        receipt.update(phase=phase, question=SOFT_BUDGET_CONTINUE_QUESTION)
++        checkpoint = new_question_checkpoint(
++            repository,
++            phase,
++            receipt,
++            coordinator_session,
++            model,
++            reasoning,
++            observation,
++            base_git or capture_git_state(repository),
++            soft_phase_budget_seconds,
++        )
++        raise CheckpointedPhaseFailure(
++            checkpoint_receipt(checkpoint, state="failed", summary=summary),
++            130 if interrupted else 1,
++        ) from error
+     if receipt["state"] != "needs-input":
+         return receipt
+     coordinator_session = observation.get("session_id") or session_id
+@@ -1343,6 +1394,12 @@ def main() -> int:
+             if terminal_state not in PROGRESS_TERMINAL_STATES:
+                 raise ValueError("invalid progress state")
+             serialized_receipt = serialize_receipt(result_receipt)
++        except CheckpointedPhaseFailure as error:
++            progress.stop_heartbeat()
++            progress.report("finalizing")
++            serialized_receipt = serialize_receipt(error.receipt)
++            terminal_state = "failed"
++            exit_code = error.exit_code
+         except KeyboardInterrupt:
+             progress.stop_heartbeat()
+             progress.report("finalizing")

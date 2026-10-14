@@ -1,0 +1,57 @@
+                )
+            else:
+                progress = acquire_progress_reporter(selected_phase == "review")
+                progress.start()
+                result_receipt = run_and_checkpoint(
+                    repo,
+                    selected_phase,
+                    supplied_input,
+                    None,
+                    selected_model,
+                    selected_reasoning,
+                )
+            progress.stop_heartbeat()
+            progress.report("finalizing")
+            terminal_state = result_receipt["state"]
+            if terminal_state not in PROGRESS_TERMINAL_STATES:
+                raise ValueError("invalid progress state")
+            serializer = (
+                serialize_review_receipt
+                if selected_phase == "review"
+                else serialize_receipt
+            )
+            serialized_receipt = serializer(result_receipt)
+        except KeyboardInterrupt:
+            progress.stop_heartbeat()
+            progress.report("finalizing")
+            serializer = (
+                serialize_review_receipt
+                if selected_phase == "review"
+                else serialize_receipt
+            )
+            serialized_receipt = serializer(fail("Bonaparte was interrupted."))
+            terminal_state = "failed"
+            exit_code = 130
+        except Exception as error:  # noqa: BLE001
+            progress.stop_heartbeat()
+            progress.report("finalizing")
+            serializer = (
+                serialize_review_receipt
+                if selected_phase == "review"
+                else serialize_receipt
+            )
+            serialized_receipt = serializer(
+                fail(str(error).replace("\n", " ")[:800])
+            )
+            terminal_state = "failed"
+            exit_code = 1
+
+        emit_serialized(serialized_receipt)
+        progress.report(terminal_state)
+        return exit_code
+    finally:
+        progress.close()
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

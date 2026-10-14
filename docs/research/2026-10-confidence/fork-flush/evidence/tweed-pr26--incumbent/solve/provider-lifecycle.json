@@ -1,0 +1,173 @@
+{
+  "process_exit": 0,
+  "timed_out": false,
+  "wall_seconds": 137.94940195899835,
+  "process_cleanup_scope": "original_process_group",
+  "detached_descendants_contained": false,
+  "guarded_new_session_processes": 1,
+  "process_cleanup_seconds": 2.0125000446569175e-05,
+  "stream_changed_during_cleanup": false,
+  "requested_effort": "high",
+  "observed_assistant_models": [
+    "claude-opus-5-5"
+  ],
+  "usage": {
+    "input_tokens": 32,
+    "cache_creation_input_tokens": 46543,
+    "cache_read_input_tokens": 288272,
+    "output_tokens": 6591,
+    "output_tokens_details": {
+      "thinking_tokens": 1620
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 46543,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 1380,
+        "cache_read_input_tokens": 41354,
+        "cache_creation_input_tokens": 5189,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 5189
+        },
+        "type": "message"
+      }
+    ],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 32,
+      "outputTokens": 6591,
+      "cacheReadInputTokens": 288272,
+      "cacheCreationInputTokens": 46543,
+      "webSearchRequests": 0,
+      "costUSD": 0.5619464000000001,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 1620,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "total_cost_usd": 0.5619464000000001,
+  "terminal": {
+    "duration_api_ms": 63118,
+    "stop_reason": "tool_use",
+    "session_id": "1aa38eba-6b4d-4ce8-909b-96ebc5b81a76",
+    "total_cost_usd": 0.5619464000000001,
+    "usage": {
+      "input_tokens": 32,
+      "cache_creation_input_tokens": 46543,
+      "cache_read_input_tokens": 288272,
+      "output_tokens": 6591,
+      "output_tokens_details": {
+        "thinking_tokens": 1620
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 46543,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "global",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 1380,
+          "cache_read_input_tokens": 41354,
+          "cache_creation_input_tokens": 5189,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 5189
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard",
+      "fallback_credit": null
+    },
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 32,
+        "outputTokens": 6591,
+        "cacheReadInputTokens": 288272,
+        "cacheCreationInputTokens": 46543,
+        "webSearchRequests": 0,
+        "costUSD": 0.5619464000000001,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 1620,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "permission_denials": [],
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "fast_mode_disabled_reason": "sdk_opt_in_required",
+    "subagent_stats": {
+      "spawned": 0,
+      "requested": {
+        "background": 0,
+        "foreground": 0,
+        "unset": 0
+      },
+      "started_in_background": 0,
+      "max_depth": 0,
+      "spawned_by_subagents": 0,
+      "completed": 0,
+      "failed": 0,
+      "killed": {
+        "parent": 0,
+        "user": 0,
+        "system": 0
+      },
+      "refused": {
+        "depth_limit": 0,
+        "concurrency_limit": 0,
+        "budget": 0
+      },
+      "by_type": {}
+    },
+    "is_error": false,
+    "num_turns": 22,
+    "subtype": "success",
+    "api_error_status": null,
+    "result": "{\"complete\":true,\"summary\":\"Fixed it: for non-review phases, Bonaparte now counts the trailing newline when it applies the 4 KiB (4096-byte) limit to the receipt line it prints. The visible check passes. The full Bonaparte suite has 2 errors. One is an old test that expects the bug (explained below). The other is a sandbox permission error.\\n\\n**What changed:** In `bonaparte`, `serialize_receipt` now measures `(output + \\\"\\\\n\\\").encode(\\\"utf-8\\\")` against `RECEIPT_MAX_BYTES`, so it checks exactly the bytes `emit_serialized` writes. Before this, the non-review check measured only the JSON, so a 4096-byte JSON was accepted and printed as a 4097-byte line. The review check already counted the newline and is unchanged. JSON output, UTF-8 output, the error message and the way phases pick their check are also unchanged. If a receipt is too large, the check raises an error before anything is written. `main()` already handles that error by printing a small \\\"failed\\\" receipt instead. That's 3 lines added and 5 removed, all in `bonaparte`.\\n\\n**Checks run:**\\n- **Visible check:** `python3 -B -m unittest tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex` passed.\\n- **Boundary script** (in the scratch folder, `execution-scratch/probe.py`):\\n  - With plain ASCII, a 4095-byte JSON is printed as exactly 4096 bytes, ends in a newline and reads back to the same values. A 4096-byte JSON is rejected and nothing is printed.\\n  - With the 2-byte character `\u00e9`, a 4094-byte JSON is printed as 4095 bytes. A 4096-byte JSON is rejected and nothing is printed.\\n  - The review check rejects the same oversized receipts.\\n  - A small receipt with CJK characters is printed as-is, not escaped, and its values are unchanged.\\n- **Wider run:** `tests.test_bonaparte`, `tests.test_checkpoint` and `tests.test_handoff` ran 65 tests: 63 passed and 2 errored.\\n\\n**The 2 errors:**\\n1. `test_receipt_size_boundary_is_review_only` is an old test that requires the bug. It asserts that a 4096-byte JSON prints as `RECEIPT_MAX_BYTES + 1` bytes, which this task removes, so it now fails by design. I left it as it was because the instructions say to keep old tests intact.\\n2. `test_progress_fd_is_scrubbed_and_never_sent_to_children` stops at `os.fstat(2)` with \\\"PermissionError: Operation not permitted\\\". The sandbox causes this; it has nothing to do with the receipt code.\\n\\nMy first version made the review check call the non-review one. That broke `test_main_uses_review_serializer_only_after_review_is_selected`, which checks that the non-review check is never called during review, so I put the review check back to its own code. That test now passes.\\n\\n**Not done:** native progress streaming and the rest of PR26 were out of scope. Nobody else has reviewed this yet; the separate final checker will do that. To undo the change, revert the edit to `serialize_receipt` in `bonaparte`.\",\"remaining\":[\"Out of scope by instruction: native progress streaming and the rest of PR26.\",\"The old test tests.test_bonaparte...test_receipt_size_boundary_is_review_only still expects the old 4097-byte line and now fails by design. It was left unedited because old tests must stay intact.\",\"test_progress_fd_is_scrubbed_and_never_sent_to_children could not run here: the sandbox blocks os.fstat(2) (PermissionError). It is unrelated to this change.\",\"The fix has not been reviewed by anyone else yet; the separate final checker will do that.\"]}",
+    "structured_output": {
+      "complete": true,
+      "summary": "Fixed it: for non-review phases, Bonaparte now counts the trailing newline when it applies the 4 KiB (4096-byte) limit to the receipt line it prints. The visible check passes. The full Bonaparte suite has 2 errors. One is an old test that expects the bug (explained below). The other is a sandbox permission error.\n\n**What changed:** In `bonaparte`, `serialize_receipt` now measures `(output + \"\\n\").encode(\"utf-8\")` against `RECEIPT_MAX_BYTES`, so it checks exactly the bytes `emit_serialized` writes. Before this, the non-review check measured only the JSON, so a 4096-byte JSON was accepted and printed as a 4097-byte line. The review check already counted the newline and is unchanged. JSON output, UTF-8 output, the error message and the way phases pick their check are also unchanged. If a receipt is too large, the check raises an error before anything is written. `main()` already handles that error by printing a small \"failed\" receipt instead. That's 3 lines added and 5 removed, all in `bonaparte`.\n\n**Checks run:**\n- **Visible check:** `python3 -B -m unittest tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex` passed.\n- **Boundary script** (in the scratch folder, `execution-scratch/probe.py`):\n  - With plain ASCII, a 4095-byte JSON is printed as exactly 4096 bytes, ends in a newline and reads back to the same values. A 4096-byte JSON is rejected and nothing is printed.\n  - With the 2-byte character `\u00e9`, a 4094-byte JSON is printed as 4095 bytes. A 4096-byte JSON is rejected and nothing is printed.\n  - The review check rejects the same oversized receipts.\n  - A small receipt with CJK characters is printed as-is, not escaped, and its values are unchanged.\n- **Wider run:** `tests.test_bonaparte`, `tests.test_checkpoint` and `tests.test_handoff` ran 65 tests: 63 passed and 2 errored.\n\n**The 2 errors:**\n1. `test_receipt_size_boundary_is_review_only` is an old test that requires the bug. It asserts that a 4096-byte JSON prints as `RECEIPT_MAX_BYTES + 1` bytes, which this task removes, so it now fails by design. I left it as it was because the instructions say to keep old tests intact.\n2. `test_progress_fd_is_scrubbed_and_never_sent_to_children` stops at `os.fstat(2)` with \"PermissionError: Operation not permitted\". The sandbox causes this; it has nothing to do with the receipt code.\n\nMy first version made the review check call the non-review one. That broke `test_main_uses_review_serializer_only_after_review_is_selected`, which checks that the non-review check is never called during review, so I put the review check back to its own code. That test now passes.\n\n**Not done:** native progress streaming and the rest of PR26 were out of scope. Nobody else has reviewed this yet; the separate final checker will do that. To undo the change, revert the edit to `serialize_receipt` in `bonaparte`.",
+      "remaining": [
+        "Out of scope by instruction: native progress streaming and the rest of PR26.",
+        "The old test tests.test_bonaparte...test_receipt_size_boundary_is_review_only still expects the old 4097-byte line and now fails by design. It was left unedited because old tests must stay intact.",
+        "test_progress_fd_is_scrubbed_and_never_sent_to_children could not run here: the sandbox blocks os.fstat(2) (PermissionError). It is unrelated to this change.",
+        "The fix has not been reviewed by anyone else yet; the separate final checker will do that."
+      ]
+    },
+    "ttft_ms": 2089,
+    "type": "result",
+    "duration_ms": 137361,
+    "uuid": "4f66fdea-1468-434e-ae3c-621597084bde",
+    "ttft_stream_ms": 1181,
+    "time_to_request_ms": 419,
+    "first_content_frame_ms": 1181,
+    "queued_turn_count": 0,
+    "result_index": 0
+  }
+}

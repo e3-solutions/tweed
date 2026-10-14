@@ -1,0 +1,2146 @@
+{
+  "schema_version": 1,
+  "post_outcome": true,
+  "assigned": 6,
+  "sealed_primary_metric_unchanged": true,
+  "registration_sha256": "e2fddcd40281f75c1863bc2a2301d02eb36946cb1ff4fdf392f503394be74948",
+  "requests_sha256": "a607e7df30d78568f07037ad65759a903b013737aa6b29da71bc1f7e91f0e78c",
+  "closure_sha256": "50c969621490ec20c6ba747bb2496876544d1f0a748d9c682480078b51277766",
+  "sealed_controller_sha256": "7ec25f9122b6c80f5d6bcb6dd0383369d81d021eb1c633a7e31ae9bdf3ef70bc",
+  "post_outcome_exporter_sha256": "55fc7089944024d1584a97915ffa3aa79e8b7319d97824ab866686354a692bba",
+  "primary_by_arm": {
+    "original": {
+      "assigned": 3,
+      "first_pass": 2,
+      "final_accepted": 0,
+      "actual_repairs": 0
+    },
+    "revised": {
+      "assigned": 3,
+      "first_pass": 1,
+      "final_accepted": 0,
+      "actual_repairs": 0
+    }
+  },
+  "rows": [
+    {
+      "trial_id": "tweed-pr20--revised--r1",
+      "task_id": "tweed-pr20",
+      "arm_id": "revised",
+      "repeat": 1,
+      "primary": {
+        "status": "completed",
+        "first_pass": false,
+        "actual_repair": false,
+        "accepted": false,
+        "unresolved_findings": []
+      },
+      "recorded_primary_receipt_sha256": "93dca369b04271bdb80b6b0b14ded3c2607c83858121962202f7648d7e905994",
+      "supplemental_input_reconstruction": {
+        "main_launch_source_sha256": "9172aadae5a0beadec6bf443700e7082608b303576682ff904a06e9f5d029e9e",
+        "stage_envelopes": {
+          "main": {
+            "request_json_sha256": "e49936c6057c6cafd245e6f6419a29295fb04e62b522cbdc9ca1b31ee627badf",
+            "prompt_sha256": "9173dcc3ec832e30b125c092324d663db950b85afbd63946acb0cdd80e63b8c8",
+            "server_config_sha256": "38aa26a48dd39d602faa8e0292001904b881e83cdc6fe3ac084cd7aca3c20f83",
+            "full_argv_mcp_prompt_reconstruction_passed": true
+          },
+          "closure": {
+            "request_json_sha256": "8efcbe69e3178af0915620edbf3528fcb94924090058dfea6a92641c69b495e7",
+            "prompt_sha256": "8a3c9981373d78fd32f2e099ee94cb8b71d93b75539e621a2f8506f106e0bf1b",
+            "server_config_sha256": "99ae619737f374bbd08c8c7b33281a3bc5b8504bd9a59830a83c42de7028f338",
+            "full_argv_mcp_prompt_reconstruction_passed": true
+          },
+          "review": {
+            "request_json_sha256": "e20a927f3f98be6418feef3f69ff21b2db9219c894567be99a72588238d3bd1a",
+            "prompt_sha256": "f66cbd0ef4b1c71bf0d13928713c048f8db044f7e8ffb8749a993d7c3ff9d139",
+            "server_config_sha256": "812ec91950bbb930ad33213d1d609046274fbaae4ba529e2458ad2554f84d2d9",
+            "full_argv_mcp_prompt_reconstruction_passed": true
+          }
+        }
+      },
+      "stages": {
+        "main": {
+          "backend": "claude",
+          "requested_effort": "high",
+          "process_exit": 0,
+          "timed_out": false,
+          "wall_seconds": 170.92380804200002,
+          "total_cost_usd": 1.070319,
+          "stream_sha256": "e5c4aba9134f72613454552e97b265a2205fa03ea0ff699bcd37d8246cf2d2a6",
+          "request_sha256": "4851471a9f6e30c8f98a03bac4fd248761b63f215732fa0efef44dce6ed0aa05",
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false,
+          "guarded_new_session_processes": 1,
+          "stream_changed_during_cleanup": false,
+          "source_sha256_at_launch": "9172aadae5a0beadec6bf443700e7082608b303576682ff904a06e9f5d029e9e",
+          "source_sha256_after": "6d1fb324622cea73a8ee315be8ca9127ab7a39ab35ead33e4e8bf89934323a26",
+          "model_requested": "claude-opus-5-5",
+          "actual_model": "claude-opus-5-5",
+          "model_attribution": "assistant_event_observed",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "qualified": true,
+          "qualification_failures": [],
+          "usage": {
+            "input_tokens": 28,
+            "output_tokens": 15922,
+            "cache_read_input_tokens": 609035,
+            "cache_creation_input_tokens": 78745
+          },
+          "terminal_known": true,
+          "complete": true,
+          "remaining": [
+            "No real Codex run was done (by instruction): whether real Codex accepts the -m/-c settings, and a model name starting with '-' after -m, is untested.",
+            "Independent review was not done inside this stage; the Codex review follows.",
+            "Evidence was not recorded with the confidence tool; proof is the run_tests output only.",
+            "test_progress_fd_is_scrubbed_and_never_sent_to_children errors in this sandbox at os.fstat(2); it is caused by the sandbox but wasn't re-run on the unchanged baseline."
+          ],
+          "assigned_timeout_seconds": 480,
+          "assigned_budget_usd": 4,
+          "stage_receipt_sha256": "42dd7d18137278edad8c58e9169d99b5e385f73c889b40bfc19f2ba905de6178",
+          "raw_request_sha256": "e49936c6057c6cafd245e6f6419a29295fb04e62b522cbdc9ca1b31ee627badf",
+          "summary": "Implemented configurable model selection in bonaparte. --model (before the phase command) overrides BONAPARTE_MODEL, including a blank environment value. Values from either source are trimmed. A blank selected value raises \"must not be blank\" before Codex is located or run (checked in parse() and again at the start of run_phase). With neither source set, -m and the child model= field are left out, so the coordinator and default/worker/explorer children use Codex defaults; the prompt states this. An explicit model goes to the coordinator via -m and into all three child inline tables via a TOML basic-string encoder (escapes quotes, backslashes, control characters and DEL; names with lone surrogates are rejected). Medium reasoning and same-session resume are unchanged; the hard-coded gpt-5.6-sol constant was removed. parse() still returns a 4-tuple (a tuple subclass carrying .model), so existing callers and mocks keep working. README updated and 7 model-selection tests added. Visible checks pass. The full tests.test_bonaparte run is 34 pass and 1 sandbox error: test_progress_fd_is_scrubbed_and_never_sent_to_children fails at os.fstat(2), and a bare python3 -c 'import os; os.fstat(2)' fails the same way in this sandbox, so the cause is the sandbox and the changed code isn't involved. tests.test_handoff and tests.test_installation pass (8 tests)."
+        },
+        "review": {
+          "backend": "codex",
+          "requested_effort": "medium",
+          "process_exit": 0,
+          "timed_out": false,
+          "wall_seconds": 32.9933054159992,
+          "total_cost_usd": null,
+          "stream_sha256": "21c99edf88fc927b6954db874f8f4afcfc9e007433e1bca677d562f51b37c0a5",
+          "request_sha256": "1935216e39f8b4e33a9e89756b1d852d55867aa5414fb801b8f3493d77e531cc",
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false,
+          "guarded_new_session_processes": 1,
+          "stream_changed_during_cleanup": false,
+          "source_sha256_at_launch": "2bae9a887290e846a61aad6be80caa7c8894b4bad92e9382e12857ad4ce082ec",
+          "source_sha256_after": "2bae9a887290e846a61aad6be80caa7c8894b4bad92e9382e12857ad4ce082ec",
+          "model_requested": "gpt-6-astra",
+          "actual_model": null,
+          "model_attribution": "requested_only",
+          "observed_models": [],
+          "qualified": true,
+          "qualification_failures": [],
+          "usage": {
+            "input_tokens": 84111,
+            "output_tokens": 1088,
+            "cached_input_tokens": 52352
+          },
+          "terminal_known": true,
+          "complete": true,
+          "remaining": [],
+          "assigned_timeout_seconds": 180,
+          "assigned_budget_usd": null,
+          "stage_receipt_sha256": "185ae4ee927a2976a1a0efc4a4ec4490d1fd81ced53e7a43c2f34c81b27cc0f4",
+          "raw_request_sha256": "e20a927f3f98be6418feef3f69ff21b2db9219c894567be99a72588238d3bd1a",
+          "scope_limits": [
+            "Reviewed bonaparte and relevant test fixtures without modifying files or consulting policy.",
+            "Passed 12 offline, mocked public-entry scenarios covering defaults, precedence, trimming, blank rejection, child configuration encoding, medium reasoning, and same-session resume.",
+            "Live provider behavior and the full baseline suite were not independently exercised."
+          ]
+        },
+        "closure": {
+          "backend": "claude",
+          "requested_effort": "high",
+          "process_exit": 0,
+          "timed_out": false,
+          "wall_seconds": 84.6060086250036,
+          "total_cost_usd": 0.48352939999999994,
+          "stream_sha256": "b5ba5b8bf460a092c38aee6ec4cead0103c0d1939b50d139862fd8afff36e972",
+          "request_sha256": "63cef567b0006854ed794a6f65fc95336bcf4fbbdcbe44f81b15ee49d7810f66",
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false,
+          "guarded_new_session_processes": 1,
+          "stream_changed_during_cleanup": false,
+          "source_sha256_at_launch": "6d1fb324622cea73a8ee315be8ca9127ab7a39ab35ead33e4e8bf89934323a26",
+          "source_sha256_after": "6d1fb324622cea73a8ee315be8ca9127ab7a39ab35ead33e4e8bf89934323a26",
+          "model_requested": "claude-opus-5-5",
+          "actual_model": "claude-opus-5-5",
+          "model_attribution": "assistant_event_observed",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "qualified": true,
+          "qualification_failures": [],
+          "usage": {
+            "input_tokens": 24,
+            "output_tokens": 4215,
+            "cache_read_input_tokens": 238307,
+            "cache_creation_input_tokens": 43934
+          },
+          "terminal_known": true,
+          "complete": true,
+          "remaining": [
+            "I haven't run a real Codex session, so it's unconfirmed that real Codex accepts `-m` after `exec resume`. The old code passed `-m` there too, so this is unchanged.",
+            "A model name starting with '-' may need the `--model=<name>` form on the command line, and Codex might also read it as a flag after `-m`. I didn't test this.",
+            "One existing test, `test_progress_fd_is_scrubbed_and_never_sent_to_children`, couldn't run here because the sandbox blocks its `os.fstat(2)` call. I couldn't confirm it fails the same way without this change, because the repository history is read-only here."
+          ],
+          "assigned_timeout_seconds": 300,
+          "assigned_budget_usd": 3,
+          "stage_receipt_sha256": "ff06173b900e94983e7613463c86e3e30528cd3be9835d797a0cc4b5bc381206",
+          "raw_request_sha256": "8efcbe69e3178af0915620edbf3528fcb94924090058dfea6a92641c69b495e7",
+          "summary": "The model option already worked when I picked this up, and the checks back that up, so I made no edits. Testing was all offline with a mocked Codex call; no live Bonaparte run was done.\n\n**Behavior (all in `bonaparte`):**\n- **Choosing a model:** `bonaparte --model <name> ...` and the `BONAPARTE_MODEL` variable both set the model. The option wins over the variable, even when the variable is blank. Spaces around the name are removed.\n- **Blank values:** a blank option or blank variable stops the run with \"must not be blank\" before Linear or Codex is called. On the command line it returns a failed JSON receipt with exit code 1.\n- **No model given:** Codex gets no `-m` flag, and the three child roles (default, worker, explorer) get no `model` field, so everything uses Codex's default. The coordinator prompt says the default model is in use.\n- **Model given:** the coordinator gets `-m <name>`, and each of the three children gets the same name in its settings. The name is treated as plain text and escaped safely, so quotes, backslashes, control characters and non-ASCII characters can't break or inject settings. Names containing invalid Unicode characters (lone surrogates) are rejected.\n- **Unchanged:** the coordinator and children still use medium reasoning, and `resume` still continues the same session. A model chosen for `resume` is passed through the same way.\n- The README now describes this.\n\n**Checks run (Python 3.14):**\n- The two visible checks pass.\n- 12 named tests pass, including the 7 new model-selection tests. They cover:\n  - default behavior with no model\n  - a trimmed environment value reaching all four agents\n  - unusual model names round-tripping exactly through the child settings\n  - blank values failing before Codex runs, both from Python and from the command line\n  - the option beating a real, blank or missing variable on `resume`\n- Same-session resume, needs-input and medium reasoning tests still pass.\n- Of the 43 tests across `test_bonaparte`, `test_handoff` and `test_installation`, 42 pass. The one error is in an existing, unchanged test (`test_progress_fd_is_scrubbed_and_never_sent_to_children`): the sandbox blocks its `os.fstat(2)` call on stderr.\n- Running the suite through `sh` picked up an older `python3` without `tomllib`, so I used the interpreter the visible check uses.\n- An earlier frozen grading run passed all 3 hidden model tests, and the earlier Codex review found no problems."
+        }
+      },
+      "grades": {
+        "first": {
+          "oracle_passed": true,
+          "exit_code": 0,
+          "timed_out": false,
+          "wall_seconds": 0.18162470800234587,
+          "source_sha256": "6d1fb324622cea73a8ee315be8ca9127ab7a39ab35ead33e4e8bf89934323a26",
+          "stdout_sha256": "18a850a47ee24a95df529e1671d3a064c985c2dd85f55b0a82c364e608bbcb34",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false,
+          "output_changed_during_cleanup": false,
+          "header": {
+            "task_id": "tweed-pr20",
+            "exit_code": 0,
+            "passed": true,
+            "tests": [
+              "tests.test_owner_options.PublicOptions.test_model_omitted_preserves_provider_defaults",
+              "tests.test_owner_options.PublicOptions.test_model_environment_and_explicit_override_are_semantic_values",
+              "tests.test_owner_options.PublicOptions.test_model_empty_inputs_fail_before_provider"
+            ],
+            "production_scope": [
+              "bonaparte"
+            ],
+            "output_sha256": "d08c7d931ead756174f743d96dab00e6cbf82ca47bb0573afa32920a9f49d553"
+          },
+          "receipt_sha256": "7932e20aa50388d6d55fe79cfd25751959b7444a9756285eb8fc5e01c255b8d3"
+        },
+        "final": {
+          "oracle_passed": true,
+          "exit_code": 0,
+          "timed_out": false,
+          "wall_seconds": 0.18694208300075843,
+          "source_sha256": "6d1fb324622cea73a8ee315be8ca9127ab7a39ab35ead33e4e8bf89934323a26",
+          "stdout_sha256": "18a850a47ee24a95df529e1671d3a064c985c2dd85f55b0a82c364e608bbcb34",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false,
+          "output_changed_during_cleanup": false,
+          "header": {
+            "task_id": "tweed-pr20",
+            "exit_code": 0,
+            "passed": true,
+            "tests": [
+              "tests.test_owner_options.PublicOptions.test_model_omitted_preserves_provider_defaults",
+              "tests.test_owner_options.PublicOptions.test_model_environment_and_explicit_override_are_semantic_values",
+              "tests.test_owner_options.PublicOptions.test_model_empty_inputs_fail_before_provider"
+            ],
+            "production_scope": [
+              "bonaparte"
+            ],
+            "output_sha256": "d08c7d931ead756174f743d96dab00e6cbf82ca47bb0573afa32920a9f49d553"
+          },
+          "receipt_sha256": "445f68daade84419a7cbddbe009f3390f3c59297779e174cae117c7e778fc2ab"
+        }
+      },
+      "checks_and_witnesses": {
+        "first_checks": {
+          "receipt_sha256": "c8784c472ef419a054b4364c42b9056a1fff113dd31b48ae3e994fcd84ea3da6",
+          "rows": [
+            {
+              "id": "visible-0",
+              "requested_argv": [
+                "python3",
+                "-B",
+                "-m",
+                "unittest",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_non_review_run_phase_retains_baseline_key_only_validation",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_nested_invocation_is_blocked"
+              ],
+              "exit_code": 0,
+              "timed_out": false,
+              "wall_seconds": 0.34657654100010404,
+              "source_sha256": "c25c51f5e5fbcff733847bd33ef1d5ea2d6dc5cb47a2c4fb38ee7fb888ff6eac",
+              "source_unchanged": true,
+              "passed": true,
+              "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "stderr_sha256": "d2fb77bd2f5a5493574595e5e17c7f2779d027e00eb04a7d54f5c5fa432248b0",
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false
+            },
+            {
+              "id": "focused-baseline",
+              "requested_argv": [
+                "python3",
+                "-B",
+                "-m",
+                "unittest",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_non_review_run_phase_retains_baseline_key_only_validation",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_nested_invocation_is_blocked"
+              ],
+              "exit_code": 0,
+              "timed_out": false,
+              "wall_seconds": 0.24163308400238748,
+              "source_sha256": "c25c51f5e5fbcff733847bd33ef1d5ea2d6dc5cb47a2c4fb38ee7fb888ff6eac",
+              "source_unchanged": true,
+              "passed": true,
+              "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "stderr_sha256": "51f8fb834a5e928be3b856ddb6a6ddb9d71b9f404aae2c7c1cd3cc55bcc0ea5d",
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false
+            }
+          ]
+        },
+        "final_checks": {
+          "receipt_sha256": "d5a55e2310c8fb9856199bcaf02afafe71b5ad6470ab78b5b91e194943324c30",
+          "rows": [
+            {
+              "id": "visible-0",
+              "requested_argv": [
+                "python3",
+                "-B",
+                "-m",
+                "unittest",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_non_review_run_phase_retains_baseline_key_only_validation",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_nested_invocation_is_blocked"
+              ],
+              "exit_code": 0,
+              "timed_out": false,
+              "wall_seconds": 0.4526329159998568,
+              "source_sha256": "c25c51f5e5fbcff733847bd33ef1d5ea2d6dc5cb47a2c4fb38ee7fb888ff6eac",
+              "source_unchanged": true,
+              "passed": true,
+              "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "stderr_sha256": "bbb40c9e79fbf18eb334324a20aae20126ef347d8e075cdb6cda7b1ad1660495",
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false
+            },
+            {
+              "id": "focused-baseline",
+              "requested_argv": [
+                "python3",
+                "-B",
+                "-m",
+                "unittest",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_non_review_run_phase_retains_baseline_key_only_validation",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_nested_invocation_is_blocked"
+              ],
+              "exit_code": 0,
+              "timed_out": false,
+              "wall_seconds": 0.2930939590005437,
+              "source_sha256": "c25c51f5e5fbcff733847bd33ef1d5ea2d6dc5cb47a2c4fb38ee7fb888ff6eac",
+              "source_unchanged": true,
+              "passed": true,
+              "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "stderr_sha256": "108c829c31e651d56b91ecf9e3b375806257a55e1cb0b96233b711be478e7e9b",
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false
+            }
+          ]
+        },
+        "witness_before": {
+          "receipt_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+          "rows": []
+        },
+        "witness_after": {
+          "receipt_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+          "rows": []
+        }
+      },
+      "review_findings": {
+        "findings": [],
+        "scope_limits": [
+          "Reviewed bonaparte and relevant test fixtures without modifying files or consulting policy.",
+          "Passed 12 offline, mocked public-entry scenarios covering defaults, precedence, trimming, blank rejection, child configuration encoding, medium reasoning, and same-session resume.",
+          "Live provider behavior and the full baseline suite were not independently exercised."
+        ]
+      },
+      "rejection_reasons": [
+        "first_source_scope_violations",
+        "final_source_scope_violations",
+        "final_developer_remaining_nonempty"
+      ],
+      "scope": {
+        "first": {
+          "scope_violations": [
+            "README.md"
+          ],
+          "out_of_scope_diff": {
+            "path": "patches/tweed-pr20--revised--r1/first.out-of-scope.patch",
+            "sha256": "6afcb5206f29be1d7c0595c6740c66a72bfab370a1168228f0430406de7cffde",
+            "files": [
+              {
+                "path": "README.md",
+                "before_sha256": "5a8bbcd1546d8c6c6279037dc4cfbf9b884bc8af871ea54749ce968279921b7e",
+                "after_sha256": "5738d12966bc6514ef965be7e0cc470d6a5f2ed51d2784e5f2c7ff6cdcf3f10c",
+                "before_mode": 420,
+                "after_mode": 420,
+                "change": "modified"
+              }
+            ],
+            "format": "Exact UTF-8 line diff plus separate original/candidate byte hashes and modes; no production scope substitution"
+          },
+          "all_changed_paths": [
+            ".gitignore",
+            ".protocol/SKILL.md",
+            ".protocol/assets/contract.example.json",
+            ".protocol/assets/report.example.json",
+            ".protocol/assets/runs/invitation-authorization.json",
+            ".protocol/assets/runs/invitation-authorization.log",
+            ".protocol/assets/runs/invitation-e2e.json",
+            ".protocol/assets/runs/invitation-e2e.log",
+            ".protocol/references/complex-tasks.md",
+            ".protocol/references/evidence.md",
+            ".protocol/references/harnesses.md",
+            ".protocol/references/intent-flows.md",
+            ".protocol/references/model-routing.md",
+            ".protocol/references/modes.md",
+            ".protocol/references/question-patterns.md",
+            ".protocol/references/report-rules.md",
+            ".protocol/references/task-profiles.md",
+            ".protocol/scripts/__pycache__/confidence.cpython-314.pyc",
+            ".protocol/scripts/__pycache__/diagnostics.cpython-314.pyc",
+            ".protocol/scripts/confidence.py",
+            ".protocol/scripts/diagnostics.py",
+            ".protocol/tests/check_release.py",
+            ".protocol/tests/support.py",
+            ".protocol/tests/test_autonomy_integration.py",
+            ".protocol/tests/test_cancellation.py",
+            ".protocol/tests/test_capture_io.py",
+            ".protocol/tests/test_capture_metadata.py",
+            ".protocol/tests/test_cli_recovery.py",
+            ".protocol/tests/test_confidence.py",
+            ".protocol/tests/test_content_binding.py",
+            ".protocol/tests/test_dependency_frontier.py",
+            ".protocol/tests/test_diagnostics.py",
+            ".protocol/tests/test_dirty_submodule.py",
+            ".protocol/tests/test_evidence_root.py",
+            ".protocol/tests/test_evidence_subtree.py",
+            ".protocol/tests/test_fingerprint_staging_retry.py",
+            ".protocol/tests/test_git_availability.py",
+            ".protocol/tests/test_init_recovery.py",
+            ".protocol/tests/test_integrity.py",
+            ".protocol/tests/test_launch_cancellation.py",
+            ".protocol/tests/test_limits.py",
+            ".protocol/tests/test_log_inputs.py",
+            ".protocol/tests/test_parallel_capture.py",
+            ".protocol/tests/test_record.py",
+            ".protocol/tests/test_release_archive.py",
+            ".protocol/tests/test_reporting_scope.py",
+            ".protocol/tests/test_review_provenance.py",
+            ".protocol/tests/test_run_receipt.py",
+            ".protocol/tests/test_source_scope_output.py",
+            ".protocol/tests/test_validation_cache.py",
+            "AGENTS.md",
+            "README.md",
+            "bonaparte",
+            "tests/test_bonaparte.py"
+          ],
+          "submitted_paths": [
+            "bonaparte"
+          ]
+        },
+        "final": {
+          "scope_violations": [
+            "README.md"
+          ],
+          "out_of_scope_diff": {
+            "path": "patches/tweed-pr20--revised--r1/final.out-of-scope.patch",
+            "sha256": "6afcb5206f29be1d7c0595c6740c66a72bfab370a1168228f0430406de7cffde",
+            "files": [
+              {
+                "path": "README.md",
+                "before_sha256": "5a8bbcd1546d8c6c6279037dc4cfbf9b884bc8af871ea54749ce968279921b7e",
+                "after_sha256": "5738d12966bc6514ef965be7e0cc470d6a5f2ed51d2784e5f2c7ff6cdcf3f10c",
+                "before_mode": 420,
+                "after_mode": 420,
+                "change": "modified"
+              }
+            ],
+            "format": "Exact UTF-8 line diff plus separate original/candidate byte hashes and modes; no production scope substitution"
+          },
+          "all_changed_paths": [
+            ".gitignore",
+            ".protocol/SKILL.md",
+            ".protocol/assets/contract.example.json",
+            ".protocol/assets/report.example.json",
+            ".protocol/assets/runs/invitation-authorization.json",
+            ".protocol/assets/runs/invitation-authorization.log",
+            ".protocol/assets/runs/invitation-e2e.json",
+            ".protocol/assets/runs/invitation-e2e.log",
+            ".protocol/references/complex-tasks.md",
+            ".protocol/references/evidence.md",
+            ".protocol/references/harnesses.md",
+            ".protocol/references/intent-flows.md",
+            ".protocol/references/model-routing.md",
+            ".protocol/references/modes.md",
+            ".protocol/references/question-patterns.md",
+            ".protocol/references/report-rules.md",
+            ".protocol/references/task-profiles.md",
+            ".protocol/scripts/__pycache__/confidence.cpython-314.pyc",
+            ".protocol/scripts/__pycache__/diagnostics.cpython-314.pyc",
+            ".protocol/scripts/confidence.py",
+            ".protocol/scripts/diagnostics.py",
+            ".protocol/tests/check_release.py",
+            ".protocol/tests/support.py",
+            ".protocol/tests/test_autonomy_integration.py",
+            ".protocol/tests/test_cancellation.py",
+            ".protocol/tests/test_capture_io.py",
+            ".protocol/tests/test_capture_metadata.py",
+            ".protocol/tests/test_cli_recovery.py",
+            ".protocol/tests/test_confidence.py",
+            ".protocol/tests/test_content_binding.py",
+            ".protocol/tests/test_dependency_frontier.py",
+            ".protocol/tests/test_diagnostics.py",
+            ".protocol/tests/test_dirty_submodule.py",
+            ".protocol/tests/test_evidence_root.py",
+            ".protocol/tests/test_evidence_subtree.py",
+            ".protocol/tests/test_fingerprint_staging_retry.py",
+            ".protocol/tests/test_git_availability.py",
+            ".protocol/tests/test_init_recovery.py",
+            ".protocol/tests/test_integrity.py",
+            ".protocol/tests/test_launch_cancellation.py",
+            ".protocol/tests/test_limits.py",
+            ".protocol/tests/test_log_inputs.py",
+            ".protocol/tests/test_parallel_capture.py",
+            ".protocol/tests/test_record.py",
+            ".protocol/tests/test_release_archive.py",
+            ".protocol/tests/test_reporting_scope.py",
+            ".protocol/tests/test_review_provenance.py",
+            ".protocol/tests/test_run_receipt.py",
+            ".protocol/tests/test_source_scope_output.py",
+            ".protocol/tests/test_validation_cache.py",
+            "AGENTS.md",
+            "README.md",
+            "bonaparte",
+            "tests/test_bonaparte.py"
+          ],
+          "submitted_paths": [
+            "bonaparte"
+          ]
+        }
+      },
+      "patches": {
+        "first": {
+          "path": "patches/tweed-pr20--revised--r1/first.production.patch",
+          "sha256": "852ed393133fcfc218230ffb23af6eec6599c565c53846678f5816107a1c2ea0",
+          "source_sha256": "6d1fb324622cea73a8ee315be8ca9127ab7a39ab35ead33e4e8bf89934323a26"
+        },
+        "final": {
+          "path": "patches/tweed-pr20--revised--r1/final.production.patch",
+          "sha256": "852ed393133fcfc218230ffb23af6eec6599c565c53846678f5816107a1c2ea0",
+          "source_sha256": "6d1fb324622cea73a8ee315be8ca9127ab7a39ab35ead33e4e8bf89934323a26"
+        }
+      },
+      "delivery_distinction": {
+        "first_selected_behavioral_grade_passed": true,
+        "final_selected_behavioral_grade_passed": true,
+        "primary_final_delivery_accepted": false,
+        "production_patch_changed_in_closure": false,
+        "full_confidence_protocol_release_certified": false
+      }
+    },
+    {
+      "trial_id": "tweed-pr20--original--r1",
+      "task_id": "tweed-pr20",
+      "arm_id": "original",
+      "repeat": 1,
+      "primary": {
+        "status": "completed",
+        "first_pass": true,
+        "actual_repair": false,
+        "accepted": false,
+        "unresolved_findings": []
+      },
+      "recorded_primary_receipt_sha256": "0ddfd721096a6d12fe6ff09f035a348b5dda397cab64bf4046e12409cdf814ba",
+      "supplemental_input_reconstruction": {
+        "main_launch_source_sha256": "4a79c6dfe561567dbe44becd74bb5fed90b553f9bcbfcdd301b264b714a46964",
+        "stage_envelopes": {
+          "main": {
+            "request_json_sha256": "2531ba8796f40f5a873bce68bb3e55ba5a5858fb47c03d0a4d41728541dffd8b",
+            "prompt_sha256": "9173dcc3ec832e30b125c092324d663db950b85afbd63946acb0cdd80e63b8c8",
+            "server_config_sha256": "01cb223d92e4739cde4e004a6df34bee271895946524ffb12c7a1e50ab81395e",
+            "full_argv_mcp_prompt_reconstruction_passed": true
+          },
+          "closure": {
+            "request_json_sha256": "e4e50cc7d72008d8422f02cbe6222344d248b613f6407a0c2e61c05676d6ee0c",
+            "prompt_sha256": "cd7ec2c6b98a8975bf7494ca3f989b9986775a3b4c6bb5eb07bf7488c21c540f",
+            "server_config_sha256": "6d130bd3ede35acc9731a59e67b5b1c368cfdb603e1277561b8dc226e6cdbfee",
+            "full_argv_mcp_prompt_reconstruction_passed": true
+          },
+          "review": {
+            "request_json_sha256": "a976f3440642127d1aca88bee76f8693081cb7e9b0ea7a825d2bcc1aac1ff250",
+            "prompt_sha256": "ebb673586e0e466396af6125a65a2e3cbd5506d6a59cd37dabf722944134c883",
+            "server_config_sha256": "78311c6c87808192c9c92914b013d204b0f403122f6dd3510adf8b2df69c20ea",
+            "full_argv_mcp_prompt_reconstruction_passed": true
+          }
+        }
+      },
+      "stages": {
+        "main": {
+          "backend": "claude",
+          "requested_effort": "high",
+          "process_exit": 0,
+          "timed_out": false,
+          "wall_seconds": 307.29897520800296,
+          "total_cost_usd": 1.8564568000000001,
+          "stream_sha256": "c568d1ea3788e14c53d453d2fdd168135f049dfb61206ea18355d0094b5a8a87",
+          "request_sha256": "b9d4c0c6c9e4f2719e64a4814a529da12f7057321aed8da5829fc05821cb396c",
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false,
+          "guarded_new_session_processes": 1,
+          "stream_changed_during_cleanup": false,
+          "source_sha256_at_launch": "4a79c6dfe561567dbe44becd74bb5fed90b553f9bcbfcdd301b264b714a46964",
+          "source_sha256_after": "a088d80e5b55f907761fbf590bf6cd24b286e2fe2608fc8d67bea90315d3f00d",
+          "model_requested": "claude-opus-5-5",
+          "actual_model": "claude-opus-5-5",
+          "model_attribution": "assistant_event_observed",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "qualified": true,
+          "qualification_failures": [],
+          "usage": {
+            "input_tokens": 46,
+            "output_tokens": 27186,
+            "cache_read_input_tokens": 1671044,
+            "cache_creation_input_tokens": 122293
+          },
+          "terminal_known": true,
+          "complete": true,
+          "remaining": [
+            "Not tested against the real Codex CLI: escaping was checked with Python's TOML parser (tomllib), not Codex's own parser.",
+            "Untested: how Codex handles a model name that starts with '-' when passed after -m.",
+            "--model must come before the phase name, like --repo; anything after the phase name is treated as phase input.",
+            "Assumption: a set-but-empty BONAPARTE_MODEL counts as blank and fails.",
+            "README still says every phase is pinned to gpt-5.6-sol; not edited because only bonaparte was in scope.",
+            "In this tool's sandbox, test_progress_fd_is_scrubbed_and_never_sent_to_children fails when called directly because os.fstat(2) is refused (a bare os.fstat(2) fails the same way); it passes in the recorded run.",
+            "Independent Codex review is still pending (scheduled after this stage); none is claimed here."
+          ],
+          "assigned_timeout_seconds": 480,
+          "assigned_budget_usd": 4,
+          "stage_receipt_sha256": "2b7c576734f70536d6a611228d6eb1fbda3f04a629a099bcfa5a9ba1eec980f6",
+          "raw_request_sha256": "2531ba8796f40f5a873bce68bb3e55ba5a5858fb47c03d0a4d41728541dffd8b",
+          "summary": "Added model selection to bonaparte. --model wins over BONAPARTE_MODEL, even a blank one; the value is trimmed; a blank selection fails with a failed result before any Codex (including --version) or Linear call. When neither is set, no -m and no child model key are passed, so Codex defaults apply. An explicit model reaches the coordinator as -m and all three children (default, worker, explorer) for fresh phases and resume, with proper TOML escaping in the child settings. The coordinator prompt's model instructions follow the choice. Medium reasoning and same-session resume are unchanged, and parse() still returns four values. Proof, all offline: all 44 tests pass, 1 skipped on Python 3.9 (recorded run suite-after); both visible checks pass (visible-after); the 8 new model tests, including the escaping round trip, pass on Python 3.13 (toml-roundtrip-py313). Evidence checks pass complete; report at .confidence/REPORT.md."
+        },
+        "review": {
+          "backend": "codex",
+          "requested_effort": "medium",
+          "process_exit": 0,
+          "timed_out": false,
+          "wall_seconds": 45.124186708002526,
+          "total_cost_usd": null,
+          "stream_sha256": "42165ce27fd755c34487411bec715d98d9acd38190183fe57d56f6e3c0e220a5",
+          "request_sha256": "3fda4f09053edf090c58cf6690bbf28002cdb21ece4e9f54e70f0303c58ff783",
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false,
+          "guarded_new_session_processes": 1,
+          "stream_changed_during_cleanup": false,
+          "source_sha256_at_launch": "cafac5fe130dc3d325116c50c543d581b9cf7b6b2cd112e3a0cceb6f2cea9808",
+          "source_sha256_after": "cafac5fe130dc3d325116c50c543d581b9cf7b6b2cd112e3a0cceb6f2cea9808",
+          "model_requested": "gpt-6-astra",
+          "actual_model": null,
+          "model_attribution": "requested_only",
+          "observed_models": [],
+          "qualified": true,
+          "qualification_failures": [],
+          "usage": {
+            "input_tokens": 151686,
+            "output_tokens": 1702,
+            "cached_input_tokens": 115456
+          },
+          "terminal_known": true,
+          "complete": true,
+          "remaining": [],
+          "assigned_timeout_seconds": 180,
+          "assigned_budget_usd": null,
+          "stage_receipt_sha256": "ecad7a6e717a290fa594e0055209ac8d2beb5c76b27ddfda8393f344bfb81483",
+          "raw_request_sha256": "a976f3440642127d1aca88bee76f8693081cb7e9b0ea7a825d2bcc1aac1ff250",
+          "scope_limits": [
+            "Reviewed bonaparte without modifying files or consulting policy.",
+            "Four baseline tests and 12 offline public-entry cases passed, covering selection, precedence, blank rejection, TOML encoding, reasoning effort, and resume.",
+            "Provider execution was mocked; live Codex behavior was not tested."
+          ]
+        },
+        "closure": {
+          "backend": "claude",
+          "requested_effort": "high",
+          "process_exit": 0,
+          "timed_out": false,
+          "wall_seconds": 24.379788916001417,
+          "total_cost_usd": 0.3150296,
+          "stream_sha256": "f4557cfc00bb357ef45ea77280ae6133b05d0f613a33f673b5bf15b0bfd46ea3",
+          "request_sha256": "3c1f858f67b97d601480775a8d74cf87963fc8e6ce52df9f0d921e9858f0ecc1",
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false,
+          "guarded_new_session_processes": 1,
+          "stream_changed_during_cleanup": false,
+          "source_sha256_at_launch": "a088d80e5b55f907761fbf590bf6cd24b286e2fe2608fc8d67bea90315d3f00d",
+          "source_sha256_after": "a088d80e5b55f907761fbf590bf6cd24b286e2fe2608fc8d67bea90315d3f00d",
+          "model_requested": "claude-opus-5-5",
+          "actual_model": "claude-opus-5-5",
+          "model_attribution": "assistant_event_observed",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "qualified": true,
+          "qualification_failures": [],
+          "usage": {
+            "input_tokens": 8,
+            "output_tokens": 2000,
+            "cache_read_input_tokens": 42908,
+            "cache_creation_input_tokens": 33302
+          },
+          "terminal_known": true,
+          "complete": true,
+          "remaining": [
+            "Not tested against the real Codex CLI (all offline, Codex mocked): whether it accepts the child settings in this format, and a model name starting with '-'.",
+            "The README still says the model is fixed to gpt-5.6-sol; it is outside the allowed file and was not edited.",
+            "A set-but-empty BONAPARTE_MODEL is treated as blank and fails; the task didn't spell this case out."
+          ],
+          "assigned_timeout_seconds": 300,
+          "assigned_budget_usd": 3,
+          "stage_receipt_sha256": "8b1e3dfdcdf86bada6a9623e464affb926ebf7c2e06e2c706e9f4a997db9e6c2",
+          "raw_request_sha256": "e4e50cc7d72008d8422f02cbe6222344d248b613f6407a0c2e61c05676d6ee0c",
+          "summary": "The `--model` option and `BONAPARTE_MODEL` now set the model for a Bonaparte phase and its resume. I checked the work again in this final stage and found nothing to fix, so I made no edits.\n\n**What it does:**\n- **Which value wins:** `--model` overrides `BONAPARTE_MODEL`, even when the environment value is blank. Surrounding whitespace is trimmed.\n- **Blank values:** a selection that is blank after trimming exits with status 1 and a failed receipt before Codex is called at all (not even `--version`) and before any Linear call.\n- **Where the model goes:** a chosen model is passed to the coordinator as `-m <model>`. It is also written into the default, worker and explorer child settings, with quotes, backslashes and control characters escaped so any model name passes through intact.\n- **No model chosen:** if neither is set, `-m` and the child model settings are left out, so Codex uses its own defaults.\n- **Unchanged:** medium reasoning and resuming the same session work as before.\n\nAll changes are in `bonaparte`, plus new tests in `tests/test_bonaparte.py`.\n\n**Checks:**\n- The two visible tests passed when I reran them.\n- The evidence check confirms the recorded runs were taken against the current source. Those runs cover the full suite (44 tests, one skipped on Python 3.9) and an escaping round-trip test on Python 3.13 (8/8).\n- The independent Codex review found no problems after 4 baseline tests and 12 offline cases.\n- The held-out grade passed all 3 of its tests.\n\n**Not verified:** everything ran offline with Codex mocked, so these are untested against the real Codex CLI:\n- whether it accepts the child settings in this format;\n- whether it accepts a model name starting with `-` after `-m`.\n\n**Other limits:**\n- `--model` must come before the phase command; after it, it's read as phase input, same as `--repo`.\n- I treated a set-but-empty `BONAPARTE_MODEL` as blank, so it fails. The task didn't spell this case out.\n- The README still says the model is fixed to gpt-5.6-sol. I didn't change it because only `bonaparte` was in scope.\n\nTo undo, revert the changes to `bonaparte` and `tests/test_bonaparte.py`."
+        }
+      },
+      "grades": {
+        "first": {
+          "oracle_passed": true,
+          "exit_code": 0,
+          "timed_out": false,
+          "wall_seconds": 0.18765862500004005,
+          "source_sha256": "a088d80e5b55f907761fbf590bf6cd24b286e2fe2608fc8d67bea90315d3f00d",
+          "stdout_sha256": "33c2cce0037c27e6f5e258fb234f6a3ffb4e3bb1712aeb3ab1111cb3e8492b44",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false,
+          "output_changed_during_cleanup": false,
+          "header": {
+            "task_id": "tweed-pr20",
+            "exit_code": 0,
+            "passed": true,
+            "tests": [
+              "tests.test_owner_options.PublicOptions.test_model_omitted_preserves_provider_defaults",
+              "tests.test_owner_options.PublicOptions.test_model_environment_and_explicit_override_are_semantic_values",
+              "tests.test_owner_options.PublicOptions.test_model_empty_inputs_fail_before_provider"
+            ],
+            "production_scope": [
+              "bonaparte"
+            ],
+            "output_sha256": "299398c013a52fbac15306f867a631aa81d46f17ad849f17efb426425143abe6"
+          },
+          "receipt_sha256": "f347f94bb05d9a3e495776d41b742d434a4923d9808fe0b1c706d96ca04e8c10"
+        },
+        "final": {
+          "oracle_passed": true,
+          "exit_code": 0,
+          "timed_out": false,
+          "wall_seconds": 0.18300233300033142,
+          "source_sha256": "a088d80e5b55f907761fbf590bf6cd24b286e2fe2608fc8d67bea90315d3f00d",
+          "stdout_sha256": "33c2cce0037c27e6f5e258fb234f6a3ffb4e3bb1712aeb3ab1111cb3e8492b44",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false,
+          "output_changed_during_cleanup": false,
+          "header": {
+            "task_id": "tweed-pr20",
+            "exit_code": 0,
+            "passed": true,
+            "tests": [
+              "tests.test_owner_options.PublicOptions.test_model_omitted_preserves_provider_defaults",
+              "tests.test_owner_options.PublicOptions.test_model_environment_and_explicit_override_are_semantic_values",
+              "tests.test_owner_options.PublicOptions.test_model_empty_inputs_fail_before_provider"
+            ],
+            "production_scope": [
+              "bonaparte"
+            ],
+            "output_sha256": "299398c013a52fbac15306f867a631aa81d46f17ad849f17efb426425143abe6"
+          },
+          "receipt_sha256": "042fdaccb512a4a0805ba1d42d413758121d6bacee98f267003077c47a6217fd"
+        }
+      },
+      "checks_and_witnesses": {
+        "first_checks": {
+          "receipt_sha256": "709cc0cb6f2b1826a3e97b373e6ac70447b721d804df409bcabb9004d031b661",
+          "rows": [
+            {
+              "id": "visible-0",
+              "requested_argv": [
+                "python3",
+                "-B",
+                "-m",
+                "unittest",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_non_review_run_phase_retains_baseline_key_only_validation",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_nested_invocation_is_blocked"
+              ],
+              "exit_code": 0,
+              "timed_out": false,
+              "wall_seconds": 0.4480118749997928,
+              "source_sha256": "d6f895ea970f37f726c484a843a910a87702b37b66348cd3760e7b9c5dc47c95",
+              "source_unchanged": true,
+              "passed": true,
+              "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "stderr_sha256": "5668792eff4dacc3b027cd0c6f18c305293599cd587630c651380cf52731d62a",
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false
+            },
+            {
+              "id": "focused-baseline",
+              "requested_argv": [
+                "python3",
+                "-B",
+                "-m",
+                "unittest",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_non_review_run_phase_retains_baseline_key_only_validation",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_nested_invocation_is_blocked"
+              ],
+              "exit_code": 0,
+              "timed_out": false,
+              "wall_seconds": 0.29297212500023306,
+              "source_sha256": "d6f895ea970f37f726c484a843a910a87702b37b66348cd3760e7b9c5dc47c95",
+              "source_unchanged": true,
+              "passed": true,
+              "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "stderr_sha256": "0667f4c39a89c3b5c6e3f30922743e09b7db1a207fd805c7966db0105add14b5",
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false
+            }
+          ]
+        },
+        "final_checks": {
+          "receipt_sha256": "a05e82307edef44604d69f4ec84287941bcfab3130303ab7373f2ec1c683dc1a",
+          "rows": [
+            {
+              "id": "visible-0",
+              "requested_argv": [
+                "python3",
+                "-B",
+                "-m",
+                "unittest",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_non_review_run_phase_retains_baseline_key_only_validation",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_nested_invocation_is_blocked"
+              ],
+              "exit_code": 0,
+              "timed_out": false,
+              "wall_seconds": 0.5053711670007033,
+              "source_sha256": "d6f895ea970f37f726c484a843a910a87702b37b66348cd3760e7b9c5dc47c95",
+              "source_unchanged": true,
+              "passed": true,
+              "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "stderr_sha256": "26032a459314f20862da47bc55471fc81f3b3d38680f1a7b535eec9d1b2078c0",
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false
+            },
+            {
+              "id": "focused-baseline",
+              "requested_argv": [
+                "python3",
+                "-B",
+                "-m",
+                "unittest",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_non_review_run_phase_retains_baseline_key_only_validation",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_nested_invocation_is_blocked"
+              ],
+              "exit_code": 0,
+              "timed_out": false,
+              "wall_seconds": 0.279546207999374,
+              "source_sha256": "d6f895ea970f37f726c484a843a910a87702b37b66348cd3760e7b9c5dc47c95",
+              "source_unchanged": true,
+              "passed": true,
+              "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "stderr_sha256": "8b73b1549fcaa324f1b5fb99644d0ee3a45de964f6a4b6e5dcf756c47e9d6783",
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false
+            }
+          ]
+        },
+        "witness_before": {
+          "receipt_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+          "rows": []
+        },
+        "witness_after": {
+          "receipt_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+          "rows": []
+        }
+      },
+      "review_findings": {
+        "findings": [],
+        "scope_limits": [
+          "Reviewed bonaparte without modifying files or consulting policy.",
+          "Four baseline tests and 12 offline public-entry cases passed, covering selection, precedence, blank rejection, TOML encoding, reasoning effort, and resume.",
+          "Provider execution was mocked; live Codex behavior was not tested."
+        ]
+      },
+      "rejection_reasons": [
+        "final_developer_remaining_nonempty"
+      ],
+      "scope": {
+        "first": {
+          "scope_violations": [],
+          "out_of_scope_diff": {
+            "path": "patches/tweed-pr20--original--r1/first.out-of-scope.patch",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "files": [],
+            "format": "Exact UTF-8 line diff plus separate original/candidate byte hashes and modes; no production scope substitution"
+          },
+          "all_changed_paths": [
+            ".confidence/REPORT.md",
+            ".confidence/contract.json",
+            ".confidence/report.json",
+            ".confidence/runs/suite-after.json",
+            ".confidence/runs/suite-after.log",
+            ".confidence/runs/toml-roundtrip-py313.json",
+            ".confidence/runs/toml-roundtrip-py313.log",
+            ".confidence/runs/visible-after.json",
+            ".confidence/runs/visible-after.log",
+            ".gitignore",
+            ".protocol/SKILL.md",
+            ".protocol/assets/contract.example.json",
+            ".protocol/assets/report.example.json",
+            ".protocol/assets/runs/invitation-authorization.json",
+            ".protocol/assets/runs/invitation-authorization.log",
+            ".protocol/assets/runs/invitation-e2e.json",
+            ".protocol/assets/runs/invitation-e2e.log",
+            ".protocol/references/complex-tasks.md",
+            ".protocol/references/evidence.md",
+            ".protocol/references/harnesses.md",
+            ".protocol/references/intent-flows.md",
+            ".protocol/references/model-routing.md",
+            ".protocol/references/modes.md",
+            ".protocol/references/report-rules.md",
+            ".protocol/references/task-profiles.md",
+            ".protocol/scripts/__pycache__/confidence.cpython-314.pyc",
+            ".protocol/scripts/__pycache__/diagnostics.cpython-314.pyc",
+            ".protocol/scripts/confidence.py",
+            ".protocol/scripts/diagnostics.py",
+            ".protocol/tests/check_release.py",
+            ".protocol/tests/support.py",
+            ".protocol/tests/test_autonomy_integration.py",
+            ".protocol/tests/test_cancellation.py",
+            ".protocol/tests/test_capture_io.py",
+            ".protocol/tests/test_capture_metadata.py",
+            ".protocol/tests/test_cli_recovery.py",
+            ".protocol/tests/test_confidence.py",
+            ".protocol/tests/test_content_binding.py",
+            ".protocol/tests/test_dependency_frontier.py",
+            ".protocol/tests/test_diagnostics.py",
+            ".protocol/tests/test_dirty_submodule.py",
+            ".protocol/tests/test_evidence_root.py",
+            ".protocol/tests/test_evidence_subtree.py",
+            ".protocol/tests/test_fingerprint_staging_retry.py",
+            ".protocol/tests/test_git_availability.py",
+            ".protocol/tests/test_init_recovery.py",
+            ".protocol/tests/test_integrity.py",
+            ".protocol/tests/test_launch_cancellation.py",
+            ".protocol/tests/test_limits.py",
+            ".protocol/tests/test_log_inputs.py",
+            ".protocol/tests/test_parallel_capture.py",
+            ".protocol/tests/test_record.py",
+            ".protocol/tests/test_release_archive.py",
+            ".protocol/tests/test_reporting_scope.py",
+            ".protocol/tests/test_review_provenance.py",
+            ".protocol/tests/test_run_receipt.py",
+            ".protocol/tests/test_source_scope_output.py",
+            ".protocol/tests/test_validation_cache.py",
+            "AGENTS.md",
+            "bonaparte",
+            "tests/test_bonaparte.py"
+          ],
+          "submitted_paths": [
+            "bonaparte"
+          ]
+        },
+        "final": {
+          "scope_violations": [],
+          "out_of_scope_diff": {
+            "path": "patches/tweed-pr20--original--r1/final.out-of-scope.patch",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "files": [],
+            "format": "Exact UTF-8 line diff plus separate original/candidate byte hashes and modes; no production scope substitution"
+          },
+          "all_changed_paths": [
+            ".confidence/REPORT.md",
+            ".confidence/contract.json",
+            ".confidence/report.json",
+            ".confidence/runs/suite-after.json",
+            ".confidence/runs/suite-after.log",
+            ".confidence/runs/toml-roundtrip-py313.json",
+            ".confidence/runs/toml-roundtrip-py313.log",
+            ".confidence/runs/visible-after.json",
+            ".confidence/runs/visible-after.log",
+            ".gitignore",
+            ".protocol/SKILL.md",
+            ".protocol/assets/contract.example.json",
+            ".protocol/assets/report.example.json",
+            ".protocol/assets/runs/invitation-authorization.json",
+            ".protocol/assets/runs/invitation-authorization.log",
+            ".protocol/assets/runs/invitation-e2e.json",
+            ".protocol/assets/runs/invitation-e2e.log",
+            ".protocol/references/complex-tasks.md",
+            ".protocol/references/evidence.md",
+            ".protocol/references/harnesses.md",
+            ".protocol/references/intent-flows.md",
+            ".protocol/references/model-routing.md",
+            ".protocol/references/modes.md",
+            ".protocol/references/report-rules.md",
+            ".protocol/references/task-profiles.md",
+            ".protocol/scripts/__pycache__/confidence.cpython-314.pyc",
+            ".protocol/scripts/__pycache__/diagnostics.cpython-314.pyc",
+            ".protocol/scripts/confidence.py",
+            ".protocol/scripts/diagnostics.py",
+            ".protocol/tests/check_release.py",
+            ".protocol/tests/support.py",
+            ".protocol/tests/test_autonomy_integration.py",
+            ".protocol/tests/test_cancellation.py",
+            ".protocol/tests/test_capture_io.py",
+            ".protocol/tests/test_capture_metadata.py",
+            ".protocol/tests/test_cli_recovery.py",
+            ".protocol/tests/test_confidence.py",
+            ".protocol/tests/test_content_binding.py",
+            ".protocol/tests/test_dependency_frontier.py",
+            ".protocol/tests/test_diagnostics.py",
+            ".protocol/tests/test_dirty_submodule.py",
+            ".protocol/tests/test_evidence_root.py",
+            ".protocol/tests/test_evidence_subtree.py",
+            ".protocol/tests/test_fingerprint_staging_retry.py",
+            ".protocol/tests/test_git_availability.py",
+            ".protocol/tests/test_init_recovery.py",
+            ".protocol/tests/test_integrity.py",
+            ".protocol/tests/test_launch_cancellation.py",
+            ".protocol/tests/test_limits.py",
+            ".protocol/tests/test_log_inputs.py",
+            ".protocol/tests/test_parallel_capture.py",
+            ".protocol/tests/test_record.py",
+            ".protocol/tests/test_release_archive.py",
+            ".protocol/tests/test_reporting_scope.py",
+            ".protocol/tests/test_review_provenance.py",
+            ".protocol/tests/test_run_receipt.py",
+            ".protocol/tests/test_source_scope_output.py",
+            ".protocol/tests/test_validation_cache.py",
+            "AGENTS.md",
+            "bonaparte",
+            "tests/test_bonaparte.py"
+          ],
+          "submitted_paths": [
+            "bonaparte"
+          ]
+        }
+      },
+      "patches": {
+        "first": {
+          "path": "patches/tweed-pr20--original--r1/first.production.patch",
+          "sha256": "09f864e366be388b5093b2362b0b64f697dbf18d871eee8a5505a48a7551b732",
+          "source_sha256": "a088d80e5b55f907761fbf590bf6cd24b286e2fe2608fc8d67bea90315d3f00d"
+        },
+        "final": {
+          "path": "patches/tweed-pr20--original--r1/final.production.patch",
+          "sha256": "09f864e366be388b5093b2362b0b64f697dbf18d871eee8a5505a48a7551b732",
+          "source_sha256": "a088d80e5b55f907761fbf590bf6cd24b286e2fe2608fc8d67bea90315d3f00d"
+        }
+      },
+      "delivery_distinction": {
+        "first_selected_behavioral_grade_passed": true,
+        "final_selected_behavioral_grade_passed": true,
+        "primary_final_delivery_accepted": false,
+        "production_patch_changed_in_closure": false,
+        "full_confidence_protocol_release_certified": false
+      }
+    },
+    {
+      "trial_id": "tweed-pr23--original--r1",
+      "task_id": "tweed-pr23",
+      "arm_id": "original",
+      "repeat": 1,
+      "primary": {
+        "status": "completed",
+        "first_pass": true,
+        "actual_repair": false,
+        "accepted": false,
+        "unresolved_findings": []
+      },
+      "recorded_primary_receipt_sha256": "16e884aeeebe8ce4c5fb34cc681258f878b8fb33391efb1c99a01f0241e4e2f1",
+      "supplemental_input_reconstruction": {
+        "main_launch_source_sha256": "3887a1c0eb7215a42d754292106f9bc6d8f1abfd3d8bd34526997cd6e9e76733",
+        "stage_envelopes": {
+          "main": {
+            "request_json_sha256": "5e3cc51a9a8bf8b274ca4b7472272a7c0da90a03999e0fed0f907d405ad15a9e",
+            "prompt_sha256": "c4e421adf05dc154e4535fe43164d7714ec202d1d28fe52beb227282993f05a7",
+            "server_config_sha256": "87e1453ce00ac4bacdca4eae2f82bfc0ea575b0a51bd3696b2ba207c98dc2cb1",
+            "full_argv_mcp_prompt_reconstruction_passed": true
+          },
+          "closure": {
+            "request_json_sha256": "6fc60907d0d811aabf2567f0962ab130e4e2f1adb516ebbfab6ff1f4247864cc",
+            "prompt_sha256": "0d05a0e3950245e4c748f15cda7eb05b901179a5b4f2012ea2385caf1129e111",
+            "server_config_sha256": "265629260c62d9446130302ff1176ccc723550613d23c310cf9032a31811478d",
+            "full_argv_mcp_prompt_reconstruction_passed": true
+          },
+          "review": {
+            "request_json_sha256": "30cc7381bb11bd318408b46f9214d2afb03a2757b4d4dc5a209e5dbea2dc1e75",
+            "prompt_sha256": "5b791b2d75a4d09a9323a723806fc19b7fc1a109eed385002fd8f4be13aa8d86",
+            "server_config_sha256": "fe10c8069aa184e2ccad08292b9b4bea5d0847489c1d58675f69ddf9df0c43bb",
+            "full_argv_mcp_prompt_reconstruction_passed": true
+          }
+        }
+      },
+      "stages": {
+        "main": {
+          "backend": "claude",
+          "requested_effort": "high",
+          "process_exit": 0,
+          "timed_out": false,
+          "wall_seconds": 192.18241445899912,
+          "total_cost_usd": 0.9205742000000001,
+          "stream_sha256": "e04deb01bb29e015a6837a540e04c9c3f948fd79aeaaf95d9d67747fcb281bf6",
+          "request_sha256": "f930aa69f9df7710746c456f8e0f0a6d7fbd97ad788f65871175cfd9e3dd4937",
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false,
+          "guarded_new_session_processes": 1,
+          "stream_changed_during_cleanup": false,
+          "source_sha256_at_launch": "3887a1c0eb7215a42d754292106f9bc6d8f1abfd3d8bd34526997cd6e9e76733",
+          "source_sha256_after": "9d5ee5e7c4ef525baaa711a60acfc06ba6c8b43fe0d397098197f514fb2aeab9",
+          "model_requested": "claude-opus-5-5",
+          "actual_model": "claude-opus-5-5",
+          "model_attribution": "assistant_event_observed",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "qualified": true,
+          "qualification_failures": [],
+          "usage": {
+            "input_tokens": 36,
+            "output_tokens": 12294,
+            "cache_read_input_tokens": 643271,
+            "cache_creation_input_tokens": 68237
+          },
+          "terminal_known": true,
+          "complete": true,
+          "remaining": [
+            "No formal protocol evidence directory or report was created; proof exists only as test-run outputs.",
+            "No independent review has happened yet (request_review was unavailable); the scheduled Codex review comes next.",
+            "Reasoning values are not checked against a fixed list of effort levels; any value that is not blank is passed through unchanged.",
+            "A held-out check that expects parse() to return six values would fail, because parse() keeps its five-value shape for existing tests."
+          ],
+          "assigned_timeout_seconds": 480,
+          "assigned_budget_usd": 4,
+          "stage_receipt_sha256": "cfa1048b485ec65471e747101934b8c0704b5bb181dd71e60eb6ac2ce9f2fe11",
+          "raw_request_sha256": "5e3cc51a9a8bf8b274ca4b7472272a7c0da90a03999e0fed0f907d405ad15a9e",
+          "summary": "Added a public --reasoning option to the bonaparte CLI for phases and resume (production file: bonaparte). The new resolve_reasoning() trims whitespace, rejects blank values with 'reasoning setting requires a non-empty reasoning effort', and returns COORDINATOR_EFFORT ('medium') when the option is omitted. run_phase gained a reasoning keyword and validates it before any Linear or Codex call. The selected effort is used for the coordinator's -c model_reasoning_effort setting (now JSON-quoted), for the default, worker and explorer agents.* settings, and in the prompt's model-policy text. --model works alongside it, and resume still continues the same session. For compatibility with existing tests, parse() still returns five values: it returns an Invocation tuple subclass that carries .reasoning. main() also accepts a sixth value if one is supplied and falls back to medium when there is none. I added six offline tests to tests/test_bonaparte.py. The two required visible checks pass. tests.test_bonaparte, tests.test_handoff and tests.test_installation pass (44 tests) when stderr is piped. Without piping, one existing test fails because the sandbox blocks os.fstat(2); that test also passed on the original code under the same piping. No live provider workflows were run."
+        },
+        "review": {
+          "backend": "codex",
+          "requested_effort": "medium",
+          "process_exit": 0,
+          "timed_out": false,
+          "wall_seconds": 31.509940833002474,
+          "total_cost_usd": null,
+          "stream_sha256": "7f9a3c9195801ba62acc669a65fb604726d3744567411c7ee055cee84dffdf1c",
+          "request_sha256": "3130ae7a96122cb3f60b14cb4f270cd4746b920e01130278c3fb87e825289086",
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false,
+          "guarded_new_session_processes": 1,
+          "stream_changed_during_cleanup": false,
+          "source_sha256_at_launch": "c8ce97bd99704298de2bea1a6991891799df3480f8d94e9157363d9c74b124c6",
+          "source_sha256_after": "c8ce97bd99704298de2bea1a6991891799df3480f8d94e9157363d9c74b124c6",
+          "model_requested": "gpt-6-astra",
+          "actual_model": null,
+          "model_attribution": "requested_only",
+          "observed_models": [],
+          "qualified": true,
+          "qualification_failures": [],
+          "usage": {
+            "input_tokens": 82266,
+            "output_tokens": 927,
+            "cached_input_tokens": 51328
+          },
+          "terminal_known": true,
+          "complete": true,
+          "remaining": [],
+          "assigned_timeout_seconds": 180,
+          "assigned_budget_usd": null,
+          "stage_receipt_sha256": "85efea7edd09c028392facecbcce43b45769eeb5eeb5d5b712b558a950d4ac2a",
+          "raw_request_sha256": "30cc7381bb11bd318408b46f9214d2afb03a2757b4d4dc5a209e5dbea2dc1e75",
+          "scope_limits": [
+            "Reviewed bonaparte\u2019s executable reasoning changes; workflow and documentation changes excluded.",
+            "Nine offline public-boundary cases passed, covering defaults, trimming, child configuration, model coexistence, resume session identity, and blank rejection.",
+            "Provider execution and filesystem writes were mocked; no live workflows, external services, history, or policy consultation."
+          ]
+        },
+        "closure": {
+          "backend": "claude",
+          "requested_effort": "high",
+          "process_exit": 0,
+          "timed_out": false,
+          "wall_seconds": 52.512671583001065,
+          "total_cost_usd": 0.4815788,
+          "stream_sha256": "0902fa7a7dc3ed1705dc6df711592018848cd340b70ad64f9ed081fc7be57b84",
+          "request_sha256": "e4104d88089287e522e700595274147f082693d175bde44a6b8bcf254e84c17a",
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false,
+          "guarded_new_session_processes": 1,
+          "stream_changed_during_cleanup": false,
+          "source_sha256_at_launch": "9d5ee5e7c4ef525baaa711a60acfc06ba6c8b43fe0d397098197f514fb2aeab9",
+          "source_sha256_after": "9d5ee5e7c4ef525baaa711a60acfc06ba6c8b43fe0d397098197f514fb2aeab9",
+          "model_requested": "claude-opus-5-5",
+          "actual_model": "claude-opus-5-5",
+          "model_attribution": "assistant_event_observed",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "qualified": true,
+          "qualification_failures": [],
+          "usage": {
+            "input_tokens": 18,
+            "output_tokens": 3091,
+            "cache_read_input_tokens": 210754,
+            "cache_creation_input_tokens": 47192
+          },
+          "terminal_known": true,
+          "complete": true,
+          "remaining": [
+            "test_progress_fd_is_scrubbed_and_never_sent_to_children could not be verified here because the sandbox blocks os.fstat(2); it needs a run outside the sandbox.",
+            "No formal evidence report was built with the protocol's evidence tool; the proof is the run results above.",
+            "Any non-blank reasoning value is passed through without checking it against a list of allowed values; the task only asked to reject blank values."
+          ],
+          "assigned_timeout_seconds": 300,
+          "assigned_budget_usd": 3,
+          "stage_receipt_sha256": "808da583f02d4dcfbb859ca47ad23dcc219ccd362b190a9229af143fe526da21",
+          "raw_request_sha256": "6fc60907d0d811aabf2567f0962ab130e4e2f1adb516ebbfab6ff1f4247864cc",
+          "summary": "Verified and closed with no further edits. `bonaparte` has a public `--reasoning` option for phases and resumes. If omitted it stays medium; surrounding spaces are trimmed; a blank value is rejected in parse() and in run_phase before Codex or Linear is called. The chosen effort goes to the coordinator, the default/worker/explorer children and the prompt's model-policy text. --model still works alongside it, and a resume keeps the same session ID. Offline results: the 2 visible checks pass. tests.test_bonaparte passes 35 of 36, including 5 new tests for reasoning. tests.test_handoff and tests.test_installation pass 8 of 8. The held-out grading checks passed 3 of 3 and the Codex review found nothing. The one failing test (test_progress_fd_is_scrubbed_and_never_sent_to_children) errors because the sandbox blocks os.fstat(2); a bare python3 call reproduces the error, and that code is unchanged. No live provider workflow was run."
+        }
+      },
+      "grades": {
+        "first": {
+          "oracle_passed": true,
+          "exit_code": 0,
+          "timed_out": false,
+          "wall_seconds": 0.18542662500112783,
+          "source_sha256": "9d5ee5e7c4ef525baaa711a60acfc06ba6c8b43fe0d397098197f514fb2aeab9",
+          "stdout_sha256": "4c2a9011c1439f947caef910212985ed5eabd48ef69e0b759096a10142e962c2",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false,
+          "output_changed_during_cleanup": false,
+          "header": {
+            "task_id": "tweed-pr23",
+            "exit_code": 0,
+            "passed": true,
+            "tests": [
+              "tests.test_owner_options.PublicOptions.test_reasoning_omitted_is_medium",
+              "tests.test_owner_options.PublicOptions.test_reasoning_override_reaches_coordinator_and_every_child_on_resume",
+              "tests.test_owner_options.PublicOptions.test_reasoning_blank_fails_before_provider"
+            ],
+            "production_scope": [
+              "bonaparte"
+            ],
+            "output_sha256": "13ad81e46d01a9df16ed39a21fdfe528b49b22dad82737871176d320aea17be1"
+          },
+          "receipt_sha256": "28d363f37708d499ae0941fb3dcd0538ab3167925c8235a922d74c8845f21825"
+        },
+        "final": {
+          "oracle_passed": true,
+          "exit_code": 0,
+          "timed_out": false,
+          "wall_seconds": 0.1827741250017425,
+          "source_sha256": "9d5ee5e7c4ef525baaa711a60acfc06ba6c8b43fe0d397098197f514fb2aeab9",
+          "stdout_sha256": "4c2a9011c1439f947caef910212985ed5eabd48ef69e0b759096a10142e962c2",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false,
+          "output_changed_during_cleanup": false,
+          "header": {
+            "task_id": "tweed-pr23",
+            "exit_code": 0,
+            "passed": true,
+            "tests": [
+              "tests.test_owner_options.PublicOptions.test_reasoning_omitted_is_medium",
+              "tests.test_owner_options.PublicOptions.test_reasoning_override_reaches_coordinator_and_every_child_on_resume",
+              "tests.test_owner_options.PublicOptions.test_reasoning_blank_fails_before_provider"
+            ],
+            "production_scope": [
+              "bonaparte"
+            ],
+            "output_sha256": "13ad81e46d01a9df16ed39a21fdfe528b49b22dad82737871176d320aea17be1"
+          },
+          "receipt_sha256": "b8e864526c643a91956ff8e804ac76eb9c1c94930d6ad168f9e6a184fdc4914b"
+        }
+      },
+      "checks_and_witnesses": {
+        "first_checks": {
+          "receipt_sha256": "509ccd06b6169f83a90462bcb258d5c0299e9bb7cd85c320467bbc23e6f5a7d6",
+          "rows": [
+            {
+              "id": "visible-0",
+              "requested_argv": [
+                "python3",
+                "-B",
+                "-m",
+                "unittest",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_non_review_run_phase_retains_baseline_key_only_validation"
+              ],
+              "exit_code": 0,
+              "timed_out": false,
+              "wall_seconds": 0.07748495900159469,
+              "source_sha256": "f0cf0c554042ac4e8c6e64e0d6c1ccddab43d8d7acf3da2bdfc328cfe0879702",
+              "source_unchanged": true,
+              "passed": true,
+              "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "stderr_sha256": "fe008aab760eb03ccac7578e2b84665b1b50b0d7f855b17a0c7a8d039435b658",
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false
+            },
+            {
+              "id": "focused-baseline",
+              "requested_argv": [
+                "python3",
+                "-B",
+                "-m",
+                "unittest",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_non_review_run_phase_retains_baseline_key_only_validation"
+              ],
+              "exit_code": 0,
+              "timed_out": false,
+              "wall_seconds": 0.07651445800001966,
+              "source_sha256": "f0cf0c554042ac4e8c6e64e0d6c1ccddab43d8d7acf3da2bdfc328cfe0879702",
+              "source_unchanged": true,
+              "passed": true,
+              "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "stderr_sha256": "fe008aab760eb03ccac7578e2b84665b1b50b0d7f855b17a0c7a8d039435b658",
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false
+            }
+          ]
+        },
+        "final_checks": {
+          "receipt_sha256": "caaddb8df29fd92958a0928d358e07e3c19bcab20ff840f76f2eeff2b8ff47e9",
+          "rows": [
+            {
+              "id": "visible-0",
+              "requested_argv": [
+                "python3",
+                "-B",
+                "-m",
+                "unittest",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_non_review_run_phase_retains_baseline_key_only_validation"
+              ],
+              "exit_code": 0,
+              "timed_out": false,
+              "wall_seconds": 0.125735417001124,
+              "source_sha256": "f0cf0c554042ac4e8c6e64e0d6c1ccddab43d8d7acf3da2bdfc328cfe0879702",
+              "source_unchanged": true,
+              "passed": true,
+              "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "stderr_sha256": "fe008aab760eb03ccac7578e2b84665b1b50b0d7f855b17a0c7a8d039435b658",
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false
+            },
+            {
+              "id": "focused-baseline",
+              "requested_argv": [
+                "python3",
+                "-B",
+                "-m",
+                "unittest",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_non_review_run_phase_retains_baseline_key_only_validation"
+              ],
+              "exit_code": 0,
+              "timed_out": false,
+              "wall_seconds": 0.12977445799697307,
+              "source_sha256": "f0cf0c554042ac4e8c6e64e0d6c1ccddab43d8d7acf3da2bdfc328cfe0879702",
+              "source_unchanged": true,
+              "passed": true,
+              "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "stderr_sha256": "fe008aab760eb03ccac7578e2b84665b1b50b0d7f855b17a0c7a8d039435b658",
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false
+            }
+          ]
+        },
+        "witness_before": {
+          "receipt_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+          "rows": []
+        },
+        "witness_after": {
+          "receipt_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+          "rows": []
+        }
+      },
+      "review_findings": {
+        "findings": [],
+        "scope_limits": [
+          "Reviewed bonaparte\u2019s executable reasoning changes; workflow and documentation changes excluded.",
+          "Nine offline public-boundary cases passed, covering defaults, trimming, child configuration, model coexistence, resume session identity, and blank rejection.",
+          "Provider execution and filesystem writes were mocked; no live workflows, external services, history, or policy consultation."
+        ]
+      },
+      "rejection_reasons": [
+        "final_developer_remaining_nonempty"
+      ],
+      "scope": {
+        "first": {
+          "scope_violations": [],
+          "out_of_scope_diff": {
+            "path": "patches/tweed-pr23--original--r1/first.out-of-scope.patch",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "files": [],
+            "format": "Exact UTF-8 line diff plus separate original/candidate byte hashes and modes; no production scope substitution"
+          },
+          "all_changed_paths": [
+            ".gitignore",
+            ".protocol/SKILL.md",
+            ".protocol/assets/contract.example.json",
+            ".protocol/assets/report.example.json",
+            ".protocol/assets/runs/invitation-authorization.json",
+            ".protocol/assets/runs/invitation-authorization.log",
+            ".protocol/assets/runs/invitation-e2e.json",
+            ".protocol/assets/runs/invitation-e2e.log",
+            ".protocol/references/complex-tasks.md",
+            ".protocol/references/evidence.md",
+            ".protocol/references/harnesses.md",
+            ".protocol/references/intent-flows.md",
+            ".protocol/references/model-routing.md",
+            ".protocol/references/modes.md",
+            ".protocol/references/report-rules.md",
+            ".protocol/references/task-profiles.md",
+            ".protocol/scripts/__pycache__/confidence.cpython-314.pyc",
+            ".protocol/scripts/__pycache__/diagnostics.cpython-314.pyc",
+            ".protocol/scripts/confidence.py",
+            ".protocol/scripts/diagnostics.py",
+            ".protocol/tests/check_release.py",
+            ".protocol/tests/support.py",
+            ".protocol/tests/test_autonomy_integration.py",
+            ".protocol/tests/test_cancellation.py",
+            ".protocol/tests/test_capture_io.py",
+            ".protocol/tests/test_capture_metadata.py",
+            ".protocol/tests/test_cli_recovery.py",
+            ".protocol/tests/test_confidence.py",
+            ".protocol/tests/test_content_binding.py",
+            ".protocol/tests/test_dependency_frontier.py",
+            ".protocol/tests/test_diagnostics.py",
+            ".protocol/tests/test_dirty_submodule.py",
+            ".protocol/tests/test_evidence_root.py",
+            ".protocol/tests/test_evidence_subtree.py",
+            ".protocol/tests/test_fingerprint_staging_retry.py",
+            ".protocol/tests/test_git_availability.py",
+            ".protocol/tests/test_init_recovery.py",
+            ".protocol/tests/test_integrity.py",
+            ".protocol/tests/test_launch_cancellation.py",
+            ".protocol/tests/test_limits.py",
+            ".protocol/tests/test_log_inputs.py",
+            ".protocol/tests/test_parallel_capture.py",
+            ".protocol/tests/test_record.py",
+            ".protocol/tests/test_release_archive.py",
+            ".protocol/tests/test_reporting_scope.py",
+            ".protocol/tests/test_review_provenance.py",
+            ".protocol/tests/test_run_receipt.py",
+            ".protocol/tests/test_source_scope_output.py",
+            ".protocol/tests/test_validation_cache.py",
+            "AGENTS.md",
+            "bonaparte",
+            "tests/test_bonaparte.py"
+          ],
+          "submitted_paths": [
+            "bonaparte"
+          ]
+        },
+        "final": {
+          "scope_violations": [],
+          "out_of_scope_diff": {
+            "path": "patches/tweed-pr23--original--r1/final.out-of-scope.patch",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "files": [],
+            "format": "Exact UTF-8 line diff plus separate original/candidate byte hashes and modes; no production scope substitution"
+          },
+          "all_changed_paths": [
+            ".gitignore",
+            ".protocol/SKILL.md",
+            ".protocol/assets/contract.example.json",
+            ".protocol/assets/report.example.json",
+            ".protocol/assets/runs/invitation-authorization.json",
+            ".protocol/assets/runs/invitation-authorization.log",
+            ".protocol/assets/runs/invitation-e2e.json",
+            ".protocol/assets/runs/invitation-e2e.log",
+            ".protocol/references/complex-tasks.md",
+            ".protocol/references/evidence.md",
+            ".protocol/references/harnesses.md",
+            ".protocol/references/intent-flows.md",
+            ".protocol/references/model-routing.md",
+            ".protocol/references/modes.md",
+            ".protocol/references/report-rules.md",
+            ".protocol/references/task-profiles.md",
+            ".protocol/scripts/__pycache__/confidence.cpython-314.pyc",
+            ".protocol/scripts/__pycache__/diagnostics.cpython-314.pyc",
+            ".protocol/scripts/confidence.py",
+            ".protocol/scripts/diagnostics.py",
+            ".protocol/tests/check_release.py",
+            ".protocol/tests/support.py",
+            ".protocol/tests/test_autonomy_integration.py",
+            ".protocol/tests/test_cancellation.py",
+            ".protocol/tests/test_capture_io.py",
+            ".protocol/tests/test_capture_metadata.py",
+            ".protocol/tests/test_cli_recovery.py",
+            ".protocol/tests/test_confidence.py",
+            ".protocol/tests/test_content_binding.py",
+            ".protocol/tests/test_dependency_frontier.py",
+            ".protocol/tests/test_diagnostics.py",
+            ".protocol/tests/test_dirty_submodule.py",
+            ".protocol/tests/test_evidence_root.py",
+            ".protocol/tests/test_evidence_subtree.py",
+            ".protocol/tests/test_fingerprint_staging_retry.py",
+            ".protocol/tests/test_git_availability.py",
+            ".protocol/tests/test_init_recovery.py",
+            ".protocol/tests/test_integrity.py",
+            ".protocol/tests/test_launch_cancellation.py",
+            ".protocol/tests/test_limits.py",
+            ".protocol/tests/test_log_inputs.py",
+            ".protocol/tests/test_parallel_capture.py",
+            ".protocol/tests/test_record.py",
+            ".protocol/tests/test_release_archive.py",
+            ".protocol/tests/test_reporting_scope.py",
+            ".protocol/tests/test_review_provenance.py",
+            ".protocol/tests/test_run_receipt.py",
+            ".protocol/tests/test_source_scope_output.py",
+            ".protocol/tests/test_validation_cache.py",
+            "AGENTS.md",
+            "bonaparte",
+            "tests/test_bonaparte.py"
+          ],
+          "submitted_paths": [
+            "bonaparte"
+          ]
+        }
+      },
+      "patches": {
+        "first": {
+          "path": "patches/tweed-pr23--original--r1/first.production.patch",
+          "sha256": "13e418c36613966ddd3fe40d6a6a1d1d964f4af481731babced0c9d91d88ad08",
+          "source_sha256": "9d5ee5e7c4ef525baaa711a60acfc06ba6c8b43fe0d397098197f514fb2aeab9"
+        },
+        "final": {
+          "path": "patches/tweed-pr23--original--r1/final.production.patch",
+          "sha256": "13e418c36613966ddd3fe40d6a6a1d1d964f4af481731babced0c9d91d88ad08",
+          "source_sha256": "9d5ee5e7c4ef525baaa711a60acfc06ba6c8b43fe0d397098197f514fb2aeab9"
+        }
+      },
+      "delivery_distinction": {
+        "first_selected_behavioral_grade_passed": true,
+        "final_selected_behavioral_grade_passed": true,
+        "primary_final_delivery_accepted": false,
+        "production_patch_changed_in_closure": false,
+        "full_confidence_protocol_release_certified": false
+      }
+    },
+    {
+      "trial_id": "tweed-pr23--revised--r1",
+      "task_id": "tweed-pr23",
+      "arm_id": "revised",
+      "repeat": 1,
+      "primary": {
+        "status": "completed",
+        "first_pass": true,
+        "actual_repair": false,
+        "accepted": false,
+        "unresolved_findings": []
+      },
+      "recorded_primary_receipt_sha256": "1ea27e7289a8eea1b55a2f3d576129e4adf83838562c325e9464b48001baea8f",
+      "supplemental_input_reconstruction": {
+        "main_launch_source_sha256": "b363b27877a099492de50d68f890cedad09e4ff7b8983b001a54fe51646aa5ad",
+        "stage_envelopes": {
+          "main": {
+            "request_json_sha256": "96406bea104475802c6dd418fd934033a213de80ca71168cb77063218666face",
+            "prompt_sha256": "c4e421adf05dc154e4535fe43164d7714ec202d1d28fe52beb227282993f05a7",
+            "server_config_sha256": "4e9c6bdf0beb81b51ec8de3ed52b0cfe2697e88c618758980a06c44b362ecd7e",
+            "full_argv_mcp_prompt_reconstruction_passed": true
+          },
+          "closure": {
+            "request_json_sha256": "c207597fcddb70deafa8aedb79d0b4f1f8f2835a9c232a0ad5a52e54d3fa24a4",
+            "prompt_sha256": "868270e136305a6de24b8b6260765a740b6425b235a4ac34c6efe0ee96424ae6",
+            "server_config_sha256": "8b631a2b574412da7572a9ac186c56c0c6e25b6938254cf8e745179f5604abff",
+            "full_argv_mcp_prompt_reconstruction_passed": true
+          },
+          "review": {
+            "request_json_sha256": "6df83c77608d7a87e7e409aa1c23b8ba30b7e45a34debc41354ac4e9bf10f7f2",
+            "prompt_sha256": "4c3964b9fe595068fb95396f6d2c120a98b6335270e1445755e167bec12496b6",
+            "server_config_sha256": "6bde6940e2b461bdd7c3142596cda946ce5a242606b6d40d56ec358afdf21191",
+            "full_argv_mcp_prompt_reconstruction_passed": true
+          }
+        }
+      },
+      "stages": {
+        "main": {
+          "backend": "claude",
+          "requested_effort": "high",
+          "process_exit": 0,
+          "timed_out": false,
+          "wall_seconds": 137.385668040999,
+          "total_cost_usd": 0.7542006000000001,
+          "stream_sha256": "e3eee2a585241db0dedcaada77507ce1ba06a9f5bfac2501f743b05a8fb80cca",
+          "request_sha256": "12b9c59e4a79af635edb0433204a907dffe9b2c8e5dc8205e43242209a7f549f",
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false,
+          "guarded_new_session_processes": 1,
+          "stream_changed_during_cleanup": false,
+          "source_sha256_at_launch": "b363b27877a099492de50d68f890cedad09e4ff7b8983b001a54fe51646aa5ad",
+          "source_sha256_after": "a690c2b8e9f7e6362e79268fa123f4be6e05f6eae3640a27f18372e1bad14a5e",
+          "model_requested": "claude-opus-5-5",
+          "actual_model": "claude-opus-5-5",
+          "model_attribution": "assistant_event_observed",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "qualified": true,
+          "qualification_failures": [],
+          "usage": {
+            "input_tokens": 20,
+            "output_tokens": 11078,
+            "cache_read_input_tokens": 333523,
+            "cache_creation_input_tokens": 58232
+          },
+          "terminal_known": true,
+          "complete": true,
+          "remaining": [
+            "Independent Codex review happens after this stage; none was done within it.",
+            "Held-out checks that expect parse() to return six values instead of five plus a .reasoning attribute would fail; the five-value shape was kept for the existing tests.",
+            "test_progress_fd_is_scrubbed_and_never_sent_to_children fails in this sandbox because os.fstat(2) is not permitted; it is unrelated to this change and was not checked outside the sandbox.",
+            "Reasoning values other than blanks are not checked against Codex's accepted efforts, because the task only asked for blank rejection."
+          ],
+          "assigned_timeout_seconds": 480,
+          "assigned_budget_usd": 4,
+          "stage_receipt_sha256": "5eba07e241b38d5bc01885c51db5df0714ae3a380982fd4b60476687c7c5e93f",
+          "raw_request_sha256": "96406bea104475802c6dd418fd934033a213de80ca71168cb77063218666face",
+          "summary": "Added public --reasoning to the bonaparte CLI for phase runs and resume. Only `bonaparte` changed in production, plus new tests in tests/test_bonaparte.py. The value is trimmed and passed to the coordinator (-c model_reasoning_effort, JSON-quoted) and to the default, worker and explorer children; the prompt's model-policy text also states it. Omitting it keeps medium. A blank value is rejected before Codex is started: parse() rejects it on the CLI path (failed receipt, exit 1), and run_phase() rejects it before find_codex, call_linear or subprocess. --model works alongside it, and resume still uses exec resume with the same session ID. To keep existing tests passing, parse() still unpacks to five values and carries reasoning as a .reasoning attribute, which main() reads with getattr and treats as medium when it is missing. Results: both visible checks pass. In the full offline suite (test_bonaparte, test_handoff, test_installation) 43 of 44 pass; the one failure, test_progress_fd_is_scrubbed_and_never_sent_to_children at os.fstat(2), also happens in a standalone two-line script in the sandbox, so it is caused by the environment, not this change. The new CLI tests with a fake Codex cover phase+model with trimmed high, resume+model with low in the same session, the medium default, blank rejection with Codex never called, and blank rejection in run_phase."
+        },
+        "review": {
+          "backend": "codex",
+          "requested_effort": "medium",
+          "process_exit": 0,
+          "timed_out": false,
+          "wall_seconds": 25.294950833002076,
+          "total_cost_usd": null,
+          "stream_sha256": "615a6b11e71ff6a88b53b1d72b4c2edc09886bc0faec2cbbfece523eeaf1d294",
+          "request_sha256": "999919c88a8d8ab4266b985e5150e5c339b256a4037f7a5f845fccfad86ff6e8",
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false,
+          "guarded_new_session_processes": 1,
+          "stream_changed_during_cleanup": false,
+          "source_sha256_at_launch": "efc5023a572ab74276b12c7fa4b22bf897ed6cb9f667362c233308fdd295a486",
+          "source_sha256_after": "efc5023a572ab74276b12c7fa4b22bf897ed6cb9f667362c233308fdd295a486",
+          "model_requested": "gpt-6-astra",
+          "actual_model": null,
+          "model_attribution": "requested_only",
+          "observed_models": [],
+          "qualified": true,
+          "qualification_failures": [],
+          "usage": {
+            "input_tokens": 81696,
+            "output_tokens": 762,
+            "cached_input_tokens": 43648
+          },
+          "terminal_known": true,
+          "complete": true,
+          "remaining": [],
+          "assigned_timeout_seconds": 180,
+          "assigned_budget_usd": null,
+          "stage_receipt_sha256": "fbf9d99292f9c85992ea8bdd740a6ea05ae4595f3f724547045773bbf4da88a5",
+          "raw_request_sha256": "6df83c77608d7a87e7e409aa1c23b8ba30b7e45a34debc41354ac4e9bf10f7f2",
+          "scope_limits": [
+            "Reviewed the bonaparte reasoning changes; no actionable defects found.",
+            "Independent read-only checks passed for phase/resume argument propagation, model coexistence, medium default, whitespace trimming, and blank rejection before provider execution.",
+            "Provider command construction was inspected statically; no live providers, external services, policy files, or history were consulted. Full baseline suite was not rerun."
+          ]
+        },
+        "closure": {
+          "backend": "claude",
+          "requested_effort": "high",
+          "process_exit": 0,
+          "timed_out": false,
+          "wall_seconds": 54.81616141700215,
+          "total_cost_usd": 0.29889560000000004,
+          "stream_sha256": "c98594a76d9f05f6bba7dc6fd12ee2c8bd892ad5950ad7146f35491709ff31b8",
+          "request_sha256": "3239759eccc73e98295c81f2de1e4b51b186fe5d7916c54c63113955df179f12",
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false,
+          "guarded_new_session_processes": 1,
+          "stream_changed_during_cleanup": false,
+          "source_sha256_at_launch": "a690c2b8e9f7e6362e79268fa123f4be6e05f6eae3640a27f18372e1bad14a5e",
+          "source_sha256_after": "a690c2b8e9f7e6362e79268fa123f4be6e05f6eae3640a27f18372e1bad14a5e",
+          "model_requested": "claude-opus-5-5",
+          "actual_model": "claude-opus-5-5",
+          "model_attribution": "assistant_event_observed",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "qualified": true,
+          "qualification_failures": [],
+          "usage": {
+            "input_tokens": 16,
+            "output_tokens": 2712,
+            "cache_read_input_tokens": 113238,
+            "cache_creation_input_tokens": 27743
+          },
+          "terminal_known": true,
+          "complete": true,
+          "remaining": [
+            "One test, test_progress_fd_is_scrubbed_and_never_sent_to_children, could not run because the sandbox blocks os.fstat(2) even in a bare Python process. It has not been checked in this environment.",
+            "The provider commands were only checked against a fake codex that records its arguments. No real provider was run, so it is unconfirmed whether the real provider accepts values other than the documented reasoning levels."
+          ],
+          "assigned_timeout_seconds": 300,
+          "assigned_budget_usd": 3,
+          "stage_receipt_sha256": "16d1fba87f79c69a75efad770f94b66aed979a56c4557e0b8df5c8dbf3855fd2",
+          "raw_request_sha256": "c207597fcddb70deafa8aedb79d0b4f1f8f2835a9c232a0ad5a52e54d3fa24a4",
+          "summary": "`bonaparte` now accepts `--reasoning` for a phase and for its resume. I made no edits in this final stage: I read `.protocol/SKILL.md`, checked the existing diff and reran the tests. All 7 targeted tests pass, and the full suite passes except one test the sandbox prevents from running.\n\n**How it works:**\n- `--reasoning` is accepted on both a phase and a resume. The value has surrounding whitespace trimmed.\n- A blank value (`\"\"`, spaces, or tab/newline) is rejected with \"reasoning setting requires a non-empty reasoning effort\". This happens before any provider runs, both when the command line is parsed and inside `run_phase`.\n- If the option is left out, reasoning stays at `medium`.\n- The chosen value goes to the coordinator, to the default, worker and explorer children, and into the prompt's model-policy text.\n- `--model` still works alongside it and is applied to the coordinator and every child.\n- A resume still continues the same session with `exec resume <session> -`.\n- Only the `bonaparte` file changed in production code. To keep code that expects the original five values from parsing working, the parse result is a tuple that also carries the reasoning value.\n\n**Checks run:**\n- The 2 visible checks (model precedence and non-review validation) pass.\n- 5 new tests in `tests/test_bonaparte.py` pass. Four of them run the `bonaparte` command against a fake `codex` that records its arguments:\n  - `--reasoning '  high \\n'` with `--model` on a create phase reaches the coordinator, all three children and the prompt, and no `medium` setting is left.\n  - A resume with `--model` and `--reasoning low` keeps the same session ID and applies `low` everywhere.\n  - Leaving the option out gives `medium` everywhere.\n  - Each of the three blank values fails with exit code 1 and the fake `codex` is never called.\n  - The fifth test calls `run_phase` directly with a blank value; no command is run and Linear is never called.\n- The evaluator's separate checks (default is medium, the selected value reaches the coordinator and every child on resume, blank fails before the provider) also passed.\n\n**Full suite (44 tests):** 43 pass. `test_progress_fd_is_scrubbed_and_never_sent_to_children` errors because the test itself calls `os.fstat(2)`, which the sandbox blocks. Running `python3 -c 'import os; os.fstat(2)'` on its own fails the same way, so this is an environment limit, not a defect in the change.\n\nThe independent Codex review found nothing. No live provider runs or network calls were made."
+        }
+      },
+      "grades": {
+        "first": {
+          "oracle_passed": true,
+          "exit_code": 0,
+          "timed_out": false,
+          "wall_seconds": 0.18319420800253283,
+          "source_sha256": "a690c2b8e9f7e6362e79268fa123f4be6e05f6eae3640a27f18372e1bad14a5e",
+          "stdout_sha256": "4c2a9011c1439f947caef910212985ed5eabd48ef69e0b759096a10142e962c2",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false,
+          "output_changed_during_cleanup": false,
+          "header": {
+            "task_id": "tweed-pr23",
+            "exit_code": 0,
+            "passed": true,
+            "tests": [
+              "tests.test_owner_options.PublicOptions.test_reasoning_omitted_is_medium",
+              "tests.test_owner_options.PublicOptions.test_reasoning_override_reaches_coordinator_and_every_child_on_resume",
+              "tests.test_owner_options.PublicOptions.test_reasoning_blank_fails_before_provider"
+            ],
+            "production_scope": [
+              "bonaparte"
+            ],
+            "output_sha256": "13ad81e46d01a9df16ed39a21fdfe528b49b22dad82737871176d320aea17be1"
+          },
+          "receipt_sha256": "0b0198be829cb844e05357573910e41aba6a56d73dd51e40c9d9b3075f6caf61"
+        },
+        "final": {
+          "oracle_passed": true,
+          "exit_code": 0,
+          "timed_out": false,
+          "wall_seconds": 0.23250008299874025,
+          "source_sha256": "a690c2b8e9f7e6362e79268fa123f4be6e05f6eae3640a27f18372e1bad14a5e",
+          "stdout_sha256": "4c2a9011c1439f947caef910212985ed5eabd48ef69e0b759096a10142e962c2",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false,
+          "output_changed_during_cleanup": false,
+          "header": {
+            "task_id": "tweed-pr23",
+            "exit_code": 0,
+            "passed": true,
+            "tests": [
+              "tests.test_owner_options.PublicOptions.test_reasoning_omitted_is_medium",
+              "tests.test_owner_options.PublicOptions.test_reasoning_override_reaches_coordinator_and_every_child_on_resume",
+              "tests.test_owner_options.PublicOptions.test_reasoning_blank_fails_before_provider"
+            ],
+            "production_scope": [
+              "bonaparte"
+            ],
+            "output_sha256": "13ad81e46d01a9df16ed39a21fdfe528b49b22dad82737871176d320aea17be1"
+          },
+          "receipt_sha256": "bba6e9f4ab6928f9a3d5fb98ae98173a28610a0e0c577642b60f84ee7532d2b9"
+        }
+      },
+      "checks_and_witnesses": {
+        "first_checks": {
+          "receipt_sha256": "b4b6dabc5c403ebf61cca022a4a841975bd1a34fe5ebb59ebaaad9e870553bb4",
+          "rows": [
+            {
+              "id": "visible-0",
+              "requested_argv": [
+                "python3",
+                "-B",
+                "-m",
+                "unittest",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_non_review_run_phase_retains_baseline_key_only_validation"
+              ],
+              "exit_code": 0,
+              "timed_out": false,
+              "wall_seconds": 0.12454341700140503,
+              "source_sha256": "252ec56a226a328e41d2f971cdbd78650e957e1e9cfcf66d235f1766f3945310",
+              "source_unchanged": true,
+              "passed": true,
+              "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "stderr_sha256": "6f283ee6225d2cef4c0127d95456a6f954c45141c92b97dd89016cb1c630e8f4",
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false
+            },
+            {
+              "id": "focused-baseline",
+              "requested_argv": [
+                "python3",
+                "-B",
+                "-m",
+                "unittest",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_non_review_run_phase_retains_baseline_key_only_validation"
+              ],
+              "exit_code": 0,
+              "timed_out": false,
+              "wall_seconds": 0.13245724999796948,
+              "source_sha256": "252ec56a226a328e41d2f971cdbd78650e957e1e9cfcf66d235f1766f3945310",
+              "source_unchanged": true,
+              "passed": true,
+              "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "stderr_sha256": "6f283ee6225d2cef4c0127d95456a6f954c45141c92b97dd89016cb1c630e8f4",
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false
+            }
+          ]
+        },
+        "final_checks": {
+          "receipt_sha256": "bccc7b3192d076c98fad21812b5308f0cf3af28283514d496d36bb77c11a1dfc",
+          "rows": [
+            {
+              "id": "visible-0",
+              "requested_argv": [
+                "python3",
+                "-B",
+                "-m",
+                "unittest",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_non_review_run_phase_retains_baseline_key_only_validation"
+              ],
+              "exit_code": 0,
+              "timed_out": false,
+              "wall_seconds": 0.07732266600214643,
+              "source_sha256": "252ec56a226a328e41d2f971cdbd78650e957e1e9cfcf66d235f1766f3945310",
+              "source_unchanged": true,
+              "passed": true,
+              "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "stderr_sha256": "6f283ee6225d2cef4c0127d95456a6f954c45141c92b97dd89016cb1c630e8f4",
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false
+            },
+            {
+              "id": "focused-baseline",
+              "requested_argv": [
+                "python3",
+                "-B",
+                "-m",
+                "unittest",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex",
+                "tests.test_bonaparte.BonaparteRunnerTests.test_non_review_run_phase_retains_baseline_key_only_validation"
+              ],
+              "exit_code": 0,
+              "timed_out": false,
+              "wall_seconds": 0.12655925000217394,
+              "source_sha256": "252ec56a226a328e41d2f971cdbd78650e957e1e9cfcf66d235f1766f3945310",
+              "source_unchanged": true,
+              "passed": true,
+              "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "stderr_sha256": "6f283ee6225d2cef4c0127d95456a6f954c45141c92b97dd89016cb1c630e8f4",
+              "process_cleanup_scope": "original_process_group",
+              "detached_descendants_contained": false
+            }
+          ]
+        },
+        "witness_before": {
+          "receipt_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+          "rows": []
+        },
+        "witness_after": {
+          "receipt_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+          "rows": []
+        }
+      },
+      "review_findings": {
+        "findings": [],
+        "scope_limits": [
+          "Reviewed the bonaparte reasoning changes; no actionable defects found.",
+          "Independent read-only checks passed for phase/resume argument propagation, model coexistence, medium default, whitespace trimming, and blank rejection before provider execution.",
+          "Provider command construction was inspected statically; no live providers, external services, policy files, or history were consulted. Full baseline suite was not rerun."
+        ]
+      },
+      "rejection_reasons": [
+        "final_developer_remaining_nonempty"
+      ],
+      "scope": {
+        "first": {
+          "scope_violations": [],
+          "out_of_scope_diff": {
+            "path": "patches/tweed-pr23--revised--r1/first.out-of-scope.patch",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "files": [],
+            "format": "Exact UTF-8 line diff plus separate original/candidate byte hashes and modes; no production scope substitution"
+          },
+          "all_changed_paths": [
+            ".gitignore",
+            ".protocol/SKILL.md",
+            ".protocol/assets/contract.example.json",
+            ".protocol/assets/report.example.json",
+            ".protocol/assets/runs/invitation-authorization.json",
+            ".protocol/assets/runs/invitation-authorization.log",
+            ".protocol/assets/runs/invitation-e2e.json",
+            ".protocol/assets/runs/invitation-e2e.log",
+            ".protocol/references/complex-tasks.md",
+            ".protocol/references/evidence.md",
+            ".protocol/references/harnesses.md",
+            ".protocol/references/intent-flows.md",
+            ".protocol/references/model-routing.md",
+            ".protocol/references/modes.md",
+            ".protocol/references/question-patterns.md",
+            ".protocol/references/report-rules.md",
+            ".protocol/references/task-profiles.md",
+            ".protocol/scripts/__pycache__/confidence.cpython-314.pyc",
+            ".protocol/scripts/__pycache__/diagnostics.cpython-314.pyc",
+            ".protocol/scripts/confidence.py",
+            ".protocol/scripts/diagnostics.py",
+            ".protocol/tests/check_release.py",
+            ".protocol/tests/support.py",
+            ".protocol/tests/test_autonomy_integration.py",
+            ".protocol/tests/test_cancellation.py",
+            ".protocol/tests/test_capture_io.py",
+            ".protocol/tests/test_capture_metadata.py",
+            ".protocol/tests/test_cli_recovery.py",
+            ".protocol/tests/test_confidence.py",
+            ".protocol/tests/test_content_binding.py",
+            ".protocol/tests/test_dependency_frontier.py",
+            ".protocol/tests/test_diagnostics.py",
+            ".protocol/tests/test_dirty_submodule.py",
+            ".protocol/tests/test_evidence_root.py",
+            ".protocol/tests/test_evidence_subtree.py",
+            ".protocol/tests/test_fingerprint_staging_retry.py",
+            ".protocol/tests/test_git_availability.py",
+            ".protocol/tests/test_init_recovery.py",
+            ".protocol/tests/test_integrity.py",
+            ".protocol/tests/test_launch_cancellation.py",
+            ".protocol/tests/test_limits.py",
+            ".protocol/tests/test_log_inputs.py",
+            ".protocol/tests/test_parallel_capture.py",
+            ".protocol/tests/test_record.py",
+            ".protocol/tests/test_release_archive.py",
+            ".protocol/tests/test_reporting_scope.py",
+            ".protocol/tests/test_review_provenance.py",
+            ".protocol/tests/test_run_receipt.py",
+            ".protocol/tests/test_source_scope_output.py",
+            ".protocol/tests/test_validation_cache.py",
+            "AGENTS.md",
+            "bonaparte",
+            "tests/test_bonaparte.py"
+          ],
+          "submitted_paths": [
+            "bonaparte"
+          ]
+        },
+        "final": {
+          "scope_violations": [],
+          "out_of_scope_diff": {
+            "path": "patches/tweed-pr23--revised--r1/final.out-of-scope.patch",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "files": [],
+            "format": "Exact UTF-8 line diff plus separate original/candidate byte hashes and modes; no production scope substitution"
+          },
+          "all_changed_paths": [
+            ".gitignore",
+            ".protocol/SKILL.md",
+            ".protocol/assets/contract.example.json",
+            ".protocol/assets/report.example.json",
+            ".protocol/assets/runs/invitation-authorization.json",
+            ".protocol/assets/runs/invitation-authorization.log",
+            ".protocol/assets/runs/invitation-e2e.json",
+            ".protocol/assets/runs/invitation-e2e.log",
+            ".protocol/references/complex-tasks.md",
+            ".protocol/references/evidence.md",
+            ".protocol/references/harnesses.md",
+            ".protocol/references/intent-flows.md",
+            ".protocol/references/model-routing.md",
+            ".protocol/references/modes.md",
+            ".protocol/references/question-patterns.md",
+            ".protocol/references/report-rules.md",
+            ".protocol/references/task-profiles.md",
+            ".protocol/scripts/__pycache__/confidence.cpython-314.pyc",
+            ".protocol/scripts/__pycache__/diagnostics.cpython-314.pyc",
+            ".protocol/scripts/confidence.py",
+            ".protocol/scripts/diagnostics.py",
+            ".protocol/tests/check_release.py",
+            ".protocol/tests/support.py",
+            ".protocol/tests/test_autonomy_integration.py",
+            ".protocol/tests/test_cancellation.py",
+            ".protocol/tests/test_capture_io.py",
+            ".protocol/tests/test_capture_metadata.py",
+            ".protocol/tests/test_cli_recovery.py",
+            ".protocol/tests/test_confidence.py",
+            ".protocol/tests/test_content_binding.py",
+            ".protocol/tests/test_dependency_frontier.py",
+            ".protocol/tests/test_diagnostics.py",
+            ".protocol/tests/test_dirty_submodule.py",
+            ".protocol/tests/test_evidence_root.py",
+            ".protocol/tests/test_evidence_subtree.py",
+            ".protocol/tests/test_fingerprint_staging_retry.py",
+            ".protocol/tests/test_git_availability.py",
+            ".protocol/tests/test_init_recovery.py",
+            ".protocol/tests/test_integrity.py",
+            ".protocol/tests/test_launch_cancellation.py",
+            ".protocol/tests/test_limits.py",
+            ".protocol/tests/test_log_inputs.py",
+            ".protocol/tests/test_parallel_capture.py",
+            ".protocol/tests/test_record.py",
+            ".protocol/tests/test_release_archive.py",
+            ".protocol/tests/test_reporting_scope.py",
+            ".protocol/tests/test_review_provenance.py",
+            ".protocol/tests/test_run_receipt.py",
+            ".protocol/tests/test_source_scope_output.py",
+            ".protocol/tests/test_validation_cache.py",
+            "AGENTS.md",
+            "bonaparte",
+            "tests/test_bonaparte.py"
+          ],
+          "submitted_paths": [
+            "bonaparte"
+          ]
+        }
+      },
+      "patches": {
+        "first": {
+          "path": "patches/tweed-pr23--revised--r1/first.production.patch",
+          "sha256": "6ff66ced4f170a83d3536a02afcc01b1ffc26f89ce03055391af87e8828d7692",
+          "source_sha256": "a690c2b8e9f7e6362e79268fa123f4be6e05f6eae3640a27f18372e1bad14a5e"
+        },
+        "final": {
+          "path": "patches/tweed-pr23--revised--r1/final.production.patch",
+          "sha256": "6ff66ced4f170a83d3536a02afcc01b1ffc26f89ce03055391af87e8828d7692",
+          "source_sha256": "a690c2b8e9f7e6362e79268fa123f4be6e05f6eae3640a27f18372e1bad14a5e"
+        }
+      },
+      "delivery_distinction": {
+        "first_selected_behavioral_grade_passed": true,
+        "final_selected_behavioral_grade_passed": true,
+        "primary_final_delivery_accepted": false,
+        "production_patch_changed_in_closure": false,
+        "full_confidence_protocol_release_certified": false
+      }
+    },
+    {
+      "trial_id": "tweed-pr37--original--r1",
+      "task_id": "tweed-pr37",
+      "arm_id": "original",
+      "repeat": 1,
+      "primary": {
+        "trial_id": "tweed-pr37--original--r1",
+        "task_id": "tweed-pr37",
+        "arm_id": "original",
+        "repeat": 1,
+        "status": "analysis_binding_error",
+        "accepted": false,
+        "error": "Stage artifact absent/nonregular"
+      },
+      "supplemental_export_status": "custody_or_privacy_failure",
+      "error": "ValueError: Sealed controller reported analysis custody failure: Stage artifact absent/nonregular",
+      "available_patch_artifacts": {
+        "first": {
+          "status": "current_artifacts_hash_bound_whole_cell_unqualified",
+          "source_sha256": "3013e1fd9eb025785f3d8a0526bae7cb22bb5223f548aaa12cd2775916969787",
+          "production_patch": {
+            "path": "patches/tweed-pr37--original--r1/first.production.patch",
+            "sha256": "fa655385cc445351ff913f57ac937149c18570d9190fd49746d89fef1916b667"
+          },
+          "scope_violations": [],
+          "out_of_scope_diff": {
+            "path": "patches/tweed-pr37--original--r1/first.out-of-scope.patch",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "files": [],
+            "format": "Exact UTF-8 line diff plus separate original/candidate byte hashes and modes; no production scope substitution"
+          }
+        },
+        "final": {
+          "status": "current_artifacts_hash_bound_whole_cell_unqualified",
+          "source_sha256": "3013e1fd9eb025785f3d8a0526bae7cb22bb5223f548aaa12cd2775916969787",
+          "production_patch": {
+            "path": "patches/tweed-pr37--original--r1/final.production.patch",
+            "sha256": "fa655385cc445351ff913f57ac937149c18570d9190fd49746d89fef1916b667"
+          },
+          "scope_violations": [],
+          "out_of_scope_diff": {
+            "path": "patches/tweed-pr37--original--r1/final.out-of-scope.patch",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "files": [],
+            "format": "Exact UTF-8 line diff plus separate original/candidate byte hashes and modes; no production scope substitution"
+          }
+        }
+      }
+    },
+    {
+      "trial_id": "tweed-pr37--revised--r1",
+      "task_id": "tweed-pr37",
+      "arm_id": "revised",
+      "repeat": 1,
+      "primary": {
+        "trial_id": "tweed-pr37--revised--r1",
+        "task_id": "tweed-pr37",
+        "arm_id": "revised",
+        "repeat": 1,
+        "status": "analysis_binding_error",
+        "accepted": false,
+        "error": "Stage artifact absent/nonregular"
+      },
+      "supplemental_export_status": "custody_or_privacy_failure",
+      "error": "ValueError: Sealed controller reported analysis custody failure: Stage artifact absent/nonregular",
+      "available_patch_artifacts": {
+        "first": {
+          "status": "current_artifacts_hash_bound_whole_cell_unqualified",
+          "source_sha256": "ecf10b5f0ad241c75778a8153a21e8cc789b765bdb3feed8359a992453b958c0",
+          "production_patch": {
+            "path": "patches/tweed-pr37--revised--r1/first.production.patch",
+            "sha256": "268512553a4f1ca6d424f302c82782938f28630c85fc00bd657fd79bb089e803"
+          },
+          "scope_violations": [],
+          "out_of_scope_diff": {
+            "path": "patches/tweed-pr37--revised--r1/first.out-of-scope.patch",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "files": [],
+            "format": "Exact UTF-8 line diff plus separate original/candidate byte hashes and modes; no production scope substitution"
+          }
+        },
+        "final": {
+          "status": "current_artifacts_hash_bound_whole_cell_unqualified",
+          "source_sha256": "ecf10b5f0ad241c75778a8153a21e8cc789b765bdb3feed8359a992453b958c0",
+          "production_patch": {
+            "path": "patches/tweed-pr37--revised--r1/final.production.patch",
+            "sha256": "268512553a4f1ca6d424f302c82782938f28630c85fc00bd657fd79bb089e803"
+          },
+          "scope_violations": [],
+          "out_of_scope_diff": {
+            "path": "patches/tweed-pr37--revised--r1/final.out-of-scope.patch",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "files": [],
+            "format": "Exact UTF-8 line diff plus separate original/candidate byte hashes and modes; no production scope substitution"
+          }
+        }
+      }
+    }
+  ],
+  "supplemental_custody_failures": [
+    {
+      "trial_id": "tweed-pr37--original--r1",
+      "error": "ValueError: Sealed controller reported analysis custody failure: Stage artifact absent/nonregular"
+    },
+    {
+      "trial_id": "tweed-pr37--revised--r1",
+      "error": "ValueError: Sealed controller reported analysis custody failure: Stage artifact absent/nonregular"
+    }
+  ],
+  "limitations": [
+    "Controlled delegated lifecycle, not free orchestration or complete CP release certification",
+    "Three fresh historical behavior slices, one trial per arm; no population inference",
+    "Final frozen acceptance grader disclosed during repair; not an unseen post-repair holdout",
+    "Codex model attribution may be requested-only; inventory is offline declared plus local transport",
+    "Original-process-group cleanup does not contain detached setsid escapees",
+    "Main timeout/missing terminal may recover only if model/tool/lifecycle/source provenance otherwise qualifies; first pass remains failed/unknown",
+    "Claude dollar guards and estimated CLI usage do not equal invoices",
+    "This helper was written after the first scored outcome; all supplemental fields are descriptive and cannot redefine primary acceptance.",
+    "Selected frozen grader/check success is scoped behavioral evidence, not complete Confidence Protocol certification.",
+    "Public fields are allowlisted; raw streams, command output, session identifiers, authentication and private paths remain private.",
+    "Out-of-scope diffs are exported separately so excluded edits remain inspectable. No primary scope rejection is erased."
+  ]
+}

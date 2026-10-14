@@ -1,0 +1,1 @@
+{"id": "cd62f88c9b7d44058b83240898efe416", "argv": ["/opt/homebrew/opt/python@3.14/bin/python3.14", "-B", "-c", "src=open('configparser.py').read().splitlines();[print(i+1, l) for i,l in enumerate(src) if 610<=i<=690 or 1055<=i<=1250]"], "timeout": 90.0}

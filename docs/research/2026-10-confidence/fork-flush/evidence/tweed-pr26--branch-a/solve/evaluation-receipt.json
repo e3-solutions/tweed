@@ -1,0 +1,68 @@
+{
+  "process": {
+    "argv": [
+      "/opt/homebrew/opt/python@3.14/bin/python3.14",
+      "-B",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/evaluate.py",
+      "--workspace",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-a/solve/after/source",
+      "--task-id",
+      "tweed-pr26"
+    ],
+    "exit_code": 1,
+    "timed_out": false,
+    "wall_seconds": 0.23904904200026067,
+    "stdout": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-a/solve/evaluation/grader.stdout",
+    "stderr": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-a/solve/evaluation/grader.stderr",
+    "stdout_sha256": "4f05106e90490c7d5b93bd1e931223d5a09f99a5fb5a98cdc9bd4131e8cb924c",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "process_cleanup_scope": "original_process_group",
+    "detached_descendants_contained": false
+  },
+  "header": {
+    "task_id": "tweed-pr26",
+    "exit_code": 0,
+    "passed": false,
+    "oracle_passed": true,
+    "required_behavior_passed": true,
+    "negative_boundaries_passed": true,
+    "baseline_passed": true,
+    "baseline_receipts": [
+      {
+        "argv": [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex"
+        ],
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout": "",
+        "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n",
+        "wall_seconds": 0.09011370899679605,
+        "process_cleanup_scope": "original_process_group",
+        "detached_descendants_contained": false
+      }
+    ],
+    "scope_violations": [
+      "tests/test_bonaparte.py"
+    ],
+    "source_current": true,
+    "setup_status": "verified",
+    "failed_requirements": [
+      {
+        "requirement": "scope",
+        "paths": [
+          "tests/test_bonaparte.py"
+        ]
+      }
+    ],
+    "source_before_sha256": "000940c74e0ea7e67fd35942c47081d6f2537bfe95ba097286f9728b9b8cc855",
+    "source_after_sha256": "000940c74e0ea7e67fd35942c47081d6f2537bfe95ba097286f9728b9b8cc855",
+    "output_sha256": "b8928ad9c6e78a3c32e5da5e243328e8a879ec7af9dada544c73c7520e4ecab0"
+  },
+  "source_sha256": "000940c74e0ea7e67fd35942c47081d6f2537bfe95ba097286f9728b9b8cc855",
+  "source_unchanged": true,
+  "qualified_evaluation": true
+}

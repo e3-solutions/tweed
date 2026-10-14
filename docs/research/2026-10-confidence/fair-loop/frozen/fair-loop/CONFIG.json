@@ -1,0 +1,31 @@
+{
+  "common_docs": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/policies/incumbent",
+  "arms": [
+    {
+      "id": "incumbent",
+      "skill_file": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/policies/incumbent/SKILL.md"
+    },
+    {
+      "id": "candidate",
+      "skill_file": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/policies/candidate/SKILL.md"
+    }
+  ],
+  "order": [
+    [
+      "cpython-pr156382",
+      "incumbent"
+    ],
+    [
+      "cpython-pr156382",
+      "candidate"
+    ],
+    [
+      "cpython-pr32225",
+      "candidate"
+    ],
+    [
+      "cpython-pr32225",
+      "incumbent"
+    ]
+  ]
+}

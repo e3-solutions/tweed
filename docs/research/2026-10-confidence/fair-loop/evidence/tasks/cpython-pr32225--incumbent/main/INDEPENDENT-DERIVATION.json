@@ -1,0 +1,101 @@
+{
+  "role": "main",
+  "artifact_complete": true,
+  "artifact_evaluation_status": "observed",
+  "delivery_valid": true,
+  "known_deadline": false,
+  "custody_qualified": true,
+  "custody_failures": [],
+  "controller_settled": true,
+  "after_source_sha256": "5fa5a908e1cbf5733eb175940cedf6458061cc43aa5e3d1ccefcecba347b67f5",
+  "before_source_sha256": "e246709ae30058b1c2903d6db2af9f8802b3e5b32ac5efac5ff8f853c6a8a444",
+  "primary_runtime_changed": true,
+  "required_gaps": [],
+  "safe_declared_completion": {
+    "complete": true,
+    "remaining": [],
+    "summary": "I fixed `csv.DictReader` and `csv.DictWriter` so a one-shot iterator passed as fieldnames is turned into a list once, when the object is created. Headers and every later row now see the same field names, in the same order. All visible and new tests pass.\n\n**The change (csv.py):** both constructors now run `if fieldnames is not None and iter(fieldnames) is fieldnames: fieldnames = list(fieldnames)` before storing the names. This matches the agreed approach of converting iterators instead of rejecting them. What it does:\n- **Reusable sequences** like lists, tuples and strings aren't iterators, so they're stored as-is and never copied. A list you update yourself after creating the reader or writer still takes effect.\n- **No fieldnames given** still works as before: the reader takes its header from the first row of the file.\n- **Non-iterable fieldnames** such as `5` now raise `TypeError` when the reader or writer is created.\n- Nothing else changed: reader `restkey`/`restval`, writer `extrasaction` (raise or ignore), quoting, Unicode and newline handling, and `Sniffer`.\n\n**Tests:** I added `tests/test_dict_fieldnames.py`, which loads the local `csv.py`, with 9 tests:\n- **Writer with an iterator:** header plus `writerow`/`writerows` across several rows, with exact output checked.\n- **Writer with a generator:** quoting, Unicode and embedded newlines, checked by reading the output back.\n- **`extrasaction`:** raising is checked twice in a row, and ignoring across two rows.\n- **Sequences not copied:** a tuple and a list keep their identity, and a list updated after construction is picked up.\n- **Rejection:** non-iterable fieldnames raise `TypeError` for both reader and writer.\n- **Reader with an iterator:** multiple rows, and `restkey`/`restval` using a generator.\n- **Reader defaults:** the header comes from the file, including a quoted comma and newline, and an externally updated list is picked up.\n\nThe visible command (`python3 -B -m unittest tests.test_visible`) passed together with the new tests: 10 tests OK, exit 0.\n\n**Not done:**\n- I didn't run the new tests against the old code to watch them fail first. The cause is clear from reading the original: the stored iterator gets used up by the header or first row.\n- I didn't change the `DictReader.fieldnames` setter, which still accepts any value, to keep the change to construction only.\n- As the task allowed, I didn't build CPython or run its full test suite."
+  },
+  "original_evaluation_corrected": false,
+  "facts": {
+    "phase": "main",
+    "status": "settled",
+    "source_receipt_sha256": "50faf936919225ff76ffe4819447e515d1b74ad6c0ad9e7f5e84ae7ee58b3d82",
+    "observed_models": [
+      "claude-opus-5-5"
+    ],
+    "session_ids": [
+      "4ce5c621-265e-40e9-a482-a34b5fc133d0"
+    ],
+    "typed_terminal_observed": true,
+    "terminal_count": 1,
+    "actual_unique_tool_requests": 10,
+    "actual_unique_mcp_requests": 9,
+    "tools_by_name": {
+      "mcp__cp_trial__read_file": 4,
+      "mcp__cp_trial__list_files": 1,
+      "mcp__cp_trial__replace_text": 2,
+      "mcp__cp_trial__write_file": 1,
+      "mcp__cp_trial__run_tests": 1,
+      "StructuredOutput": 1
+    },
+    "invalid_stream_or_ids": [],
+    "provider_delivery_qualified_recorded": null,
+    "timed_out": false,
+    "wall_seconds": 41.20222712500254,
+    "reported_cost_usd": 0.257438,
+    "reported_usage": {
+      "input_tokens": 10,
+      "cache_creation_input_tokens": 19804,
+      "cache_read_input_tokens": 35330,
+      "output_tokens": 4595,
+      "output_tokens_details": {
+        "thinking_tokens": 882
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 19804,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "global",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 1025,
+          "cache_read_input_tokens": 13728,
+          "cache_creation_input_tokens": 7961,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 7961
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard",
+      "fallback_credit": null
+    },
+    "reported_model_usage": {
+      "claude-opus-5-5": {
+        "inputTokens": 10,
+        "outputTokens": 4595,
+        "cacheReadInputTokens": 35330,
+        "cacheCreationInputTokens": 19804,
+        "webSearchRequests": 0,
+        "costUSD": 0.257438,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 882,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "source_authorship": null,
+    "model_thinking_exported": false
+  },
+  "evaluation_receipt_sha256": "d25afafb08b7b2a1abb458dfda2f52696781ae5d52d061880b24cbbc43979b2b"
+}

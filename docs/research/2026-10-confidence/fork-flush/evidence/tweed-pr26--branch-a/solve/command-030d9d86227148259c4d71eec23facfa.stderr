@@ -1,0 +1,15 @@
+...E
+======================================================================
+ERROR: test_receipt_size_boundary_is_review_only (tests.test_bonaparte.BonaparteRunnerTests.test_receipt_size_boundary_is_review_only)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-a/workspace/tests/test_bonaparte.py", line 1473, in test_receipt_size_boundary_is_review_only
+    serialized = RUNNER.serialize_receipt(baseline_accepted)
+  File "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-a/workspace/bonaparte", line 215, in serialize_receipt
+    raise RuntimeError("receipt exceeded 4 KiB")
+RuntimeError: receipt exceeded 4 KiB
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.002s
+
+FAILED (errors=1)
