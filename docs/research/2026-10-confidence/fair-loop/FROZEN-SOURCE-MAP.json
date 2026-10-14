@@ -1,0 +1,375 @@
+{
+  "registration_sha256": "46a74c49b458afcca84ff85bf07c656869126629c7ff5c93da21b73aa8e9ae71",
+  "frozen_files": [
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/CONFIG.json",
+      "published": "frozen/fair-loop/CONFIG.json",
+      "sha256": "53e0ecba47989c89a35fe9cba2d9355d30265ae84303af71edb352da3a142be9",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/TASKS.json",
+      "published": "frozen/fair-loop/TASKS.json",
+      "sha256": "2495f12cc27d6f5c1ed349db1d72d5bcc01f5799e868fc119c16215509b04d22",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/evaluate.py",
+      "published": "frozen/fair-loop/evaluate.py",
+      "sha256": "060fcad2bd5fccdb3ed31e3cf350b6154aa7e065202f12b2146b6c591052ab3e",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/run_tasks.py",
+      "published": "frozen/fair-loop/run_tasks.py",
+      "sha256": "21dcf60c1ec892f116db59d2e432e8d0ef3f00e03ea8132b972881203fbe3962",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/runtime_adapter.py",
+      "published": "frozen/fair-loop/runtime_adapter.py",
+      "sha256": "99024867cec32e7acf5771f882337aa58db6f20b836ccee2ef8a9da99c228fbb",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/EVALUATOR.md",
+      "published": "frozen/fair-loop/EVALUATOR.md",
+      "sha256": "1193f012a4c43bcdc44e496afdf54d17652027031686c6271a19e44463353eff",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/PREFLIGHT.json",
+      "published": "frozen/fair-loop/PREFLIGHT.json",
+      "sha256": "419e2d916f11c7e80dc0cfa7fce1c183d7bb4ec3554646dcf5e856003b52bf47",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/runtime/controller.py",
+      "published": "frozen/fair-loop/runtime/controller.py",
+      "sha256": "399e3423a6140fc75da3265999da444e2006d3cd344bd45d91814f85e43ddd57",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/runtime/hybrid_process_v2.py",
+      "published": "frozen/fair-loop/runtime/hybrid_process_v2.py",
+      "sha256": "631e695e36f5c000b3fef02d4f64f8c518edc31befac116db559816750d8e95f",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/analyze_hybrid_v2.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/analyze_hybrid_v2.py",
+      "sha256": "15368e2a0be3ee1fc6c62ec5073f42d6b49372f4a5fd93cc5fcce044d0be510b",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/cross_backend.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/cross_backend.py",
+      "sha256": "a4c94f220d66be06c40c88fdbb65578d45ce61a46b07e11c607f3aab50281739",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/export_completed_study.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/export_completed_study.py",
+      "sha256": "66b8ef7c603c7df3b7fb1b92b71e43a4efe06db02fc88d0f79a8db898b0d41b6",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/export_results.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/export_results.py",
+      "sha256": "e04c296431abb500497452e87f151e32d251c7c353f1065de32f0f553f56a85f",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/grading_adapter.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/grading_adapter.py",
+      "sha256": "bcec860d709ddbe3c3566fb7bcdc86805b4a3e5c69131167b7743c91cbb2a007",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/hybrid_grader.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/hybrid_grader.py",
+      "sha256": "28f49892a059f4cd628618a4aff0e347b55946bb14159a606629261184cd4932",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/hybrid_process.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/hybrid_process.py",
+      "sha256": "c1f1da477c8d13e1824e604fc83a0e64483d52208cede728ac80439b88c11b96",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/hybrid_process_v2.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/hybrid_process_v2.py",
+      "sha256": "631e695e36f5c000b3fef02d4f64f8c518edc31befac116db559816750d8e95f",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/hybrid_runner.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/hybrid_runner.py",
+      "sha256": "2e560c9300d16adba435048f45383293aea6ace3b7749ae17a0aea6652657a8d",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/hybrid_runtime_v2.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/hybrid_runtime_v2.py",
+      "sha256": "7b5c3bbabe03f7bd3b2ce3fa8b1dc049e8ee4659cd567590a42fcbe5617c76e6",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/hybrid_v2.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/hybrid_v2.py",
+      "sha256": "926a1fde84379ebd591939ad10706bdbfb7cb64503d75d7c8bf5e39a9a1ad7d6",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/hybrid_v2_grader.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/hybrid_v2_grader.py",
+      "sha256": "48bf6aa09a4bd34d718f6f2761b8b631c2af5b48716df27ca7f5b62a1205481a",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/original_analysis_supplement.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/original_analysis_supplement.py",
+      "sha256": "a1e81e86d3c82a018305bb5008c80d90e3b92458ded3828a229cb263596bf0b0",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/replay_public_patches.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/replay_public_patches.py",
+      "sha256": "31efc97c8260c0b2702600a5060a57d36cb9f577895d159b51cf4aecf6b89601",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/runner.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/runner.py",
+      "sha256": "1f5e9ab2e5f0823a34c8f637ae08b4b3e7e1d1ac7bbbf5aab64ab79c95288fb8",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/seal_hybrid_v2.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/seal_hybrid_v2.py",
+      "sha256": "e7084d4c2e95a85c58346a8049f65969d77e4964f9870b90f3c629f5d9f7e900",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/summarize.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/summarize.py",
+      "sha256": "a94197c1ceeca0c6f48486111d6d667b55c246dab60b951f3e8fbec33b87f369",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/supervised_resume.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/supervised_resume.py",
+      "sha256": "f4760b9931f3997b7997c283870a6a0ebf8d09706246b9e60e08ccfb6a1292c6",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_analyze_hybrid_v2.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/test_analyze_hybrid_v2.py",
+      "sha256": "2b348e0e042e446efc4b043c8bcfba333df7339a2972be1522b1388a4ec190fc",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_cross_backend.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/test_cross_backend.py",
+      "sha256": "1206a7c4bf13f963c120529ba1d99342491b2da947bca85fe4fe747dbc4248cc",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_export_completed_study.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/test_export_completed_study.py",
+      "sha256": "77c52013792e1cf42498f0feb6d1a0ff5cbc4c3608cc1109d8f69b39b15060e5",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_export_results.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/test_export_results.py",
+      "sha256": "75e11074eab0d0a9213a9dedc5c471a1ab60b7824997f30d92372b353e6c1904",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_hybrid_process.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/test_hybrid_process.py",
+      "sha256": "0c899ffbb2460c4bb7cccf20751ee93b6461da1b7709a4bae89cbc3de8b27be0",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_hybrid_process_v2.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/test_hybrid_process_v2.py",
+      "sha256": "d15052fcb23aa221429110011114c00e9fd12091bf906dbebf1821045a0f208e",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_hybrid_runner.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/test_hybrid_runner.py",
+      "sha256": "58cddf8a08e5bbe291993bac88c4035b7d72f72ada52ad180a84702da8c2d703",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_hybrid_runtime_v2.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/test_hybrid_runtime_v2.py",
+      "sha256": "4f13b5f5ecd49f59a298bd617508be268740e2ce1500fb166dd38b8fd0209e71",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_hybrid_v2.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/test_hybrid_v2.py",
+      "sha256": "c43c2ac053da61cffc55d7f39d7f57e25472a6910975718ba0d6f820d5041d3b",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_hybrid_v2_grader.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/test_hybrid_v2_grader.py",
+      "sha256": "86c0a7ac6d2cfe2f6d37c22b04afe1ce04daf5f47648c7780099f4b790e0bcae",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_original_analysis_supplement.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/test_original_analysis_supplement.py",
+      "sha256": "49123e42a445bc5790e6b2683b03bd2d9bc147e5453369d801bfb632e198da3b",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_runner.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/test_runner.py",
+      "sha256": "e9c8766fa2cca6925fb74b1c4da0c19a19bee29c6733b957bb45c73b84f3024c",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_seal_hybrid_v2.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/test_seal_hybrid_v2.py",
+      "sha256": "f88e018aa8748dbd569c82f5ce93f2fc69c2cf67af355a7eddce0afd022f055d",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_summarize.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/test_summarize.py",
+      "sha256": "ee07e7e70b73d0008f0e3ff3b7a3e57a47fec946b158306382c46dbc50053f17",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_supervised_resume.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/test_supervised_resume.py",
+      "sha256": "5664987d3edb314b5bb50f3f41953565e3ce9e7bdf12bf937a432900dc9406f8",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_v1_inventory_supplement.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/test_v1_inventory_supplement.py",
+      "sha256": "e77c192412f8779a1199ca254cad719833371ad5afd6f9674786a4c36b0621a0",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_v2_controls.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/test_v2_controls.py",
+      "sha256": "7e671b2fdba90ac906b74eea9bb764de9632153b2b3f77ba96a24f8fd150168c",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/v1_inventory_supplement.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/v1_inventory_supplement.py",
+      "sha256": "e1c4b836b81bbe05610d45f80c29b7501fbb4c39605f982952b68c8826a1fbb7",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/v2_controls.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/v2_controls.py",
+      "sha256": "c7fc3b0f7fe1efa22248508bded95022459b53bafa49bb4cab212bbed5349df6",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/v2_grading_controls.py",
+      "published": "repository:docs/research/2026-10-confidence/pr-benchmark/v2_grading_controls.py",
+      "sha256": "d11aaf952baf84fd77bac8229dad0cf1d8bd9cf31776374651f8b9e369521b5d",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/claude-first-evaluation/runner.py",
+      "published": "repository:docs/research/2026-10-confidence/claude-first-evaluation/runner.py",
+      "sha256": "ca59e94400c971ab5f426b296e8caa505247c9c16be671aebfec2d1a3757252a",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/claude-first-evaluation/analyze.py",
+      "published": "repository:docs/research/2026-10-confidence/claude-first-evaluation/analyze.py",
+      "sha256": "2be2a41479363e3fef9e82a37c3cd81addd9c2d1b6023660077c34f1a128bc5f",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/policies/incumbent/SKILL.md",
+      "published": "frozen/fair-loop/policies/incumbent/SKILL.md",
+      "sha256": "26b8c7ce5dcf06f8f3129c7e7794f77dee5b0c2ba5b50e882c6939b558064950",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/policies/candidate/SKILL.md",
+      "published": "frozen/fair-loop/policies/candidate/SKILL.md",
+      "sha256": "103be278a59daea1eadca9d6fcb4bfebc88d5aa57c99d131d96367f8da86e5b8",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/study-v2/cells/cpython-pr156382--incumbent/inputs/SEAL.json",
+      "published": "frozen/fair-loop/study-v2/cells/cpython-pr156382--incumbent/inputs/SEAL.json",
+      "sha256": "cf7c26f1e6f17c0a9d9bc43d44c64a85b6e53809873b9ed6a3c2c3baf2fc3253",
+      "mode": "0o755"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/study-v2/cells/cpython-pr156382--incumbent/preflight/receipt.json",
+      "published": "frozen/fair-loop/study-v2/cells/cpython-pr156382--incumbent/preflight/receipt.json",
+      "sha256": "b3909f1dad61e5ede36a6de4e8d272d010593e850e01c20731474c4bfa17493f",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/study-v2/cells/cpython-pr156382--candidate/inputs/SEAL.json",
+      "published": "frozen/fair-loop/study-v2/cells/cpython-pr156382--candidate/inputs/SEAL.json",
+      "sha256": "b7de7844b94509702c485b6f93fa48a901da882d620e8a6202fa2e397b8ffe46",
+      "mode": "0o755"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/study-v2/cells/cpython-pr156382--candidate/preflight/receipt.json",
+      "published": "frozen/fair-loop/study-v2/cells/cpython-pr156382--candidate/preflight/receipt.json",
+      "sha256": "cec54eaf454f70984dd49248c0fb3dd9b97a90560024ab1b3de5003b808c0ce3",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/study-v2/cells/cpython-pr32225--candidate/inputs/SEAL.json",
+      "published": "frozen/fair-loop/study-v2/cells/cpython-pr32225--candidate/inputs/SEAL.json",
+      "sha256": "84e60d092090c6f7433e88f106a469008f67647fe5da4e6c0a6c03bead43f31e",
+      "mode": "0o755"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/study-v2/cells/cpython-pr32225--candidate/preflight/receipt.json",
+      "published": "frozen/fair-loop/study-v2/cells/cpython-pr32225--candidate/preflight/receipt.json",
+      "sha256": "496cc4675d3ef8b8d4d3aeebec14846be7fd7f17c5a4cc62deab9d407c0ef622",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/study-v2/cells/cpython-pr32225--incumbent/inputs/SEAL.json",
+      "published": "frozen/fair-loop/study-v2/cells/cpython-pr32225--incumbent/inputs/SEAL.json",
+      "sha256": "8547fb6b6a03ffdb2f95745892081809c3cec581d37c47556816e059ba18b271",
+      "mode": "0o755"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/study-v2/cells/cpython-pr32225--incumbent/preflight/receipt.json",
+      "published": "frozen/fair-loop/study-v2/cells/cpython-pr32225--incumbent/preflight/receipt.json",
+      "sha256": "8c20c097e8747fb9581c36fbb5d7f405475ffa01c349ec6791b976fcfd1e9b44",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/study-v2/registration-before-scope-fix.json",
+      "published": "frozen/fair-loop/study-v2/registration-before-scope-fix.json",
+      "sha256": "13e2ba682f1c5bb371e685f5524e70d9eae6d24baf8b6efa88024201fce5fec4",
+      "mode": "0o644"
+    },
+    {
+      "source": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/scope-amendment/CONTROL.json",
+      "published": "frozen/fair-loop/scope-amendment/CONTROL.json",
+      "sha256": "48b639975cfecd4c6450eb385672fc6ecbb750b6896b9ed66aca1baaae567b17",
+      "mode": "0o644"
+    }
+  ],
+  "composition": "Actual Opus authored controller+cleanup; native Codex mechanical adapter/driver using existing qualified helpers; independent Codex owner grader. Original/partial author stages retained separately.",
+  "host_specific_paths": true,
+  "task_inference_run_by_exporter": false,
+  "grader_rerun_by_exporter": false
+}

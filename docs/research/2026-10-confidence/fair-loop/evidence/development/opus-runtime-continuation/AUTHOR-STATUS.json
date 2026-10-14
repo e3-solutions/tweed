@@ -1,0 +1,37 @@
+{
+  "qualified_provider_delivery": true,
+  "actual_terminal_declared_complete": false,
+  "wall_seconds": 117.34421515464783,
+  "observed_models": [
+    "claude-opus-5-5"
+  ],
+  "reported_cost_usd": 0.498269,
+  "authored_source": {
+    "runtime": {
+      "README.md": {
+        "sha256": "28cb0fe24cd925eb628821b156c23b22d413f7e9ba60192b7881718ff8226397",
+        "mode": 420
+      },
+      "controller.py": {
+        "sha256": "1b83296c2d904551aaa12dbe93301f1102c5d91d18fdf57f9e1c7d4859056dee",
+        "mode": 420
+      },
+      "tests/test_controls.py": {
+        "sha256": "548d27cb8aa6c30e5723640e8893e603b93b5a158cefc979f3e71849d357480f",
+        "mode": 420
+      }
+    },
+    "candidate": {
+      "SKILL.md": {
+        "sha256": "b84c876c9ab3b8ade74a920fd9f7c5e27ff1b7989357236990de9616a0a7a587",
+        "mode": 420
+      }
+    }
+  },
+  "owned_group_present_after_settlement": false,
+  "original_input_file_count": 71,
+  "original_input_hash_mismatches": [],
+  "native_control_pass_count": 5,
+  "native_control_failure": "sandbox baseline exit -6; no stdout",
+  "benchmark_attempt": false
+}

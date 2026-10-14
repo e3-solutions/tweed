@@ -1,0 +1,1 @@
+{"id": "47e8b68eecd64ab4a7667eba1f89bdee", "argv": ["/opt/homebrew/opt/python@3.14/bin/python3.14", "-c", "import sys,fcntl,os;print(sys.executable, sys.version);print(sys.prefix);import sysconfig;print(sysconfig.get_paths()['stdlib'])"], "timeout": 90.0}

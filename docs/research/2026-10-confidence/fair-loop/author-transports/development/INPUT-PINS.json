@@ -1,0 +1,290 @@
+{
+  "source475": "4758787015f05a95ea38896f57a462316b3d9d80",
+  "files": {
+    "INCUMBENT-SKILL.md": {
+      "sha256": "26b8c7ce5dcf06f8f3129c7e7794f77dee5b0c2ba5b50e882c6939b558064950",
+      "mode": 420
+    },
+    "RESEARCH-PROPOSAL-CONTROLLER-REQUIREMENTS.md": {
+      "sha256": "1ca1c6288285f853b7a856bee562974729f0bff62cc61caab5f67937a9f2fa94",
+      "mode": 420
+    },
+    "RESEARCH-PROPOSAL-CANDIDATE-SKILL.md": {
+      "sha256": "9b8bab866c3f21e040588272c56d54aee73920a67d6308f34cfd1c6f68b09d32",
+      "mode": 420
+    },
+    "RESEARCH-PROPOSAL-RESEARCH.md": {
+      "sha256": "c61329cf5ebac7870d06fbad25744fe685d75836cb007a7523f8cc3130ba4583",
+      "mode": 420
+    },
+    "RESEARCH-PROPOSAL-SOURCES.json": {
+      "sha256": "965c6656cf1c53298aa7c19208de1894efbc7263dd6df57560404bd41dcdf789",
+      "mode": 420
+    },
+    "references/question-patterns.md": {
+      "sha256": "d4815150b8418b5f747f909f4e141f8f42e6ee2890c70cf220a1ac8cf6973295",
+      "mode": 420
+    },
+    "references/evidence.md": {
+      "sha256": "bd097c352130c5199ee907199bfab369927cf8ee6f990e8133cb79a87ca01d02",
+      "mode": 420
+    },
+    "references/intent-flows.md": {
+      "sha256": "d7b4461527b613f9607805f4ff6e2380ee87b47b68d44fa88b06661d544acbec",
+      "mode": 420
+    },
+    "references/harnesses.md": {
+      "sha256": "6d05e95838f2a50931c734002f7179cdb61a981549c5f22cc4f2aa73e80c6c71",
+      "mode": 420
+    },
+    "references/complex-tasks.md": {
+      "sha256": "8c0396928105db561147b65b8f95b6a838ed9429efcbffc2b168030a77ae08c2",
+      "mode": 420
+    },
+    "references/model-routing.md": {
+      "sha256": "016d305701972280250c3938d5db2399807df93cf55962baaea53f89ee13fa61",
+      "mode": 420
+    },
+    "references/modes.md": {
+      "sha256": "58bdefb0a2be2a6093bd4c599e139eaf39e41c009b07aa913a51274ae90708f6",
+      "mode": 420
+    },
+    "references/task-profiles.md": {
+      "sha256": "83e4c88178608ab83b88829000be95962c294e2baa3444b77715d9a620c7a2a6",
+      "mode": 420
+    },
+    "references/report-rules.md": {
+      "sha256": "cd71fbb00b82a7b0c4811a929d1ceac8338708c59788b3a6e8ae3268b94dd61f",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/test_hybrid_v2.py": {
+      "sha256": "c43c2ac053da61cffc55d7f39d7f57e25472a6910975718ba0d6f820d5041d3b",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/seal_hybrid_v2.py": {
+      "sha256": "e7084d4c2e95a85c58346a8049f65969d77e4964f9870b90f3c629f5d9f7e900",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/test_v1_inventory_supplement.py": {
+      "sha256": "e77c192412f8779a1199ca254cad719833371ad5afd6f9674786a4c36b0621a0",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/hybrid_process_v2.py": {
+      "sha256": "631e695e36f5c000b3fef02d4f64f8c518edc31befac116db559816750d8e95f",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/replay_public_patches.py": {
+      "sha256": "31efc97c8260c0b2702600a5060a57d36cb9f577895d159b51cf4aecf6b89601",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/runner.py": {
+      "sha256": "1f5e9ab2e5f0823a34c8f637ae08b4b3e7e1d1ac7bbbf5aab64ab79c95288fb8",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/grading_adapter.py": {
+      "sha256": "bcec860d709ddbe3c3566fb7bcdc86805b4a3e5c69131167b7743c91cbb2a007",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/test_export_completed_study.py": {
+      "sha256": "77c52013792e1cf42498f0feb6d1a0ff5cbc4c3608cc1109d8f69b39b15060e5",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/test_supervised_resume.py": {
+      "sha256": "5664987d3edb314b5bb50f3f41953565e3ce9e7bdf12bf937a432900dc9406f8",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/hybrid_runtime_v2.py": {
+      "sha256": "7b5c3bbabe03f7bd3b2ce3fa8b1dc049e8ee4659cd567590a42fcbe5617c76e6",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/test_export_results.py": {
+      "sha256": "75e11074eab0d0a9213a9dedc5c471a1ab60b7824997f30d92372b353e6c1904",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/analyze_hybrid_v2.py": {
+      "sha256": "15368e2a0be3ee1fc6c62ec5073f42d6b49372f4a5fd93cc5fcce044d0be510b",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/hybrid_process.py": {
+      "sha256": "c1f1da477c8d13e1824e604fc83a0e64483d52208cede728ac80439b88c11b96",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/summarize.py": {
+      "sha256": "a94197c1ceeca0c6f48486111d6d667b55c246dab60b951f3e8fbec33b87f369",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/test_hybrid_v2_grader.py": {
+      "sha256": "86c0a7ac6d2cfe2f6d37c22b04afe1ce04daf5f47648c7780099f4b790e0bcae",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/v1_inventory_supplement.py": {
+      "sha256": "e1c4b836b81bbe05610d45f80c29b7501fbb4c39605f982952b68c8826a1fbb7",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/test_original_analysis_supplement.py": {
+      "sha256": "49123e42a445bc5790e6b2683b03bd2d9bc147e5453369d801bfb632e198da3b",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/test_v2_controls.py": {
+      "sha256": "7e671b2fdba90ac906b74eea9bb764de9632153b2b3f77ba96a24f8fd150168c",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/hybrid_runner.py": {
+      "sha256": "2e560c9300d16adba435048f45383293aea6ace3b7749ae17a0aea6652657a8d",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/export_completed_study.py": {
+      "sha256": "66b8ef7c603c7df3b7fb1b92b71e43a4efe06db02fc88d0f79a8db898b0d41b6",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/test_hybrid_process_v2.py": {
+      "sha256": "d15052fcb23aa221429110011114c00e9fd12091bf906dbebf1821045a0f208e",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/test_runner.py": {
+      "sha256": "e9c8766fa2cca6925fb74b1c4da0c19a19bee29c6733b957bb45c73b84f3024c",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/test_hybrid_process.py": {
+      "sha256": "0c899ffbb2460c4bb7cccf20751ee93b6461da1b7709a4bae89cbc3de8b27be0",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/supervised_resume.py": {
+      "sha256": "f4760b9931f3997b7997c283870a6a0ebf8d09706246b9e60e08ccfb6a1292c6",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/hybrid_grader.py": {
+      "sha256": "28f49892a059f4cd628618a4aff0e347b55946bb14159a606629261184cd4932",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/hybrid_v2.py": {
+      "sha256": "926a1fde84379ebd591939ad10706bdbfb7cb64503d75d7c8bf5e39a9a1ad7d6",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/test_hybrid_runner.py": {
+      "sha256": "58cddf8a08e5bbe291993bac88c4035b7d72f72ada52ad180a84702da8c2d703",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/original_analysis_supplement.py": {
+      "sha256": "a1e81e86d3c82a018305bb5008c80d90e3b92458ded3828a229cb263596bf0b0",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/export_results.py": {
+      "sha256": "e04c296431abb500497452e87f151e32d251c7c353f1065de32f0f553f56a85f",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/hybrid_v2_grader.py": {
+      "sha256": "48bf6aa09a4bd34d718f6f2761b8b631c2af5b48716df27ca7f5b62a1205481a",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/cross_backend.py": {
+      "sha256": "a4c94f220d66be06c40c88fdbb65578d45ce61a46b07e11c607f3aab50281739",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/test_summarize.py": {
+      "sha256": "ee07e7e70b73d0008f0e3ff3b7a3e57a47fec946b158306382c46dbc50053f17",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/v2_controls.py": {
+      "sha256": "c7fc3b0f7fe1efa22248508bded95022459b53bafa49bb4cab212bbed5349df6",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/test_seal_hybrid_v2.py": {
+      "sha256": "f88e018aa8748dbd569c82f5ce93f2fc69c2cf67af355a7eddce0afd022f055d",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/v2_grading_controls.py": {
+      "sha256": "d11aaf952baf84fd77bac8229dad0cf1d8bd9cf31776374651f8b9e369521b5d",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/test_analyze_hybrid_v2.py": {
+      "sha256": "2b348e0e042e446efc4b043c8bcfba333df7339a2972be1522b1388a4ec190fc",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/test_hybrid_runtime_v2.py": {
+      "sha256": "4f13b5f5ecd49f59a298bd617508be268740e2ce1500fb166dd38b8fd0209e71",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/pr-benchmark/test_cross_backend.py": {
+      "sha256": "1206a7c4bf13f963c120529ba1d99342491b2da947bca85fe4fe747dbc4248cc",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/claude-first-evaluation/intake.py": {
+      "sha256": "de0b95ed7328e8f87f061f1947ca1b4793ec670f53318907d23dcb18524edb49",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/claude-first-evaluation/test_analyze_intake.py": {
+      "sha256": "cff7b7dd7e9712d88b5767959edb37018e4ccd0628e85112656c79514c97c805",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/claude-first-evaluation/analyze_followup.py": {
+      "sha256": "da8c040037b9194a47fd04de9aea576de064ed108992bbb2572cb2210c543a1d",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/claude-first-evaluation/runner.py": {
+      "sha256": "ca59e94400c971ab5f426b296e8caa505247c9c16be671aebfec2d1a3757252a",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/claude-first-evaluation/test_review_packets.py": {
+      "sha256": "714dda4c1f2046371ee717acee1cdf7cf3250b7638848100b6baf77c7f3d39f2",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/claude-first-evaluation/followup_v2.py": {
+      "sha256": "bda83276938d447c7b2011dbc3690d1446d788d334be5f8d779e0bde3b4010af",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/claude-first-evaluation/test_followup_v2.py": {
+      "sha256": "280cad80580e390be3e7ddc35ae7ae1678d8b026e0b2ee8b5a5048d4220ad330",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/claude-first-evaluation/test_verify_delivery.py": {
+      "sha256": "00198afb0c2c074a7f36830a3e2226cc8d64cae9e100558f03e70c9f4b5deaab",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/claude-first-evaluation/test_intake.py": {
+      "sha256": "e78ae043cbc417e885c3fc316a0598b143958dc5b0fc8e2a9ded631004785794",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/claude-first-evaluation/followup.py": {
+      "sha256": "d62c01c896bd021de278fe71e4665f81c86cb508884b52a0b64e44788cc36be5",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/claude-first-evaluation/test_runner.py": {
+      "sha256": "caaa760f4629f728a3364843ea9acd47d6a3c06e9dd4947a62fe391cc742951e",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/claude-first-evaluation/review_packets.py": {
+      "sha256": "1ff46087f1d19dfb2ec484db160102400481b033c5cd7c3ae16edb5ce8177b4f",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/claude-first-evaluation/verify_delivery.py": {
+      "sha256": "b087d91be7c22da93e643c7a0e1dbe150d7898bf468d6d89ccb710ddaa3de958",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/claude-first-evaluation/test_analyze.py": {
+      "sha256": "8d9a9a40d584362c2cf4e3acbb2bde6b27a23f08875991887f752b1647ab9cda",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/claude-first-evaluation/analyze_intake.py": {
+      "sha256": "3293e044e9b73c9273ff0a7f3046176b85b17a63c108882ed5203a6b42c317db",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/claude-first-evaluation/test_followup.py": {
+      "sha256": "6a111d3a35775aacb06a3f925004c00b0738a88a9de4682e07d33bb8d9a21384",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/claude-first-evaluation/test_analyze_followup.py": {
+      "sha256": "94811707d4469dcf19c1517eebd211f6f337bdddcdb4498e0754d872fdb4d6c6",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/claude-first-evaluation/posthoc_routing_probe.py": {
+      "sha256": "386cc3a06a50fa6fdb892974f99535de9e3aa7a9064532a86a1e1e664086ab9b",
+      "mode": 420
+    },
+    "qualified/docs/research/2026-10-confidence/claude-first-evaluation/analyze.py": {
+      "sha256": "2be2a41479363e3fef9e82a37c3cd81addd9c2d1b6023660077c34f1a128bc5f",
+      "mode": 420
+    }
+  },
+  "new_task_panel_included": false
+}

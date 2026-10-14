@@ -1,0 +1,16 @@
+{"name": "write_file", "arguments_sha256": "8428b554a668361ce82f378eaf734e6b8298a07045e629ede8d8f07ed1b92b63", "ok": false, "error": "ValueError: Supplied protocol/envelope is immutable", "error_kind": "policy"}
+{"name": "read_file", "arguments_sha256": "0efed1bc475031727c480fe4d26dab8b13a0827a0ba1928ded9cfa19ee75c511", "ok": true, "wall_seconds": 0.0011579589991015382}
+{"name": "read_file", "arguments_sha256": "ba307ec7d064e7b45bdea9d58629b3e8e43392fd92653b161a5ad64d55eab6c2", "ok": true, "wall_seconds": 0.0014307090023066849}
+{"name": "write_file", "arguments_sha256": "1027d19f7b45f477e575ab756d97e92e6b51a9739a71341ad8bf377604d372c9", "ok": true, "wall_seconds": 0.0009270000009564683}
+{"name": "write_file", "arguments_sha256": "0e2c90d8e9205c2a20b528b489eb461ffa2415f0da01d63cf3978dc1396fb99c", "ok": true, "wall_seconds": 0.001124292000895366}
+{"name": "replace_text", "arguments_sha256": "7e887ba326bf9ea1344c524138a4d99aa38c35562ff21073cd994da1b27e4ce7", "ok": true, "wall_seconds": 0.0007186670045484789}
+{"name": "write_file", "arguments_sha256": "49d8bda0e1a7c0deb638896aef4841add3c9ec7c95c53746e707bf787c9e37e9", "ok": true, "wall_seconds": 0.0010748749991762452}
+{"name": "run_tests", "arguments_sha256": "a0a2c9e6b470acee0ae94ca48a7090c82adf5dfe445bc61800f3e159bb7f5790", "ok": true, "wall_seconds": 9.058756374994118, "command_exit_code": 1, "command_timed_out": false}
+{"name": "replace_text", "arguments_sha256": "41918c10a59781090a8ce4c65fb0225b065c1bdbee2aa4fa0578725ac77f1e15", "ok": true, "wall_seconds": 0.00045616700663231313}
+{"name": "read_file", "arguments_sha256": "7a5db600ebd50aebe130b44be07e29e45156e789e8816b418a78504e2b44ee77", "ok": true, "wall_seconds": 0.0018288339997525327}
+{"name": "replace_text", "arguments_sha256": "ef6a2b761fc555d41494b8a4fddd669bef5a9447644d5ea4d36708b88fda8fe4", "ok": true, "wall_seconds": 0.0020086669974261895}
+{"name": "replace_text", "arguments_sha256": "4d25a8d56fb8109bfe76bda3458417bd94f122d50245015fafdc7b69a26f5ab4", "ok": true, "wall_seconds": 0.0011618749995250255}
+{"name": "replace_text", "arguments_sha256": "96963719eac989e216579c4ba183108f630257ebb5def095d2db381e04a16182", "ok": true, "wall_seconds": 0.0007039999982225709}
+{"name": "replace_text", "arguments_sha256": "abeb5107755ec6eb6d86f94dc009d25342f1fa211fb0a1a9db021fffddac6902", "ok": true, "wall_seconds": 0.00043620799988275394}
+{"name": "replace_text", "arguments_sha256": "e035b0ae67da7e206ddfb554ca88bfc927c7e48b2d2ac9baa7c6481235c4cc8a", "ok": true, "wall_seconds": 0.00034337500255787745}
+{"name": "run_tests", "arguments_sha256": "5ec5ca05794a6fb7bda6f404b4319cad984790966a321d81a91f43fbe653e48e", "ok": true, "wall_seconds": 8.893836666997231, "command_exit_code": 0, "command_timed_out": false}

@@ -1,0 +1,25 @@
+{
+  "actual_author_stage": "opus-build",
+  "observed_models": [
+    "claude-opus-5-5"
+  ],
+  "timed_out": true,
+  "process_exit": -9,
+  "provider_terminal_count": 0,
+  "authored_roots": {
+    "candidate": {
+      "SKILL.md": {
+        "sha256": "b84c876c9ab3b8ade74a920fd9f7c5e27ff1b7989357236990de9616a0a7a587",
+        "mode": 420
+      }
+    }
+  },
+  "owned_group_present_after_settlement": false,
+  "original_input_file_count": 71,
+  "original_input_hash_mismatches": [],
+  "owner_update_consumed": false,
+  "owner_update_dispatch_occurred": false,
+  "benchmark_attempt": false,
+  "receipt_sha256": "8e2291343589eca34b30eedf800436e8ff4abd79d1b3e7a0344097cf7e21a529",
+  "release_sha256": "a4718fc5bd374bc7d56f2325185177675da84a0d6ceb43cf9e8c17a55020fc84"
+}

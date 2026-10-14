@@ -1,0 +1,20 @@
+[
+  {
+    "variant": "configured",
+    "requested": "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+    "popen_pid": 76790,
+    "exit_code": 0,
+    "stdout": "{\"executable\": \"/Applications/Xcode.app/Contents/Developer/usr/bin/python3\", \"pid\": 76790, \"pgid\": 76790, \"parent\": 76789, \"version\": \"3.9.6 (default, Jan  9 2026, 11:03:41) \\n[Clang 17.0.0 (clang-1700.6.4.2)]\"}\n",
+    "stderr": "",
+    "profile_sha256": "cd587b6669695d3bbfa69a4925036114a488c74663d58d82bd4dc26e7e49ee0b"
+  },
+  {
+    "variant": "realpath",
+    "requested": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/bin/python3.9",
+    "popen_pid": 76791,
+    "exit_code": 0,
+    "stdout": "{\"executable\": \"/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/bin/python3.9\", \"pid\": 76791, \"pgid\": 76791, \"parent\": 76789, \"version\": \"3.9.6 (default, Jan  9 2026, 11:03:41) \\n[Clang 17.0.0 (clang-1700.6.4.2)]\"}\n",
+    "stderr": "",
+    "profile_sha256": "cd587b6669695d3bbfa69a4925036114a488c74663d58d82bd4dc26e7e49ee0b"
+  }
+]

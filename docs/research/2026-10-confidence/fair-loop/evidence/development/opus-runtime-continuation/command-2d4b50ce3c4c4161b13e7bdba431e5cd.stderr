@@ -1,0 +1,64 @@
+test_1_seal_after_prepare_and_io_separation (__main__.Controls.test_1_seal_after_prepare_and_io_separation) ... /Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:19: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch/tmpp9cr2atn/policy/SKILL.md' mode='w' encoding='UTF-8'>
+  open(os.path.join(self.policy, "SKILL.md"), "w").write("skill")
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:25: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch/tmpp9cr2atn/study/inputs/SEAL.json' mode='r' encoding='UTF-8'>
+  sealed = open(os.path.join(self.study, "inputs", "SEAL.json")).read()
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:27: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch/tmpp9cr2atn/study/inputs/SEAL.json' mode='r' encoding='UTF-8'>
+  self.assertEqual(sealed, open(os.path.join(self.study, "inputs", "SEAL.json")).read())
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:29: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch/tmpp9cr2atn/policy/SKILL.md' mode='w' encoding='UTF-8'>
+  open(os.path.join(self.policy, "SKILL.md"), "w").write("tampered")
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_2_timeout_reaps_owned_group_keeps_partial_no_terminal (__main__.Controls.test_2_timeout_reaps_owned_group_keeps_partial_no_terminal) ... /Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:19: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch/tmprvptymc5/policy/SKILL.md' mode='w' encoding='UTF-8'>
+  open(os.path.join(self.policy, "SKILL.md"), "w").write("skill")
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:39: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch/tmprvptymc5/g/ADMISSION.json' mode='r' encoding='UTF-8'>
+  self.assertEqual(json.load(open(os.path.join(self.tmp, "g", "ADMISSION.json")))["state"], "settled")
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_3_global_serial_admission_main_and_repair (__main__.Controls.test_3_global_serial_admission_main_and_repair) ... /Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:19: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch/tmp2dkr4una/policy/SKILL.md' mode='w' encoding='UTF-8'>
+  open(os.path.join(self.policy, "SKILL.md"), "w").write("skill")
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:47: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch/tmp2dkr4una/marks' mode='r' encoding='UTF-8'>
+  self.assertEqual(open(marks).read(), "se" * 3)  # never overlapping
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_4_sandbox_prefix_denies_and_exact_interpreter (__main__.Controls.test_4_sandbox_prefix_denies_and_exact_interpreter) ... /Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:19: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch/tmpfibh92i3/policy/SKILL.md' mode='w' encoding='UTF-8'>
+  open(os.path.join(self.policy, "SKILL.md"), "w").write("skill")
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:59: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch/tmpfibh92i3/outside.txt' mode='w' encoding='UTF-8'>
+  outside = os.path.join(self.tmp, "outside.txt"); open(outside, "w").write("secret")
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+FAIL
+test_5_local_module_origin_rejects_installed_or_forged (__main__.Controls.test_5_local_module_origin_rejects_installed_or_forged) ... /Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:19: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch/tmpksqkgu_u/policy/SKILL.md' mode='w' encoding='UTF-8'>
+  open(os.path.join(self.policy, "SKILL.md"), "w").write("skill")
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:83: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch/tmpksqkgu_u/ws/localmod.py' mode='w' encoding='UTF-8'>
+  open(os.path.join(ws, "localmod.py"), "w").write("X=1")
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:86: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch/tmpksqkgu_u/ws/shadow.py' mode='w' encoding='UTF-8'>
+  open(os.path.join(ws, "shadow.py"), "w").write("import sys,json;sys.modules['shadow']=json")
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_6_continuation_only_observed_gap_or_settled_deadline_max_one (__main__.Controls.test_6_continuation_only_observed_gap_or_settled_deadline_max_one) ... /Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:19: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch/tmpueu7gc2p/policy/SKILL.md' mode='w' encoding='UTF-8'>
+  open(os.path.join(self.policy, "SKILL.md"), "w").write("skill")
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+
+======================================================================
+FAIL: test_4_sandbox_prefix_denies_and_exact_interpreter (__main__.Controls.test_4_sandbox_prefix_denies_and_exact_interpreter)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py", line 66, in test_4_sandbox_prefix_denies_and_exact_interpreter
+    self.assertEqual(run("print(1)").stdout.strip(), "1", "baseline")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: '' != '1'
++ 1
+ : baseline
+
+----------------------------------------------------------------------
+Ran 6 tests in 3.344s
+
+FAILED (failures=1)

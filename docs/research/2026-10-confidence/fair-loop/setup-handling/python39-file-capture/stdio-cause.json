@@ -1,0 +1,15 @@
+{
+  "exit_code": 0,
+  "witness": {
+    "stdout": "None",
+    "stderr": "None",
+    "1": {
+      "errno": 1,
+      "error": "[Errno 1] Operation not permitted"
+    },
+    "2": {
+      "errno": 1,
+      "error": "[Errno 1] Operation not permitted"
+    }
+  }
+}

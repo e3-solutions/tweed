@@ -1,0 +1,952 @@
+{
+  "private_stream_sha256": "f8fd5cdf7c9268874a25deda9d609fc0a41a14f85f93cac99f94672dbdd74f1f",
+  "filter": "Typed init/assistant metadata/tool operations/results/terminal facts; no thinking/signatures/narrative. Research result bodies hash-bound only.",
+  "events": [
+    {
+      "type": "system",
+      "subtype": "init",
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "model": "claude-opus-5-5",
+      "tools": [
+        "StructuredOutput",
+        "mcp__cp_trial__list_files",
+        "mcp__cp_trial__read_file",
+        "mcp__cp_trial__replace_text",
+        "mcp__cp_trial__run_tests",
+        "mcp__cp_trial__write_file"
+      ],
+      "mcp_servers": [
+        {
+          "name": "cp_trial",
+          "status": "connected",
+          "source": "dynamic"
+        }
+      ],
+      "permissionMode": "dontAsk",
+      "claude_code_version": "2.1.285",
+      "uuid": "1c1fbef0-5769-46b5-86b9-80eb9690b5b6"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1MnSAWFDMizJbmCbpu2",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 4436,
+          "cache_read_input_tokens": 1166,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 4436
+          },
+          "output_tokens": 2,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": []
+      },
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "uuid": "c34792ad-ab3d-4a96-a59d-2b072eacee67"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1MnSAWFDMizJbmCbpu2",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 4436,
+          "cache_read_input_tokens": 1166,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 4436
+          },
+          "output_tokens": 2,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_01EzrhLQBQbcrx7XRQubCKVs",
+            "name": "mcp__cp_trial__list_files",
+            "input": {
+              "path": "."
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ]
+      },
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "uuid": "88508105-3bdc-4f77-a504-e303eaed9bc1"
+    },
+    {
+      "type": "user",
+      "message": {
+        "role": "user",
+        "content": [
+          {
+            "tool_use_id": "toolu_01EzrhLQBQbcrx7XRQubCKVs",
+            "type": "tool_result",
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"files\": [\".protocol/INCUMBENT-SKILL.md\", \".protocol/INPUT-MANIFEST.json\", \".protocol/OWNER-UPDATE.txt\", \".protocol/RESEARCH-PROPOSAL-CANDIDATE-SKILL.md\", \".protocol/RESEARCH-PROPOSAL-CONTROLLER-REQUIREMENTS.md\", \".protocol/RESEARCH-PROPOSAL-RESEARCH.md\", \".protocol/RESEARCH-PROPOSAL-SOURCES.json\", \".protocol/qualified/docs/research/2026-10-confidence/claude-first-evaluation/analyze.py\", \".protocol/qualified/docs/research/2026-10-confidence/claude-first-evaluation/analyze_followup.py\", \".protocol/qualified/docs/research/2026-10-confidence/claude-first-evaluation/analyze_intake.py\", \".protocol/qualified/docs/research/2026-10-confidence/claude-first-evaluation/followup.py\", \".protocol/qualified/docs/research/2026-10-confidence/claude-first-evaluation/followup_v2.py\", \".protocol/qualified/docs/research/2026-10-confidence/claude-first-evaluation/intake.py\", \".protocol/qualified/docs/research/2026-10-confidence/claude-first-evaluation/posthoc_routing_probe.py\", \".protocol/qualified/docs/research/2026-10-confidence/claude-first-evaluation/review_packets.py\", \".protocol/qualified/docs/research/2026-10-confidence/claude-first-evaluation/runner.py\", \".protocol/qualified/docs/research/2026-10-confidence/claude-first-evaluation/test_analyze.py\", \".protocol/qualified/docs/research/2026-10-confidence/claude-first-evaluation/test_analyze_followup.py\", \".protocol/qualified/docs/research/2026-10-confidence/claude-first-evaluation/test_analyze_intake.py\", \".protocol/qualified/docs/research/2026-10-confidence/claude-first-evaluation/test_followup.py\", \".protocol/qualified/docs/research/2026-10-confidence/claude-first-evaluation/test_followup_v2.py\", \".protocol/qualified/docs/research/2026-10-confidence/claude-first-evaluation/test_intake.py\", \".protocol/qualified/docs/research/2026-10-confidence/claude-first-evaluation/test_review_packets.py\", \".protocol/qualified/docs/research/2026-10-confidence/claude-first-evaluation/test_runner.py\", \".protocol/qualified/docs/research/2026-10-confidence/claude-first-evaluation/test_verify_delivery.py\", \".protocol/qualified/docs/research/2026-10-confidence/claude-first-evaluation/verify_delivery.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/analyze_hybrid_v2.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/cross_backend.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/export_completed_study.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/export_results.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/grading_adapter.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/hybrid_grader.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/hybrid_process.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/hybrid_process_v2.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/hybrid_runner.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/hybrid_runtime_v2.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/hybrid_v2.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/hybrid_v2_grader.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/original_analysis_supplement.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/replay_public_patches.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/runner.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/seal_hybrid_v2.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/summarize.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/supervised_resume.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/test_analyze_hybrid_v2.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/test_cross_backend.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/test_export_completed_study.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/test_export_results.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/test_hybrid_process.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/test_hybrid_process_v2.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/test_hybrid_runner.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/test_hybrid_runtime_v2.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/test_hybrid_v2.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/test_hybrid_v2_grader.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/test_original_analysis_supplement.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/test_runner.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/test_seal_hybrid_v2.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/test_summarize.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/test_supervised_resume.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/test_v1_inventory_supplement.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/test_v2_controls.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/v1_inventory_supplement.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/v2_controls.py\", \".protocol/qualified/docs/research/2026-10-confidence/pr-benchmark/v2_grading_controls.py\", \".protocol/references/complex-tasks.md\", \".protocol/references/evidence.md\", \".protocol/references/harnesses.md\", \".protocol/references/intent-flows.md\", \".protocol/references/model-routing.md\", \".protocol/references/modes.md\", \".protocol/references/question-patterns.md\", \".protocol/references/report-rules.md\", \".protocol/references/task-profiles.md\", \"candidate/SKILL.md\"]}"
+              }
+            ]
+          }
+        ]
+      },
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "uuid": "b452eb75-ae0b-4838-9924-022b3524e740"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1Mne9pjWXSgyiVgU2Ch",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 2966,
+          "cache_read_input_tokens": 5602,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 2966
+          },
+          "output_tokens": 3,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": []
+      },
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "uuid": "ee532a36-d6c6-47df-8581-4c3c80178cca"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1Mne9pjWXSgyiVgU2Ch",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 2966,
+          "cache_read_input_tokens": 5602,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 2966
+          },
+          "output_tokens": 3,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_012Gz7QpDa8Wjptrb2BFQzJe",
+            "name": "mcp__cp_trial__write_file",
+            "input": {
+              "path": "runtime/controller.py",
+              "content": "\"\"\"Lean task-trial controller: seal, serial provider admission, owned-group\nreap, sandbox composition, single conditional continuation. Taskblind.\"\"\"\nimport fcntl, hashlib, json, os, signal, subprocess, sys, time\n\nTASK_FIELDS = (\"task_id\", \"prompt\", \"requirements\", \"base_snapshot\", \"source_directory\",\n               \"production_paths\", \"visible_commands\", \"source_sha256\", \"interpreter\",\n               \"runtime_read_paths\", \"forbidden_runtime_read_paths\")\nTOOLS = [\"mcp__cp_trial__list_files\", \"mcp__cp_trial__read_file\", \"mcp__cp_trial__write_file\",\n         \"mcp__cp_trial__replace_text\", \"mcp__cp_trial__run_tests\"]\nMAIN = {\"model\": \"claude-opus-5-5\", \"effort\": \"high\", \"seconds\": 300, \"usd\": 3.0}\nCONT = {\"model\": \"claude-opus-5-5\", \"effort\": \"high\", \"seconds\": 180, \"usd\": 2.0}\n\n\ndef digest(value):\n    return hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()\n\n\ndef write(path, value):\n    os.makedirs(os.path.dirname(path) or \".\", exist_ok=True)\n    tmp = f\"{path}.{os.getpid()}.tmp\"\n    with open(tmp, \"w\") as h:\n        json.dump(value, h, indent=2, sort_keys=True); h.flush(); os.fsync(h.fileno())\n    os.replace(tmp, path)\n\n\ndef read(path, default=None):\n    try:\n        with open(path) as h: return json.load(h)\n    except FileNotFoundError: return default\n\n\ndef inventory(root, scratch=(\".git\", \"__pycache__\", \".pytest_cache\")):\n    out = {}\n    for base, dirs, files in os.walk(root):\n        dirs[:] = sorted(d for d in dirs if d not in scratch)\n        for f in sorted(files):\n            p = os.path.join(base, f); rel = os.path.relpath(p, root)\n            if os.path.islink(p): out[rel] = {\"symlink\": os.readlink(p)}; continue\n            with open(p, \"rb\") as h: out[rel] = hashlib.sha256(h.read()).hexdigest()\n    return out\n\n\n# ---- immutable inputs seal (separate from per-run outputs) ----\ndef seal_inputs(study, task, policy_root):\n    missing = [k for k in TASK_FIELDS if k not in task]\n    if missing: raise ValueError(f\"task missing fields {missing}\")\n    seal = {\"task\": digest({k: task[k] for k in TASK_FIELDS}), \"policy\": inventory(policy_root)}\n    path = os.path.join(study, \"inputs\", \"SEAL.json\")\n    if read(path) is None: write(path, seal)\n    elif read(path) != seal: raise RuntimeError(\"input seal changed\")\n    return seal\n\n\ndef check_seal(study, task, policy_root):\n    sealed = read(os.path.join(study, \"inputs\", \"SEAL.json\"))\n    now = {\"task\": digest({k: task[k] for k in TASK_FIELDS}), \"policy\": inventory(policy_root)}\n    if sealed != now: raise RuntimeError(\"seal mismatch: inputs or policy docs changed\")\n    return True\n\n\ndef prepare(study, task, policy_root):\n    seal_inputs(study, task, policy_root)\n    write(os.path.join(study, \"runs\", task[\"task_id\"], \"PREFLIGHT.json\"),\n          {\"task_id\": task[\"task_id\"], \"prepared\": time.time()})\n    check_seal(study, task, policy_root)  # recheck after real prepare\n\n\n# ---- sandbox composition: allow support reads, then literal denies ----\ndef sandbox_profile(workspace, task, policy_paths=()):\n    q = lambda p: json.dumps(p)\n    rules = [\"(version 1)\", \"(deny default)\", \"(allow process-fork)\", \"(allow process-exec*)\",\n             \"(allow signal (target same-sandbox))\", \"(allow sysctl-read)\", \"(allow mach-lookup)\",\n             \"(allow file-read-metadata)\", \"(deny network*)\",\n             f\"(allow file-read* (subpath {q(workspace)}))\", f\"(allow file-write* (subpath {q(workspace)}))\",\n             '(allow file-write* (literal \"/dev/null\"))']\n    rules += [f\"(allow file-read* (subpath {q(p)}))\" for p in task[\"runtime_read_paths\"]]\n    for p in task[\"forbidden_runtime_read_paths\"]:  # unchanged, no resolving away aliases\n        rules.append(f\"(deny file-read* (literal {q(p)}))\")\n        rules.append(f\"(deny file-read* (subpath {q(p)}))\")\n    rules += [f\"(deny file-write* (subpath {q(p)}))\" for p in policy_paths]\n    return \"\\n\".join(rules)\n\n\ndef command_prefix(workspace, task, policy_paths=()):\n    return [\"/usr/bin/sandbox-exec\", \"-p\", sandbox_profile(workspace, task, policy_paths)]\n\n\ndef visible_argv(task, command):\n    \"\"\"Visible commands always run with the task's exact qualified interpreter.\"\"\"\n    argv = list(command)\n    if argv and argv[0] in (\"python\", \"python3\", \"interpreter\"): argv[0] = task[\"interpreter\"]\n    return argv\n\n\n# ---- global serial provider admission ----\nclass Admission:\n    def __init__(self, state_dir):\n        self.dir = state_dir; os.makedirs(state_dir, exist_ok=True)\n        self.lock_path = os.path.join(state_dir, \"provider.lock\")\n        self.ledger = os.path.join(state_dir, \"ADMISSION.json\")\n\n    def __enter__(self):\n        self.h = open(self.lock_path, \"a+\")\n        waited = time.monotonic(); fcntl.flock(self.h, fcntl.LOCK_EX)\n        self.queue_wait = time.monotonic() - waited  # not debited from provider timer\n        led = read(self.ledger)\n        if led and led.get(\"state\") != \"settled\":\n            fcntl.flock(self.h, fcntl.LOCK_UN); self.h.close()\n            raise RuntimeError(f\"unsettled admission blocks dispatch: {led}\")\n        return self\n\n    def admit(self, record):\n        write(self.ledger, dict(record, state=\"admitted\", admitted=time.time()))\n\n    def settle(self, outcome):\n        write(self.ledger, dict(read(self.ledger, {}), state=\"settled\", outcome=outcome))\n\n    def __exit__(self, *exc):  # on exception the admission stays durable/unsettled\n        fcntl.flock(self.h, fcntl.LOCK_UN); self.h.close()\n\n\ndef settle_explicitly(state_dir, note):\n    led = os.path.join(state_dir, \"ADMISSION.json\")\n    write(led, dict(read(led, {}), state=\"settled\", outcome={\"explicit\": note}))\n\n\ndef cleanup_group(proc):\n    try: os.killpg(proc.pid, signal.SIGTERM)\n    except ProcessLookupError: pass\n    try: proc.wait(timeout=5)\n    except subprocess.TimeoutExpired:\n        try: os.killpg(proc.pid, signal.SIGKILL)\n        except ProcessLookupError: pass\n        proc.wait()\n    try: os.killpg(proc.pid, 0); alive = True\n    except ProcessLookupError: alive = False\n    return {\"reaped\": True, \"group_alive\": alive, \"returncode\": proc.returncode}\n\n\ndef run_stage(state_dir, run_dir, stage, argv, seconds, cleanup=cleanup_group, env=None):\n    \"\"\"Launch one provider stage under the global lock; retain partial streams.\"\"\"\n    os.makedirs(run_dir, exist_ok=True)\n    out, err = os.path.join(run_dir, f\"{stage}.stdout\"), os.path.join(run_dir, f\"{stage}.stderr\")\n    with Admission(state_dir) as adm:\n        write(os.path.join(run_dir, f\"{stage}.request.json\"), {\"argv\": argv, \"seconds\": seconds})\n        adm.admit({\"stage\": stage, \"run_dir\": run_dir})\n        with open(out, \"wb\") as o, open(err, \"wb\") as e:\n            start = time.monotonic()\n            proc = subprocess.Popen(argv, stdout=o, stderr=e, start_new_session=True, env=env)\n            write(os.path.join(run_dir, f\"{stage}.process.json\"), {\"pid\": proc.pid, \"pgid\": proc.pid})\n            try: proc.wait(timeout=seconds); timed_out = False\n            except subprocess.TimeoutExpired: timed_out = True\n            reap = cleanup(proc)\n        receipt = {\"stage\": stage, \"timed_out\": timed_out, \"elapsed\": time.monotonic() - start,\n                   \"queue_wait\": adm.queue_wait, \"reap\": reap, **parse_stream(out)}\n        if timed_out: receipt[\"terminal\"] = None  # never fabricate a terminal\n        write(os.path.join(run_dir, f\"{stage}.receipt.json\"), receipt)\n        adm.settle({\"stage\": stage, \"timed_out\": timed_out})\n    return receipt\n\n\ndef parse_stream(path):\n    models, tools, terminal = set(), None, None\n    with open(path, \"rb\") as h:\n        for line in h:\n            try: ev = json.loads(line)\n            except ValueError: continue\n            if ev.get(\"type\") == \"system\" and ev.get(\"subtype\") == \"init\": tools = ev.get(\"tools\")\n            if ev.get(\"type\") == \"assistant\": models.add((ev.get(\"message\") or {}).get(\"model\"))\n            if ev.get(\"type\") == \"result\": terminal = ev\n    return {\"observed_models\": sorted(m for m in models if m), \"init_tools\": tools, \"terminal\": terminal}\n\n\ndef claude_argv(prompt, system, mcp_config, final_schema, limits):\n    return [\"claude\", \"--print\", \"--model\", limits[\"model\"], \"--effort\", limits[\"effort\"],\n            \"--output-format\", \"stream-json\", \"--verbose\", \"--tools\", \"\", \"--strict-mcp-config\",\n            \"--mcp-config\", json.dumps(mcp_config), \"--setting-sources\", \"\", \"--no-session-persistence\",\n            \"--restricted\", \"--disable-slash-commands\", \"--permission-mode\", \"dontAsk\",\n            \"--allowedTools\", *TOOLS, \"--max-budget-usd\", str(limits[\"usd\"]),\n            \"--json-schema\", json.dumps(final_schema), \"--system-prompt\", system, prompt]\n\n\n# ---- continuation decision (max one, durable) ----\ndef continuation_decision(grade, receipt, source_stable):\n    if grade.get(\"evaluation_status\") != \"observed\":\n        return {\"admit\": False, \"reason\": \"unknown grade\"}\n    gap = not all(grade.get(k) for k in (\"product_passed\", \"negative_passed\",\n                                          \"regression_passed\", \"scope_valid\"))\n    deadline = bool(receipt.get(\"timed_out\")) and receipt.get(\"observed_models\") == [MAIN[\"model\"]] \\\n        and set(receipt.get(\"init_tools\") or []) >= set(TOOLS) \\\n        and receipt.get(\"reap\", {}).get(\"group_alive\") is False and source_stable\n    if gap: return {\"admit\": True, \"reason\": \"observed artifact gap\"}\n    if deadline: return {\"admit\": True, \"reason\": \"known settled provider deadline\"}\n    return {\"admit\": False, \"reason\": \"no observed gap or qualified deadline\"}\n\n\ndef feedback(grade):\n    \"\"\"Actor-safe feedback only: no raw tracebacks, oracle source, or head.\"\"\"\n    return {\"failed_requirements\": [{k: r.get(k) for k in (\"id\", \"claim\", \"observed\", \"expected\")}\n                                    for r in grade.get(\"failed_requirements\", [])],\n            **{k: grade.get(k) for k in (\"source_current\", \"scope_valid\", \"local_module_binding\")}}\n\n\ndef claim_continuation(run_dir, decision):\n    \"\"\"Durable max-one cap enforced at every entrypoint (O_EXCL marker).\"\"\"\n    if not decision[\"admit\"]: return False\n    try: fd = os.open(os.path.join(run_dir, \"CONTINUATION.claim\"), os.O_CREAT | os.O_EXCL | os.O_WRONLY)\n    except FileExistsError: return False\n    os.write(fd, json.dumps(decision).encode()); os.close(fd)\n    return True\n\n\n# ---- local module origin probe (grader owns binding; this is the actual probe) ----\ndef module_origin(interpreter, workspace, module):\n    code = (\"import importlib,json,sys;m=importlib.import_module(sys.argv[1]);\"\n            \"print(json.dumps(getattr(m,'__file__',None)))\")\n    r = subprocess.run([interpreter, \"-I\", \"-c\", code, module], cwd=workspace, capture_output=True,\n                       text=True, env={\"PYTHONPATH\": workspace, \"PATH\": \"/usr/bin:/bin\"})\n    origin = json.loads(r.stdout) if r.returncode == 0 else None\n    real_ws = os.path.realpath(workspace)\n    local = bool(origin) and os.path.realpath(origin).startswith(real_ws + os.sep)\n    return {\"module\": module, \"origin\": origin, \"local\": local}\n\n\nif __name__ == \"__main__\":\n    print(json.dumps({\"tools\": TOOLS, \"main\": MAIN, \"continuation\": CONT}))\n    sys.exit(0)\n"
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ]
+      },
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "uuid": "f5f85a96-4fc9-4bed-b3ba-2473647e7da7"
+    },
+    {
+      "type": "user",
+      "message": {
+        "role": "user",
+        "content": [
+          {
+            "tool_use_id": "toolu_012Gz7QpDa8Wjptrb2BFQzJe",
+            "type": "tool_result",
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"written\": \"runtime/controller.py\"}"
+              }
+            ]
+          }
+        ]
+      },
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "uuid": "4539731b-01a3-4b82-bde6-8bf81749d89f"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1MqRApTtS7H8yt9hBrc",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 4922,
+          "cache_read_input_tokens": 8568,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 4922
+          },
+          "output_tokens": 7,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": []
+      },
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "uuid": "fec06fc9-f41a-4566-b848-f00322d93a97"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1MqRApTtS7H8yt9hBrc",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 4922,
+          "cache_read_input_tokens": 8568,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 4922
+          },
+          "output_tokens": 7,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_015b3gbjaUgoeqBB8f3fL84m",
+            "name": "mcp__cp_trial__replace_text",
+            "input": {
+              "path": "runtime/controller.py",
+              "old": "    code = (\"import importlib,json,sys;m=importlib.import_module(sys.argv[1]);\"\n            \"print(json.dumps(getattr(m,'__file__',None)))\")\n    r = subprocess.run([interpreter, \"-I\", \"-c\", code, module], cwd=workspace, capture_output=True,\n                       text=True, env={\"PYTHONPATH\": workspace, \"PATH\": \"/usr/bin:/bin\"})",
+              "new": "    code = (\"import importlib,json,sys;sys.path.insert(0,sys.argv[2]);\"\n            \"m=importlib.import_module(sys.argv[1]);print(json.dumps(getattr(m,'__file__',None)))\")\n    r = subprocess.run([interpreter, \"-I\", \"-c\", code, module, workspace], cwd=workspace,\n                       capture_output=True, text=True, env={\"PATH\": \"/usr/bin:/bin\"})"
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ]
+      },
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "uuid": "6f38ce3e-6e01-4c0e-9f82-216bb2996221"
+    },
+    {
+      "type": "user",
+      "message": {
+        "role": "user",
+        "content": [
+          {
+            "tool_use_id": "toolu_015b3gbjaUgoeqBB8f3fL84m",
+            "type": "tool_result",
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"written\": \"runtime/controller.py\"}"
+              }
+            ]
+          }
+        ]
+      },
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "uuid": "1aeefa90-01a4-4098-a97f-7333a8e4ea98"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1MqRApTtS7H8yt9hBrc",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 4922,
+          "cache_read_input_tokens": 8568,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 4922
+          },
+          "output_tokens": 7,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_018QDRzkGGoLh2ZfUWmCnvYc",
+            "name": "mcp__cp_trial__write_file",
+            "input": {
+              "path": "runtime/tests/test_controls.py",
+              "content": "import json, os, subprocess, sys, tempfile, threading, time, unittest\nsys.path.insert(0, os.path.join(os.path.dirname(__file__), \"..\"))\nimport controller as c\n\n\ndef task(tmp, **kw):\n    t = {k: None for k in c.TASK_FIELDS}\n    t.update(task_id=\"t1\", prompt=\"p\", requirements=[], interpreter=sys.executable,\n             runtime_read_paths=[\"/usr\", \"/System\", \"/Library\", \"/private/var/db\", \"/dev\",\n                                 os.path.realpath(sys.prefix), os.path.realpath(sys.base_prefix)],\n             forbidden_runtime_read_paths=[], visible_commands=[], production_paths=[])\n    t.update(kw); return t\n\n\nclass Controls(unittest.TestCase):\n    def setUp(self):\n        self.tmp = os.path.realpath(tempfile.mkdtemp())\n        self.policy = os.path.join(self.tmp, \"policy\"); os.makedirs(self.policy)\n        open(os.path.join(self.policy, \"SKILL.md\"), \"w\").write(\"skill\")\n        self.study = os.path.join(self.tmp, \"study\")\n\n    def test_1_seal_after_prepare_and_io_separation(self):\n        t = task(self.tmp)\n        c.prepare(self.study, t, self.policy)\n        sealed = open(os.path.join(self.study, \"inputs\", \"SEAL.json\")).read()\n        c.prepare(self.study, t, self.policy)  # prepare again must not overwrite inputs\n        self.assertEqual(sealed, open(os.path.join(self.study, \"inputs\", \"SEAL.json\")).read())\n        self.assertTrue(os.path.exists(os.path.join(self.study, \"runs\", \"t1\", \"PREFLIGHT.json\")))\n        open(os.path.join(self.policy, \"SKILL.md\"), \"w\").write(\"tampered\")\n        with self.assertRaises(RuntimeError): c.check_seal(self.study, t, self.policy)\n\n    def test_2_timeout_reaps_owned_group_keeps_partial_no_terminal(self):\n        child = \"import subprocess,sys,time;subprocess.Popen([sys.executable,'-c','import time;time.sleep(60)']);\" \\\n                \"print('{\\\"type\\\":\\\"system\\\",\\\"subtype\\\":\\\"init\\\",\\\"tools\\\":[]}',flush=True);time.sleep(60)\"\n        r = c.run_stage(os.path.join(self.tmp, \"g\"), os.path.join(self.tmp, \"run\"), \"main\",\n                        [sys.executable, \"-c\", child], 1)\n        self.assertTrue(r[\"timed_out\"]); self.assertIsNone(r[\"terminal\"])\n        self.assertFalse(r[\"reap\"][\"group_alive\"]); self.assertEqual(r[\"init_tools\"], [])\n        self.assertEqual(json.load(open(os.path.join(self.tmp, \"g\", \"ADMISSION.json\")))[\"state\"], \"settled\")\n\n    def test_3_global_serial_admission_main_and_repair(self):\n        g, marks = os.path.join(self.tmp, \"g\"), os.path.join(self.tmp, \"marks\")\n        prog = f\"import os,time;open({marks!r},'a').write('s');time.sleep(0.4);open({marks!r},'a').write('e')\"\n        ths = [threading.Thread(target=c.run_stage, args=(g, os.path.join(self.tmp, s), s,\n                                [sys.executable, \"-c\", prog], 10)) for s in (\"main\", \"continuation\", \"main2\")]\n        [t.start() for t in ths]; [t.join() for t in ths]\n        self.assertEqual(open(marks).read(), \"se\" * 3)  # never overlapping\n        # incomplete admission on exception stays durable and blocks dispatch\n        with self.assertRaises(FileNotFoundError):\n            c.run_stage(g, os.path.join(self.tmp, \"x\"), \"main\", [\"/nonexistent-binary\"], 5)\n        with self.assertRaises(RuntimeError):\n            c.run_stage(g, os.path.join(self.tmp, \"y\"), \"main\", [sys.executable, \"-c\", \"0\"], 5)\n        c.settle_explicitly(g, \"operator settled failed launch\")\n        self.assertFalse(c.run_stage(g, os.path.join(self.tmp, \"y\"), \"main\", [sys.executable, \"-c\", \"0\"], 5)[\"timed_out\"])\n\n    @unittest.skipUnless(os.path.exists(\"/usr/bin/sandbox-exec\"), \"needs macOS sandbox-exec\")\n    def test_4_sandbox_prefix_denies_and_exact_interpreter(self):\n        ws = os.path.join(self.tmp, \"ws\"); os.makedirs(ws)\n        outside = os.path.join(self.tmp, \"outside.txt\"); open(outside, \"w\").write(\"secret\")\n        denied = os.path.join(os.path.realpath(sys.base_prefix), \"lib\")\n        t = task(self.tmp, forbidden_runtime_read_paths=[os.path.join(denied, \"this_is_denied.py\")])\n        pre = c.command_prefix(ws, t, policy_paths=[self.policy])\n        def run(code):\n            return subprocess.run(pre + c.visible_argv(t, [\"python\", \"-I\", \"-S\", \"-B\", \"-c\", code]),\n                                  cwd=ws, capture_output=True, text=True, timeout=30)\n        self.assertEqual(run(\"print(1)\").stdout.strip(), \"1\", \"baseline\")\n        self.assertEqual(run(f\"open({os.path.join(ws,'w')!r},'w').write('x')\").returncode, 0)\n        self.assertNotEqual(run(f\"open({outside!r}).read()\").returncode, 0, \"outside read\")\n        self.assertNotEqual(run(f\"open({os.path.join(self.tmp,'o2')!r},'w')\").returncode, 0, \"outside write\")\n        self.assertNotEqual(run(f\"open({os.path.join(self.policy,'SKILL.md')!r},'w')\").returncode, 0, \"policy write\")\n        self.assertNotEqual(run(\"import socket;socket.create_connection(('1.1.1.1',80),timeout=3)\").returncode, 0)\n        self.assertEqual(c.visible_argv(t, [\"python\", \"x\"])[0], sys.executable)\n        # forbidden literal: create a probe file under workspace and deny it explicitly\n        tgt = os.path.join(ws, \"target.py\"); open(tgt, \"w\").write(\"X=1\")\n        t2 = task(self.tmp, forbidden_runtime_read_paths=[tgt])\n        pre = c.command_prefix(ws, t2)\n        r = subprocess.run(pre + [sys.executable, \"-I\", \"-S\", \"-c\", f\"open({tgt!r}).read()\"],\n                           cwd=ws, capture_output=True, timeout=30)\n        self.assertNotEqual(r.returncode, 0, \"forbidden source read denied after allow\")\n\n    def test_5_local_module_origin_rejects_installed_or_forged(self):\n        ws = os.path.join(self.tmp, \"ws\"); os.makedirs(ws)\n        open(os.path.join(ws, \"localmod.py\"), \"w\").write(\"X=1\")\n        self.assertTrue(c.module_origin(sys.executable, ws, \"localmod\")[\"local\"])\n        self.assertFalse(c.module_origin(sys.executable, ws, \"json\")[\"local\"])  # installed stdlib\n        open(os.path.join(ws, \"forged.py\"), \"w\").write(\"__file__='\" + ws + \"/x.py'\\nimport json\\n\")\n        open(os.path.join(ws, \"shadow.py\"), \"w\").write(\"import sys,json;sys.modules['shadow']=json\")\n        self.assertFalse(c.module_origin(sys.executable, ws, \"shadow\")[\"local\"])\n\n    def test_6_continuation_only_observed_gap_or_settled_deadline_max_one(self):\n        ok = dict(evaluation_status=\"observed\", product_passed=True, negative_passed=True,\n                  regression_passed=True, scope_valid=True)\n        settled = {\"timed_out\": True, \"observed_models\": [\"claude-opus-5-5\"], \"init_tools\": c.TOOLS + [\"StructuredOutput\"],\n                   \"reap\": {\"group_alive\": False}}\n        self.assertFalse(c.continuation_decision(ok, {\"timed_out\": False}, True)[\"admit\"])\n        self.assertFalse(c.continuation_decision({\"evaluation_status\": \"unknown\"}, settled, True)[\"admit\"])\n        self.assertTrue(c.continuation_decision(dict(ok, negative_passed=False), {}, True)[\"admit\"])\n        self.assertTrue(c.continuation_decision(ok, settled, True)[\"admit\"])\n        self.assertFalse(c.continuation_decision(ok, dict(settled, observed_models=[\"other\"]), True)[\"admit\"])\n        self.assertFalse(c.continuation_decision(ok, settled, False)[\"admit\"])\n        self.assertFalse(c.continuation_decision(ok, dict(settled, reap={\"group_alive\": True}), True)[\"admit\"])\n        fb = c.feedback({\"failed_requirements\": [{\"id\": \"r1\", \"claim\": \"c\", \"observed\": \"o\", \"expected\": \"e\",\n                                                  \"traceback\": \"SECRET\"}], \"source_current\": True})\n        self.assertNotIn(\"SECRET\", json.dumps(fb))\n        run = os.path.join(self.tmp, \"run\"); os.makedirs(run)\n        d = c.continuation_decision(ok, settled, True)\n        self.assertTrue(c.claim_continuation(run, d)); self.assertFalse(c.claim_continuation(run, d))\n        a = c.claude_argv(\"p\", \"s\", {}, {}, c.CONT)\n        self.assertEqual(a[a.index(\"--model\") + 1], \"claude-opus-5-5\"); self.assertIn(\"--no-session-persistence\", a)\n        self.assertEqual(a[a.index(\"--max-budget-usd\") + 1], \"2.0\")\n\n\nif __name__ == \"__main__\":\n    unittest.main(verbosity=2)\n"
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ]
+      },
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "uuid": "d07d1af1-4f8c-4756-bafd-c75ec3f740db"
+    },
+    {
+      "type": "user",
+      "message": {
+        "role": "user",
+        "content": [
+          {
+            "tool_use_id": "toolu_018QDRzkGGoLh2ZfUWmCnvYc",
+            "type": "tool_result",
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"written\": \"runtime/tests/test_controls.py\"}"
+              }
+            ]
+          }
+        ]
+      },
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "uuid": "d5a88ed5-61e2-4c9f-a6d6-606108f6d217"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1MsjBaa2o6wrNaMQjbp",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 4235,
+          "cache_read_input_tokens": 13490,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 4235
+          },
+          "output_tokens": 3,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": []
+      },
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "uuid": "c978ded1-959a-4ed5-b2aa-780db7efd82a"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1MsjBaa2o6wrNaMQjbp",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 4235,
+          "cache_read_input_tokens": 13490,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 4235
+          },
+          "output_tokens": 3,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_01DKgR6K1MJM8m5dAKRG95mn",
+            "name": "mcp__cp_trial__replace_text",
+            "input": {
+              "path": "runtime/tests/test_controls.py",
+              "old": "        open(os.path.join(ws, \"forged.py\"), \"w\").write(\"__file__='\" + ws + \"/x.py'\\nimport json\\n\")\n",
+              "new": ""
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ]
+      },
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "uuid": "cc2ad942-5a9e-44f4-8470-69f326182636"
+    },
+    {
+      "type": "user",
+      "message": {
+        "role": "user",
+        "content": [
+          {
+            "tool_use_id": "toolu_01DKgR6K1MJM8m5dAKRG95mn",
+            "type": "tool_result",
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"written\": \"runtime/tests/test_controls.py\"}"
+              }
+            ]
+          }
+        ]
+      },
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "uuid": "87e61958-6d44-4134-afa2-d75d28ab1747"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1MsjBaa2o6wrNaMQjbp",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 4235,
+          "cache_read_input_tokens": 13490,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 4235
+          },
+          "output_tokens": 3,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_016GtBztAD39RT3YhF4akAke",
+            "name": "mcp__cp_trial__run_tests",
+            "input": {
+              "argv": [
+                "python3",
+                "runtime/tests/test_controls.py"
+              ],
+              "timeout_seconds": 90
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ]
+      },
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "uuid": "b4b843cd-34dc-443d-9b43-d676e617859f"
+    },
+    {
+      "type": "user",
+      "message": {
+        "role": "user",
+        "content": [
+          {
+            "tool_use_id": "toolu_016GtBztAD39RT3YhF4akAke",
+            "type": "tool_result",
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"argv\": [\"/usr/bin/sandbox-exec\", \"-p\", \"(version 1)\\n(deny default)\\n(allow process-fork)\\n(allow process-exec)\\n(allow signal (target same-sandbox))\\n(allow file-read* (literal \\\"/\\\") (literal \\\"/Library\\\") (literal \\\"/Library/Developer\\\") (literal \\\"/Users\\\") (literal \\\"/Users/aryagm\\\") (literal \\\"/Users/aryagm/.codex\\\") (literal \\\"/Users/aryagm/.codex/worktrees\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call\\\") (literal \\\"/opt\\\") (literal \\\"/opt/homebrew\\\") (subpath \\\"/System\\\") (subpath \\\"/usr\\\") (subpath \\\"/bin\\\") (subpath \\\"/opt/homebrew/bin\\\") (subpath \\\"/opt/homebrew/lib\\\") (subpath \\\"/opt/homebrew/opt\\\") (subpath \\\"/opt/homebrew/Cellar\\\") (subpath \\\"/opt/homebrew/Frameworks\\\") (subpath \\\"/Library/Frameworks\\\") (subpath \\\"/Library/Developer/CommandLineTools\\\") (subpath \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace\\\") (subpath \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch\\\") (literal \\\"/dev/null\\\") (literal \\\"/dev/urandom\\\") (literal \\\"/dev/random\\\"))\\n(allow file-write* (subpath \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace\\\") (subpath \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch\\\"))\\n(allow file-write* (literal \\\"/dev/null\\\"))\\n(deny file-write* (subpath \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/.protocol\\\"))\\n(deny file-write* (subpath \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/.git\\\"))\\n(deny file-write* (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/AGENTS.md\\\"))\", \"/opt/homebrew/opt/python@3.14/bin/python3.14\", \"runtime/tests/test_controls.py\"], \"exit_code\": 1, \"timed_out\": false, \"wall_seconds\": 3.4508589589968324, \"stdout\": \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/command-2d4b50ce3c4c4161b13e7bdba431e5cd.stdout\", \"stderr\": \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/command-2d4b50ce3c4c4161b13e7bdba431e5cd.stderr\", \"stdout_sha256\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"stderr_sha256\": \"2f6648e2f2e058466ab30a256bbe07301d30c7c42b384a2c08773230daf8dad2\", \"process_cleanup_scope\": \"original_process_group\", \"detached_descendants_contained\": false, \"output\": \"\", \"error_output\": \"test_1_seal_after_prepare_and_io_separation (__main__.Controls.test_1_seal_after_prepare_and_io_separation) ... /Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:19: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch/tmpp9cr2atn/policy/SKILL.md' mode='w' encoding='UTF-8'>\\n  open(os.path.join(self.policy, \\\"SKILL.md\\\"), \\\"w\\\").write(\\\"skill\\\")\\nResourceWarning: Enable tracemalloc to get the object allocation traceback\\n/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:25: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch/tmpp9cr2atn/study/inputs/SEAL.json' mode='r' encoding='UTF-8'>\\n  sealed = open(os.path.join(self.study, \\\"inputs\\\", \\\"SEAL.json\\\")).read()\\nResourceWarning: Enable tracemalloc to get the object allocation traceback\\n/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:27: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch/tmpp9cr2atn/study/inputs/SEAL.json' mode='r' encoding='UTF-8'>\\n  self.assertEqual(sealed, open(os.path.join(self.study, \\\"inputs\\\", \\\"SEAL.json\\\")).read())\\nResourceWarning: Enable tracemalloc to get the object allocation traceback\\n/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:29: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch/tmpp9cr2atn/policy/SKILL.md' mode='w' encoding='UTF-8'>\\n  open(os.path.join(self.policy, \\\"SKILL.md\\\"), \\\"w\\\").write(\\\"tampered\\\")\\nResourceWarning: Enable tracemalloc to get the object allocation traceback\\nok\\ntest_2_timeout_reaps_owned_group_keeps_partial_no_terminal (__main__.Controls.test_2_timeout_reaps_owned_group_keeps_partial_no_terminal) ... /Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:19: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch/tmprvptymc5/policy/SKILL.md' mode='w' encoding='UTF-8'>\\n  open(os.path.join(self.policy, \\\"SKILL.md\\\"), \\\"w\\\").write(\\\"skill\\\")\\nResourceWarning: Enable tracemalloc to get the object allocation traceback\\n/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:39: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch/tmprvptymc5/g/ADMISSION.json' mode='r' encoding='UTF-8'>\\n  self.assertEqual(json.load(open(os.path.join(self.tmp, \\\"g\\\", \\\"ADMISSION.json\\\")))[\\\"state\\\"], \\\"settled\\\")\\nResourceWarning: Enable tracemalloc to get the object allocation traceback\\nok\\ntest_3_global_serial_admission_main_and_repair (__main__.Controls.test_3_global_serial_admission_main_and_repair) ... /Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:19: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch/tmp2dkr4una/policy/SKILL.md' mode='w' encoding='UTF-8'>\\n  open(os.path.join(self.policy, \\\"SKILL.md\\\"), \\\"w\\\").write(\\\"skill\\\")\\nResourceWarning: Enable tracemalloc to get the object allocation traceback\\n/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:47: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch/tmp2dkr4una/marks' mode='r' encoding='UTF-8'>\\n  self.assertEqual(open(marks).read(), \\\"se\\\" * 3)  # never overlapping\\nResourceWarning: Enable tracemalloc to get the object allocation traceback\\nok\\ntest_4_sandbox_prefix_denies_and_exact_interpreter (__main__.Controls.test_4_sandbox_prefix_denies_and_exact_interpreter) ... /Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:19: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch/tmpfibh92i3/policy/SKILL.md' mode='w' encoding='UTF-8'>\\n  open(os.path.join(self.policy, \\\"SKILL.md\\\"), \\\"w\\\").write(\\\"skill\\\")\\nResourceWarning: Enable tracemalloc to get the object allocation traceback\\n/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:59: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch/tmpfibh92i3/outside.txt' mode='w' encoding='UTF-8'>\\n  outside = os.path.join(self.tmp, \\\"outside.txt\\\"); open(outside, \\\"w\\\").write(\\\"secret\\\")\\nResourceWarning: Enable tracemalloc to get the object allocation traceback\\nFAIL\\ntest_5_local_module_origin_rejects_installed_or_forged (__main__.Controls.test_5_local_module_origin_rejects_installed_or_forged) ... /Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:19: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch/tmpksqkgu_u/policy/SKILL.md' mode='w' encoding='UTF-8'>\\n  open(os.path.join(self.policy, \\\"SKILL.md\\\"), \\\"w\\\").write(\\\"skill\\\")\\nResourceWarning: Enable tracemalloc to get the object allocation traceback\\n/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:83: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch/tmpksqkgu_u/ws/localmod.py' mode='w' encoding='UTF-8'>\\n  open(os.path.join(ws, \\\"localmod.py\\\"), \\\"w\\\").write(\\\"X=1\\\")\\nResourceWarning: Enable tracemalloc to get the object allocation traceback\\n/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:86: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch/tmpksqkgu_u/ws/shadow.py' mode='w' encoding='UTF-8'>\\n  open(os.path.join(ws, \\\"shadow.py\\\"), \\\"w\\\").write(\\\"import sys,json;sys.modules['shadow']=json\\\")\\nResourceWarning: Enable tracemalloc to get the object allocation traceback\\nok\\ntest_6_continuation_only_observed_gap_or_settled_deadline_max_one (__main__.Controls.test_6_continuation_only_observed_gap_or_settled_deadline_max_one) ... /Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py:19: ResourceWarning: unclosed file <_io.TextIOWrapper name='/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch/tmpueu7gc2p/policy/SKILL.md' mode='w' encoding='UTF-8'>\\n  open(os.path.join(self.policy, \\\"SKILL.md\\\"), \\\"w\\\").write(\\\"skill\\\")\\nResourceWarning: Enable tracemalloc to get the object allocation traceback\\nok\\n\\n======================================================================\\nFAIL: test_4_sandbox_prefix_denies_and_exact_interpreter (__main__.Controls.test_4_sandbox_prefix_denies_and_exact_interpreter)\\n----------------------------------------------------------------------\\nTraceback (most recent call last):\\n  File \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/runtime/tests/test_controls.py\\\", line 66, in test_4_sandbox_prefix_denies_and_exact_interpreter\\n    self.assertEqual(run(\\\"print(1)\\\").stdout.strip(), \\\"1\\\", \\\"baseline\\\")\\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\nAssertionError: '' != '1'\\n+ 1\\n : baseline\\n\\n----------------------------------------------------------------------\\nRan 6 tests in 3.344s\\n\\nFAILED (failures=1)\\n\"}"
+              }
+            ]
+          }
+        ]
+      },
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "uuid": "ba2bdae4-0a9a-46ae-949c-058a31a79528"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1MtTHPe7AkkQPCjmQRS",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 6549,
+          "cache_read_input_tokens": 17725,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 6549
+          },
+          "output_tokens": 7,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": []
+      },
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "uuid": "ca338d54-113a-47bb-9cb1-10ec312d3ddd"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1MtTHPe7AkkQPCjmQRS",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 6549,
+          "cache_read_input_tokens": 17725,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 6549
+          },
+          "output_tokens": 7,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_01RDmL43LQ1NpnoVQwBHLw3F",
+            "name": "mcp__cp_trial__run_tests",
+            "input": {
+              "argv": [
+                "python3",
+                "-c",
+                "import subprocess;r=subprocess.run(['/usr/bin/sandbox-exec','-p','(version 1)(allow default)','/usr/bin/true'],capture_output=True,text=True);print(r.returncode,r.stderr)"
+              ],
+              "timeout_seconds": 20
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ]
+      },
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "uuid": "8e6047db-2f37-4706-9e55-030d32a2ee0f"
+    },
+    {
+      "type": "user",
+      "message": {
+        "role": "user",
+        "content": [
+          {
+            "tool_use_id": "toolu_01RDmL43LQ1NpnoVQwBHLw3F",
+            "type": "tool_result",
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"argv\": [\"/usr/bin/sandbox-exec\", \"-p\", \"(version 1)\\n(deny default)\\n(allow process-fork)\\n(allow process-exec)\\n(allow signal (target same-sandbox))\\n(allow file-read* (literal \\\"/\\\") (literal \\\"/Library\\\") (literal \\\"/Library/Developer\\\") (literal \\\"/Users\\\") (literal \\\"/Users/aryagm\\\") (literal \\\"/Users/aryagm/.codex\\\") (literal \\\"/Users/aryagm/.codex/worktrees\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call\\\") (literal \\\"/opt\\\") (literal \\\"/opt/homebrew\\\") (subpath \\\"/System\\\") (subpath \\\"/usr\\\") (subpath \\\"/bin\\\") (subpath \\\"/opt/homebrew/bin\\\") (subpath \\\"/opt/homebrew/lib\\\") (subpath \\\"/opt/homebrew/opt\\\") (subpath \\\"/opt/homebrew/Cellar\\\") (subpath \\\"/opt/homebrew/Frameworks\\\") (subpath \\\"/Library/Frameworks\\\") (subpath \\\"/Library/Developer/CommandLineTools\\\") (subpath \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace\\\") (subpath \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch\\\") (literal \\\"/dev/null\\\") (literal \\\"/dev/urandom\\\") (literal \\\"/dev/random\\\"))\\n(allow file-write* (subpath \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace\\\") (subpath \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch\\\"))\\n(allow file-write* (literal \\\"/dev/null\\\"))\\n(deny file-write* (subpath \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/.protocol\\\"))\\n(deny file-write* (subpath \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/.git\\\"))\\n(deny file-write* (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/AGENTS.md\\\"))\", \"/opt/homebrew/opt/python@3.14/bin/python3.14\", \"-c\", \"import subprocess;r=subprocess.run(['/usr/bin/sandbox-exec','-p','(version 1)(allow default)','/usr/bin/true'],capture_output=True,text=True);print(r.returncode,r.stderr)\"], \"exit_code\": 0, \"timed_out\": false, \"wall_seconds\": 0.1323405829971307, \"stdout\": \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/command-e0035cae467c48169c973e400e5172cb.stdout\", \"stderr\": \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/command-e0035cae467c48169c973e400e5172cb.stderr\", \"stdout_sha256\": \"22a4d60822c8fa0a5df6c5e491ed00185beeabf8d8f7abfe2bee474c49a99dd6\", \"stderr_sha256\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"process_cleanup_scope\": \"original_process_group\", \"detached_descendants_contained\": false, \"output\": \"71 sandbox-exec: sandbox_apply: Operation not permitted\\n\\n\", \"error_output\": \"\"}"
+              }
+            ]
+          }
+        ]
+      },
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "uuid": "cd898c6e-2c0f-4a39-ad16-4e7d37c8e5e6"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1MtnschX23qBMFSLNzq",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 2066,
+          "cache_read_input_tokens": 24274,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 2066
+          },
+          "output_tokens": 8,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": []
+      },
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "uuid": "d2c777e9-0a19-46ce-8944-59e50c50ad0d"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1MtnschX23qBMFSLNzq",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 2066,
+          "cache_read_input_tokens": 24274,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 2066
+          },
+          "output_tokens": 8,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": []
+      },
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "uuid": "59bcd57d-6c0a-4e99-88bf-2ce2c3813835"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1MtnschX23qBMFSLNzq",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 2066,
+          "cache_read_input_tokens": 24274,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 2066
+          },
+          "output_tokens": 8,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_01Sg9aZw46ZT42mFBoMVeyMB",
+            "name": "mcp__cp_trial__replace_text",
+            "input": {
+              "path": "runtime/tests/test_controls.py",
+              "old": "    @unittest.skipUnless(os.path.exists(\"/usr/bin/sandbox-exec\"), \"needs macOS sandbox-exec\")",
+              "new": "    @unittest.skipUnless(os.path.exists(\"/usr/bin/sandbox-exec\") and subprocess.run(\n        [\"/usr/bin/sandbox-exec\", \"-p\", \"(version 1)(allow default)\", \"/usr/bin/true\"],\n        capture_output=True).returncode == 0, \"GAP: sandbox_apply not permitted (nested sandbox)\")"
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ]
+      },
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "uuid": "57cc55b5-a44a-48bd-9e45-59a6cf2ae06a"
+    },
+    {
+      "type": "user",
+      "message": {
+        "role": "user",
+        "content": [
+          {
+            "tool_use_id": "toolu_01Sg9aZw46ZT42mFBoMVeyMB",
+            "type": "tool_result",
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"written\": \"runtime/tests/test_controls.py\"}"
+              }
+            ]
+          }
+        ]
+      },
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "uuid": "84e07bc1-382e-4bcd-b6c5-5a762a74ec1f"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1MtnschX23qBMFSLNzq",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 2066,
+          "cache_read_input_tokens": 24274,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 2066
+          },
+          "output_tokens": 8,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_016o9K9YPfPQzYtnQ42hZAtN",
+            "name": "mcp__cp_trial__write_file",
+            "input": {
+              "path": "runtime/README.md",
+              "content": "# runtime\n\n`controller.py` is a lean controller that doesn't know which task it is running. It handles:\n\n- **Input seal:** an immutable `inputs/SEAL.json` holds the task-field digest and the policy-doc inventory. `prepare` never overwrites it. Per-run outputs go to the separate `runs/<id>/PREFLIGHT.json`, and the seal is checked again after prepare (`check_seal`).\n- **Serial provider admission:** one global `provider.lock` (an exclusive flock) is held from before Popen until cleanup, the receipt and settlement are done. Time spent waiting in the queue is recorded and is not charged to the provider timer. If an exception leaves an admission unsettled, it stays in `ADMISSION.json` and blocks every later dispatch until `settle_explicitly` is called.\n- **Process handling:** each stage runs in its own process group, which is killed and reaped on timeout. Partial streams are kept. If a stage times out, no terminal is recorded or invented. The receipt records the observed assistant model and the `init.tools` list.\n- **Sandbox command:** the profile allows the workspace and the `runtime_read_paths` support reads, then adds literal and subpath read denies for the full `forbidden_runtime_read_paths` list, unchanged. It also denies writes to policy paths. Visible commands run with the task's exact `interpreter`.\n- **Continuation:** a continuation is admitted only if the grade is `observed` and either shows an artifact gap, or the stage hit a known settled deadline (Opus identity, the 5 tools, owned process group reaped, stable source). The one-continuation limit is enforced by a durable `O_EXCL` claim file. Feedback is limited to safe `failed_requirements` fields plus status fields.\n- **Local module check:** `module_origin` imports the module and checks where it actually loaded from. Binding remains the grader's job.\n\nRun the controls with `python3 runtime/tests/test_controls.py`.\n\nKnown gaps:\n- **Control 4 skipped:** the sandbox deny control skips because this author tool sandbox does not allow a nested `sandbox_apply`. It must be run outside the tool sandbox before anyone relies on it.\n- **No live provider wiring:** the controller is not yet connected to the qualified `runner.py`/MCP tool server. `claude_argv` builds the command line, but no live provider call has been made.\n"
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ]
+      },
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "uuid": "91e45f79-8668-4c9a-87ac-8612026083f3"
+    },
+    {
+      "type": "user",
+      "message": {
+        "role": "user",
+        "content": [
+          {
+            "tool_use_id": "toolu_016o9K9YPfPQzYtnQ42hZAtN",
+            "type": "tool_result",
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"written\": \"runtime/README.md\"}"
+              }
+            ]
+          }
+        ]
+      },
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "uuid": "8ae4ef30-3d14-448a-bce5-5f9e9c0b6149"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1MtnschX23qBMFSLNzq",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 2066,
+          "cache_read_input_tokens": 24274,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 2066
+          },
+          "output_tokens": 8,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_01TfA8ymP6w2XxCp4giwdywP",
+            "name": "mcp__cp_trial__run_tests",
+            "input": {
+              "argv": [
+                "python3",
+                "-W",
+                "ignore",
+                "runtime/tests/test_controls.py"
+              ],
+              "timeout_seconds": 90
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ]
+      },
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "uuid": "35f0a489-9a20-4e25-9d2a-e2f3d75dec3d"
+    },
+    {
+      "type": "user",
+      "message": {
+        "role": "user",
+        "content": [
+          {
+            "tool_use_id": "toolu_01TfA8ymP6w2XxCp4giwdywP",
+            "type": "tool_result",
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"argv\": [\"/usr/bin/sandbox-exec\", \"-p\", \"(version 1)\\n(deny default)\\n(allow process-fork)\\n(allow process-exec)\\n(allow signal (target same-sandbox))\\n(allow file-read* (literal \\\"/\\\") (literal \\\"/Library\\\") (literal \\\"/Library/Developer\\\") (literal \\\"/Users\\\") (literal \\\"/Users/aryagm\\\") (literal \\\"/Users/aryagm/.codex\\\") (literal \\\"/Users/aryagm/.codex/worktrees\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation\\\") (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call\\\") (literal \\\"/opt\\\") (literal \\\"/opt/homebrew\\\") (subpath \\\"/System\\\") (subpath \\\"/usr\\\") (subpath \\\"/bin\\\") (subpath \\\"/opt/homebrew/bin\\\") (subpath \\\"/opt/homebrew/lib\\\") (subpath \\\"/opt/homebrew/opt\\\") (subpath \\\"/opt/homebrew/Cellar\\\") (subpath \\\"/opt/homebrew/Frameworks\\\") (subpath \\\"/Library/Frameworks\\\") (subpath \\\"/Library/Developer/CommandLineTools\\\") (subpath \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace\\\") (subpath \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch\\\") (literal \\\"/dev/null\\\") (literal \\\"/dev/urandom\\\") (literal \\\"/dev/random\\\"))\\n(allow file-write* (subpath \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace\\\") (subpath \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/execution-scratch\\\"))\\n(allow file-write* (literal \\\"/dev/null\\\"))\\n(deny file-write* (subpath \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/.protocol\\\"))\\n(deny file-write* (subpath \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/.git\\\"))\\n(deny file-write* (literal \\\"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/workspace/AGENTS.md\\\"))\", \"/opt/homebrew/opt/python@3.14/bin/python3.14\", \"-W\", \"ignore\", \"runtime/tests/test_controls.py\"], \"exit_code\": 0, \"timed_out\": false, \"wall_seconds\": 3.424115207999421, \"stdout\": \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/command-b8ed18bc21244a1b9abd945eb70896d1.stdout\", \"stderr\": \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/development/opus-runtime-continuation/call/command-b8ed18bc21244a1b9abd945eb70896d1.stderr\", \"stdout_sha256\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"stderr_sha256\": \"968ee57628d3880d4e7726cda88b72a83512c839aafa63bc6d9c057fd7ffc904\", \"process_cleanup_scope\": \"original_process_group\", \"detached_descendants_contained\": false, \"output\": \"\", \"error_output\": \"test_1_seal_after_prepare_and_io_separation (__main__.Controls.test_1_seal_after_prepare_and_io_separation) ... ok\\ntest_2_timeout_reaps_owned_group_keeps_partial_no_terminal (__main__.Controls.test_2_timeout_reaps_owned_group_keeps_partial_no_terminal) ... ok\\ntest_3_global_serial_admission_main_and_repair (__main__.Controls.test_3_global_serial_admission_main_and_repair) ... ok\\ntest_4_sandbox_prefix_denies_and_exact_interpreter (__main__.Controls.test_4_sandbox_prefix_denies_and_exact_interpreter) ... skipped 'GAP: sandbox_apply not permitted (nested sandbox)'\\ntest_5_local_module_origin_rejects_installed_or_forged (__main__.Controls.test_5_local_module_origin_rejects_installed_or_forged) ... ok\\ntest_6_continuation_only_observed_gap_or_settled_deadline_max_one (__main__.Controls.test_6_continuation_only_observed_gap_or_settled_deadline_max_one) ... ok\\n\\n----------------------------------------------------------------------\\nRan 6 tests in 3.248s\\n\\nOK (skipped=1)\\n\"}"
+              }
+            ]
+          }
+        ]
+      },
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "uuid": "e5604988-2b8d-421b-95e1-04feb8a8eb85"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1Mv8wPQ9K7KX3HEqXep",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 3726,
+          "cache_read_input_tokens": 26340,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 3726
+          },
+          "output_tokens": 5,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": []
+      },
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "uuid": "69a0cac0-e28d-44b4-990d-71d5f6289fae"
+    },
+    {
+      "type": "assistant",
+      "message": {
+        "id": "msg_011Cg1Mv8wPQ9K7KX3HEqXep",
+        "model": "claude-opus-5-5",
+        "role": "assistant",
+        "usage": {
+          "input_tokens": 2,
+          "cache_creation_input_tokens": 3726,
+          "cache_read_input_tokens": 26340,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 3726
+          },
+          "output_tokens": 5,
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_01BHH8SvRFcbHAQnP5kpq1N3",
+            "name": "StructuredOutput",
+            "input": {
+              "complete": false,
+              "summary": "I wrote a new lean controller, `runtime/controller.py` (about 200 lines), plus `runtime/tests/test_controls.py` and `runtime/README.md`. Running `python3 -W ignore runtime/tests/test_controls.py` inside the tool sandbox gave 6 tests: 5 passed, 1 skipped (exit 0). The skipped one, control 4 (the sandbox deny checks), was not tested here: this tool sandbox won't let a second sandbox start inside it (`sandbox_apply: Operation not permitted`). The test skips with a GAP message, so it can't be mistaken for a pass.\n\nWhat passed:\n1. **Input seal:** running prepare a second time doesn't overwrite `inputs/SEAL.json`. Per-run output goes to the separate `runs/<id>/PREFLIGHT.json`. Changing a policy doc makes `check_seal` fail.\n2. **Timeout:** a child that also starts a grandchild was killed at the deadline. Its whole process group was reaped, the partial stream was kept, the terminal stayed empty, and the admission was marked settled.\n3. **One provider process at a time:** main, continuation and a second main competing for the global lock ran strictly one after another with no overlap. A launch that fails after admission leaves an unsettled record, which blocks the next dispatch until `settle_explicitly` is called.\n5. **Local module check:** the import probe accepts a module loaded from the workspace and rejects the installed stdlib `json` and a module that swaps itself out in `sys.modules`.\n6. **Continuation:** it is refused when the grade is unknown, when nothing is wrong, or when the deadline evidence is incomplete (wrong model, process group still alive, source unstable). It is allowed for an observed gap or a settled deadline. The durable claim file allows exactly one. Actor feedback drops raw tracebacks, and the command line uses `claude-opus-5-5` high with `--no-session-persistence` and a $2 budget.\n\nNot done: the controller is not connected to the qualified `runner.py` / MCP tool server, and no live provider call was made. I did not remove the duplicated loop text from `candidate/SKILL.md`; it is unchanged at 9980 bytes. I did not touch `.protocol` or any old outputs.",
+              "remaining": [
+                "Run control 4 (sandbox prefix: baseline, outside read/write, network, policy-write and forbidden-source denies, exact interpreter) outside the author tool sandbox, where starting a nested sandbox is allowed; it has not been tested.",
+                "Connect controller.run_stage/claude_argv to the qualified runner.py route/adapter and development_tool_server.py (5-tool MCP with the task interpreter and deny inputs). There is no live provider integration yet.",
+                "Optional: remove the duplicated Default loop paragraph in candidate/SKILL.md while keeping the invariants already in the 9 common refs; not done."
+              ]
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ]
+      },
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "uuid": "d441b1e4-410c-41cf-9413-8130882969e4"
+    },
+    {
+      "type": "user",
+      "message": {
+        "role": "user",
+        "content": [
+          {
+            "tool_use_id": "toolu_01BHH8SvRFcbHAQnP5kpq1N3",
+            "type": "tool_result",
+            "content": "Structured output provided successfully"
+          }
+        ]
+      },
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "uuid": "25e4ddeb-0f82-495a-b184-c8598ff2aed3"
+    },
+    {
+      "duration_api_ms": 109350,
+      "stop_reason": "tool_use",
+      "session_id": "8c38bcc8-cccb-4c0d-bdec-b265e084fcee",
+      "total_cost_usd": 0.498269,
+      "usage": {
+        "input_tokens": 14,
+        "cache_creation_input_tokens": 28900,
+        "cache_read_input_tokens": 97165,
+        "output_tokens": 12379,
+        "output_tokens_details": {
+          "thinking_tokens": 887
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 28900,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "inference_geo": "global",
+        "iterations": [
+          {
+            "input_tokens": 2,
+            "output_tokens": 1125,
+            "cache_read_input_tokens": 26340,
+            "cache_creation_input_tokens": 3726,
+            "cache_creation": {
+              "ephemeral_5m_input_tokens": 0,
+              "ephemeral_1h_input_tokens": 3726
+            },
+            "type": "message"
+          }
+        ],
+        "speed": "standard",
+        "fallback_credit": null
+      },
+      "modelUsage": {
+        "claude-opus-5-5": {
+          "inputTokens": 14,
+          "outputTokens": 12379,
+          "cacheReadInputTokens": 97165,
+          "cacheCreationInputTokens": 28900,
+          "webSearchRequests": 0,
+          "costUSD": 0.498269,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 887,
+          "canonicalModel": "claude-opus-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "permission_denials": [],
+      "terminal_reason": "completed",
+      "fast_mode_state": "off",
+      "fast_mode_disabled_reason": "sdk_opt_in_required",
+      "subagent_stats": {
+        "spawned": 0,
+        "requested": {
+          "background": 0,
+          "foreground": 0,
+          "unset": 0
+        },
+        "started_in_background": 0,
+        "max_depth": 0,
+        "spawned_by_subagents": 0,
+        "completed": 0,
+        "failed": 0,
+        "killed": {
+          "parent": 0,
+          "user": 0,
+          "system": 0
+        },
+        "refused": {
+          "depth_limit": 0,
+          "concurrency_limit": 0,
+          "budget": 0
+        },
+        "by_type": {}
+      },
+      "is_error": false,
+      "num_turns": 12,
+      "subtype": "success",
+      "api_error_status": null,
+      "ttft_ms": 2998,
+      "type": "result",
+      "duration_ms": 116791,
+      "uuid": "cf3c4cf6-f739-4715-ab70-1558ebb8f044",
+      "ttft_stream_ms": 1813,
+      "time_to_request_ms": 203,
+      "first_content_frame_ms": 1813,
+      "queued_turn_count": 0,
+      "result_index": 0,
+      "result_sha256": "f7a5b09edeaafddc68b181fef44305f2dd830d286110c396a861bf9152728423",
+      "structured_output_sha256": "61a629b34819f0b8bdabc6c2e87c5119d10bbd8de903c727d7c722fbbdd5d30c",
+      "structured_output": {
+        "complete": false,
+        "summary": "I wrote a new lean controller, `runtime/controller.py` (about 200 lines), plus `runtime/tests/test_controls.py` and `runtime/README.md`. Running `python3 -W ignore runtime/tests/test_controls.py` inside the tool sandbox gave 6 tests: 5 passed, 1 skipped (exit 0). The skipped one, control 4 (the sandbox deny checks), was not tested here: this tool sandbox won't let a second sandbox start inside it (`sandbox_apply: Operation not permitted`). The test skips with a GAP message, so it can't be mistaken for a pass.\n\nWhat passed:\n1. **Input seal:** running prepare a second time doesn't overwrite `inputs/SEAL.json`. Per-run output goes to the separate `runs/<id>/PREFLIGHT.json`. Changing a policy doc makes `check_seal` fail.\n2. **Timeout:** a child that also starts a grandchild was killed at the deadline. Its whole process group was reaped, the partial stream was kept, the terminal stayed empty, and the admission was marked settled.\n3. **One provider process at a time:** main, continuation and a second main competing for the global lock ran strictly one after another with no overlap. A launch that fails after admission leaves an unsettled record, which blocks the next dispatch until `settle_explicitly` is called.\n5. **Local module check:** the import probe accepts a module loaded from the workspace and rejects the installed stdlib `json` and a module that swaps itself out in `sys.modules`.\n6. **Continuation:** it is refused when the grade is unknown, when nothing is wrong, or when the deadline evidence is incomplete (wrong model, process group still alive, source unstable). It is allowed for an observed gap or a settled deadline. The durable claim file allows exactly one. Actor feedback drops raw tracebacks, and the command line uses `claude-opus-5-5` high with `--no-session-persistence` and a $2 budget.\n\nNot done: the controller is not connected to the qualified `runner.py` / MCP tool server, and no live provider call was made. I did not remove the duplicated loop text from `candidate/SKILL.md`; it is unchanged at 9980 bytes. I did not touch `.protocol` or any old outputs.",
+        "remaining": [
+          "Run control 4 (sandbox prefix: baseline, outside read/write, network, policy-write and forbidden-source denies, exact interpreter) outside the author tool sandbox, where starting a nested sandbox is allowed; it has not been tested.",
+          "Connect controller.run_stage/claude_argv to the qualified runner.py route/adapter and development_tool_server.py (5-tool MCP with the task interpreter and deny inputs). There is no live provider integration yet.",
+          "Optional: remove the duplicated Default loop paragraph in candidate/SKILL.md while keeping the invariants already in the 9 common refs; not done."
+        ]
+      }
+    }
+  ]
+}

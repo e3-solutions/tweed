@@ -1,0 +1,1 @@
+{"id": "e0035cae467c48169c973e400e5172cb", "argv": ["/opt/homebrew/opt/python@3.14/bin/python3.14", "-c", "import subprocess;r=subprocess.run(['/usr/bin/sandbox-exec','-p','(version 1)(allow default)','/usr/bin/true'],capture_output=True,text=True);print(r.returncode,r.stderr)"], "timeout": 20.0}

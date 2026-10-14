@@ -1,0 +1,37 @@
+{
+  "phase": "initial-author",
+  "status": "settled",
+  "source_receipt_sha256": "8e2291343589eca34b30eedf800436e8ff4abd79d1b3e7a0344097cf7e21a529",
+  "observed_models": [
+    "claude-opus-5-5"
+  ],
+  "session_ids": [
+    "25f67fd7-c5a6-4e92-aca9-fb7a8206259a"
+  ],
+  "typed_terminal_observed": false,
+  "terminal_count": 0,
+  "actual_unique_tool_requests": 26,
+  "actual_unique_mcp_requests": 26,
+  "tools_by_name": {
+    "mcp__cp_trial__list_files": 1,
+    "mcp__cp_trial__read_file": 21,
+    "mcp__cp_trial__run_tests": 3,
+    "mcp__cp_trial__write_file": 1
+  },
+  "invalid_stream_or_ids": [],
+  "provider_delivery_qualified_recorded": false,
+  "timed_out": true,
+  "wall_seconds": 600.1030101776123,
+  "reported_cost_usd": null,
+  "reported_usage": null,
+  "reported_model_usage": null,
+  "source_authorship": {
+    "candidate": {
+      "SKILL.md": {
+        "sha256": "b84c876c9ab3b8ade74a920fd9f7c5e27ff1b7989357236990de9616a0a7a587",
+        "mode": 420
+      }
+    }
+  },
+  "model_thinking_exported": false
+}

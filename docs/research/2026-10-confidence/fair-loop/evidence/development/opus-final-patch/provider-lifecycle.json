@@ -1,0 +1,22 @@
+{
+  "qualified_provider_delivery": false,
+  "process_exit": -9,
+  "timed_out": true,
+  "wall_seconds": 260.1007831096649,
+  "queued_seconds": 4.76837158203125e-06,
+  "requested_model": "claude-opus-5-5",
+  "observed_models": [
+    "claude-opus-5-5"
+  ],
+  "unexpected_tool_requests": [],
+  "invalid_stream_lines": 0,
+  "request_sha256": "e4e37a72e38f04974083db01986d4deb9c15da2cc9060a4f4c9eb5e66d46165a",
+  "stream_sha256": "f636d9e82e8837d1708369df23fc4e0321c483571fc794dd722dc6a2705d1415",
+  "process_cleanup_scope": "original_process_group",
+  "detached_descendants_contained": false,
+  "admitted_at_unix": 1791946281.495678,
+  "reaped_and_source_captured_at_unix": 1791946541.59687,
+  "receipt_sha256": "f0632dff6b554001f95e9629b5f94e58fadfc4b14e3f3f005009cb4d2064f638",
+  "request_file_sha256": "e4e37a72e38f04974083db01986d4deb9c15da2cc9060a4f4c9eb5e66d46165a",
+  "stream_file_sha256": "f636d9e82e8837d1708369df23fc4e0321c483571fc794dd722dc6a2705d1415"
+}

@@ -1,0 +1,874 @@
+{
+  "payload": {
+    "cells": [
+      {
+        "cell_id": "cpython-pr156382--incumbent",
+        "task_id": "cpython-pr156382",
+        "arm_id": "incumbent",
+        "task": {
+          "interpreter": "/opt/homebrew/opt/python@3.14/bin/python3.14",
+          "runtime": {
+            "python_version": "3.14.7 (main, Aug  5 2026, 10:29:49) [Clang 21.0.0 (clang-2100.1.1.101)]",
+            "python_executable": "/opt/homebrew/opt/python@3.14/bin/python3.14",
+            "stdlib": "/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib/python3.14",
+            "native_csv_support": "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/lib-dynload/_csv.cpython-314-darwin.so",
+            "python_executable_sha256": "87d4df53fd91304be5bac391fb204643c36b7df2023c04a0953bcbc7d4fdf634",
+            "native_csv_support_sha256": "07b0bd1af24d047f8ce40e5f6e669efe7509be0d0354f2b3ebf724a09e445eff",
+            "native_csv_extension_version": "absent"
+          },
+          "runtime_read_paths": [],
+          "task_id": "cpython-pr156382",
+          "role": "selection",
+          "module": "configparser",
+          "prompt": "Fix ConfigParser recognition of explicitly configured whitespace delimiters. With delimiters=(\" \", \"=\"), a line such as \"colour dark blue\" must mean option colour with value dark blue; similarly support explicitly configured tab delimiters. Preserve whitespace inside option names when it is not a delimiter, normal default delimiters, strict duplicate/malformed rejection, allow_no_value, typed retrieval, interpolation and round trips. This is a bounded public parser behavior fix, not a full security/performance audit.\nChange configparser.py and, if needed, local root Python helpers. Ordinary product tests may be added or updated anywhere conventional. Keep unrelated behavior; independent owner checks are separate and immutable. Runtime target stdlib source/bytecode is unavailable; use the supplied local module and the provided visible check. Full CPython build/suite and unrelated PR obligations are excluded.",
+          "requirements": [
+            "Configured space or tab delimiters split an option from its value, including Unicode and values containing additional spaces.",
+            "Allow-no-value options and typed retrieval keep their documented behavior with configured whitespace delimiters.",
+            "Whitespace that is not a configured delimiter remains part of an option name; default delimiters preserve spaced option names.",
+            "Malformed no-value input is still rejected when disabled; duplicate configured-delimiter options still fail under strict parsing.",
+            "Default interpolation, comments, write/read round trips and ordinary delimiters retain existing behavior."
+          ],
+          "base_snapshot": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/study-v2/cells/cpython-pr156382--incumbent/base",
+          "source_directory": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/study-v2/cells/cpython-pr156382--incumbent/base",
+          "reference_snapshot": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/oracles/cpython-pr156382/head",
+          "production_paths": [
+            "configparser.py"
+          ],
+          "test_commands": [
+            [
+              "/opt/homebrew/opt/python@3.14/bin/python3.14",
+              "-B",
+              "-m",
+              "unittest",
+              "tests.test_visible"
+            ]
+          ],
+          "visible_commands": [
+            [
+              "/opt/homebrew/opt/python@3.14/bin/python3.14",
+              "-B",
+              "-m",
+              "unittest",
+              "tests.test_visible"
+            ]
+          ],
+          "discovery_paths": [
+            "configparser.py",
+            "tests/test_visible.py"
+          ],
+          "private_module": "oracles/owner_configparser.py",
+          "oracle_tests": [
+            "tests.test_owner.Owner.test_positive_configured_whitespace_delimiters",
+            "tests.test_owner.Owner.test_positive_values_and_no_value_options",
+            "tests.test_owner.Owner.test_negative_non_delimiter_whitespace_keeps_key_meaning",
+            "tests.test_owner.Owner.test_negative_malformed_and_duplicate_still_rejected",
+            "tests.test_owner.Owner.test_regression_default_interpolation_comments_and_roundtrip"
+          ],
+          "positive_tests": [
+            "tests.test_owner.Owner.test_positive_configured_whitespace_delimiters",
+            "tests.test_owner.Owner.test_positive_values_and_no_value_options"
+          ],
+          "negative_tests": [
+            "tests.test_owner.Owner.test_negative_non_delimiter_whitespace_keeps_key_meaning",
+            "tests.test_owner.Owner.test_negative_malformed_and_duplicate_still_rejected"
+          ],
+          "regression_tests": [
+            "tests.test_owner.Owner.test_regression_default_interpolation_comments_and_roundtrip"
+          ],
+          "forbidden_runtime_read_paths": [
+            "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/__pycache__/configparser.cpython-39.opt-1.pyc",
+            "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/__pycache__/configparser.cpython-39.opt-2.pyc",
+            "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/__pycache__/configparser.cpython-39.pyc",
+            "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/configparser.py",
+            "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/configparser.pyc",
+            "/opt/homebrew/Cellar/python@3.13/3.13.9_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/__pycache__/configparser.cpython-313.opt-1.pyc",
+            "/opt/homebrew/Cellar/python@3.13/3.13.9_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/__pycache__/configparser.cpython-313.opt-2.pyc",
+            "/opt/homebrew/Cellar/python@3.13/3.13.9_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/__pycache__/configparser.cpython-313.pyc",
+            "/opt/homebrew/Cellar/python@3.13/3.13.9_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/configparser.py",
+            "/opt/homebrew/Cellar/python@3.13/3.13.9_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/configparser.pyc",
+            "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/__pycache__/configparser.cpython-314.opt-1.pyc",
+            "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/__pycache__/configparser.cpython-314.opt-2.pyc",
+            "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/__pycache__/configparser.cpython-314.pyc",
+            "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/configparser.py",
+            "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/configparser.pyc",
+            "/opt/homebrew/opt/python@3.13/Frameworks/Python.framework/Versions/3.13/lib/python3.13/__pycache__/configparser.cpython-313.opt-1.pyc",
+            "/opt/homebrew/opt/python@3.13/Frameworks/Python.framework/Versions/3.13/lib/python3.13/__pycache__/configparser.cpython-313.opt-2.pyc",
+            "/opt/homebrew/opt/python@3.13/Frameworks/Python.framework/Versions/3.13/lib/python3.13/__pycache__/configparser.cpython-313.pyc",
+            "/opt/homebrew/opt/python@3.13/Frameworks/Python.framework/Versions/3.13/lib/python3.13/configparser.py",
+            "/opt/homebrew/opt/python@3.13/Frameworks/Python.framework/Versions/3.13/lib/python3.13/configparser.pyc",
+            "/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib/python3.14/__pycache__/configparser.cpython-314.opt-1.pyc",
+            "/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib/python3.14/__pycache__/configparser.cpython-314.opt-2.pyc",
+            "/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib/python3.14/__pycache__/configparser.cpython-314.pyc",
+            "/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib/python3.14/configparser.py",
+            "/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib/python3.14/configparser.pyc"
+          ],
+          "base_tree_sha256": "e113b1a919674b4ec1091a48d5c2f375275868ace9070e875ea19f02469a04c8",
+          "reference_tree_sha256": "09b083ec29ca8ebbc0fc277b89125889c845ba9b4d296aa793933ed21ef2d36c",
+          "source_sha256": "de8ddb6cdaa3bb51885ff47a768a81cb32bd279dd5a5eaf5388cde48b7f264a9",
+          "reference_source_sha256": "503e39c7a2f2e7594791d2908fbeb2ee2546d05f97b675ab666c836714ce9215",
+          "owner_sha256": "19eb4c376406e96c2f677cc4f027993339e8fd20f15445a5e5ebe2adcf730d6f",
+          "provenance": {
+            "baseRefOid": "98bd716479dacb1e618a4271df10b2b67c010c4c",
+            "body": "## Problem\nBetween Python 3.14.4 and 3.14.5 (and similarly in 3.13), `configparser` stopped recognizing a space as a delimiter when `delimiters=(' ', '=')` was used. This regression was caused by gh-146333 which addressed a ReDoS vulnerability in the option parsing regex but inadvertently allowed the greedy `\\s+` inside the option name group to consume whitespace characters even if they were valid delimiters.\n\n## Solution\nThis PR adjusts `_OPT_TMPL` and `_OPT_NV_TMPL` to explicitly ensure that any whitespace character consumed as part of the option name is NOT a valid delimiter (`(?:(?!{delim})\\s)+`).\n\nThis retains the catastrophic backtracking protection introduced in gh-146333 (the mutually exclusive possessive-like parsing structure remains intact) while restoring the ability to use spaces as delimiters.\n\n* Issue: gh-156353",
+            "files": [
+              {
+                "path": "Lib/configparser.py",
+                "additions": 4,
+                "deletions": 2
+              },
+              {
+                "path": "Lib/test/test_configparser.py",
+                "additions": 30,
+                "deletions": 3
+              },
+              {
+                "path": "Misc/NEWS.d/next/Library/2026-08-26-02-30-00.gh-issue-156353.abcdef.rst",
+                "additions": 1,
+                "deletions": 0
+              }
+            ],
+            "headRefOid": "562e043072c6659aaec220da65834a21e0de5464",
+            "mergeCommit": {
+              "oid": "f973bd9d383e99eef58846772c69afa8ebeaf9a9"
+            },
+            "number": 156382,
+            "state": "MERGED",
+            "title": "gh-156353: Fix configparser space delimiter parsing",
+            "url": "https://github.com/python/cpython/pull/156382"
+          },
+          "oracle_argv": [
+            "python3",
+            "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/evaluate.py",
+            "--task-id",
+            "cpython-pr156382",
+            "--workspace",
+            "{workspace}"
+          ],
+          "test_python": "/opt/homebrew/opt/python@3.14/bin/python3.14"
+        },
+        "policy": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/study-v2/cells/cpython-pr156382--incumbent/workspace/.protocol",
+        "prompt": "Read .protocol/SKILL.md and relevant references. Complete this bounded real task and execute the visible checks. Only the supplied coding tools are available; protocol CLI certificates and peer model calls are excluded. Independent Codex checks occur outside your timer. Return the final JSON truthfully.\nTask:\nFix ConfigParser recognition of explicitly configured whitespace delimiters. With delimiters=(\" \", \"=\"), a line such as \"colour dark blue\" must mean option colour with value dark blue; similarly support explicitly configured tab delimiters. Preserve whitespace inside option names when it is not a delimiter, normal default delimiters, strict duplicate/malformed rejection, allow_no_value, typed retrieval, interpolation and round trips. This is a bounded public parser behavior fix, not a full security/performance audit.\nChange configparser.py and, if needed, local root Python helpers. Ordinary product tests may be added or updated anywhere conventional. Keep unrelated behavior; independent owner checks are separate and immutable. Runtime target stdlib source/bytecode is unavailable; use the supplied local module and the provided visible check. Full CPython build/suite and unrelated PR obligations are excluded.\nVisible commands:\n[[\"/opt/homebrew/opt/python@3.14/bin/python3.14\", \"-B\", \"-m\", \"unittest\", \"tests.test_visible\"]]",
+        "baseline": {
+          "source_sha256": "b60349bee3b303ad5f50ebd4ec03c9138636b98c9fd066e2588787c7c844a6cf",
+          "production_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "production_paths": [
+            "configparser.py"
+          ]
+        },
+        "preflight_sha256": "b3909f1dad61e5ede36a6de4e8d272d010593e850e01c20731474c4bfa17493f"
+      },
+      {
+        "cell_id": "cpython-pr156382--candidate",
+        "task_id": "cpython-pr156382",
+        "arm_id": "candidate",
+        "task": {
+          "interpreter": "/opt/homebrew/opt/python@3.14/bin/python3.14",
+          "runtime": {
+            "python_version": "3.14.7 (main, Aug  5 2026, 10:29:49) [Clang 21.0.0 (clang-2100.1.1.101)]",
+            "python_executable": "/opt/homebrew/opt/python@3.14/bin/python3.14",
+            "stdlib": "/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib/python3.14",
+            "native_csv_support": "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/lib-dynload/_csv.cpython-314-darwin.so",
+            "python_executable_sha256": "87d4df53fd91304be5bac391fb204643c36b7df2023c04a0953bcbc7d4fdf634",
+            "native_csv_support_sha256": "07b0bd1af24d047f8ce40e5f6e669efe7509be0d0354f2b3ebf724a09e445eff",
+            "native_csv_extension_version": "absent"
+          },
+          "runtime_read_paths": [],
+          "task_id": "cpython-pr156382",
+          "role": "selection",
+          "module": "configparser",
+          "prompt": "Fix ConfigParser recognition of explicitly configured whitespace delimiters. With delimiters=(\" \", \"=\"), a line such as \"colour dark blue\" must mean option colour with value dark blue; similarly support explicitly configured tab delimiters. Preserve whitespace inside option names when it is not a delimiter, normal default delimiters, strict duplicate/malformed rejection, allow_no_value, typed retrieval, interpolation and round trips. This is a bounded public parser behavior fix, not a full security/performance audit.\nChange configparser.py and, if needed, local root Python helpers. Ordinary product tests may be added or updated anywhere conventional. Keep unrelated behavior; independent owner checks are separate and immutable. Runtime target stdlib source/bytecode is unavailable; use the supplied local module and the provided visible check. Full CPython build/suite and unrelated PR obligations are excluded.",
+          "requirements": [
+            "Configured space or tab delimiters split an option from its value, including Unicode and values containing additional spaces.",
+            "Allow-no-value options and typed retrieval keep their documented behavior with configured whitespace delimiters.",
+            "Whitespace that is not a configured delimiter remains part of an option name; default delimiters preserve spaced option names.",
+            "Malformed no-value input is still rejected when disabled; duplicate configured-delimiter options still fail under strict parsing.",
+            "Default interpolation, comments, write/read round trips and ordinary delimiters retain existing behavior."
+          ],
+          "base_snapshot": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/study-v2/cells/cpython-pr156382--candidate/base",
+          "source_directory": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/study-v2/cells/cpython-pr156382--candidate/base",
+          "reference_snapshot": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/oracles/cpython-pr156382/head",
+          "production_paths": [
+            "configparser.py"
+          ],
+          "test_commands": [
+            [
+              "/opt/homebrew/opt/python@3.14/bin/python3.14",
+              "-B",
+              "-m",
+              "unittest",
+              "tests.test_visible"
+            ]
+          ],
+          "visible_commands": [
+            [
+              "/opt/homebrew/opt/python@3.14/bin/python3.14",
+              "-B",
+              "-m",
+              "unittest",
+              "tests.test_visible"
+            ]
+          ],
+          "discovery_paths": [
+            "configparser.py",
+            "tests/test_visible.py"
+          ],
+          "private_module": "oracles/owner_configparser.py",
+          "oracle_tests": [
+            "tests.test_owner.Owner.test_positive_configured_whitespace_delimiters",
+            "tests.test_owner.Owner.test_positive_values_and_no_value_options",
+            "tests.test_owner.Owner.test_negative_non_delimiter_whitespace_keeps_key_meaning",
+            "tests.test_owner.Owner.test_negative_malformed_and_duplicate_still_rejected",
+            "tests.test_owner.Owner.test_regression_default_interpolation_comments_and_roundtrip"
+          ],
+          "positive_tests": [
+            "tests.test_owner.Owner.test_positive_configured_whitespace_delimiters",
+            "tests.test_owner.Owner.test_positive_values_and_no_value_options"
+          ],
+          "negative_tests": [
+            "tests.test_owner.Owner.test_negative_non_delimiter_whitespace_keeps_key_meaning",
+            "tests.test_owner.Owner.test_negative_malformed_and_duplicate_still_rejected"
+          ],
+          "regression_tests": [
+            "tests.test_owner.Owner.test_regression_default_interpolation_comments_and_roundtrip"
+          ],
+          "forbidden_runtime_read_paths": [
+            "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/__pycache__/configparser.cpython-39.opt-1.pyc",
+            "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/__pycache__/configparser.cpython-39.opt-2.pyc",
+            "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/__pycache__/configparser.cpython-39.pyc",
+            "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/configparser.py",
+            "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/configparser.pyc",
+            "/opt/homebrew/Cellar/python@3.13/3.13.9_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/__pycache__/configparser.cpython-313.opt-1.pyc",
+            "/opt/homebrew/Cellar/python@3.13/3.13.9_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/__pycache__/configparser.cpython-313.opt-2.pyc",
+            "/opt/homebrew/Cellar/python@3.13/3.13.9_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/__pycache__/configparser.cpython-313.pyc",
+            "/opt/homebrew/Cellar/python@3.13/3.13.9_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/configparser.py",
+            "/opt/homebrew/Cellar/python@3.13/3.13.9_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/configparser.pyc",
+            "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/__pycache__/configparser.cpython-314.opt-1.pyc",
+            "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/__pycache__/configparser.cpython-314.opt-2.pyc",
+            "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/__pycache__/configparser.cpython-314.pyc",
+            "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/configparser.py",
+            "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/configparser.pyc",
+            "/opt/homebrew/opt/python@3.13/Frameworks/Python.framework/Versions/3.13/lib/python3.13/__pycache__/configparser.cpython-313.opt-1.pyc",
+            "/opt/homebrew/opt/python@3.13/Frameworks/Python.framework/Versions/3.13/lib/python3.13/__pycache__/configparser.cpython-313.opt-2.pyc",
+            "/opt/homebrew/opt/python@3.13/Frameworks/Python.framework/Versions/3.13/lib/python3.13/__pycache__/configparser.cpython-313.pyc",
+            "/opt/homebrew/opt/python@3.13/Frameworks/Python.framework/Versions/3.13/lib/python3.13/configparser.py",
+            "/opt/homebrew/opt/python@3.13/Frameworks/Python.framework/Versions/3.13/lib/python3.13/configparser.pyc",
+            "/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib/python3.14/__pycache__/configparser.cpython-314.opt-1.pyc",
+            "/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib/python3.14/__pycache__/configparser.cpython-314.opt-2.pyc",
+            "/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib/python3.14/__pycache__/configparser.cpython-314.pyc",
+            "/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib/python3.14/configparser.py",
+            "/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib/python3.14/configparser.pyc"
+          ],
+          "base_tree_sha256": "e113b1a919674b4ec1091a48d5c2f375275868ace9070e875ea19f02469a04c8",
+          "reference_tree_sha256": "09b083ec29ca8ebbc0fc277b89125889c845ba9b4d296aa793933ed21ef2d36c",
+          "source_sha256": "de8ddb6cdaa3bb51885ff47a768a81cb32bd279dd5a5eaf5388cde48b7f264a9",
+          "reference_source_sha256": "503e39c7a2f2e7594791d2908fbeb2ee2546d05f97b675ab666c836714ce9215",
+          "owner_sha256": "19eb4c376406e96c2f677cc4f027993339e8fd20f15445a5e5ebe2adcf730d6f",
+          "provenance": {
+            "baseRefOid": "98bd716479dacb1e618a4271df10b2b67c010c4c",
+            "body": "## Problem\nBetween Python 3.14.4 and 3.14.5 (and similarly in 3.13), `configparser` stopped recognizing a space as a delimiter when `delimiters=(' ', '=')` was used. This regression was caused by gh-146333 which addressed a ReDoS vulnerability in the option parsing regex but inadvertently allowed the greedy `\\s+` inside the option name group to consume whitespace characters even if they were valid delimiters.\n\n## Solution\nThis PR adjusts `_OPT_TMPL` and `_OPT_NV_TMPL` to explicitly ensure that any whitespace character consumed as part of the option name is NOT a valid delimiter (`(?:(?!{delim})\\s)+`).\n\nThis retains the catastrophic backtracking protection introduced in gh-146333 (the mutually exclusive possessive-like parsing structure remains intact) while restoring the ability to use spaces as delimiters.\n\n* Issue: gh-156353",
+            "files": [
+              {
+                "path": "Lib/configparser.py",
+                "additions": 4,
+                "deletions": 2
+              },
+              {
+                "path": "Lib/test/test_configparser.py",
+                "additions": 30,
+                "deletions": 3
+              },
+              {
+                "path": "Misc/NEWS.d/next/Library/2026-08-26-02-30-00.gh-issue-156353.abcdef.rst",
+                "additions": 1,
+                "deletions": 0
+              }
+            ],
+            "headRefOid": "562e043072c6659aaec220da65834a21e0de5464",
+            "mergeCommit": {
+              "oid": "f973bd9d383e99eef58846772c69afa8ebeaf9a9"
+            },
+            "number": 156382,
+            "state": "MERGED",
+            "title": "gh-156353: Fix configparser space delimiter parsing",
+            "url": "https://github.com/python/cpython/pull/156382"
+          },
+          "oracle_argv": [
+            "python3",
+            "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/evaluate.py",
+            "--task-id",
+            "cpython-pr156382",
+            "--workspace",
+            "{workspace}"
+          ],
+          "test_python": "/opt/homebrew/opt/python@3.14/bin/python3.14"
+        },
+        "policy": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/study-v2/cells/cpython-pr156382--candidate/workspace/.protocol",
+        "prompt": "Read .protocol/SKILL.md and relevant references. Complete this bounded real task and execute the visible checks. Only the supplied coding tools are available; protocol CLI certificates and peer model calls are excluded. Independent Codex checks occur outside your timer. Return the final JSON truthfully.\nTask:\nFix ConfigParser recognition of explicitly configured whitespace delimiters. With delimiters=(\" \", \"=\"), a line such as \"colour dark blue\" must mean option colour with value dark blue; similarly support explicitly configured tab delimiters. Preserve whitespace inside option names when it is not a delimiter, normal default delimiters, strict duplicate/malformed rejection, allow_no_value, typed retrieval, interpolation and round trips. This is a bounded public parser behavior fix, not a full security/performance audit.\nChange configparser.py and, if needed, local root Python helpers. Ordinary product tests may be added or updated anywhere conventional. Keep unrelated behavior; independent owner checks are separate and immutable. Runtime target stdlib source/bytecode is unavailable; use the supplied local module and the provided visible check. Full CPython build/suite and unrelated PR obligations are excluded.\nVisible commands:\n[[\"/opt/homebrew/opt/python@3.14/bin/python3.14\", \"-B\", \"-m\", \"unittest\", \"tests.test_visible\"]]",
+        "baseline": {
+          "source_sha256": "59821593819e396e6881c1de78af40e3ed1a1876ab9e904eddc808dc2809bd83",
+          "production_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "production_paths": [
+            "configparser.py"
+          ]
+        },
+        "preflight_sha256": "cec54eaf454f70984dd49248c0fb3dd9b97a90560024ab1b3de5003b808c0ce3"
+      },
+      {
+        "cell_id": "cpython-pr32225--candidate",
+        "task_id": "cpython-pr32225",
+        "arm_id": "candidate",
+        "task": {
+          "interpreter": "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+          "runtime": {
+            "python_version": "3.9.6 (default, Jan  9 2026, 11:03:41) \n[Clang 17.0.0 (clang-1700.6.4.2)]",
+            "python_executable": "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+            "stdlib": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9",
+            "native_csv_support": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/lib-dynload/_csv.cpython-39-darwin.so",
+            "python_executable_sha256": "6b24be8ba00c4abc8b3e7e2620bd710e2cf7a4312d00c147f8f05fbb6f3d297a",
+            "native_csv_support_sha256": "e49f48de1e2d9d7ecdbddeb4d851a8238d89a6361cf4856954a6957c3c24ebde",
+            "native_csv_extension_version": "1.0"
+          },
+          "runtime_read_paths": [
+            "/Applications/Xcode.app/Contents/Developer"
+          ],
+          "task_id": "cpython-pr32225",
+          "role": "selection",
+          "module": "csv",
+          "prompt": "Fix csv.DictReader and csv.DictWriter so a one-shot iterator supplied as fieldnames works across headers and multiple rows. Materialize that iterator once without changing reusable sequence behavior (including an externally updated list). Preserve reader restkey/restval, writer extrasaction rejection/ignore, default headers, field order and proper quoting/Unicode/newlines. Noniterable fieldnames are invalid and should raise TypeError on construction. The accepted merged contract is iterator coercion, rather than rejecting valid iterators.\nChange csv.py and, if needed, local root Python helpers. Ordinary product tests may be added or updated anywhere conventional. Keep unrelated behavior; independent owner checks are separate and immutable. Runtime target stdlib source/bytecode is unavailable; use the supplied local module and the provided visible check. Full CPython build/suite and unrelated PR obligations are excluded.",
+          "requirements": [
+            "DictReader materializes a supplied one-shot fieldnames iterator once and correctly maps multiple complete, extra-column and missing-column rows.",
+            "DictWriter materializes a supplied one-shot iterator once so header plus multiple rows preserve field order and CSV quoting/newline/Unicode behavior.",
+            "Extrasaction=raise still rejects unexpected keys and invalid noniterable fieldnames still raise TypeError at construction.",
+            "Supplied reusable sequence behavior, including a live mutable list, default reader headers, restval and extrasaction=ignore remain intact."
+          ],
+          "base_snapshot": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/study-v2/cells/cpython-pr32225--candidate/base",
+          "source_directory": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/study-v2/cells/cpython-pr32225--candidate/base",
+          "reference_snapshot": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/oracles/cpython-pr32225/head",
+          "production_paths": [
+            "csv.py"
+          ],
+          "test_commands": [
+            [
+              "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+              "-B",
+              "-m",
+              "unittest",
+              "tests.test_visible"
+            ]
+          ],
+          "visible_commands": [
+            [
+              "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+              "-B",
+              "-m",
+              "unittest",
+              "tests.test_visible"
+            ]
+          ],
+          "discovery_paths": [
+            "csv.py",
+            "tests/test_visible.py"
+          ],
+          "private_module": "oracles/owner_csv.py",
+          "oracle_tests": [
+            "tests.test_owner.Owner.test_positive_reader_iterator_reused_across_rows",
+            "tests.test_owner.Owner.test_positive_writer_iterator_header_and_data_roundtrip",
+            "tests.test_owner.Owner.test_negative_extra_key_and_invalid_argument",
+            "tests.test_owner.Owner.test_regression_sequences_default_header_and_ignore"
+          ],
+          "positive_tests": [
+            "tests.test_owner.Owner.test_positive_reader_iterator_reused_across_rows",
+            "tests.test_owner.Owner.test_positive_writer_iterator_header_and_data_roundtrip"
+          ],
+          "negative_tests": [
+            "tests.test_owner.Owner.test_negative_extra_key_and_invalid_argument"
+          ],
+          "regression_tests": [
+            "tests.test_owner.Owner.test_regression_sequences_default_header_and_ignore"
+          ],
+          "forbidden_runtime_read_paths": [
+            "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/__pycache__/csv.cpython-39.opt-1.pyc",
+            "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/__pycache__/csv.cpython-39.opt-2.pyc",
+            "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/__pycache__/csv.cpython-39.pyc",
+            "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/csv.py",
+            "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/csv.pyc",
+            "/opt/homebrew/Cellar/python@3.13/3.13.9_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/__pycache__/csv.cpython-313.opt-1.pyc",
+            "/opt/homebrew/Cellar/python@3.13/3.13.9_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/__pycache__/csv.cpython-313.opt-2.pyc",
+            "/opt/homebrew/Cellar/python@3.13/3.13.9_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/__pycache__/csv.cpython-313.pyc",
+            "/opt/homebrew/Cellar/python@3.13/3.13.9_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/csv.py",
+            "/opt/homebrew/Cellar/python@3.13/3.13.9_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/csv.pyc",
+            "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/__pycache__/csv.cpython-314.opt-1.pyc",
+            "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/__pycache__/csv.cpython-314.opt-2.pyc",
+            "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/__pycache__/csv.cpython-314.pyc",
+            "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/csv.py",
+            "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/csv.pyc",
+            "/opt/homebrew/opt/python@3.13/Frameworks/Python.framework/Versions/3.13/lib/python3.13/__pycache__/csv.cpython-313.opt-1.pyc",
+            "/opt/homebrew/opt/python@3.13/Frameworks/Python.framework/Versions/3.13/lib/python3.13/__pycache__/csv.cpython-313.opt-2.pyc",
+            "/opt/homebrew/opt/python@3.13/Frameworks/Python.framework/Versions/3.13/lib/python3.13/__pycache__/csv.cpython-313.pyc",
+            "/opt/homebrew/opt/python@3.13/Frameworks/Python.framework/Versions/3.13/lib/python3.13/csv.py",
+            "/opt/homebrew/opt/python@3.13/Frameworks/Python.framework/Versions/3.13/lib/python3.13/csv.pyc",
+            "/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib/python3.14/__pycache__/csv.cpython-314.opt-1.pyc",
+            "/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib/python3.14/__pycache__/csv.cpython-314.opt-2.pyc",
+            "/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib/python3.14/__pycache__/csv.cpython-314.pyc",
+            "/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib/python3.14/csv.py",
+            "/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib/python3.14/csv.pyc"
+          ],
+          "base_tree_sha256": "0a67d07b9b88eee1c4b9c8621d95f2dc1fadb66a4a79204257b22b618fc7ecc3",
+          "reference_tree_sha256": "9a9bd0e5219fcbb062c98193a4773ea4dc423d5162f1248904cf3083ce025d4e",
+          "source_sha256": "6c68a5186e3b85e6e267a7ef96479327a45ae2b40bf5e9f2017e4b2282b3f5b1",
+          "reference_source_sha256": "13692e3e9d5f4f4f365c35529c4df94754a03b9ec5f0a2ea8e5bbcdb606f3bc5",
+          "owner_sha256": "38c198db0ef835fcf795c2aae9c66213b66b6ae4ac9a5e7ee40f173b3ec4e58e",
+          "provenance": {
+            "baseRefOid": "b9a5522dd952125a99ff554f01f311cae25f5a91",
+            "body": "Raises a TypeError when the given argument to the `fieldnames` parameter is not a sequence in `csv.DictWriter` and `csv.DictReader`\r\n\r\n<!-- issue-number: [bpo-32547](https://bugs.python.org/issue32547) -->\r\nhttps://bugs.python.org/issue32547\r\n<!-- /issue-number -->\r\n\n\n<!-- gh-issue-number: gh-76728 -->\n* Issue: gh-76728\n<!-- /gh-issue-number -->\n",
+            "files": [
+              {
+                "path": "Doc/library/csv.rst",
+                "additions": 4,
+                "deletions": 0
+              },
+              {
+                "path": "Lib/csv.py",
+                "additions": 4,
+                "deletions": 0
+              },
+              {
+                "path": "Lib/test/test_csv.py",
+                "additions": 28,
+                "deletions": 0
+              },
+              {
+                "path": "Misc/NEWS.d/next/Library/2022-04-01-09-43-54.bpo-32547.NIUiNC.rst",
+                "additions": 1,
+                "deletions": 0
+              }
+            ],
+            "headRefOid": "68a9e1228ce5a0ebe629fbfd92eb8f3a53177d13",
+            "mergeCommit": {
+              "oid": "cd492d43a2980faf0ef4a3f99c665023a506414c"
+            },
+            "number": 32225,
+            "state": "MERGED",
+            "title": "gh-76728: Coerce DictReader and DictWriter fieldnames argument to a list",
+            "url": "https://github.com/python/cpython/pull/32225"
+          },
+          "oracle_argv": [
+            "python3",
+            "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/evaluate.py",
+            "--task-id",
+            "cpython-pr32225",
+            "--workspace",
+            "{workspace}"
+          ],
+          "test_python": "/Applications/Xcode.app/Contents/Developer/usr/bin/python3"
+        },
+        "policy": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/study-v2/cells/cpython-pr32225--candidate/workspace/.protocol",
+        "prompt": "Read .protocol/SKILL.md and relevant references. Complete this bounded real task and execute the visible checks. Only the supplied coding tools are available; protocol CLI certificates and peer model calls are excluded. Independent Codex checks occur outside your timer. Return the final JSON truthfully.\nTask:\nFix csv.DictReader and csv.DictWriter so a one-shot iterator supplied as fieldnames works across headers and multiple rows. Materialize that iterator once without changing reusable sequence behavior (including an externally updated list). Preserve reader restkey/restval, writer extrasaction rejection/ignore, default headers, field order and proper quoting/Unicode/newlines. Noniterable fieldnames are invalid and should raise TypeError on construction. The accepted merged contract is iterator coercion, rather than rejecting valid iterators.\nChange csv.py and, if needed, local root Python helpers. Ordinary product tests may be added or updated anywhere conventional. Keep unrelated behavior; independent owner checks are separate and immutable. Runtime target stdlib source/bytecode is unavailable; use the supplied local module and the provided visible check. Full CPython build/suite and unrelated PR obligations are excluded.\nVisible commands:\n[[\"/Applications/Xcode.app/Contents/Developer/usr/bin/python3\", \"-B\", \"-m\", \"unittest\", \"tests.test_visible\"]]",
+        "baseline": {
+          "source_sha256": "8bfb829a4bf2753f083201c9d83a23416a86413d6a5f4075eb24092b92ae5165",
+          "production_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "production_paths": [
+            "csv.py"
+          ]
+        },
+        "preflight_sha256": "496cc4675d3ef8b8d4d3aeebec14846be7fd7f17c5a4cc62deab9d407c0ef622"
+      },
+      {
+        "cell_id": "cpython-pr32225--incumbent",
+        "task_id": "cpython-pr32225",
+        "arm_id": "incumbent",
+        "task": {
+          "interpreter": "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+          "runtime": {
+            "python_version": "3.9.6 (default, Jan  9 2026, 11:03:41) \n[Clang 17.0.0 (clang-1700.6.4.2)]",
+            "python_executable": "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+            "stdlib": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9",
+            "native_csv_support": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/lib-dynload/_csv.cpython-39-darwin.so",
+            "python_executable_sha256": "6b24be8ba00c4abc8b3e7e2620bd710e2cf7a4312d00c147f8f05fbb6f3d297a",
+            "native_csv_support_sha256": "e49f48de1e2d9d7ecdbddeb4d851a8238d89a6361cf4856954a6957c3c24ebde",
+            "native_csv_extension_version": "1.0"
+          },
+          "runtime_read_paths": [
+            "/Applications/Xcode.app/Contents/Developer"
+          ],
+          "task_id": "cpython-pr32225",
+          "role": "selection",
+          "module": "csv",
+          "prompt": "Fix csv.DictReader and csv.DictWriter so a one-shot iterator supplied as fieldnames works across headers and multiple rows. Materialize that iterator once without changing reusable sequence behavior (including an externally updated list). Preserve reader restkey/restval, writer extrasaction rejection/ignore, default headers, field order and proper quoting/Unicode/newlines. Noniterable fieldnames are invalid and should raise TypeError on construction. The accepted merged contract is iterator coercion, rather than rejecting valid iterators.\nChange csv.py and, if needed, local root Python helpers. Ordinary product tests may be added or updated anywhere conventional. Keep unrelated behavior; independent owner checks are separate and immutable. Runtime target stdlib source/bytecode is unavailable; use the supplied local module and the provided visible check. Full CPython build/suite and unrelated PR obligations are excluded.",
+          "requirements": [
+            "DictReader materializes a supplied one-shot fieldnames iterator once and correctly maps multiple complete, extra-column and missing-column rows.",
+            "DictWriter materializes a supplied one-shot iterator once so header plus multiple rows preserve field order and CSV quoting/newline/Unicode behavior.",
+            "Extrasaction=raise still rejects unexpected keys and invalid noniterable fieldnames still raise TypeError at construction.",
+            "Supplied reusable sequence behavior, including a live mutable list, default reader headers, restval and extrasaction=ignore remain intact."
+          ],
+          "base_snapshot": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/study-v2/cells/cpython-pr32225--incumbent/base",
+          "source_directory": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/study-v2/cells/cpython-pr32225--incumbent/base",
+          "reference_snapshot": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/oracles/cpython-pr32225/head",
+          "production_paths": [
+            "csv.py"
+          ],
+          "test_commands": [
+            [
+              "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+              "-B",
+              "-m",
+              "unittest",
+              "tests.test_visible"
+            ]
+          ],
+          "visible_commands": [
+            [
+              "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+              "-B",
+              "-m",
+              "unittest",
+              "tests.test_visible"
+            ]
+          ],
+          "discovery_paths": [
+            "csv.py",
+            "tests/test_visible.py"
+          ],
+          "private_module": "oracles/owner_csv.py",
+          "oracle_tests": [
+            "tests.test_owner.Owner.test_positive_reader_iterator_reused_across_rows",
+            "tests.test_owner.Owner.test_positive_writer_iterator_header_and_data_roundtrip",
+            "tests.test_owner.Owner.test_negative_extra_key_and_invalid_argument",
+            "tests.test_owner.Owner.test_regression_sequences_default_header_and_ignore"
+          ],
+          "positive_tests": [
+            "tests.test_owner.Owner.test_positive_reader_iterator_reused_across_rows",
+            "tests.test_owner.Owner.test_positive_writer_iterator_header_and_data_roundtrip"
+          ],
+          "negative_tests": [
+            "tests.test_owner.Owner.test_negative_extra_key_and_invalid_argument"
+          ],
+          "regression_tests": [
+            "tests.test_owner.Owner.test_regression_sequences_default_header_and_ignore"
+          ],
+          "forbidden_runtime_read_paths": [
+            "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/__pycache__/csv.cpython-39.opt-1.pyc",
+            "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/__pycache__/csv.cpython-39.opt-2.pyc",
+            "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/__pycache__/csv.cpython-39.pyc",
+            "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/csv.py",
+            "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/csv.pyc",
+            "/opt/homebrew/Cellar/python@3.13/3.13.9_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/__pycache__/csv.cpython-313.opt-1.pyc",
+            "/opt/homebrew/Cellar/python@3.13/3.13.9_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/__pycache__/csv.cpython-313.opt-2.pyc",
+            "/opt/homebrew/Cellar/python@3.13/3.13.9_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/__pycache__/csv.cpython-313.pyc",
+            "/opt/homebrew/Cellar/python@3.13/3.13.9_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/csv.py",
+            "/opt/homebrew/Cellar/python@3.13/3.13.9_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/csv.pyc",
+            "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/__pycache__/csv.cpython-314.opt-1.pyc",
+            "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/__pycache__/csv.cpython-314.opt-2.pyc",
+            "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/__pycache__/csv.cpython-314.pyc",
+            "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/csv.py",
+            "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/csv.pyc",
+            "/opt/homebrew/opt/python@3.13/Frameworks/Python.framework/Versions/3.13/lib/python3.13/__pycache__/csv.cpython-313.opt-1.pyc",
+            "/opt/homebrew/opt/python@3.13/Frameworks/Python.framework/Versions/3.13/lib/python3.13/__pycache__/csv.cpython-313.opt-2.pyc",
+            "/opt/homebrew/opt/python@3.13/Frameworks/Python.framework/Versions/3.13/lib/python3.13/__pycache__/csv.cpython-313.pyc",
+            "/opt/homebrew/opt/python@3.13/Frameworks/Python.framework/Versions/3.13/lib/python3.13/csv.py",
+            "/opt/homebrew/opt/python@3.13/Frameworks/Python.framework/Versions/3.13/lib/python3.13/csv.pyc",
+            "/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib/python3.14/__pycache__/csv.cpython-314.opt-1.pyc",
+            "/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib/python3.14/__pycache__/csv.cpython-314.opt-2.pyc",
+            "/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib/python3.14/__pycache__/csv.cpython-314.pyc",
+            "/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib/python3.14/csv.py",
+            "/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib/python3.14/csv.pyc"
+          ],
+          "base_tree_sha256": "0a67d07b9b88eee1c4b9c8621d95f2dc1fadb66a4a79204257b22b618fc7ecc3",
+          "reference_tree_sha256": "9a9bd0e5219fcbb062c98193a4773ea4dc423d5162f1248904cf3083ce025d4e",
+          "source_sha256": "6c68a5186e3b85e6e267a7ef96479327a45ae2b40bf5e9f2017e4b2282b3f5b1",
+          "reference_source_sha256": "13692e3e9d5f4f4f365c35529c4df94754a03b9ec5f0a2ea8e5bbcdb606f3bc5",
+          "owner_sha256": "38c198db0ef835fcf795c2aae9c66213b66b6ae4ac9a5e7ee40f173b3ec4e58e",
+          "provenance": {
+            "baseRefOid": "b9a5522dd952125a99ff554f01f311cae25f5a91",
+            "body": "Raises a TypeError when the given argument to the `fieldnames` parameter is not a sequence in `csv.DictWriter` and `csv.DictReader`\r\n\r\n<!-- issue-number: [bpo-32547](https://bugs.python.org/issue32547) -->\r\nhttps://bugs.python.org/issue32547\r\n<!-- /issue-number -->\r\n\n\n<!-- gh-issue-number: gh-76728 -->\n* Issue: gh-76728\n<!-- /gh-issue-number -->\n",
+            "files": [
+              {
+                "path": "Doc/library/csv.rst",
+                "additions": 4,
+                "deletions": 0
+              },
+              {
+                "path": "Lib/csv.py",
+                "additions": 4,
+                "deletions": 0
+              },
+              {
+                "path": "Lib/test/test_csv.py",
+                "additions": 28,
+                "deletions": 0
+              },
+              {
+                "path": "Misc/NEWS.d/next/Library/2022-04-01-09-43-54.bpo-32547.NIUiNC.rst",
+                "additions": 1,
+                "deletions": 0
+              }
+            ],
+            "headRefOid": "68a9e1228ce5a0ebe629fbfd92eb8f3a53177d13",
+            "mergeCommit": {
+              "oid": "cd492d43a2980faf0ef4a3f99c665023a506414c"
+            },
+            "number": 32225,
+            "state": "MERGED",
+            "title": "gh-76728: Coerce DictReader and DictWriter fieldnames argument to a list",
+            "url": "https://github.com/python/cpython/pull/32225"
+          },
+          "oracle_argv": [
+            "python3",
+            "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/evaluate.py",
+            "--task-id",
+            "cpython-pr32225",
+            "--workspace",
+            "{workspace}"
+          ],
+          "test_python": "/Applications/Xcode.app/Contents/Developer/usr/bin/python3"
+        },
+        "policy": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/study-v2/cells/cpython-pr32225--incumbent/workspace/.protocol",
+        "prompt": "Read .protocol/SKILL.md and relevant references. Complete this bounded real task and execute the visible checks. Only the supplied coding tools are available; protocol CLI certificates and peer model calls are excluded. Independent Codex checks occur outside your timer. Return the final JSON truthfully.\nTask:\nFix csv.DictReader and csv.DictWriter so a one-shot iterator supplied as fieldnames works across headers and multiple rows. Materialize that iterator once without changing reusable sequence behavior (including an externally updated list). Preserve reader restkey/restval, writer extrasaction rejection/ignore, default headers, field order and proper quoting/Unicode/newlines. Noniterable fieldnames are invalid and should raise TypeError on construction. The accepted merged contract is iterator coercion, rather than rejecting valid iterators.\nChange csv.py and, if needed, local root Python helpers. Ordinary product tests may be added or updated anywhere conventional. Keep unrelated behavior; independent owner checks are separate and immutable. Runtime target stdlib source/bytecode is unavailable; use the supplied local module and the provided visible check. Full CPython build/suite and unrelated PR obligations are excluded.\nVisible commands:\n[[\"/Applications/Xcode.app/Contents/Developer/usr/bin/python3\", \"-B\", \"-m\", \"unittest\", \"tests.test_visible\"]]",
+        "baseline": {
+          "source_sha256": "e246709ae30058b1c2903d6db2af9f8802b3e5b32ac5efac5ff8f853c6a8a444",
+          "production_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "production_paths": [
+            "csv.py"
+          ]
+        },
+        "preflight_sha256": "8c20c097e8747fb9581c36fbb5d7f405475ffa01c349ec6791b976fcfd1e9b44"
+      }
+    ],
+    "files": {
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/CONFIG.json": "53e0ecba47989c89a35fe9cba2d9355d30265ae84303af71edb352da3a142be9",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/TASKS.json": "2495f12cc27d6f5c1ed349db1d72d5bcc01f5799e868fc119c16215509b04d22",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/evaluate.py": "060fcad2bd5fccdb3ed31e3cf350b6154aa7e065202f12b2146b6c591052ab3e",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/run_tasks.py": "21dcf60c1ec892f116db59d2e432e8d0ef3f00e03ea8132b972881203fbe3962",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/runtime_adapter.py": "99024867cec32e7acf5771f882337aa58db6f20b836ccee2ef8a9da99c228fbb",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/EVALUATOR.md": "1193f012a4c43bcdc44e496afdf54d17652027031686c6271a19e44463353eff",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/PREFLIGHT.json": "419e2d916f11c7e80dc0cfa7fce1c183d7bb4ec3554646dcf5e856003b52bf47",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/runtime/controller.py": "399e3423a6140fc75da3265999da444e2006d3cd344bd45d91814f85e43ddd57",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/runtime/hybrid_process_v2.py": "631e695e36f5c000b3fef02d4f64f8c518edc31befac116db559816750d8e95f",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/analyze_hybrid_v2.py": "15368e2a0be3ee1fc6c62ec5073f42d6b49372f4a5fd93cc5fcce044d0be510b",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/cross_backend.py": "a4c94f220d66be06c40c88fdbb65578d45ce61a46b07e11c607f3aab50281739",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/export_completed_study.py": "66b8ef7c603c7df3b7fb1b92b71e43a4efe06db02fc88d0f79a8db898b0d41b6",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/export_results.py": "e04c296431abb500497452e87f151e32d251c7c353f1065de32f0f553f56a85f",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/grading_adapter.py": "bcec860d709ddbe3c3566fb7bcdc86805b4a3e5c69131167b7743c91cbb2a007",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/hybrid_grader.py": "28f49892a059f4cd628618a4aff0e347b55946bb14159a606629261184cd4932",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/hybrid_process.py": "c1f1da477c8d13e1824e604fc83a0e64483d52208cede728ac80439b88c11b96",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/hybrid_process_v2.py": "631e695e36f5c000b3fef02d4f64f8c518edc31befac116db559816750d8e95f",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/hybrid_runner.py": "2e560c9300d16adba435048f45383293aea6ace3b7749ae17a0aea6652657a8d",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/hybrid_runtime_v2.py": "7b5c3bbabe03f7bd3b2ce3fa8b1dc049e8ee4659cd567590a42fcbe5617c76e6",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/hybrid_v2.py": "926a1fde84379ebd591939ad10706bdbfb7cb64503d75d7c8bf5e39a9a1ad7d6",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/hybrid_v2_grader.py": "48bf6aa09a4bd34d718f6f2761b8b631c2af5b48716df27ca7f5b62a1205481a",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/original_analysis_supplement.py": "a1e81e86d3c82a018305bb5008c80d90e3b92458ded3828a229cb263596bf0b0",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/replay_public_patches.py": "31efc97c8260c0b2702600a5060a57d36cb9f577895d159b51cf4aecf6b89601",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/runner.py": "1f5e9ab2e5f0823a34c8f637ae08b4b3e7e1d1ac7bbbf5aab64ab79c95288fb8",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/seal_hybrid_v2.py": "e7084d4c2e95a85c58346a8049f65969d77e4964f9870b90f3c629f5d9f7e900",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/summarize.py": "a94197c1ceeca0c6f48486111d6d667b55c246dab60b951f3e8fbec33b87f369",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/supervised_resume.py": "f4760b9931f3997b7997c283870a6a0ebf8d09706246b9e60e08ccfb6a1292c6",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_analyze_hybrid_v2.py": "2b348e0e042e446efc4b043c8bcfba333df7339a2972be1522b1388a4ec190fc",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_cross_backend.py": "1206a7c4bf13f963c120529ba1d99342491b2da947bca85fe4fe747dbc4248cc",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_export_completed_study.py": "77c52013792e1cf42498f0feb6d1a0ff5cbc4c3608cc1109d8f69b39b15060e5",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_export_results.py": "75e11074eab0d0a9213a9dedc5c471a1ab60b7824997f30d92372b353e6c1904",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_hybrid_process.py": "0c899ffbb2460c4bb7cccf20751ee93b6461da1b7709a4bae89cbc3de8b27be0",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_hybrid_process_v2.py": "d15052fcb23aa221429110011114c00e9fd12091bf906dbebf1821045a0f208e",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_hybrid_runner.py": "58cddf8a08e5bbe291993bac88c4035b7d72f72ada52ad180a84702da8c2d703",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_hybrid_runtime_v2.py": "4f13b5f5ecd49f59a298bd617508be268740e2ce1500fb166dd38b8fd0209e71",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_hybrid_v2.py": "c43c2ac053da61cffc55d7f39d7f57e25472a6910975718ba0d6f820d5041d3b",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_hybrid_v2_grader.py": "86c0a7ac6d2cfe2f6d37c22b04afe1ce04daf5f47648c7780099f4b790e0bcae",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_original_analysis_supplement.py": "49123e42a445bc5790e6b2683b03bd2d9bc147e5453369d801bfb632e198da3b",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_runner.py": "e9c8766fa2cca6925fb74b1c4da0c19a19bee29c6733b957bb45c73b84f3024c",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_seal_hybrid_v2.py": "f88e018aa8748dbd569c82f5ce93f2fc69c2cf67af355a7eddce0afd022f055d",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_summarize.py": "ee07e7e70b73d0008f0e3ff3b7a3e57a47fec946b158306382c46dbc50053f17",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_supervised_resume.py": "5664987d3edb314b5bb50f3f41953565e3ce9e7bdf12bf937a432900dc9406f8",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_v1_inventory_supplement.py": "e77c192412f8779a1199ca254cad719833371ad5afd6f9674786a4c36b0621a0",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/test_v2_controls.py": "7e671b2fdba90ac906b74eea9bb764de9632153b2b3f77ba96a24f8fd150168c",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/v1_inventory_supplement.py": "e1c4b836b81bbe05610d45f80c29b7501fbb4c39605f982952b68c8826a1fbb7",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/v2_controls.py": "c7fc3b0f7fe1efa22248508bded95022459b53bafa49bb4cab212bbed5349df6",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/pr-benchmark/v2_grading_controls.py": "d11aaf952baf84fd77bac8229dad0cf1d8bd9cf31776374651f8b9e369521b5d",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/claude-first-evaluation/runner.py": "ca59e94400c971ab5f426b296e8caa505247c9c16be671aebfec2d1a3757252a",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/docs/research/2026-10-confidence/claude-first-evaluation/analyze.py": "2be2a41479363e3fef9e82a37c3cd81addd9c2d1b6023660077c34f1a128bc5f",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/policies/incumbent/SKILL.md": "26b8c7ce5dcf06f8f3129c7e7794f77dee5b0c2ba5b50e882c6939b558064950",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/policies/candidate/SKILL.md": "103be278a59daea1eadca9d6fcb4bfebc88d5aa57c99d131d96367f8da86e5b8",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/study-v2/cells/cpython-pr156382--incumbent/inputs/SEAL.json": "cf7c26f1e6f17c0a9d9bc43d44c64a85b6e53809873b9ed6a3c2c3baf2fc3253",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/study-v2/cells/cpython-pr156382--incumbent/preflight/receipt.json": "b3909f1dad61e5ede36a6de4e8d272d010593e850e01c20731474c4bfa17493f",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/study-v2/cells/cpython-pr156382--candidate/inputs/SEAL.json": "b7de7844b94509702c485b6f93fa48a901da882d620e8a6202fa2e397b8ffe46",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/study-v2/cells/cpython-pr156382--candidate/preflight/receipt.json": "cec54eaf454f70984dd49248c0fb3dd9b97a90560024ab1b3de5003b808c0ce3",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/study-v2/cells/cpython-pr32225--candidate/inputs/SEAL.json": "84e60d092090c6f7433e88f106a469008f67647fe5da4e6c0a6c03bead43f31e",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/study-v2/cells/cpython-pr32225--candidate/preflight/receipt.json": "496cc4675d3ef8b8d4d3aeebec14846be7fd7f17c5a4cc62deab9d407c0ef622",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/study-v2/cells/cpython-pr32225--incumbent/inputs/SEAL.json": "8547fb6b6a03ffdb2f95745892081809c3cec581d37c47556816e059ba18b271",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/study-v2/cells/cpython-pr32225--incumbent/preflight/receipt.json": "8c20c097e8747fb9581c36fbb5d7f405475ffa01c349ec6791b976fcfd1e9b44",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/study-v2/registration-before-scope-fix.json": "13e2ba682f1c5bb371e685f5524e70d9eae6d24baf8b6efa88024201fce5fec4",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/scope-amendment/CONTROL.json": "48b639975cfecd4c6450eb385672fc6ecbb750b6896b9ed66aca1baaae567b17"
+    },
+    "trees": {
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/oracles": {
+        "config-base-grade.json": {
+          "sha256": "4d65f6c2cf8039fb572db2d1694dd3cda82364510ada2e4ac72893548045ca56",
+          "mode": 420
+        },
+        "config-head-grade.json": {
+          "sha256": "e6618d75fad3e1767d60551146460530828f27d5b36d8aed352233f01374e226",
+          "mode": 420
+        },
+        "cpython-pr156382/base/LICENSE": {
+          "sha256": "b0e25a78cffb43f4d92de8b61ccfa1f1f98ecbc22330b54b5251e7b6ba010231",
+          "mode": 420
+        },
+        "cpython-pr156382/base/configparser.py": {
+          "sha256": "de8ddb6cdaa3bb51885ff47a768a81cb32bd279dd5a5eaf5388cde48b7f264a9",
+          "mode": 420
+        },
+        "cpython-pr156382/base/tests/__init__.py": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "mode": 420
+        },
+        "cpython-pr156382/base/tests/test_visible.py": {
+          "sha256": "529a64b2b1819b2efd4dd8282344aeff5ce4c3d5b46aa84e947cc422423693d5",
+          "mode": 420
+        },
+        "cpython-pr156382/head/LICENSE": {
+          "sha256": "b0e25a78cffb43f4d92de8b61ccfa1f1f98ecbc22330b54b5251e7b6ba010231",
+          "mode": 420
+        },
+        "cpython-pr156382/head/configparser.py": {
+          "sha256": "503e39c7a2f2e7594791d2908fbeb2ee2546d05f97b675ab666c836714ce9215",
+          "mode": 420
+        },
+        "cpython-pr156382/head/tests/__init__.py": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "mode": 420
+        },
+        "cpython-pr156382/head/tests/test_visible.py": {
+          "sha256": "529a64b2b1819b2efd4dd8282344aeff5ce4c3d5b46aa84e947cc422423693d5",
+          "mode": 420
+        },
+        "cpython-pr156382/provenance.json": {
+          "sha256": "7fc3c4560753fd6af9175ecd5c5fb6bc3e2e407c56d3113f745002feb698ae57",
+          "mode": 420
+        },
+        "cpython-pr156382/source-provenance.json": {
+          "sha256": "702967da714e6846b493252d2a6f6030242c0eb215091adab3112acde0378b18",
+          "mode": 420
+        },
+        "cpython-pr32225/base/LICENSE": {
+          "sha256": "f03e17cd594c2085f66a454e695c7ebe5b4d3c0eff534f4f194abc2fd164621b",
+          "mode": 420
+        },
+        "cpython-pr32225/base/csv.py": {
+          "sha256": "6c68a5186e3b85e6e267a7ef96479327a45ae2b40bf5e9f2017e4b2282b3f5b1",
+          "mode": 420
+        },
+        "cpython-pr32225/base/tests/__init__.py": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "mode": 420
+        },
+        "cpython-pr32225/base/tests/test_visible.py": {
+          "sha256": "22133f66f3ef697c9af893899834ad610c5eacf359f85a6e9c5f36687165d838",
+          "mode": 420
+        },
+        "cpython-pr32225/head/LICENSE": {
+          "sha256": "f03e17cd594c2085f66a454e695c7ebe5b4d3c0eff534f4f194abc2fd164621b",
+          "mode": 420
+        },
+        "cpython-pr32225/head/csv.py": {
+          "sha256": "13692e3e9d5f4f4f365c35529c4df94754a03b9ec5f0a2ea8e5bbcdb606f3bc5",
+          "mode": 420
+        },
+        "cpython-pr32225/head/tests/__init__.py": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "mode": 420
+        },
+        "cpython-pr32225/head/tests/test_visible.py": {
+          "sha256": "22133f66f3ef697c9af893899834ad610c5eacf359f85a6e9c5f36687165d838",
+          "mode": 420
+        },
+        "cpython-pr32225/provenance.json": {
+          "sha256": "66329ca749af04310540b9a2af6b6fec150f7457fd601f574358c1c501b8b4b2",
+          "mode": 420
+        },
+        "cpython-pr32225/source-provenance.json": {
+          "sha256": "e7a90c8ca5f2c99b640311eca11aec19a9aa12dcd3ddb8eab6d12bac0c592aa7",
+          "mode": 420
+        },
+        "csv-base-grade.json": {
+          "sha256": "1cf70b8b564c03bc795f810452eca0f9e00c86d0620380aedfbf57517439e45f",
+          "mode": 420
+        },
+        "csv-head-grade.json": {
+          "sha256": "abc162e73ac49f262cff7985a31af44984adaa25fd2c2e42a3ab535adf5be2f8",
+          "mode": 420
+        },
+        "owner_configparser.py": {
+          "sha256": "19eb4c376406e96c2f677cc4f027993339e8fd20f15445a5e5ebe2adcf730d6f",
+          "mode": 420
+        },
+        "owner_csv.py": {
+          "sha256": "38c198db0ef835fcf795c2aae9c66213b66b6ae4ac9a5e7ee40f173b3ec4e58e",
+          "mode": 420
+        }
+      },
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/policies/incumbent": {
+        "SKILL.md": {
+          "sha256": "26b8c7ce5dcf06f8f3129c7e7794f77dee5b0c2ba5b50e882c6939b558064950",
+          "mode": 420
+        },
+        "references/complex-tasks.md": {
+          "sha256": "8c0396928105db561147b65b8f95b6a838ed9429efcbffc2b168030a77ae08c2",
+          "mode": 420
+        },
+        "references/evidence.md": {
+          "sha256": "bd097c352130c5199ee907199bfab369927cf8ee6f990e8133cb79a87ca01d02",
+          "mode": 420
+        },
+        "references/harnesses.md": {
+          "sha256": "6d05e95838f2a50931c734002f7179cdb61a981549c5f22cc4f2aa73e80c6c71",
+          "mode": 420
+        },
+        "references/intent-flows.md": {
+          "sha256": "d7b4461527b613f9607805f4ff6e2380ee87b47b68d44fa88b06661d544acbec",
+          "mode": 420
+        },
+        "references/model-routing.md": {
+          "sha256": "016d305701972280250c3938d5db2399807df93cf55962baaea53f89ee13fa61",
+          "mode": 420
+        },
+        "references/modes.md": {
+          "sha256": "58bdefb0a2be2a6093bd4c599e139eaf39e41c009b07aa913a51274ae90708f6",
+          "mode": 420
+        },
+        "references/question-patterns.md": {
+          "sha256": "d4815150b8418b5f747f909f4e141f8f42e6ee2890c70cf220a1ac8cf6973295",
+          "mode": 420
+        },
+        "references/report-rules.md": {
+          "sha256": "cd71fbb00b82a7b0c4811a929d1ceac8338708c59788b3a6e8ae3268b94dd61f",
+          "mode": 420
+        },
+        "references/task-profiles.md": {
+          "sha256": "83e4c88178608ab83b88829000be95962c294e2baa3444b77715d9a620c7a2a6",
+          "mode": 420
+        }
+      }
+    },
+    "limits": {
+      "main": {
+        "model": "claude-opus-5-5",
+        "effort": "high",
+        "seconds": 300,
+        "usd": 3.0
+      },
+      "continuation": {
+        "model": "claude-opus-5-5",
+        "effort": "high",
+        "seconds": 180,
+        "usd": 2.0
+      },
+      "global_model_limit": 1
+    },
+    "author": "Native Codex mechanical bridge using actual Opus controller, qualified existing adapters and independent Codex grader",
+    "prospective_amendment": {
+      "before_task_inference": true,
+      "previous_registration_sha256": "13e2ba682f1c5bb371e685f5524e70d9eae6d24baf8b6efa88024201fce5fec4",
+      "change": "Only evaluator test basename scope allowance; no behavior oracle, task, policy, route or budget change",
+      "control_sha256": "48b639975cfecd4c6450eb385672fc6ecbb750b6896b9ed66aca1baaae567b17"
+    }
+  },
+  "payload_sha256": "b9539374e42a062fc05af225e3f9fa745515c232b71f7ce4e24d18d976658177"
+}

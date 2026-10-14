@@ -1,0 +1,1 @@
+{"id": "ef29d5badc1749b2884f53522b882aac", "argv": ["/Applications/Xcode.app/Contents/Developer/usr/bin/python3", "-I", "-S", "-B", "-c", "import hashlib,json,pathlib;lines=pathlib.Path('csv.py').read_text().splitlines();print(json.dumps({\"line_count\":len(lines),\"tail_sha256\":hashlib.sha256(\"\\n\".join(lines[-3:]).encode()).hexdigest()}))"], "timeout": 8.0}

@@ -1,0 +1,22 @@
+[
+  {
+    "executable": "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+    "exit_code": 0,
+    "stdout": "probe-output\n",
+    "stderr": "probe-output\n",
+    "fd_witness": {
+      "1": 13,
+      "2": 13
+    }
+  },
+  {
+    "executable": "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "exit_code": 0,
+    "stdout": "probe-output\n",
+    "stderr": "probe-output\n",
+    "fd_witness": {
+      "1": 13,
+      "2": 13
+    }
+  }
+]

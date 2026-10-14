@@ -1,0 +1,28 @@
+{
+  "passed": true,
+  "model_calls": 0,
+  "behavioral_oracle_reruns": 0,
+  "transport_reruns": 0,
+  "before_evaluator_sha256": "dc532891b39d239f545302e87cb033bcb61e9a150672d9b15511371b1192e080",
+  "after_evaluator_sha256": "060fcad2bd5fccdb3ed31e3cf350b6154aa7e065202f12b2146b6c591052ab3e",
+  "allowed_paths": [
+    "package/test_api.py",
+    "package/api_test.py",
+    "package/conftest.py",
+    "conftest.py"
+  ],
+  "old_scope_violations": [
+    "conftest.py",
+    "package/api_test.py",
+    "package/conftest.py",
+    "package/test_api.py"
+  ],
+  "new_scope_violations": [],
+  "actor_tests_copied_into_owner_projection": false,
+  "projected_primary_module_unchanged": true,
+  "unauthorized_nested_production_still_rejected": [
+    "package/implementation.py"
+  ],
+  "task_manifest_unchanged_sha256": "2495f12cc27d6f5c1ed349db1d72d5bcc01f5799e868fc119c16215509b04d22",
+  "phase": "Pre-inference contract correction; no task outcomes known"
+}

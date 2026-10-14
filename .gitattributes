@@ -15,3 +15,7 @@ docs/research/2026-10-confidence/lean-repair/repair-only-v2/patches/*.patch -tex
 docs/research/2026-10-confidence/fork-flush/evidence/*/*/*.patch -text -whitespace
 docs/research/2026-10-confidence/fork-flush/evidence/*/*/*.diff -text -whitespace
 docs/research/2026-10-confidence/fork-flush/evidence/*/*/*.stdout -text -whitespace
+# Fair-loop captured patches and command output are byte-exact evidence.
+docs/research/2026-10-confidence/fair-loop/evidence/**/*.patch -text -whitespace
+docs/research/2026-10-confidence/fair-loop/evidence/**/*.diff -text -whitespace
+docs/research/2026-10-confidence/fair-loop/evidence/**/*.stdout -text -whitespace

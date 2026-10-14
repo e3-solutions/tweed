@@ -1,0 +1,359 @@
+{
+  "unique_request_count": 31,
+  "by_name": {
+    "mcp__cp_trial__list_files": 1,
+    "mcp__cp_trial__read_file": 8,
+    "WebFetch": 18,
+    "WebSearch": 3,
+    "StructuredOutput": 1
+  },
+  "invalid_stream_or_ids": [],
+  "requests": [
+    {
+      "id": "toolu_017pSXNgStAFJF3Yr9zuPcTM",
+      "name": "mcp__cp_trial__list_files",
+      "request_sha256": "ec6b9259d690d45004276353b8b659538a9ec736139491dc191c652bf68412d6",
+      "input": null,
+      "result_observed": true,
+      "is_error": false,
+      "result_sha256": "56ea87a03f83229e9bc5f43ac155dc9f1e30d5ed84980a194c687f15539f4b54"
+    },
+    {
+      "id": "toolu_01JFuFrCop4jZnUC4HyiLN9R",
+      "name": "mcp__cp_trial__read_file",
+      "request_sha256": "4693b31a4f59e97ee06ffb26e073795745c2f8c022323fc23872e3dab2238261",
+      "input": null,
+      "result_observed": true,
+      "is_error": false,
+      "result_sha256": "c0c4ae1bc279bc10836dc618c71b49e3f827bfca0c8e30433530bf920ba418cf"
+    },
+    {
+      "id": "toolu_017oVbrjyZsqqW9dEhYn3HYP",
+      "name": "mcp__cp_trial__read_file",
+      "request_sha256": "6086b02d8425a0b0b363230cd5eb25034694525a2f4d8bf0610c42e494dcd23f",
+      "input": null,
+      "result_observed": true,
+      "is_error": false,
+      "result_sha256": "501bbcc24a8e07cc0041634613a31b9806e720ea46d91cadb2cd89929c2a346b"
+    },
+    {
+      "id": "toolu_015NDWa96X6c4qDAKKZu9FjR",
+      "name": "mcp__cp_trial__read_file",
+      "request_sha256": "f3717fbd906bc0a9ad12262795ae2c722f1b137acb2a26afeda118a00625805f",
+      "input": null,
+      "result_observed": true,
+      "is_error": false,
+      "result_sha256": "be319b8dcdcf497821b6662d17cf4513d4c23353d33729f2bd774f26651fc3c3"
+    },
+    {
+      "id": "toolu_01F6LAnyb9u653cRsxA9H1tp",
+      "name": "mcp__cp_trial__read_file",
+      "request_sha256": "718880fdbf62bc3b4c010f7c4ade25fc6526e18c80527e716215e9414237e0d2",
+      "input": null,
+      "result_observed": true,
+      "is_error": false,
+      "result_sha256": "451dd7d4788f2f9c09fbbbee1fa45d0f75ab00629a7dea1727e68f6dc6d83973"
+    },
+    {
+      "id": "toolu_01B83y8gJGueMKYZFFfo9cpz",
+      "name": "mcp__cp_trial__read_file",
+      "request_sha256": "2e10f7ff112fa61d438c16a965b224ecfe4a5cba5fe9d597e2f505cd2ddf4770",
+      "input": null,
+      "result_observed": true,
+      "is_error": false,
+      "result_sha256": "e1f40785d473ccb8c0f678945368728ce6731ca49cc452f73b47f245640f9793"
+    },
+    {
+      "id": "toolu_01SdRvuUGZ2qioEGRKaSn7sJ",
+      "name": "mcp__cp_trial__read_file",
+      "request_sha256": "b4631083926e8e9edd1fc9aca099fba469dbd2df032067d399fd3b939c4ed212",
+      "input": null,
+      "result_observed": true,
+      "is_error": false,
+      "result_sha256": "43c523baad01a9147cc537d8efcd07367917e8f7a0d17f50690b3325e187fab3"
+    },
+    {
+      "id": "toolu_015xAcRCqKfUaQzWpBkEVMKZ",
+      "name": "mcp__cp_trial__read_file",
+      "request_sha256": "2107e88de6be039aa7138817dc4bc7a171a3325bef9e52b7fff24867be047742",
+      "input": null,
+      "result_observed": true,
+      "is_error": false,
+      "result_sha256": "898fa780f9c3da17e4423a66db663aec7cc72fe11247548ea0bde42895ca24cb"
+    },
+    {
+      "id": "toolu_01NvikDxkQ6apKkBsgvE35bv",
+      "name": "mcp__cp_trial__read_file",
+      "request_sha256": "0c0be59b962437ff31fd12a9d70f6f575825efaded9f89ca3382536c5fb54997",
+      "input": null,
+      "result_observed": true,
+      "is_error": false,
+      "result_sha256": "1b768df5026a47e43d0b5acc88a837c4dd358e5e06a8e23dd03118c2c0f6bf16"
+    },
+    {
+      "id": "toolu_01AWYQE5gpFJwoTwGBgUARvX",
+      "name": "WebFetch",
+      "request_sha256": "41e9fdf5c1047e641d987378e1cb7286229f5672c61710f2323258ca46deca9d",
+      "input": {
+        "url": "https://arxiv.org/html/2610.07447v1",
+        "prompt": "Summarize this paper factually: title, authors, date, core method (forks, context flush/reset, workspace preservation, parallelism, selection by grader), compute-equalization, benchmarks, key quantitative results, ablations (e.g., serial vs parallel, reset-only, fork-only), stated limitations. Quote key sentences verbatim about the method and limitations."
+      },
+      "result_observed": true,
+      "is_error": false,
+      "result_sha256": "db10b992dd71b9c39c49c0d02f3ff2fedd60273e663ceb9f0096a164cc23f691"
+    },
+    {
+      "id": "toolu_01F3JUBUXBVcvsuHxPHgAnkC",
+      "name": "WebFetch",
+      "request_sha256": "505cbd8d5695cfa4ba6fb4efecb29c14e1786cb80eded33d0cb68c9367bb5b78",
+      "input": {
+        "url": "https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents",
+        "prompt": "Extract concrete guidance about: graders (code-based vs model vs human), grading outcomes vs transcripts, environment isolation/clean state between trials, pass@k vs pass^k, multiple trials, reading transcripts, avoiding graders that are too rigid, eval saturation, and the publication date. Quote key sentences verbatim."
+      },
+      "result_observed": true,
+      "is_error": false,
+      "result_sha256": "640a4a846913fda300c6288978d60ca590f13bb5038277e2987aa6d104f2f3c9"
+    },
+    {
+      "id": "toolu_017JBFyt78uiDktYkjHJuaw9",
+      "name": "WebFetch",
+      "request_sha256": "be1697c6521ba078b68af23fde675607d0b04fa44bfd442be5922273d449e4d8",
+      "input": {
+        "url": "https://developers.openai.com/blog/eval-skills",
+        "prompt": "Extract: publication date, authors, the recommended method for evaluating agent skills (success criteria, deterministic checks, rubric graders, trace inspection, small prompt sets, negative controls/should-not-trigger cases), and any guidance on skill design. Quote key sentences verbatim."
+      },
+      "result_observed": true,
+      "is_error": false,
+      "result_sha256": "360f4c880f4fca93ba64c0988fa4282a14c2fc87a60e8c8b05c64365f51a1f42"
+    },
+    {
+      "id": "toolu_017sWNKMvowTVNjxWMq55YsR",
+      "name": "WebFetch",
+      "request_sha256": "d58b456fb5e0ef0fadc20019fefdc0347f5d200452cb1e918b9dac980ab2d89e",
+      "input": {
+        "url": "https://developers.openai.com/blog/rethinking-skills-and-prompts-for-gpt-6-astra",
+        "prompt": "Does this page exist? If so extract: date, authors, guidance on skill/prompt length, over-specification, asking questions, verification, context management. Quote key sentences verbatim. If not found, say so explicitly."
+      },
+      "result_observed": true,
+      "is_error": false,
+      "result_sha256": "087a8bf1b3ea0c3df3b45e4ef29cb413f4f46bc2c9cdfeda361fc91982354141"
+    },
+    {
+      "id": "toolu_01WGUwPYxfqjSvBe3XdzmYE2",
+      "name": "WebFetch",
+      "request_sha256": "cbff068f01a88ef91999e9e2481218adb40579dbc3069f43d55a4cc623aae82c",
+      "input": {
+        "url": "https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents",
+        "prompt": "Extract publication date and concrete practices: initializer vs coding agent, progress files, feature lists with pass/fail, git commits, fresh context windows, incremental one-feature-at-a-time, end-to-end testing, getting bearings at session start, failure modes (premature completion, declaring done). Quote key sentences verbatim."
+      },
+      "result_observed": true,
+      "is_error": false,
+      "result_sha256": "5a254ade5e3ab0f2ae6e9955a1873cf2eca83a107b4780ab6724fba4bdcdc95d"
+    },
+    {
+      "id": "toolu_017rhAu6KAy7MeyBpySNxEZo",
+      "name": "WebFetch",
+      "request_sha256": "7bac6fb22a5aad217dd495c1f0235b4b9d98bb9ffc300be0323a729460a2b547",
+      "input": {
+        "url": "https://github.com/mattpocock/skills/tree/49dd158d1076134a641b33efb035946536778336",
+        "prompt": "Does this pinned revision resolve? List the license shown, the top-level skill directories/files, and names/descriptions of skills related to grilling/interviewing, TDD, diagnosing bugs, review, or specs."
+      },
+      "result_observed": true,
+      "is_error": false,
+      "result_sha256": "da671d7037df13f6c6c2610cc2f80cb1ade3fefb244062d09eab380acca1b4d7"
+    },
+    {
+      "id": "toolu_013N5VmcaGxAow6iis4qvLRt",
+      "name": "WebFetch",
+      "request_sha256": "916d89ec5850e87baa24f9a6efc17ab331d08b2e57b540f72cddb332f262c29c",
+      "input": {
+        "url": "https://github.com/obra/superpowers/blob/main/skills/verification-before-completion/SKILL.md",
+        "prompt": "Quote the core rules verbatim: iron law, gate function, red flags, what counts as evidence before claiming completion. Also report any license/commit info visible."
+      },
+      "result_observed": true,
+      "is_error": false,
+      "result_sha256": "1d86943ec29580c72e4eb658c275585326ed3d2090a07d6305ec07e27edae97f"
+    },
+    {
+      "id": "toolu_013zGvMN24FtBBhhDhXjiJuW",
+      "name": "WebFetch",
+      "request_sha256": "c33d2ba9a9186120ff422a20426a83858313513136f53dfe15ff941e2942e385",
+      "input": {
+        "url": "https://github.com/obra/superpowers/blob/main/skills/systematic-debugging/SKILL.md",
+        "prompt": "Quote verbatim the iron law, phases, the rule about how many fixes fail before questioning architecture, and red flags. Report any commit/license info visible."
+      },
+      "result_observed": true,
+      "is_error": false,
+      "result_sha256": "d7172ccb814f31bd789ddacb4c7a2ee31bcc65c963d6e8b4cb97f42112ae3430"
+    },
+    {
+      "id": "toolu_01BpyziUkbjGwHhSxGkxxwr5",
+      "name": "WebFetch",
+      "request_sha256": "e2e65304d89f046628464df880337e288172bbf0570cf9013306d45ccd8f32f6",
+      "input": {
+        "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/LICENSE",
+        "prompt": "What license is this? Quote the first two lines and copyright holder."
+      },
+      "result_observed": true,
+      "is_error": false,
+      "result_sha256": "cb39d14846d118f01e6fe0d2e99f8d0d6983168462873e51f915096ed273fc9b"
+    },
+    {
+      "id": "toolu_01A7ZJe79fzip1pjs1G6J4s5",
+      "name": "WebFetch",
+      "request_sha256": "001d6e5300db5aa328e01db25e88587976141bde2136e76dc1b5d8e6537f5114",
+      "input": {
+        "url": "https://github.com/obra/superpowers/commits/main",
+        "prompt": "List the most recent commit SHA (full or abbreviated) and date visible on main, and the repository license if shown."
+      },
+      "result_observed": true,
+      "is_error": false,
+      "result_sha256": "5e4c75080c9338553e630e23c4894bc1d23aabc13f369d23f6e59dc6e0193122"
+    },
+    {
+      "id": "toolu_01SFrQY49Z68uFxh3qkQTVcn",
+      "name": "WebFetch",
+      "request_sha256": "8f521b35a04ff8e38c2b4848a3971cb22a2f0fce7bfed3482c46bffd21a65308",
+      "input": {
+        "url": "https://raw.githubusercontent.com/obra/superpowers/main/skills/systematic-debugging/SKILL.md",
+        "prompt": "Quote verbatim the iron law, the four phases' names, the rule about number of failed fixes before questioning architecture, and the red flags list."
+      },
+      "result_observed": true,
+      "is_error": false,
+      "result_sha256": "bd1042af1909ffd7ca7dd9accc9fb19824e50a1df7af0256715f2dcd90ebcbd3"
+    },
+    {
+      "id": "toolu_016w6XhXjvxtXJg5Wb9N8qnq",
+      "name": "WebFetch",
+      "request_sha256": "c4c5db9562755093a7fc5f91c1f2633d4a772139c711b4087fc0f463e16e5fa3",
+      "input": {
+        "url": "https://raw.githubusercontent.com/mattpocock/skills/49dd158d1076134a641b33efb035946536778336/skills/engineering/diagnosing-bugs/SKILL.md",
+        "prompt": "Quote the main steps verbatim, especially about building a feedback loop, reproducing, minimizing, hypotheses, and regression tests. If 404, say so."
+      },
+      "result_observed": true,
+      "is_error": false,
+      "result_sha256": "1cda481789b81c3792f2dd154c395b00d780861d803bf0f96e0a764f8d3d2f42"
+    },
+    {
+      "id": "toolu_01SXzNdnmBfg1DYTD13pbAsj",
+      "name": "WebFetch",
+      "request_sha256": "1e379114b48630f5d06f1293a0120dfce2bb9b18b0d4f18a773902288f8da654",
+      "input": {
+        "url": "https://raw.githubusercontent.com/obra/superpowers/main/LICENSE",
+        "prompt": "What license is this? Quote first two lines."
+      },
+      "result_observed": true,
+      "is_error": false,
+      "result_sha256": "7281536267a6646e1c9637ddf66e018599a9abdcd76f5ab78abbc7e303235ed2"
+    },
+    {
+      "id": "toolu_01BhmnaFMMv1TWYmH9VB14u6",
+      "name": "WebSearch",
+      "request_sha256": "4103f33fa777d270af9f5b6e741a5494bdcf98ff2da4ed21cfffbf00a9f7766b",
+      "input": {
+        "query": "anthropics knowledge-work-plugins code-review skill SKILL.md",
+        "mode": "standard"
+      },
+      "result_observed": true,
+      "is_error": false,
+      "result_sha256": "8cfff51a8136e371e83a051d29a45a63f0ded3d6bea6e2b48e1b9e96f5483ac9"
+    },
+    {
+      "id": "toolu_0133xaJDQ3k4cFwXTfkqHgDM",
+      "name": "WebFetch",
+      "request_sha256": "f6d0d082cd677c0638f84fcb6d116bf3de8b0ce01bcd1a38aaa854851d250875",
+      "input": {
+        "url": "https://www.swebench.com/SWE-bench/reference/harness/",
+        "prompt": "Extract how the SWE-bench harness evaluates: FAIL_TO_PASS and PASS_TO_PASS tests, applying the test patch separately from the model patch, docker isolation, and how hidden tests are kept from the model. Quote key sentences."
+      },
+      "result_observed": true,
+      "is_error": false,
+      "result_sha256": "52265ae9b18a338779d8a635cd30077795cc95b604edc4b472258d5322140160"
+    },
+    {
+      "id": "toolu_019SLE72857D6rwiVWQw6B8q",
+      "name": "WebFetch",
+      "request_sha256": "5862f2f73ccadf267c40cb8bf77e29c4481beb00f583ee4442ac6d592f3f1b07",
+      "input": {
+        "url": "https://github.com/anthropics/knowledge-work-plugins/blob/main/engineering/skills/code-review/SKILL.md",
+        "prompt": "If this file exists, quote its frontmatter and main review dimensions/steps. Report license or commit info visible. If 404, say so."
+      },
+      "result_observed": true,
+      "is_error": false,
+      "result_sha256": "8ed172909d6b5ffb69e380f41456e730cb19285359d389b25c383c0ec3401de9"
+    },
+    {
+      "id": "toolu_01NuQ1JokvHmWiZcXak9vWj2",
+      "name": "WebFetch",
+      "request_sha256": "e2be7ca09ec79b3f40539f16f5ffa4846e9e01bc7066b361a1b09e9658a41c43",
+      "input": {
+        "url": "https://raw.githubusercontent.com/SWE-bench/SWE-bench/main/swebench/harness/grading.py",
+        "prompt": "Describe how FAIL_TO_PASS and PASS_TO_PASS are used to decide resolution (FULL/PARTIAL/NO). Quote the relevant function names and logic."
+      },
+      "result_observed": true,
+      "is_error": false,
+      "result_sha256": "1c60362b612e57be8b7d826ab231bde800b07f563fa7cebf83f4fbd43dc169ea"
+    },
+    {
+      "id": "toolu_01GoSdtKwbLfd4QyVHrLwrdB",
+      "name": "WebSearch",
+      "request_sha256": "b76192ac14571fdd545583b3a617242c15f84ab817bd5c72e2c3fb4e1d6c4662",
+      "input": {
+        "query": "x.com agent \"fresh context\" reset skill evaluation coding agent context rot",
+        "mode": "standard"
+      },
+      "result_observed": true,
+      "is_error": false,
+      "result_sha256": "17324a755c0c251e8f6d87e979a4a5991db2fba2dd82a3b0caeaa9b247170512"
+    },
+    {
+      "id": "toolu_018FvppkLdYvtYP8dToPrNry",
+      "name": "WebSearch",
+      "request_sha256": "90b9a104a0030a7675d33354175be174e50c78c97a10f95b837ddb1ca504b569",
+      "input": {
+        "query": "fork and flush autoresearch agents fresh chat context workspace",
+        "mode": "standard",
+        "allowed_domains": [
+          "x.com",
+          "twitter.com"
+        ]
+      },
+      "result_observed": true,
+      "is_error": false,
+      "result_sha256": "961779e8193a1058c6d7dbee96239230ee1aaaf9ad2cbbf88ce85e72e0776f2c"
+    },
+    {
+      "id": "toolu_01RNQrNXgTzMQseKPgpgSKe6",
+      "name": "WebFetch",
+      "request_sha256": "b3843a20fb614ebebff72740e10d79d3de2d1c1757487c1fbed80f3f41214994",
+      "input": {
+        "url": "https://x.com/jackcai1206/status/2109101112988950691",
+        "prompt": "Quote the thread text verbatim if visible. If content is blocked or requires login, say so explicitly."
+      },
+      "result_observed": true,
+      "is_error": false,
+      "result_sha256": "bf0400f57227fd3620b864f81f95ce7774cb9f2e237a67c9b1b4756eef745ae0"
+    },
+    {
+      "id": "toolu_01Wn7kS1CJZqrWFWDyAbfY8B",
+      "name": "WebFetch",
+      "request_sha256": "b3904c629d56cfd660617dc05f76cec4fb5c16fc7462c8a9c2dcbb144f82353a",
+      "input": {
+        "url": "https://api.github.com/repos/obra/superpowers/commits/main",
+        "prompt": "Report the commit sha and committer date exactly."
+      },
+      "result_observed": true,
+      "is_error": false,
+      "result_sha256": "ad4d588aa73cc874310631d4b750da8d8707db596f05851961b7c428caad7590"
+    },
+    {
+      "id": "toolu_01HoJhnkcTAqjc5EvAwErnk3",
+      "name": "StructuredOutput",
+      "request_sha256": "350f236dd79fe06ffa8a5e6d10b9e6e180408c186b89f096579f5064efd263aa",
+      "input": null,
+      "result_observed": true,
+      "is_error": false,
+      "result_sha256": "d0fbed404cd778243bf257f434209c6e5f4e4489fb8f1a9847b5786078c571ae"
+    }
+  ]
+}

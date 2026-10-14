@@ -1,0 +1,378 @@
+{
+  "schema_version": 1,
+  "phase": "pre-task-ready-awaiting-prospective-commit",
+  "entrypoint_control_commit": "4758787015f05a95ea38896f57a462316b3d9d80",
+  "task_manifest_sha256": "2495f12cc27d6f5c1ed349db1d72d5bcc01f5799e868fc119c16215509b04d22",
+  "rows": [
+    {
+      "task_id": "cpython-pr156382",
+      "arm": "incumbent",
+      "status": "pending",
+      "axes": {
+        "artifact": null,
+        "delivery": null,
+        "tool_data_custody": null,
+        "controller_execution": null
+      },
+      "first_stage": null,
+      "continuation": null,
+      "final_stage": null,
+      "causal_production_repair": null,
+      "scope_cleanup": null,
+      "delivery_recovery": null
+    },
+    {
+      "task_id": "cpython-pr156382",
+      "arm": "candidate",
+      "status": "pending",
+      "axes": {
+        "artifact": null,
+        "delivery": null,
+        "tool_data_custody": null,
+        "controller_execution": null
+      },
+      "first_stage": null,
+      "continuation": null,
+      "final_stage": null,
+      "causal_production_repair": null,
+      "scope_cleanup": null,
+      "delivery_recovery": null
+    },
+    {
+      "task_id": "cpython-pr32225",
+      "arm": "incumbent",
+      "status": "pending",
+      "axes": {
+        "artifact": null,
+        "delivery": null,
+        "tool_data_custody": null,
+        "controller_execution": null
+      },
+      "first_stage": null,
+      "continuation": null,
+      "final_stage": null,
+      "causal_production_repair": null,
+      "scope_cleanup": null,
+      "delivery_recovery": null
+    },
+    {
+      "task_id": "cpython-pr32225",
+      "arm": "candidate",
+      "status": "pending",
+      "axes": {
+        "artifact": null,
+        "delivery": null,
+        "tool_data_custody": null,
+        "controller_execution": null
+      },
+      "first_stage": null,
+      "continuation": null,
+      "final_stage": null,
+      "causal_production_repair": null,
+      "scope_cleanup": null,
+      "delivery_recovery": null
+    }
+  ],
+  "author_stage_facts": [
+    {
+      "phase": "research",
+      "status": "settled",
+      "source_receipt_sha256": "519eb115b476f40aace9b0d73989116e08e4ac96cd91ce10ddccc5ae139abd83",
+      "observed_models": [
+        "claude-opus-5-5"
+      ],
+      "session_ids": [
+        "121a1ed1-1d4f-4e16-a498-1b4dff7d90a4"
+      ],
+      "typed_terminal_observed": true,
+      "terminal_count": 1,
+      "actual_unique_tool_requests": 31,
+      "actual_unique_mcp_requests": 9,
+      "tools_by_name": {
+        "mcp__cp_trial__list_files": 1,
+        "mcp__cp_trial__read_file": 8,
+        "WebFetch": 18,
+        "WebSearch": 3,
+        "StructuredOutput": 1
+      },
+      "invalid_stream_or_ids": [],
+      "provider_delivery_qualified_recorded": true,
+      "timed_out": false,
+      "wall_seconds": 258.1352269590061,
+      "reported_cost_usd": 1.0345354000000002,
+      "reported_usage": {
+        "input_tokens": 24,
+        "cache_creation_input_tokens": 37622,
+        "cache_read_input_tokens": 252087,
+        "output_tokens": 23253,
+        "output_tokens_details": {
+          "thinking_tokens": 6446
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 37622,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "inference_geo": "global",
+        "iterations": [
+          {
+            "input_tokens": 2,
+            "output_tokens": 18977,
+            "cache_read_input_tokens": 36857,
+            "cache_creation_input_tokens": 765,
+            "cache_creation": {
+              "ephemeral_5m_input_tokens": 0,
+              "ephemeral_1h_input_tokens": 765
+            },
+            "type": "message"
+          }
+        ],
+        "speed": "standard",
+        "fallback_credit": null
+      },
+      "reported_model_usage": {
+        "claude-opus-5-5": {
+          "inputTokens": 24,
+          "outputTokens": 23253,
+          "cacheReadInputTokens": 252087,
+          "cacheCreationInputTokens": 37622,
+          "webSearchRequests": 0,
+          "costUSD": 0.8165494000000001,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 6446,
+          "canonicalModel": "claude-opus-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        },
+        "claude-haiku-4-5-20251001": {
+          "inputTokens": 155896,
+          "outputTokens": 6418,
+          "cacheReadInputTokens": 0,
+          "cacheCreationInputTokens": 0,
+          "webSearchRequests": 3,
+          "costUSD": 0.21798599999999999,
+          "contextWindow": 200000,
+          "maxOutputTokens": 32000,
+          "thinkingTokens": 0,
+          "canonicalModel": "claude-haiku-4-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "source_authorship": null,
+      "model_thinking_exported": false
+    },
+    {
+      "phase": "initial-author",
+      "status": "settled",
+      "source_receipt_sha256": "8e2291343589eca34b30eedf800436e8ff4abd79d1b3e7a0344097cf7e21a529",
+      "observed_models": [
+        "claude-opus-5-5"
+      ],
+      "session_ids": [
+        "25f67fd7-c5a6-4e92-aca9-fb7a8206259a"
+      ],
+      "typed_terminal_observed": false,
+      "terminal_count": 0,
+      "actual_unique_tool_requests": 26,
+      "actual_unique_mcp_requests": 26,
+      "tools_by_name": {
+        "mcp__cp_trial__list_files": 1,
+        "mcp__cp_trial__read_file": 21,
+        "mcp__cp_trial__run_tests": 3,
+        "mcp__cp_trial__write_file": 1
+      },
+      "invalid_stream_or_ids": [],
+      "provider_delivery_qualified_recorded": false,
+      "timed_out": true,
+      "wall_seconds": 600.1030101776123,
+      "reported_cost_usd": null,
+      "reported_usage": null,
+      "reported_model_usage": null,
+      "source_authorship": {
+        "candidate": {
+          "SKILL.md": {
+            "sha256": "b84c876c9ab3b8ade74a920fd9f7c5e27ff1b7989357236990de9616a0a7a587",
+            "mode": 420
+          }
+        }
+      },
+      "model_thinking_exported": false
+    },
+    {
+      "phase": "author-continuation",
+      "status": "settled",
+      "source_receipt_sha256": "f305ae5b8b4e1f401ac1d7bc282fa8001d5245d5fda685efc3dd241e2828851f",
+      "observed_models": [
+        "claude-opus-5-5"
+      ],
+      "session_ids": [
+        "8c38bcc8-cccb-4c0d-bdec-b265e084fcee"
+      ],
+      "typed_terminal_observed": true,
+      "terminal_count": 1,
+      "actual_unique_tool_requests": 11,
+      "actual_unique_mcp_requests": 10,
+      "tools_by_name": {
+        "mcp__cp_trial__list_files": 1,
+        "mcp__cp_trial__write_file": 3,
+        "mcp__cp_trial__replace_text": 3,
+        "mcp__cp_trial__run_tests": 3,
+        "StructuredOutput": 1
+      },
+      "invalid_stream_or_ids": [],
+      "provider_delivery_qualified_recorded": true,
+      "timed_out": false,
+      "wall_seconds": 117.34421515464783,
+      "reported_cost_usd": 0.498269,
+      "reported_usage": {
+        "input_tokens": 14,
+        "cache_creation_input_tokens": 28900,
+        "cache_read_input_tokens": 97165,
+        "output_tokens": 12379,
+        "output_tokens_details": {
+          "thinking_tokens": 887
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 28900,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "inference_geo": "global",
+        "iterations": [
+          {
+            "input_tokens": 2,
+            "output_tokens": 1125,
+            "cache_read_input_tokens": 26340,
+            "cache_creation_input_tokens": 3726,
+            "cache_creation": {
+              "ephemeral_5m_input_tokens": 0,
+              "ephemeral_1h_input_tokens": 3726
+            },
+            "type": "message"
+          }
+        ],
+        "speed": "standard",
+        "fallback_credit": null
+      },
+      "reported_model_usage": {
+        "claude-opus-5-5": {
+          "inputTokens": 14,
+          "outputTokens": 12379,
+          "cacheReadInputTokens": 97165,
+          "cacheCreationInputTokens": 28900,
+          "webSearchRequests": 0,
+          "costUSD": 0.498269,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 887,
+          "canonicalModel": "claude-opus-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "source_authorship": {
+        "runtime": {
+          "README.md": {
+            "sha256": "28cb0fe24cd925eb628821b156c23b22d413f7e9ba60192b7881718ff8226397",
+            "mode": 420
+          },
+          "controller.py": {
+            "sha256": "1b83296c2d904551aaa12dbe93301f1102c5d91d18fdf57f9e1c7d4859056dee",
+            "mode": 420
+          },
+          "tests/test_controls.py": {
+            "sha256": "548d27cb8aa6c30e5723640e8893e603b93b5a158cefc979f3e71849d357480f",
+            "mode": 420
+          }
+        },
+        "candidate": {
+          "SKILL.md": {
+            "sha256": "b84c876c9ab3b8ade74a920fd9f7c5e27ff1b7989357236990de9616a0a7a587",
+            "mode": 420
+          }
+        }
+      },
+      "model_thinking_exported": false
+    },
+    {
+      "phase": "author-core-correction",
+      "status": "settled",
+      "source_receipt_sha256": "f0632dff6b554001f95e9629b5f94e58fadfc4b14e3f3f005009cb4d2064f638",
+      "observed_models": [
+        "claude-opus-5-5"
+      ],
+      "session_ids": [
+        "a9ec373e-f46b-4a77-8108-fc82170177b2"
+      ],
+      "typed_terminal_observed": false,
+      "terminal_count": 0,
+      "actual_unique_tool_requests": 15,
+      "actual_unique_mcp_requests": 15,
+      "tools_by_name": {
+        "mcp__cp_trial__read_file": 3,
+        "mcp__cp_trial__write_file": 3,
+        "mcp__cp_trial__replace_text": 7,
+        "mcp__cp_trial__run_tests": 2
+      },
+      "invalid_stream_or_ids": [],
+      "provider_delivery_qualified_recorded": false,
+      "timed_out": true,
+      "wall_seconds": 260.1007831096649,
+      "reported_cost_usd": null,
+      "reported_usage": null,
+      "reported_model_usage": null,
+      "source_authorship": {
+        "runtime": {
+          "README.md": {
+            "sha256": "28cb0fe24cd925eb628821b156c23b22d413f7e9ba60192b7881718ff8226397",
+            "mode": 420
+          },
+          "controller.py": {
+            "sha256": "399e3423a6140fc75da3265999da444e2006d3cd344bd45d91814f85e43ddd57",
+            "mode": 420
+          },
+          "hybrid_process_v2.py": {
+            "sha256": "631e695e36f5c000b3fef02d4f64f8c518edc31befac116db559816750d8e95f",
+            "mode": 420
+          },
+          "tests/test_controls.py": {
+            "sha256": "334f0e99404d044463db8e7b0f88fb875b5dae8282a82442c733bf2748544eaf",
+            "mode": 420
+          }
+        },
+        "candidate": {
+          "SKILL.md": {
+            "sha256": "103be278a59daea1eadca9d6fcb4bfebc88d5aa57c99d131d96367f8da86e5b8",
+            "mode": 420
+          }
+        }
+      },
+      "model_thinking_exported": false
+    }
+  ],
+  "promotion": {
+    "decision": "not-observed",
+    "promoted": false,
+    "rule": "Strictly more final full product completions; no incumbent pass lost/material boundary regression; all infrastructure qualified. Ties retain incumbent."
+  },
+  "native_codex_model_identity": "unobserved",
+  "provider_thinking_exported": false,
+  "limits": [
+    "Two historical API slices, not unseen knowledge/general model ranking.",
+    "Author mocks are not task solves; preparation not solving efficacy.",
+    "Reported usage/cost is provider metadata, not an invoice.",
+    "Exact macOS runtimes and host-specific paths required."
+  ],
+  "preparation_registration_sha256": "46a74c49b458afcca84ff85bf07c656869126629c7ff5c93da21b73aa8e9ae71",
+  "runtime_prefixes_qualified": 4
+}
