@@ -1,0 +1,27 @@
+{
+  "scope": "Exact prospective inputs and independent audit copied before inference; controls and pre-inference setup amendments retained. As-executed paths are host-specific, not a portable benchmark package.",
+  "files_sha256": {
+    "ADVERSARIAL-PLAN.md": "5b4e707b08236791795c3ead38f0fd435b02736367ee218f528945e6e1775f89",
+    "DESIGN-INPUT.json": "b66db2d4570139ab66107ee562e24f57004618a7311dd104c9bf7bb81aa3a2a8",
+    "DESIGN-PROMPT.txt": "111f98d9e149fa8ef952e8d6bee5a6b3ed4870d8f0f6161fb0b702258bcccaea",
+    "EVALUATOR.md": "e82b81fd7f479aecdca8ccc28b1aabc0285b58c4a30bdbb72065ef1807ff1194",
+    "INCUMBENT.json": "f511f3c98d1844d67053ced1f85fa9ff28e523ebd11aef63458c85da26c9b45f",
+    "PREFLIGHT.json": "81875518bf75b7ad3917488f74279b700d71fde973a80e6ae0d8e7f3b21e7ae0",
+    "PREREGISTRATION.md": "fdf01a786b4586a0230622efaa1056c900468335db98f193b0b1c330358b9048",
+    "REGISTRATION.json": "977678d29bf487c356c8a257ca32eeedb69f413a7c6f576d6d5d4d6f0fbabce6",
+    "RUNTIME-BEFORE-CONFIRMATION-AMENDMENT.json": "25cea59331e4d2c0bcfa3cb733a630fe42a6d8e8f6bc5d1ffc1abe8de5c783e4",
+    "RUNTIME-PREFLIGHT.json": "15755164ef857576ddc435444b280b46b56add1deca4887b41ada3f4030f0a1d",
+    "TASKS.json": "8b77cd481fbc94172d7d8c5d103f55359bbb8986e603740367de929bc732613b",
+    "design_branches.py": "cefb32b904564437282b0b784c82602381baab6f7f87493778161e6eb52700a2",
+    "evaluate.py": "f2c56d851b5d0dc196d511f122812000225cca968211b3b3e66352871e131b38",
+    "lead_call.py": "5ce6cc2f58158a2863ddf5423c16b4c200d181ccfec47983133e7904098a75f7",
+    "oracles/owner18.py": "150922f1cb6ab84e7c89c51aced0aec68592f2be6decba38d06f1f52616fe1ca",
+    "oracles/owner26.py": "a64fdbed6ab6a3f175ab826cf33092f1b6537f3d6b3b762e02edba687a08a20c",
+    "oracles/owner45.py": "385aba6802aaa640f8f6632328068ecdc1d15d87d94ceb48d1cae0f902152820",
+    "oracles/pr-18/provenance.json": "96f0dea738615cf4fd9428b8ac6c9a5cd30e97045c6428ded0b33bfa567c8073",
+    "oracles/pr-26/provenance.json": "8269aeb8ac3d30718df85800d387b28f96294e4903047c8ef3083526507e7c8f",
+    "oracles/pr-45/provenance.json": "db1cc640e5651df6de4565f33bcf4a1bc06bac59a5aa556932b1dc0596ddeed8",
+    "run_tasks.py": "6b5b3e17864a428a135d87c4c069a2d05132921f881a62c2fa6f9c2ae462db13",
+    "verify_seal.py": "1b047adfc4d0992b98348d5312a7e8a78d76eae2e5ee141ee8e297585e5c6616"
+  }
+}
