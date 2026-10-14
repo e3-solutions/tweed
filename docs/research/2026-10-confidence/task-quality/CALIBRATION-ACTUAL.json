@@ -1,0 +1,68 @@
+{
+  "reviewer": "native Codex /root/lean_repair_adversary",
+  "actual_native_model": "unobserved",
+  "kind": "synthetic_manual_evaluator_calibration",
+  "expected_answers_read": false,
+  "expected_answer_sha256_provided_by_root": "9272cdbc419f94723fc8f1ff54e962560da0d270d1911a25a8c532226a361fbd",
+  "input_sha256": "03eefe9cf68f56969cea99da4e6918ea42681b7080812d07f512f52a1a0bdc16",
+  "source_sha256_at_classification": {
+    "docs/research/2026-10-confidence/task-quality/README.md": "22692d7fea214c05cd954e172a29c5b40a4bb0c1c7e93209a42d05dcdba27e3a",
+    "skills/confidence-protocol/SKILL.md": "2c22f73238c8038e7e06220fc71c60189170a1bad66baa24aeb4514117e0d77f",
+    "skills/confidence-protocol/references/harnesses.md": "6d05e95838f2a50931c734002f7179cdb61a981549c5f22cc4f2aa73e80c6c71",
+    "skills/confidence-protocol/references/task-profiles.md": "83e4c88178608ab83b88829000be95962c294e2baa3444b77715d9a620c7a2a6",
+    "CHANGELOG.md": "54a612f07d6168c3fe89384fc33086bf00c64b4a55aad0789e62d01caf87781a"
+  },
+  "cases": [
+    {
+      "id": "q1",
+      "class": "scoped_done",
+      "reason": "Current pinned export/filter/order and round-trip proof covers every required behavior; excluded live verification remains a limitation."
+    },
+    {
+      "id": "q2",
+      "class": "partial",
+      "reason": "Formatting alone does not prove required filter/order; current behavior proof or an inspectable export artifact is missing."
+    },
+    {
+      "id": "q3",
+      "class": "product_failure",
+      "reason": "An executed malformed-receipt case now succeeds, contradicting required refusal; removing validation masks the symptom."
+    },
+    {
+      "id": "q4",
+      "class": "infrastructure_blocked",
+      "reason": "Observed mount/bootstrap failure precedes product execution and provider launch; no product behavior or latency requirement was tested."
+    },
+    {
+      "id": "q5",
+      "class": "unknown",
+      "reason": "Incomplete logs cannot attribute the deadline to setup, provider, product or cleanup, and no current acceptance result exists."
+    },
+    {
+      "id": "q6",
+      "class": "product_failure",
+      "reason": "The executed product boundary takes 350ms against a required 200ms limit; correct content and successful harness completion do not satisfy latency."
+    },
+    {
+      "id": "q7",
+      "class": "scoped_done",
+      "reason": "The accepted contract permits final-state correction; scope is restored and all required current positive/negative proof passes with history retained."
+    },
+    {
+      "id": "q8",
+      "class": "product_failure",
+      "reason": "Fresh authoritative records establish USD20.50; the stale-cache USD28.00 answer violates the required current data, deduplication and traceability boundaries."
+    },
+    {
+      "id": "q9",
+      "class": "partial",
+      "reason": "Author tests cannot replace the contract-required separate independent review; unavailable required proof stays a gap."
+    },
+    {
+      "id": "q10",
+      "class": "scoped_done",
+      "reason": "Observable current proof and all authority/data boundaries pass; equivalent names and an appropriate CLI preserve acceptance, with only optional styling deferred."
+    }
+  ],
+  "claim_limit": "Ten stipulated synthetic observations classified by hand; no task solving, hosted calls, runtime benchmark, or performance/reliability gain measured."
+}

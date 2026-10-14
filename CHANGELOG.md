@@ -13,6 +13,12 @@ This file records user-visible changes to Tweed and Confidence Protocol.
 - Codex returns concrete requirement-affecting findings to Opus, which repairs and
   rechecks. When Codex repairs directly, its own check is author evidence, not
   independent post-repair review; record repair actor, paths and rerun checks.
+- Task-quality heuristics refine existing sentences: causal repairs over symptom
+  masking, correct authoritative sources, observable tests without forced red for
+  trivial docs, cheapest adequate probes, timeout attribution from observations,
+  and required gaps kept separate from accepted exclusions. Three evaluator test
+  cards are designed, not executed; see
+  `docs/research/2026-10-confidence/task-quality/README.md`.
 - Not installed automatically; 0.8.0 remains the installed version until a measured
   comparison supports this revision. CLI, evidence schema, tests and prior study
   records are unchanged. No accuracy, cost or autonomy improvement is claimed. See

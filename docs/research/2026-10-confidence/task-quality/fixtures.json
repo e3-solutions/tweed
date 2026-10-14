@@ -1,0 +1,210 @@
+{
+  "note": "Synthetic paper fixtures for Cards A and C in README.md. They are not data from an actual service and are not current or live proof. No grader, engine or test framework consumes them, and no task has been run against them.",
+  "cases": {
+    "A": {
+      "card": "A: recoverable intent, report export",
+      "request": "Add export for the current report",
+      "established_convention": {
+        "format": "CSV",
+        "encoding": "UTF-8"
+      },
+      "supplied_decision": "\"Current\" means the visible filtered rows in displayed order.",
+      "optional": [
+        "filename"
+      ],
+      "out_of_scope": [
+        "publishing",
+        "sending"
+      ],
+      "report": {
+        "columns": [
+          "id",
+          "label",
+          "amount"
+        ],
+        "filter": "status = open",
+        "rows_in_display_order": [
+          {
+            "id": "r2",
+            "label": "Widgets, \"deluxe\"",
+            "amount": "12.00",
+            "status": "open"
+          },
+          {
+            "id": "r3",
+            "label": "Archived gadgets",
+            "amount": "7.25",
+            "status": "closed"
+          },
+          {
+            "id": "r1",
+            "label": "Bolts",
+            "amount": "3.50",
+            "status": "open"
+          }
+        ]
+      },
+      "expected": {
+        "visible_rows_in_order": [
+          [
+            "r2",
+            "Widgets, \"deluxe\"",
+            "12.00"
+          ],
+          [
+            "r1",
+            "Bolts",
+            "3.50"
+          ]
+        ],
+        "absent_ids": [
+          "r3"
+        ],
+        "check": "Parse the exported UTF-8 CSV and compare its data rows to visible_rows_in_order."
+      },
+      "control_without_decision": {
+        "only_open_question": "Export the visible filtered rows or all rows?",
+        "preserved": "UTF-8 CSV export convention"
+      }
+    },
+    "C": {
+      "card": "C: multiple tool and data boundaries",
+      "request": "Total yesterday's settled USD sales for account X in Toronto time, with traceable records.",
+      "read_only": true,
+      "fixed_clock": {
+        "date": "2026-10-13",
+        "time_zone": "America/Toronto",
+        "instant": "2026-10-13T12:00:00-04:00"
+      },
+      "business_rule": "Select orders whose order timestamp falls in yesterday's Toronto window, and use the current invoice settlement state. Without this rule, \"yesterday's settled sales\" is ambiguous.",
+      "window": {
+        "bounds": "half-open [start, end)",
+        "start_local": "2026-10-12T00:00:00-04:00",
+        "end_local": "2026-10-13T00:00:00-04:00",
+        "start_utc": "2026-10-12T04:00:00Z",
+        "end_utc": "2026-10-13T04:00:00Z"
+      },
+      "order_pages": [
+        {
+          "page": 1,
+          "next_page": 2,
+          "orders": [
+            {
+              "id": "A",
+              "account": "X",
+              "ordered_at": "2026-10-12T15:10:00Z"
+            },
+            {
+              "id": "B",
+              "account": "X",
+              "ordered_at": "2026-10-13T02:30:00Z"
+            }
+          ]
+        },
+        {
+          "page": 2,
+          "next_page": null,
+          "orders": [
+            {
+              "id": "B",
+              "account": "X",
+              "ordered_at": "2026-10-13T02:30:00Z"
+            },
+            {
+              "id": "C",
+              "account": "X",
+              "ordered_at": "2026-10-12T18:00:00Z"
+            },
+            {
+              "id": "D",
+              "account": "Y",
+              "ordered_at": "2026-10-12T19:00:00Z"
+            },
+            {
+              "id": "E",
+              "account": "X",
+              "ordered_at": "2026-10-12T03:59:59Z"
+            },
+            {
+              "id": "F",
+              "account": "X",
+              "ordered_at": "2026-10-13T04:00:00Z"
+            }
+          ]
+        }
+      ],
+      "invoices": [
+        {
+          "order_id": "A",
+          "status": "settled",
+          "currency": "USD",
+          "amount_minor": 1250
+        },
+        {
+          "order_id": "B",
+          "status": "settled",
+          "currency": "USD",
+          "amount_minor": 800
+        },
+        {
+          "order_id": "C",
+          "status": "pending",
+          "currency": "EUR",
+          "amount_minor": 3000
+        },
+        {
+          "order_id": "D",
+          "status": "settled",
+          "currency": "USD",
+          "amount_minor": 999
+        },
+        {
+          "order_id": "E",
+          "status": "settled",
+          "currency": "USD",
+          "amount_minor": 500
+        },
+        {
+          "order_id": "F",
+          "status": "settled",
+          "currency": "USD",
+          "amount_minor": 700
+        }
+      ],
+      "stale_cache": {
+        "source": "older cached CSV export",
+        "account": "X",
+        "currency": "USD",
+        "total_minor": 2800,
+        "authority": "none; stale and wrong",
+        "exported_at": "2026-10-12T10:00:00Z"
+      },
+      "expected": {
+        "record_ids": [
+          "A",
+          "B"
+        ],
+        "total_minor": 2050,
+        "currency": "USD",
+        "display": "USD 20.50",
+        "excluded": {
+          "B (page 2)": "duplicate; counted once",
+          "C": "pending EUR",
+          "D": "account Y",
+          "E": "before window start",
+          "F": "at exclusive window end"
+        }
+      },
+      "sources": {
+        "orders": {
+          "snapshot_at": "2026-10-13T16:00:00Z",
+          "authority": "account, order IDs and order timestamps"
+        },
+        "invoices": {
+          "snapshot_at": "2026-10-13T16:00:00Z",
+          "authority": "current settlement state, currency and integer minor units"
+        }
+      }
+    }
+  }
+}

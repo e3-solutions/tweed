@@ -1,0 +1,45 @@
+{
+  "scope": "Current guidance-design evidence and synthetic case fixtures only. No live task benchmark, protocol performance certificate or installed release. Original benchmark artifacts remain unchanged.",
+  "files": {
+    "AUTHOR-PROOF.json": {
+      "sha256": "385a76c95e2c890a543d8bdf624e8e6dd5839e1e9d143f681b63728b73e51503",
+      "bytes": 4660
+    },
+    "CALIBRATION-ACTUAL.json": {
+      "sha256": "f8a0813180ec3bd9807319ed6c4b31a865ff9794dc3c3a05ae49bea685855d70",
+      "bytes": 3387
+    },
+    "CALIBRATION-EXPECTED.json": {
+      "sha256": "9272cdbc419f94723fc8f1ff54e962560da0d270d1911a25a8c532226a361fbd",
+      "bytes": 4255
+    },
+    "CALIBRATION-INPUT.json": {
+      "sha256": "03eefe9cf68f56969cea99da4e6918ea42681b7080812d07f512f52a1a0bdc16",
+      "bytes": 3888
+    },
+    "CHECKS.json": {
+      "sha256": "71850673d9ecff20429df0b96e9a7c394f2c93f5be46fa07e9d0946e5666e78d",
+      "bytes": 713
+    },
+    "INDEPENDENT-REVIEW-PRIOR.md": {
+      "sha256": "118ec4418c91b77765972e5f727ab29c5a3da8f773cf1c16641dea8514027a43",
+      "bytes": 3710
+    },
+    "INDEPENDENT-REVIEW.md": {
+      "sha256": "5074ba493363e6e75384efe37cbc6b3ab33dddf6af247ee4becfa7c0aac60da5",
+      "bytes": 3844
+    },
+    "PROOF-DESIGN.md": {
+      "sha256": "1b4b6e3998a6c91aba35b889115852b5fbbe94cb08ae15d44d5c93b303239624",
+      "bytes": 7629
+    },
+    "README.md": {
+      "sha256": "22d7b24f7181406cd252c98ffb3a1363a6f9b25b8c9abeee243e92b447ad1881",
+      "bytes": 8444
+    },
+    "fixtures.json": {
+      "sha256": "5eeaa5c5140775dbde633bb644291e27ea2fd23c331f2fac7b388ec421a133b9",
+      "bytes": 5757
+    }
+  }
+}

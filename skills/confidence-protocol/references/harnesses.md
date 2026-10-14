@@ -25,6 +25,14 @@ nested failures. Preserve actual model identifiers, runtime versions, role/scope
 session references, cost estimates and unsuccessful attempts in local audit data.
 Do not expose credentials or private transcripts in research artifacts.
 
+When an MCP or other write times out and its outcome is unclear, inspect the actual
+target state before any retry. A failure proven to occur before the write was sent,
+such as a setup rejection, needs no gratuitous state poll; a timeout alone is not
+such proof. An unchecked outcome remains unknown, and proof that requires it stays
+partial. Attribute a harness, setup or deadline error only from observed stage
+evidence; otherwise record the attribution as unknown, which verifies nothing. A
+missed latency requirement of the product remains a product failure.
+
 ## Codex
 
 Use the host's available agents for scoped work and the installed app-server schema

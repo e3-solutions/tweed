@@ -1,0 +1,85 @@
+{
+  "scope": "Unreleased0.8.1 source guidance/evaluator design, not new benchmark, installed release, or complete Critical certificate. Old result-source identities remain pinned to their recorded commits.",
+  "prechange_commit": "131c964ec42d53e7e2d9e0220658e869a3e1b686",
+  "actors": [
+    {
+      "role": "opus-design",
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 94.37517724999634,
+      "observed_models": [
+        "claude-opus-5-5"
+      ],
+      "tool_call_count": 19,
+      "tool_names": [
+        "Edit",
+        "Glob",
+        "Grep",
+        "Read",
+        "Write"
+      ],
+      "request_sha256": "5ad29078020731a56aa96f8d94d0302943d1ace6490d7e64710522f1d76efe46",
+      "stream_sha256": "5509bddca848a565894c147ebb6c51ab0c8d842c51def77905ef4db195deaeb0",
+      "process_cleanup_scope": "original_process_group",
+      "detached_descendants_contained": false,
+      "terminal_known": true,
+      "terminal_success": true,
+      "receipt_sha256": "3cb8703eba4fedb298f224de05e5f7e67f0ae2b395b2b7e82286c1c31b1c38b1",
+      "claim": "Author/tool/source observations only; interruption retained. Written artifacts independently reviewed before adoption. No task-solving performance established."
+    },
+    {
+      "role": "opus-correction",
+      "exit_code": -9,
+      "timed_out": true,
+      "wall_seconds": 120.07969574999879,
+      "observed_models": [
+        "claude-opus-5-5"
+      ],
+      "tool_call_count": 24,
+      "tool_names": [
+        "Edit",
+        "Glob",
+        "Grep",
+        "Read",
+        "Write"
+      ],
+      "request_sha256": "c1acb5f361216eb1d4dd0ff5b9f95a56bd5a57a1344e620cf69b17eb855a3e01",
+      "stream_sha256": "078cb985a4f96733c1b32c69fcef6e9cfd256199403b82f89f450a6e620f6dbf",
+      "process_cleanup_scope": "original_process_group",
+      "detached_descendants_contained": false,
+      "terminal_known": false,
+      "terminal_success": null,
+      "receipt_sha256": "c1c2e5eeca508742efc97e4e2929eaad22c4598ca3817c89c093a3a0476a5a71",
+      "claim": "Author/tool/source observations only; interruption retained. Written artifacts independently reviewed before adoption. No task-solving performance established."
+    }
+  ],
+  "backup": {
+    "reason": "Fully determined backup wording correction after independent reviewer flagged universal literal-value recipe; add explicit fictional source timestamps for traceable fixture scope. Actual Opus correction call timed out after writing source; preserved receipt and no retry for agreement.",
+    "author": "Codex coordinator; actual native model unobserved",
+    "edited_files": [
+      "skills/confidence-protocol/SKILL.md",
+      "docs/research/2026-10-confidence/task-quality/README.md",
+      "docs/research/2026-10-confidence/task-quality/fixtures.json"
+    ],
+    "post_edit_sha256": {
+      "skills/confidence-protocol/SKILL.md": "26b8c7ce5dcf06f8f3129c7e7794f77dee5b0c2ba5b50e882c6939b558064950",
+      "docs/research/2026-10-confidence/task-quality/README.md": "e34d453fda7c8a5f871c044bd7ff2b3507cc3726962d5eb7627f559e9aecb5ae",
+      "docs/research/2026-10-confidence/task-quality/fixtures.json": "5eeaa5c5140775dbde633bb644291e27ea2fd23c331f2fac7b388ec421a133b9"
+    },
+    "independent_reviewer": "/root/lean_repair_adversary",
+    "claim_limit": "Codex backup authorship of stated edits; checks are author evidence. Separate final native review reported independently."
+  },
+  "source_sha256": {
+    "skills/confidence-protocol/SKILL.md": "26b8c7ce5dcf06f8f3129c7e7794f77dee5b0c2ba5b50e882c6939b558064950",
+    "skills/confidence-protocol/references/harnesses.md": "6d05e95838f2a50931c734002f7179cdb61a981549c5f22cc4f2aa73e80c6c71",
+    "skills/confidence-protocol/references/task-profiles.md": "83e4c88178608ab83b88829000be95962c294e2baa3444b77715d9a620c7a2a6",
+    "CHANGELOG.md": "54a612f07d6168c3fe89384fc33086bf00c64b4a55aad0789e62d01caf87781a",
+    "docs/research/2026-10-confidence/task-quality/README.md": "22d7b24f7181406cd252c98ffb3a1363a6f9b25b8c9abeee243e92b447ad1881",
+    "docs/research/2026-10-confidence/task-quality/fixtures.json": "5eeaa5c5140775dbde633bb644291e27ea2fd23c331f2fac7b388ec421a133b9"
+  },
+  "core_schema_manifest_diagnostics_unchanged": true,
+  "installed_version_unchanged": "0.8.0",
+  "Haiku_use": "No additional shard: source facts were already locally inspected and retracing a new extraction would duplicate work. Normal optional bounded routing unchanged.",
+  "old_study_records_unchanged": true,
+  "validation": "Skill frontmatter validation, fixture consistency, fixed synthetic manual controls and final independent source review. No live task trials or general efficacy claim."
+}

@@ -1,5 +1,10 @@
 # Confidence Protocol: current models, harnesses, and autonomous proof
 
+Latest design refinement: [six task-quality heuristics and three test cards](task-quality/README.md).
+This refines the unreleased source guidance and calibrates evaluator decisions;
+it adds no task-solving comparison or measured gain. Prior studies retain their
+original source identities and outcomes; the installed 0.8.0 is unchanged.
+
 Latest scoped evidence (2026-10-13): [lean 0.8.1 repair-loop pilot](lean-repair/REPORT.md).
 Three fresh historical task identities, actual Opus/Haiku/Codex stages, preserved
 delivery/custody failures and a separate scope-correction diagnostic establish no
