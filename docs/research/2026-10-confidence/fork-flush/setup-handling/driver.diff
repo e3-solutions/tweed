@@ -1,0 +1,10 @@
+--- a/.confidence/fork-flush/run_tasks.py
++++ b/.confidence/fork-flush/run_tasks.py
+@@ -154,7 +154,6 @@
+             files[arm['skill_file']]=sha(arm['skill_file'])
+             rows.append({'cell_id':cell_id,'task_id':task_id,'arm_id':arm['id'],'prompt':'Read .protocol/SKILL.md and relevant common references. Complete this bounded real task and execute the visible checks. Peer calls are unavailable inside this stage; independent Codex checking occurs externally. Return the required JSON truthfully.\nTask:\n'+task['prompt']+'\nVisible checks:\n'+json.dumps(task.get('visible_commands',task['test_commands']))+'\nAllowed production paths:\n'+json.dumps(task['production_paths']),'baseline_source_sha256':before['source_sha256']})
+     write(study/'requests.json',rows);write(study/'RUNTIME-PREFLIGHT.json',{'passed':True,'model_calls':0,'cells':preflight})
+-    write(HERE/'RUNTIME-PREFLIGHT.json',{'passed':True,'model_calls':0,'study':str(study),'preflight_sha256':sha(study/'RUNTIME-PREFLIGHT.json'),'cells':[{'cell_id':row['cell_id'],'passed':row['passed'],'effective_tools':row['effective_tools'],'outside_read_denied_api':row['outside_read_denied_api'],'outside_read_denied_executed_child':row['outside_read_denied_executed_child']} for row in preflight]})
+     payload={'config':config,'tasks':{key:tasks[key] for key in selected},'files':files,'trees':trees,'requests_sha256':sha(study/'requests.json'),'preflight_sha256':sha(study/'RUNTIME-PREFLIGHT.json'),'model':MODEL,'budgets':BUDGET,
+         'limits':['Small fixed task selection, not broad model/policy generalization.','At most one repair per cell, only after current-source requirement failure.','Native independent Codex review is coordinated outside the developer timers.','Source snapshots persist; arbitrary execution scratch/symlinks are not provider evidence.']}
+     write(study/'registration.json',{'payload':payload,'payload_sha256':digest(payload)});return payload

@@ -1,0 +1,1 @@
+{"id": "54835a3632f54340a1285a65edc807ee", "argv": ["/bin/bash", "-c", "unset CONFIDENCE_DISABLE_DIAGNOSTICS CONFIDENCE_TELEMETRY_ENDPOINT; python3 -B -m unittest discover -s skills/confidence-protocol/tests -p 'test_*.py' 2>&1 | tail -5"], "timeout": 12.770840883255005}

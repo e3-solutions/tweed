@@ -1,0 +1,1 @@
+{"id": "16786c67fcbb4c489d420b4ce513cac4", "argv": ["/bin/sh", "-c", "grep -n 'environ\\|def record_event' skills/confidence-protocol/scripts/diagnostics.py | head -30; env | grep -i 'confidence\\|telemetry\\|DO_NOT' ; git status --short"], "timeout": 55.44575309753418}

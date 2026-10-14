@@ -1,0 +1,34 @@
+test_child_exit_125_still_has_a_valid_capture_receipt (__main__.RunReceiptTest.test_child_exit_125_still_has_a_valid_capture_receipt) ... warning: unable to access '/etc/gitattributes': Operation not permitted
+warning: unable to access '/etc/gitattributes': Operation not permitted
+ok
+test_default_output_still_replays_stdout_and_stderr (__main__.RunReceiptTest.test_default_output_still_replays_stdout_and_stderr) ... warning: unable to access '/etc/gitattributes': Operation not permitted
+warning: unable to access '/etc/gitattributes': Operation not permitted
+ok
+test_failed_command_returns_failure_with_receipt (__main__.RunReceiptTest.test_failed_command_returns_failure_with_receipt) ... warning: unable to access '/etc/gitattributes': Operation not permitted
+warning: unable to access '/etc/gitattributes': Operation not permitted
+ok
+test_failed_mutation_keeps_failure_and_changed_binding (__main__.RunReceiptTest.test_failed_mutation_keeps_failure_and_changed_binding) ... warning: unable to access '/etc/gitattributes': Operation not permitted
+warning: unable to access '/etc/gitattributes': Operation not permitted
+ok
+test_json_is_small_while_full_binary_output_and_hash_are_preserved (__main__.RunReceiptTest.test_json_is_small_while_full_binary_output_and_hash_are_preserved) ... warning: unable to access '/etc/gitattributes': Operation not permitted
+ok
+test_launch_failure_returns_125_without_receipt_or_record (__main__.RunReceiptTest.test_launch_failure_returns_125_without_receipt_or_record) ... warning: unable to access '/etc/gitattributes': Operation not permitted
+warning: unable to access '/etc/gitattributes': Operation not permitted
+ok
+test_mutation_is_reported_as_changed_not_proven (__main__.RunReceiptTest.test_mutation_is_reported_as_changed_not_proven) ... warning: unable to access '/etc/gitattributes': Operation not permitted
+warning: unable to access '/etc/gitattributes': Operation not permitted
+ok
+test_non_git_workspace_binding_is_explicitly_unknown (__main__.RunReceiptTest.test_non_git_workspace_binding_is_explicitly_unknown) ... warning: unable to access '/etc/gitattributes': Operation not permitted
+warning: unable to access '/etc/gitattributes': Operation not permitted
+ok
+test_signal_failure_keeps_signed_record_and_shell_exit_mapping (__main__.RunReceiptTest.test_signal_failure_keeps_signed_record_and_shell_exit_mapping) ... warning: unable to access '/etc/gitattributes': Operation not permitted
+warning: unable to access '/etc/gitattributes': Operation not permitted
+ok
+test_timeout_retains_nonzero_status_and_reason (__main__.RunReceiptTest.test_timeout_retains_nonzero_status_and_reason) ... warning: unable to access '/etc/gitattributes': Operation not permitted
+warning: unable to access '/etc/gitattributes': Operation not permitted
+ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 12.728s
+
+OK

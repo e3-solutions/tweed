@@ -1,0 +1,1 @@
+{"id": "fa47e03667114fda99c1aa346bc40e8f", "argv": ["/bin/sh", "-c", "grep -n \"def test_\\|stdout\\|workspace\\|--json\" skills/confidence-protocol/tests/test_confidence.py | head -150"], "timeout": 90.0}

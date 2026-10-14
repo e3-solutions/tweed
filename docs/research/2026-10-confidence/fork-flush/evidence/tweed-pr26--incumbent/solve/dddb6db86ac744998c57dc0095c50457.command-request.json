@@ -1,0 +1,1 @@
+{"id": "dddb6db86ac744998c57dc0095c50457", "argv": ["/bin/bash", "-c", "python3 -B -X faulthandler -c \"import sys; sys.argv=['x']; exec(open('../solve/call/execution-scratch/probe.py').read())\" 2>&1; echo rc=$?; python3 -B -c \"print('hi')\"; sed -n 1,30p ../solve/call/execution-scratch/probe.py | head -5"], "timeout": 90.0}

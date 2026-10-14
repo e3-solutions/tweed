@@ -1,0 +1,36 @@
+            os.close(read_descriptor)
+
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            self.assertEqual(completed.stderr, "")
+            expected_receipt = {**fake_receipt, "resume_session_id": None}
+            self.assertEqual(
+                completed.stdout.splitlines(),
+                [json.dumps(expected_receipt, separators=(",", ":"))],
+            )
+            self.assertEqual(coordinator_calls.read_text().splitlines(), ["called"])
+            self.assertEqual(heartbeat_joins.read_text().splitlines(), ["joined"])
+            self.assertEqual(
+                [json.loads(line)["state"] for line in progress_output.splitlines()],
+                ["started"],
+            )
+
+    def test_receipt_size_boundary_is_review_only(self):
+        baseline_accepted = {"x": "a" * 4088}
+        serialized = RUNNER.serialize_receipt(baseline_accepted)
+        stdout = io.StringIO()
+        with mock.patch.object(sys, "stdout", stdout):
+            RUNNER.emit_serialized(serialized)
+
+        raw_output = stdout.getvalue().encode("utf-8")
+        self.assertEqual(len(serialized.encode("utf-8")), RUNNER.RECEIPT_MAX_BYTES)
+        self.assertEqual(len(raw_output), RUNNER.RECEIPT_MAX_BYTES + 1)
+        self.assertTrue(raw_output.endswith(b"\n"))
+        self.assertEqual(json.loads(raw_output), baseline_accepted)
+
+        review_accepted = {"x": "a" * 4087}
+        review_serialized = RUNNER.serialize_review_receipt(review_accepted)
+        self.assertEqual(
+            len((review_serialized + "\n").encode("utf-8")),
+            RUNNER.RECEIPT_MAX_BYTES,
+        )
+        with self.assertRaisesRegex(RuntimeError, "receipt exceeded 4 KiB"):

@@ -1,0 +1,8 @@
+267 def record_event(
+282         if os.environ.get("CONFIDENCE_DISABLE_DIAGNOSTICS") == "1":
+319         endpoint = os.environ.get("CONFIDENCE_TELEMETRY_ENDPOINT")
+323             event, endpoint, os.environ.get("CONFIDENCE_TELEMETRY_TOKEN")
+462     endpoint = os.environ.get("CONFIDENCE_TELEMETRY_ENDPOINT")
+508                 probe, endpoint, os.environ.get("CONFIDENCE_TELEMETRY_TOKEN")
+613                 "Redacted Confidence Protocol diagnostics. No command arguments, command output, source, prompts, file paths, environment values, usernames, or hostnames are included.\n",
+{'CONFIDENCE_DISABLE_DIAGNOSTICS': '1'}

@@ -1,0 +1,27 @@
+{
+  "cell_id": "tweed-pr45--branch-b",
+  "evaluation_receipt_sha256": "b20f3f58a439a3435e56444d41c6e15d2a07f911026dfab59d928b471388d15d",
+  "feedback": {
+    "task_id": "tweed-pr45",
+    "failed_requirements": [
+      {
+        "requirement": "scope",
+        "paths": [
+          "skills/confidence-protocol/tests/test_run_receipt.py"
+        ]
+      }
+    ],
+    "scope_violations": [
+      "skills/confidence-protocol/tests/test_run_receipt.py"
+    ],
+    "required_behavior_passed": true,
+    "negative_boundaries_passed": true,
+    "passed": false,
+    "setup_status": "verified",
+    "source_current": true,
+    "scope_restore_baseline_bytes": {},
+    "notes": [
+      "Preserve passing product implementation and all required behavior. Restore protected existing test file byte-for-byte; additional tests may be placed in a new file. All listed scope failures are required, not optional. No provider/history/source fallback or additional repair will be provided."
+    ]
+  }
+}

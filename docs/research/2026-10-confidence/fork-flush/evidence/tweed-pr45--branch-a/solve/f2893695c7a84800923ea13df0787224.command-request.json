@@ -1,0 +1,1 @@
+{"id": "f2893695c7a84800923ea13df0787224", "argv": ["/opt/homebrew/opt/python@3.14/bin/python3.14", "-B", "-m", "unittest", "discover", "-s", "skills/confidence-protocol/tests", "-p", "test_confidence.py", "-k", "test_run_records_failure_and_returns_child_status"], "timeout": 90.0}

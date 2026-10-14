@@ -1,0 +1,961 @@
+{
+  "schema_version": 1,
+  "phase": "final",
+  "assigned": 6,
+  "entrypoint_control_commit": "4758787015f05a95ea38896f57a462316b3d9d80",
+  "rows": [
+    {
+      "cell_id": "tweed-pr26--incumbent",
+      "task_id": "tweed-pr26",
+      "arm_id": "incumbent",
+      "status": "closed",
+      "first_complete": true,
+      "final_complete": true,
+      "actual_repair_attempted": false,
+      "production_changed_in_repair": false,
+      "mcp_request_count": 20,
+      "stages": [
+        {
+          "role": "solve",
+          "status": "completed",
+          "provider_request_mtime_at_export": 1791940232.694025,
+          "provider_interval_end_estimate": 1791940370.643427,
+          "timing_basis": "Current retained request-file mtime plus recorded stage wall_seconds; metadata, not a content-hash-certified creation timestamp",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "session_id": "1aa38eba-6b4d-4ce8-909b-96ebc5b81a76",
+          "stage_qualified": true,
+          "qualification_failures": [],
+          "software_complete": true,
+          "evidence_current": true,
+          "declared_completion": {
+            "complete": true,
+            "summary": "Fixed it: for non-review phases, Bonaparte now counts the trailing newline when it applies the 4 KiB (4096-byte) limit to the receipt line it prints. The visible check passes. The full Bonaparte suite has 2 errors. One is an old test that expects the bug (explained below). The other is a sandbox permission error.\n\n**What changed:** In `bonaparte`, `serialize_receipt` now measures `(output + \"\\n\").encode(\"utf-8\")` against `RECEIPT_MAX_BYTES`, so it checks exactly the bytes `emit_serialized` writes. Before this, the non-review check measured only the JSON, so a 4096-byte JSON was accepted and printed as a 4097-byte line. The review check already counted the newline and is unchanged. JSON output, UTF-8 output, the error message and the way phases pick their check are also unchanged. If a receipt is too large, the check raises an error before anything is written. `main()` already handles that error by printing a small \"failed\" receipt instead. That's 3 lines added and 5 removed, all in `bonaparte`.\n\n**Checks run:**\n- **Visible check:** `python3 -B -m unittest tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex` passed.\n- **Boundary script** (in the scratch folder, `execution-scratch/probe.py`):\n  - With plain ASCII, a 4095-byte JSON is printed as exactly 4096 bytes, ends in a newline and reads back to the same values. A 4096-byte JSON is rejected and nothing is printed.\n  - With the 2-byte character `\u00e9`, a 4094-byte JSON is printed as 4095 bytes. A 4096-byte JSON is rejected and nothing is printed.\n  - The review check rejects the same oversized receipts.\n  - A small receipt with CJK characters is printed as-is, not escaped, and its values are unchanged.\n- **Wider run:** `tests.test_bonaparte`, `tests.test_checkpoint` and `tests.test_handoff` ran 65 tests: 63 passed and 2 errored.\n\n**The 2 errors:**\n1. `test_receipt_size_boundary_is_review_only` is an old test that requires the bug. It asserts that a 4096-byte JSON prints as `RECEIPT_MAX_BYTES + 1` bytes, which this task removes, so it now fails by design. I left it as it was because the instructions say to keep old tests intact.\n2. `test_progress_fd_is_scrubbed_and_never_sent_to_children` stops at `os.fstat(2)` with \"PermissionError: Operation not permitted\". The sandbox causes this; it has nothing to do with the receipt code.\n\nMy first version made the review check call the non-review one. That broke `test_main_uses_review_serializer_only_after_review_is_selected`, which checks that the non-review check is never called during review, so I put the review check back to its own code. That test now passes.\n\n**Not done:** native progress streaming and the rest of PR26 were out of scope. Nobody else has reviewed this yet; the separate final checker will do that. To undo the change, revert the edit to `serialize_receipt` in `bonaparte`.",
+            "remaining": [
+              "Out of scope by instruction: native progress streaming and the rest of PR26.",
+              "The old test tests.test_bonaparte...test_receipt_size_boundary_is_review_only still expects the old 4097-byte line and now fails by design. It was left unedited because old tests must stay intact.",
+              "test_progress_fd_is_scrubbed_and_never_sent_to_children could not run here: the sandbox blocks os.fstat(2) (PermissionError). It is unrelated to this change.",
+              "The fix has not been reviewed by anyone else yet; the separate final checker will do that."
+            ]
+          },
+          "required_behavior_passed": true,
+          "negative_boundaries_passed": true,
+          "baseline_passed": true,
+          "scope_violations": [],
+          "scope_source_facts": [],
+          "failed_requirements": [],
+          "evaluation_qualified": true,
+          "timed_out": false,
+          "wall_seconds": 137.94940195899835,
+          "mcp_request_count": 20,
+          "invalid_stream_or_tool_ids": 0,
+          "reported_usage": {
+            "input_tokens": 32,
+            "cache_creation_input_tokens": 46543,
+            "cache_read_input_tokens": 288272,
+            "output_tokens": 6591,
+            "output_tokens_details": {
+              "thinking_tokens": 1620
+            },
+            "server_tool_use": {
+              "web_search_requests": 0,
+              "web_fetch_requests": 0
+            },
+            "service_tier": "standard",
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 46543,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "inference_geo": "global",
+            "iterations": [
+              {
+                "input_tokens": 2,
+                "output_tokens": 1380,
+                "cache_read_input_tokens": 41354,
+                "cache_creation_input_tokens": 5189,
+                "cache_creation": {
+                  "ephemeral_5m_input_tokens": 0,
+                  "ephemeral_1h_input_tokens": 5189
+                },
+                "type": "message"
+              }
+            ],
+            "speed": "standard",
+            "fallback_credit": null
+          },
+          "reported_model_usage": {
+            "claude-opus-5-5": {
+              "inputTokens": 32,
+              "outputTokens": 6591,
+              "cacheReadInputTokens": 288272,
+              "cacheCreationInputTokens": 46543,
+              "webSearchRequests": 0,
+              "costUSD": 0.5619464000000001,
+              "contextWindow": 1000000,
+              "maxOutputTokens": 128000,
+              "thinkingTokens": 1620,
+              "canonicalModel": "claude-opus-5-5",
+              "provider": "firstParty",
+              "costBasis": "list"
+            }
+          },
+          "reported_cost_usd": 0.5619464000000001,
+          "before_source_sha256": "4c7ea53ad519fd24b1037e5dfd09a88519a5b0bb6fde193a7ae3bfc104e7fd68",
+          "after_source_sha256": "43d004e9b8993cc951f327774ed0e81779ce95fc88426720c20dec5299409b80",
+          "production_patch_sha256": "43f9d37692093be596374ca3a6a3cb58b5997526b172881216631accc364a3ce",
+          "production_patch_changed": true,
+          "declared_primary_production_paths_changed": [
+            "bonaparte"
+          ],
+          "new_root_helpers": [],
+          "receipt_sha256": "c4a5af98ff81082130bb35d4c164d5cc707742c2f4d476309a0bb44676f2eea5",
+          "stream_sha256": "62e8e2225bb19e2f5639ee2969781c2b1fcd091586c3543f7f448cad1cf89453",
+          "request_file_sha256": "27022bc7634e0ee3ed8375493327acac3141cf0612ad1ad80a5c4cbcadeb6372",
+          "evaluation_receipt_sha256": "aca8689f11bdb81f03f83c12d21934a7942a305747a1d4090605ad229270208b"
+        }
+      ]
+    },
+    {
+      "cell_id": "tweed-pr26--branch-a",
+      "task_id": "tweed-pr26",
+      "arm_id": "branch-a",
+      "status": "closed",
+      "first_complete": false,
+      "final_complete": false,
+      "actual_repair_attempted": true,
+      "production_changed_in_repair": false,
+      "mcp_request_count": 34,
+      "stages": [
+        {
+          "role": "solve",
+          "status": "completed",
+          "provider_request_mtime_at_export": 1791940232.6939406,
+          "provider_interval_end_estimate": 1791940382.7891414,
+          "timing_basis": "Current retained request-file mtime plus recorded stage wall_seconds; metadata, not a content-hash-certified creation timestamp",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "session_id": "a8c7e19f-2bbb-4337-a0fa-c6e11e9969c8",
+          "stage_qualified": false,
+          "qualification_failures": [
+            "stage_did_not_finish",
+            "terminal_missing_or_invalid"
+          ],
+          "software_complete": false,
+          "evidence_current": true,
+          "declared_completion": null,
+          "required_behavior_passed": true,
+          "negative_boundaries_passed": true,
+          "baseline_passed": true,
+          "scope_violations": [
+            "tests/test_bonaparte.py"
+          ],
+          "scope_source_facts": [
+            {
+              "path": "tests/test_bonaparte.py",
+              "baseline_existed": true,
+              "candidate_existed": true,
+              "classification": "changed-existing-baseline"
+            }
+          ],
+          "failed_requirements": [
+            {
+              "requirement": "scope",
+              "paths": [
+                "tests/test_bonaparte.py"
+              ]
+            }
+          ],
+          "evaluation_qualified": true,
+          "timed_out": true,
+          "wall_seconds": 150.09520079199865,
+          "mcp_request_count": 26,
+          "invalid_stream_or_tool_ids": 0,
+          "reported_usage": null,
+          "reported_model_usage": {},
+          "reported_cost_usd": null,
+          "before_source_sha256": "9fd110a82e5a641794ad855f3b31491b84061e5a2c35bc9b6bb141477aabace5",
+          "after_source_sha256": "000940c74e0ea7e67fd35942c47081d6f2537bfe95ba097286f9728b9b8cc855",
+          "production_patch_sha256": "830bb7965f5c1645159257c64628e8ecba2ab214d90931fdce6dc9871677e07b",
+          "production_patch_changed": true,
+          "declared_primary_production_paths_changed": [
+            "bonaparte"
+          ],
+          "new_root_helpers": [],
+          "receipt_sha256": "a7c8c707873e8b4b3a5fa331b9c806fe75d89f51077168984167958f96a8be14",
+          "stream_sha256": "c8b78dc1b7f23a0cdda619f25a9039899d6804b1e287ac4c5d631cf9543dd272",
+          "request_file_sha256": "eaaea748b7163b239b0943a96ea6cb2a4e3c672693460d223451d840d046b82c",
+          "evaluation_receipt_sha256": "e8d54d0b95c5d43490b55ed7831b55206dfc05200f793d5d8ccf64b0150662b3"
+        },
+        {
+          "role": "repair",
+          "status": "completed",
+          "provider_request_mtime_at_export": 1791940530.0319688,
+          "provider_interval_end_estimate": 1791940574.508477,
+          "timing_basis": "Current retained request-file mtime plus recorded stage wall_seconds; metadata, not a content-hash-certified creation timestamp",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "session_id": "e8c9c5c5-5efe-47a2-86fa-22d4b5324d9b",
+          "stage_qualified": true,
+          "qualification_failures": [],
+          "software_complete": true,
+          "evidence_current": true,
+          "declared_completion": {
+            "complete": true,
+            "summary": "I fixed the scope violation: `tests/test_bonaparte.py` is back to its original bytes, and I didn't change the production code in this repair. One existing test in that file now fails, because it asserts the old size rule this task replaces.\n\n**Changes:**\n- **Restored test file:** I removed the test I had added to `tests/test_bonaparte.py`. `git diff -- tests/test_bonaparte.py` is now empty, so the file matches the protected version exactly.\n- **Moved the test:** the same test now lives in a new file, `tests/test_receipt_line_limit.py`. It loads `bonaparte` the same way the existing tests do.\n- **Production:** `bonaparte` is unchanged from the earlier attempt, which the independent checker already passed on behavior and negative cases.\n\n**Checks run (author checks only):**\n- The visible check (`tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex`) passes.\n- The moved test (`tests.test_receipt_line_limit`) passes. It covers four cases:\n  - An exactly 4096-byte UTF-8 line containing a multi-byte character, newline included, is accepted.\n  - A line one byte longer is rejected with \"receipt exceeded 4 KiB\".\n  - Through `main()` on a non-review phase, an oversized receipt exits 1. Only a bounded `failed` receipt is printed and none of the oversized content appears.\n  - Through `main()`, an exactly-4096-byte line is emitted byte-for-byte and exits 0.\n\n**Existing test that now fails:** `test_receipt_size_boundary_is_review_only` now errors with \"receipt exceeded 4 KiB\". It expects a non-review receipt whose JSON is exactly 4096 bytes to be accepted and printed as 4097 bytes with the newline. That is the old behavior this task removes, so the failure is expected. I left the test untouched because the file is protected, and you said test edits don't affect grading.\n\nNot done: I didn't re-run the full suite after this repair. Native progress streaming and the rest of PR26 were out of scope.",
+            "remaining": [
+              "Existing test test_receipt_size_boundary_is_review_only in the protected tests/test_bonaparte.py now fails. It asserts the old rule that a non-review receipt line may reach 4097 bytes. I left it unchanged because the file must stay byte-for-byte identical.",
+              "I didn't re-run the full test suite after this repair. Only the visible check, the moved test and the one conflicting existing test were run."
+            ]
+          },
+          "required_behavior_passed": true,
+          "negative_boundaries_passed": true,
+          "baseline_passed": true,
+          "scope_violations": [],
+          "scope_source_facts": [],
+          "failed_requirements": [],
+          "evaluation_qualified": true,
+          "timed_out": false,
+          "wall_seconds": 44.47650804200384,
+          "mcp_request_count": 8,
+          "invalid_stream_or_tool_ids": 0,
+          "reported_usage": {
+            "input_tokens": 12,
+            "cache_creation_input_tokens": 52367,
+            "cache_read_input_tokens": 218405,
+            "output_tokens": 4889,
+            "output_tokens_details": {
+              "thinking_tokens": 881
+            },
+            "server_tool_use": {
+              "web_search_requests": 0,
+              "web_fetch_requests": 0
+            },
+            "service_tier": "standard",
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 52367,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "inference_geo": "global",
+            "iterations": [
+              {
+                "input_tokens": 2,
+                "output_tokens": 978,
+                "cache_read_input_tokens": 51112,
+                "cache_creation_input_tokens": 2623,
+                "cache_creation": {
+                  "ephemeral_5m_input_tokens": 0,
+                  "ephemeral_1h_input_tokens": 2623
+                },
+                "type": "message"
+              }
+            ],
+            "speed": "standard",
+            "fallback_credit": null
+          },
+          "reported_model_usage": {
+            "claude-opus-5-5": {
+              "inputTokens": 12,
+              "outputTokens": 4889,
+              "cacheReadInputTokens": 218405,
+              "cacheCreationInputTokens": 52367,
+              "webSearchRequests": 0,
+              "costUSD": 0.560445,
+              "contextWindow": 1000000,
+              "maxOutputTokens": 128000,
+              "thinkingTokens": 881,
+              "canonicalModel": "claude-opus-5-5",
+              "provider": "firstParty",
+              "costBasis": "list"
+            }
+          },
+          "reported_cost_usd": 0.560445,
+          "before_source_sha256": "000940c74e0ea7e67fd35942c47081d6f2537bfe95ba097286f9728b9b8cc855",
+          "after_source_sha256": "906fc6a715b4f787de0a2f7b2cdd6362cf8063650ffc35a6aa4762dec2b9d737",
+          "production_patch_sha256": "830bb7965f5c1645159257c64628e8ecba2ab214d90931fdce6dc9871677e07b",
+          "production_patch_changed": false,
+          "declared_primary_production_paths_changed": [],
+          "new_root_helpers": [],
+          "receipt_sha256": "b77c02eb9413c12ab2d6108037ea7c87777f11b34a574f6ef6e4e83ffd5d90e6",
+          "stream_sha256": "b681447a5d11852e0fb0539918c54098fc03242b95c49579135861b697c14eb5",
+          "request_file_sha256": "2fac3b9755c4f18a74b5c58b187c9e893811278a8c89247d43b96d242075bc3f",
+          "evaluation_receipt_sha256": "61267d006a1424c06a37b770a08c2688ff88a0169aa4194db056e3ac4d3bfb73"
+        }
+      ]
+    },
+    {
+      "cell_id": "tweed-pr26--branch-b",
+      "task_id": "tweed-pr26",
+      "arm_id": "branch-b",
+      "status": "closed",
+      "first_complete": true,
+      "final_complete": true,
+      "actual_repair_attempted": false,
+      "production_changed_in_repair": false,
+      "mcp_request_count": 20,
+      "stages": [
+        {
+          "role": "solve",
+          "status": "completed",
+          "provider_request_mtime_at_export": 1791940371.5727632,
+          "provider_interval_end_estimate": 1791940498.4609077,
+          "timing_basis": "Current retained request-file mtime plus recorded stage wall_seconds; metadata, not a content-hash-certified creation timestamp",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "session_id": "6ef6efc7-3e92-4b52-8e5b-2bebb0f1726f",
+          "stage_qualified": true,
+          "qualification_failures": [],
+          "software_complete": true,
+          "evidence_current": true,
+          "declared_completion": {
+            "complete": true,
+            "summary": "The non-review receipt emitter now counts the whole output line, including the trailing newline, against the 4 KiB limit. The visible check passes, and so do 70 of the 71 tests in the full suite. The one failure, `tests.test_bonaparte.BonaparteRunnerTests.test_receipt_size_boundary_is_review_only`, is an existing test that asserts the old behaviour. It expects a 4096-byte receipt plus its newline (4097 bytes total) to be accepted outside review. I left that test unchanged as instructed, so it now fails as expected.\n\nWhat changed (only the `bonaparte` file): `serialize_receipt` now checks `len((output + \"\\n\").encode(\"utf-8\")) <= RECEIPT_MAX_BYTES` (4096), the same check the review path already used. Both public serializers now call one private helper, `_serialize_bounded_receipt`, so the rule lives in one place. They remain separate names because the existing tests check which one gets called. JSON output is unchanged (compact separators, non-ASCII written as UTF-8), and `emit_serialized` is untouched.\n\nProof map, all rows required:\n1. **Line limit includes the newline.** A receipt that makes exactly a 4096-byte line, newline included, is written in full, ends in a newline and reads back as the same JSON. A receipt that makes a 4097-byte line is rejected with \"receipt exceeded 4 KiB\".\n2. **Multi-byte characters are counted in bytes.** A line of exactly 4096 bytes built from 2-byte `\u00e9` characters is accepted and reads back correctly. The 4097-byte version is rejected.\n3. **Nothing is written before rejection.** `emit()` with an oversized receipt raises an error and writes nothing to stdout. When `main()` gets an oversized non-review result, it outputs one failure receipt of at most 4096 bytes whose summary mentions 4 KiB, and returns exit code 1. The oversized receipt itself is never written.\n4. **Normal emission and serializer selection still work.** The other 70 tests pass, including `test_main_uses_review_serializer_only_after_review_is_selected`.\n\nRows 1\u20133 come from a scratch probe I wrote and ran myself, stored outside the workspace at `solve/call/execution-scratch/probe.py`. Its result is in `out.txt` there (\"probe ok\", exit 0). This is my own check, not an independent review. I judged that adequate because this is a small, reversible fix that moves an existing check to the line boundary the review path already used.\n\nNot covered, by instruction: native progress streaming and the rest of PR26. No live providers were run, no Git history was fetched, no documentation was changed, and no tests were edited.",
+            "remaining": [
+              "Existing test tests.test_bonaparte.BonaparteRunnerTests.test_receipt_size_boundary_is_review_only still asserts the old rule (a 4096-byte receipt plus newline, 4097 bytes, accepted outside review), so it now fails. I left it unchanged as instructed; it would need updating to match the requested behaviour.",
+              "Not covered, by instruction: native progress streaming and the rest of PR26."
+            ]
+          },
+          "required_behavior_passed": true,
+          "negative_boundaries_passed": true,
+          "baseline_passed": true,
+          "scope_violations": [],
+          "scope_source_facts": [],
+          "failed_requirements": [],
+          "evaluation_qualified": true,
+          "timed_out": false,
+          "wall_seconds": 126.88814437499968,
+          "mcp_request_count": 20,
+          "invalid_stream_or_tool_ids": 0,
+          "reported_usage": {
+            "input_tokens": 36,
+            "cache_creation_input_tokens": 49092,
+            "cache_read_input_tokens": 438476,
+            "output_tokens": 8097,
+            "output_tokens_details": {
+              "thinking_tokens": 1671
+            },
+            "server_tool_use": {
+              "web_search_requests": 0,
+              "web_fetch_requests": 0
+            },
+            "service_tier": "standard",
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 49092,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "inference_geo": "global",
+            "iterations": [
+              {
+                "input_tokens": 2,
+                "output_tokens": 1138,
+                "cache_read_input_tokens": 46476,
+                "cache_creation_input_tokens": 4716,
+                "cache_creation": {
+                  "ephemeral_5m_input_tokens": 0,
+                  "ephemeral_1h_input_tokens": 4716
+                },
+                "type": "message"
+              }
+            ],
+            "speed": "standard",
+            "fallback_credit": null
+          },
+          "reported_model_usage": {
+            "claude-opus-5-5": {
+              "inputTokens": 36,
+              "outputTokens": 8097,
+              "cacheReadInputTokens": 438476,
+              "cacheCreationInputTokens": 49092,
+              "webSearchRequests": 0,
+              "costUSD": 0.6425152000000001,
+              "contextWindow": 1000000,
+              "maxOutputTokens": 128000,
+              "thinkingTokens": 1671,
+              "canonicalModel": "claude-opus-5-5",
+              "provider": "firstParty",
+              "costBasis": "list"
+            }
+          },
+          "reported_cost_usd": 0.6425152000000001,
+          "before_source_sha256": "d9335282c8e40b1504d7ca3269f1fe60f08be7c279309f6eac8cd42c87375901",
+          "after_source_sha256": "28a1d0f2c44bfdb332fe08db23dcb0248789eb7b7e5d6f5a484ee2460129203a",
+          "production_patch_sha256": "65372a883b93cee3042b4ac832dbcb20dd9e7d248b652102131c6c8f7278ce09",
+          "production_patch_changed": true,
+          "declared_primary_production_paths_changed": [
+            "bonaparte"
+          ],
+          "new_root_helpers": [],
+          "receipt_sha256": "45aed3f34a837671faebbf325a9aa2eeabe56dd2068998714dbd6033f45ea1aa",
+          "stream_sha256": "0bef6d9e9add6d7e9a824991b91a7d1e7991797213e883ce4a4f3546271a592f",
+          "request_file_sha256": "d4649c6bf19c28e957c341a2d71774a65c5a867e0105a6ff9adbbf55e4653542",
+          "evaluation_receipt_sha256": "3dcd844c25c521dbf0d7412cb585fd30c86786a0292d574d44fc9c3a3ce6b1c6"
+        }
+      ]
+    },
+    {
+      "cell_id": "tweed-pr45--incumbent",
+      "task_id": "tweed-pr45",
+      "arm_id": "incumbent",
+      "status": "closed",
+      "first_complete": false,
+      "final_complete": false,
+      "actual_repair_attempted": false,
+      "production_changed_in_repair": false,
+      "mcp_request_count": 22,
+      "stages": [
+        {
+          "role": "solve",
+          "status": "completed",
+          "provider_request_mtime_at_export": 1791940499.3289752,
+          "provider_interval_end_estimate": 1791940649.474427,
+          "timing_basis": "Current retained request-file mtime plus recorded stage wall_seconds; metadata, not a content-hash-certified creation timestamp",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "session_id": "e0b1958f-5ac5-41b8-9cbf-5501d477732b",
+          "stage_qualified": false,
+          "qualification_failures": [
+            "stage_did_not_finish",
+            "terminal_missing_or_invalid"
+          ],
+          "software_complete": true,
+          "evidence_current": true,
+          "declared_completion": null,
+          "required_behavior_passed": true,
+          "negative_boundaries_passed": true,
+          "baseline_passed": true,
+          "scope_violations": [],
+          "scope_source_facts": [],
+          "failed_requirements": [],
+          "evaluation_qualified": true,
+          "timed_out": true,
+          "wall_seconds": 150.14545187500335,
+          "mcp_request_count": 22,
+          "invalid_stream_or_tool_ids": 0,
+          "reported_usage": null,
+          "reported_model_usage": {},
+          "reported_cost_usd": null,
+          "before_source_sha256": "04dea40313e7c4dd72d8d9474b2f1ea6613e7d7070db3b8e8a37ae939ca802fa",
+          "after_source_sha256": "21496aa35a1253107eafd70144d63cd77062aec69141db654d133e491aef2fbb",
+          "production_patch_sha256": "8822a8c28f16cdce886ac1e2cbd812ca0db66ad78b41b0c6aa41f670c0d9f34c",
+          "production_patch_changed": true,
+          "declared_primary_production_paths_changed": [
+            "skills/confidence-protocol/scripts/confidence.py"
+          ],
+          "new_root_helpers": [],
+          "receipt_sha256": "e1bcb83d4578288b76a13274356a3748238de4323336ddcccbf02052b5b50b80",
+          "stream_sha256": "b4520978e18f49f37c080784fdaedcb40f260587cbacdc2615036c20593fcb8c",
+          "request_file_sha256": "c2a73a583b77385070a94e1d16a53d9a8c448eed527e8aa18981e18f1f233b2e",
+          "evaluation_receipt_sha256": "1017c5a758b6b7f291e6d8198db273b0a68a7dd3fecef90431d3a55a7d3d1380"
+        }
+      ]
+    },
+    {
+      "cell_id": "tweed-pr45--branch-a",
+      "task_id": "tweed-pr45",
+      "arm_id": "branch-a",
+      "status": "closed",
+      "first_complete": true,
+      "final_complete": true,
+      "actual_repair_attempted": false,
+      "production_changed_in_repair": false,
+      "mcp_request_count": 20,
+      "stages": [
+        {
+          "role": "solve",
+          "status": "completed",
+          "provider_request_mtime_at_export": 1791940646.8109534,
+          "provider_interval_end_estimate": 1791940771.9644783,
+          "timing_basis": "Current retained request-file mtime plus recorded stage wall_seconds; metadata, not a content-hash-certified creation timestamp",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "session_id": "36bae5cd-b9e0-4618-889c-38d2bb652929",
+          "stage_qualified": true,
+          "qualification_failures": [],
+          "software_complete": true,
+          "evidence_current": true,
+          "declared_completion": {
+            "complete": true,
+            "summary": "I added a public `--json` option to `run` in skills/confidence-protocol/scripts/confidence.py, which is the only file changed (+42/-2). With `--json`, captured output is no longer replayed to stdout. stdout gets one compact JSON line instead: `{\"id\",\"exit_code\",\"record\":\"runs/<id>.json\",\"log\":\"runs/<id>.log\",\"workspace_binding\"}`. Both paths are relative to the evidence directory. The full log is still captured and hashed, so `log_sha256` in the record covers every byte, including binary output.\n\n`workspace_binding` compares a Git workspace fingerprint taken before the child starts with one taken after it stops (the evidence directory is left out). It is \"unchanged\" only when both fingerprints exist and match, \"changed\" when both exist and differ, and \"unknown\" otherwise. That covers non-Git directories and Git not being installed. A new small helper turns a missing `git` binary into \"unknown\"; before this change it would have crashed the run. The same value is also saved in the run record as a new `workspace_binding` field.\n\nWithout `--json`, output is still replayed byte-for-byte. The CLI exit code works as before: a child's nonzero status comes through, and the signed status (for example -15 for SIGTERM) is kept in both the record and the receipt, while the CLI exits 143.\n\nChecks:\n- The visible check `test_run_records_failure_and_returns_child_status` passed after the final edit.\n- The full skills test suite ran 50 tests and 45 passed. The 5 errors were all telemetry tests in test_diagnostics.py, caused by the harness setting `CONFIDENCE_DISABLE_DIAGNOSTICS=1`. With that variable unset, all 15 test_diagnostics tests passed. I didn't rerun the other 35 tests that way, but this change doesn't touch telemetry.\n- A temporary probe I wrote ran in a scratch Git repo, and all 22 assertions passed. It covered: binary output with exit 3 (exit code, a single compact receipt line, exactly the five keys, relative paths, the log matching byte-for-byte, the record's SHA256 and exit code); \"unchanged\" when only evidence files were written; \"changed\" after editing a tracked file, after creating an untracked file, and when a failing child (exit 5) edits a file; \"unknown\" for a non-Git directory and when Git is not on PATH; SIGTERM giving -15 in the receipt with CLI exit 143; and default mode replaying the exact binary output with child status 3.\n\nI deleted the probe afterwards; `git status` shows only confidence.py modified. All checks were my own as the author; no independent review was done in this stage.\n\nKnown limits: if a file changes during the run and is restored before it ends, it will still be reported as \"unchanged\". The record's `workspace` field remains the after-run fingerprint, so `validate` does not yet treat a \"changed\" run as stale. The other PR45 changes (recovery, recording, release, docs) were left out as specified.",
+            "remaining": [
+              "Accepted exclusion: other PR45 recovery/recording/release/documentation changes are out of scope as specified.",
+              "Known limit: a file changed and then restored during the run is reported unchanged; validation does not yet consult workspace_binding (excluded as part of the recording/validation changes)."
+            ]
+          },
+          "required_behavior_passed": true,
+          "negative_boundaries_passed": true,
+          "baseline_passed": true,
+          "scope_violations": [],
+          "scope_source_facts": [],
+          "failed_requirements": [],
+          "evaluation_qualified": true,
+          "timed_out": false,
+          "wall_seconds": 125.15352491699741,
+          "mcp_request_count": 20,
+          "invalid_stream_or_tool_ids": 0,
+          "reported_usage": {
+            "input_tokens": 24,
+            "cache_creation_input_tokens": 57681,
+            "cache_read_input_tokens": 384603,
+            "output_tokens": 9996,
+            "output_tokens_details": {
+              "thinking_tokens": 3175
+            },
+            "server_tool_use": {
+              "web_search_requests": 0,
+              "web_fetch_requests": 0
+            },
+            "service_tier": "standard",
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 57681,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "inference_geo": "global",
+            "iterations": [
+              {
+                "input_tokens": 2,
+                "output_tokens": 1270,
+                "cache_read_input_tokens": 57478,
+                "cache_creation_input_tokens": 2397,
+                "cache_creation": {
+                  "ephemeral_5m_input_tokens": 0,
+                  "ephemeral_1h_input_tokens": 2397
+                },
+                "type": "message"
+              }
+            ],
+            "speed": "standard",
+            "fallback_credit": null
+          },
+          "reported_model_usage": {
+            "claude-opus-5-5": {
+              "inputTokens": 24,
+              "outputTokens": 9996,
+              "cacheReadInputTokens": 384603,
+              "cacheCreationInputTokens": 57681,
+              "webSearchRequests": 0,
+              "costUSD": 0.7383845999999998,
+              "contextWindow": 1000000,
+              "maxOutputTokens": 128000,
+              "thinkingTokens": 3175,
+              "canonicalModel": "claude-opus-5-5",
+              "provider": "firstParty",
+              "costBasis": "list"
+            }
+          },
+          "reported_cost_usd": 0.7383845999999998,
+          "before_source_sha256": "44e252515626508fa5ee0a606fc82872d5f28ca22d4deec049bd23d71a73c525",
+          "after_source_sha256": "25dc5aff6e3ec551ee46db5172d61c906c05678b7f5fb60e0b14f573c1bf9aeb",
+          "production_patch_sha256": "1aeff57cd27781e7da10a200ec28bb2f6f1a871a8e0493d385d7ffb80b37d099",
+          "production_patch_changed": true,
+          "declared_primary_production_paths_changed": [
+            "skills/confidence-protocol/scripts/confidence.py"
+          ],
+          "new_root_helpers": [],
+          "receipt_sha256": "77d51b28318b9e7193688fa035b03ae9099a85d0aa7991ffa1a2e33591507226",
+          "stream_sha256": "81107e4a4b872b7bb07803651796d1d74460e0815a816f3240e51fa9178b3839",
+          "request_file_sha256": "5a8ab29ce2ee3a9d7e811f1d576c0a1b22f0c89630fbbf92c426976fc3e1fbe3",
+          "evaluation_receipt_sha256": "b187a1f048353eae365a5aad45f615b2933f0703521da212d99dc17722587e3c"
+        }
+      ]
+    },
+    {
+      "cell_id": "tweed-pr45--branch-b",
+      "task_id": "tweed-pr45",
+      "arm_id": "branch-b",
+      "status": "closed",
+      "first_complete": false,
+      "final_complete": false,
+      "actual_repair_attempted": true,
+      "production_changed_in_repair": true,
+      "mcp_request_count": 35,
+      "stages": [
+        {
+          "role": "solve",
+          "status": "completed",
+          "provider_request_mtime_at_export": 1791940499.3289516,
+          "provider_interval_end_estimate": 1791940644.864479,
+          "timing_basis": "Current retained request-file mtime plus recorded stage wall_seconds; metadata, not a content-hash-certified creation timestamp",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "session_id": "d78f0af8-ad19-4506-a09b-6da96db2dcf3",
+          "stage_qualified": true,
+          "qualification_failures": [],
+          "software_complete": false,
+          "evidence_current": true,
+          "declared_completion": {
+            "complete": true,
+            "summary": "`run --json` now works: it prints a compact JSON receipt instead of replaying the captured output. The required visible check passes. The full suite ran 60 tests: all `test_confidence.py` and new receipt tests passed, and the 5 failures are all diagnostics tests not caused by this change.\n\n**Change** (`skills/confidence-protocol/scripts/confidence.py`):\n- Added the `--json` flag to `run`.\n- The runner now fingerprints the workspace before the child starts and saves that as `workspace_start` in the run record. The existing end-of-run fingerprint stays in `workspace`, so current stale-workspace validation is unchanged.\n- With `--json`, the captured log is still fully read and its SHA256 recorded; it just isn't replayed. After the record is published, one line of JSON is printed: `id`, `exit_code` (signed child status), `termination_reason`, `record` (`runs/<id>.json`) and `log` (`runs/<id>.log`). Both paths are relative to the evidence directory. It also includes `workspace_binding`.\n- `workspace_binding` is `unknown` if either fingerprint is missing (e.g. not a Git repo), `unchanged` only if the root and hash are the same before and after, and `changed` otherwise. So a source mutation can never show as `unchanged`.\n- Without `--json`, output replay and the CLI exit code are unchanged. A signal exit is still stored as a negative number in the record and receipt, and the CLI returns 128+N.\n\n**Proof map:**\n- **R1 \u2013 compact receipt:** passed. The receipt is under 1 KB, has the right fields, and its paths match the record.\n- **R2 \u2013 full binary output and hash:** passed. A 128 KiB+ output with `\\xff\\x00` bytes was stored byte-for-byte and its SHA256 matches.\n- **R3 \u2013 default replay unchanged:** passed (`test_run_captures_success_and_returns_child_status` and the new default-replay test).\n- **R4 \u2013 failure status kept:** passed. Exit 7, child exit 125, SIGTERM (-15 in receipt/record, 143 from the CLI), timeout 124 with its reason, and a failed launch (125, no stdout, no record) all behave correctly. The visible check `test_run_records_failure_and_returns_child_status` passes.\n- **R5 \u2013 mutation shows `changed`:** passed, including a mutation combined with a failing exit (3). A non-Git directory shows `unknown`.\n\nThese were checked by a new test file, `skills/confidence-protocol/tests/test_run_receipt.py`, adapted from `.protocol/tests/test_run_receipt.py`. I dropped its `version == 2` assertion because version-2 records belong to an excluded part of PR45.\n\n**About the 5 diagnostics failures:** the sandbox sets `CONFIDENCE_DISABLE_DIAGNOSTICS=1`, which turns off telemetry. With that variable unset, only `test_doctor_reports_required_health_checks` fails, and it fails the same way on an untouched copy of HEAD (extracted with `git archive`) in this sandbox.\n\n**Excluded (outside the receipt slice by the task statement):** version-2 records and `capture_sha256`, `git-content-v1` binding, interruption and publication recovery, and doc/changelog edits.\n\n**Limits and rollback:**\n- Validation still accepts a supporting run whose source changed during the run, as long as the tree matches its end state. The receipt and record now show that change but don't block it.\n- The fingerprint doesn't cover ignored files or a change made and then undone during the run.\n- To roll back, revert `confidence.py` and delete the new test file.",
+            "remaining": []
+          },
+          "required_behavior_passed": true,
+          "negative_boundaries_passed": true,
+          "baseline_passed": true,
+          "scope_violations": [
+            "skills/confidence-protocol/tests/test_run_receipt.py"
+          ],
+          "scope_source_facts": [
+            {
+              "path": "skills/confidence-protocol/tests/test_run_receipt.py",
+              "baseline_existed": false,
+              "candidate_existed": true,
+              "classification": "new-outside-permitted-location"
+            }
+          ],
+          "failed_requirements": [
+            {
+              "requirement": "scope",
+              "paths": [
+                "skills/confidence-protocol/tests/test_run_receipt.py"
+              ]
+            }
+          ],
+          "evaluation_qualified": true,
+          "timed_out": false,
+          "wall_seconds": 145.5355274579997,
+          "mcp_request_count": 20,
+          "invalid_stream_or_tool_ids": 0,
+          "reported_usage": {
+            "input_tokens": 30,
+            "cache_creation_input_tokens": 63940,
+            "cache_read_input_tokens": 544346,
+            "output_tokens": 9873,
+            "output_tokens_details": {
+              "thinking_tokens": 2534
+            },
+            "server_tool_use": {
+              "web_search_requests": 0,
+              "web_fetch_requests": 0
+            },
+            "service_tier": "standard",
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 63940,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "inference_geo": "global",
+            "iterations": [
+              {
+                "input_tokens": 2,
+                "output_tokens": 1457,
+                "cache_read_input_tokens": 62639,
+                "cache_creation_input_tokens": 2669,
+                "cache_creation": {
+                  "ephemeral_5m_input_tokens": 0,
+                  "ephemeral_1h_input_tokens": 2669
+                },
+                "type": "message"
+              }
+            ],
+            "speed": "standard",
+            "fallback_credit": null
+          },
+          "reported_model_usage": {
+            "claude-opus-5-5": {
+              "inputTokens": 30,
+              "outputTokens": 9873,
+              "cacheReadInputTokens": 544346,
+              "cacheCreationInputTokens": 63940,
+              "webSearchRequests": 0,
+              "costUSD": 0.8179691999999998,
+              "contextWindow": 1000000,
+              "maxOutputTokens": 128000,
+              "thinkingTokens": 2534,
+              "canonicalModel": "claude-opus-5-5",
+              "provider": "firstParty",
+              "costBasis": "list"
+            }
+          },
+          "reported_cost_usd": 0.8179691999999998,
+          "before_source_sha256": "047803fc44611766c5041c9ad97cee4909f050255a977f66a79b756dbf385c72",
+          "after_source_sha256": "f1c7b424438ae0e107063a6fd83e117304a64111ef576bd8b27ac52be49e545f",
+          "production_patch_sha256": "48b6234bac1814a3eddc548b4b0590d7a5d742755838affb8f69b0c1307025e7",
+          "production_patch_changed": true,
+          "declared_primary_production_paths_changed": [
+            "skills/confidence-protocol/scripts/confidence.py"
+          ],
+          "new_root_helpers": [],
+          "receipt_sha256": "d69f3913bef832841dfcee7c4bf218069a19fa6cebed7b1766a94551bf9217fe",
+          "stream_sha256": "10a6ec9935dcd0f6c98344814534086362036dc61051ec4fc4a44fea4e670c11",
+          "request_file_sha256": "2367eb575a167e1fee4b6a72b3e82c2ff937bfb8d1e7d944db27a906b496142f",
+          "evaluation_receipt_sha256": "b20f3f58a439a3435e56444d41c6e15d2a07f911026dfab59d928b471388d15d"
+        },
+        {
+          "role": "repair",
+          "status": "completed",
+          "provider_request_mtime_at_export": 1791940906.1593025,
+          "provider_interval_end_estimate": 1791940996.2784169,
+          "timing_basis": "Current retained request-file mtime plus recorded stage wall_seconds; metadata, not a content-hash-certified creation timestamp",
+          "observed_models": [
+            "claude-opus-5-5"
+          ],
+          "session_id": "41c19fb1-0aa0-426b-aca5-2d4e05438050",
+          "stage_qualified": false,
+          "qualification_failures": [
+            "stage_did_not_finish",
+            "terminal_missing_or_invalid"
+          ],
+          "software_complete": true,
+          "evidence_current": true,
+          "declared_completion": null,
+          "required_behavior_passed": true,
+          "negative_boundaries_passed": true,
+          "baseline_passed": true,
+          "scope_violations": [],
+          "scope_source_facts": [],
+          "failed_requirements": [],
+          "evaluation_qualified": true,
+          "timed_out": true,
+          "wall_seconds": 90.11911441700067,
+          "mcp_request_count": 15,
+          "invalid_stream_or_tool_ids": 0,
+          "reported_usage": null,
+          "reported_model_usage": {},
+          "reported_cost_usd": null,
+          "before_source_sha256": "f1c7b424438ae0e107063a6fd83e117304a64111ef576bd8b27ac52be49e545f",
+          "after_source_sha256": "43ed64ec72025954a1fff7ea6544d3487f023bb588e6e04d25c55e1dfc7a1ed3",
+          "production_patch_sha256": "8412ae7bdcb229bb7be3f4f2cff0d10e39462e4083177e24e39586e8fa4d9b56",
+          "production_patch_changed": true,
+          "declared_primary_production_paths_changed": [],
+          "new_root_helpers": [
+            "check_run_receipt.py"
+          ],
+          "receipt_sha256": "6255834155664f9abfe728f5d53cff16614292c2645d7c36c8956234dccd9a92",
+          "stream_sha256": "ea9dfa987a94bda52cfea23e3c49c4e30e3ed9df6d519eafa7934668ba1222a6",
+          "request_file_sha256": "8ef28dcf0dbb02d6cc4a0988a2ba46c4da7c0774a103a15c31ea1f3784a64b52",
+          "evaluation_receipt_sha256": "2ad60b542bc6fc2b876f34af2818a85eff54bed73f9e450c4ff01ef1877fbb41"
+        }
+      ]
+    }
+  ],
+  "by_arm": {
+    "incumbent": {
+      "reported_output_tokens": null,
+      "known_reported_output_tokens": 6591,
+      "output_token_missing_stages": 1,
+      "assigned": 2,
+      "observed": 2,
+      "first_complete": 1,
+      "final_complete": 1,
+      "repair_attempts": 0,
+      "mcp_request_count": 42,
+      "reported_wall_seconds": 288.0948538340017,
+      "reported_cost_usd": 0.5619464000000001,
+      "cost_missing_stages": 1
+    },
+    "branch-a": {
+      "reported_output_tokens": null,
+      "known_reported_output_tokens": 14885,
+      "output_token_missing_stages": 1,
+      "assigned": 2,
+      "observed": 2,
+      "first_complete": 1,
+      "final_complete": 1,
+      "repair_attempts": 1,
+      "mcp_request_count": 54,
+      "reported_wall_seconds": 319.7252337509999,
+      "reported_cost_usd": 1.2988296,
+      "cost_missing_stages": 1
+    },
+    "branch-b": {
+      "reported_output_tokens": null,
+      "known_reported_output_tokens": 17970,
+      "output_token_missing_stages": 1,
+      "assigned": 2,
+      "observed": 2,
+      "first_complete": 1,
+      "final_complete": 1,
+      "repair_attempts": 1,
+      "mcp_request_count": 55,
+      "reported_wall_seconds": 362.54278625000006,
+      "reported_cost_usd": 1.4604844,
+      "cost_missing_stages": 1
+    }
+  },
+  "design_static_results": {
+    "scope": "Actual design delivery/staticqualification only; behavior results still pending. Both105%capfail preserved, no authorcorrectionorcriteriaamendment; requestedfewreal-task diagnostics stillrun,but no promotion/heldouteligible.",
+    "prospective_commit": "fc30e8e",
+    "branches": [
+      {
+        "arm": "branch-a",
+        "requested_model": "claude-opus-5-5",
+        "observed_models": [
+          "claude-opus-5-5"
+        ],
+        "observed_session_id": "6bc54591-f662-41a5-a299-e40723d04135",
+        "effective_tools": [
+          "StructuredOutput"
+        ],
+        "medium_effort_requested": true,
+        "provider_delivery_valid": true,
+        "wall_seconds": 53.69443516699539,
+        "candidate_bytes": 7731,
+        "incumbent_bytes": 7074,
+        "registered_max_bytes": 7427.700000000001,
+        "size_gate_passed": false,
+        "promotion_eligible": false,
+        "links_valid": true,
+        "skill_validation": "Skill is valid!",
+        "skill_sha256": "b5ce87bdd7d01ce190f3b46a7522fcbd3e5d4ae894d082f6d84f333e262f22ef",
+        "raw_proposal_sha256": "ec94b0fb8314e07ac74c5866ff5b9d16ec44fefd12e2f1d9143f99153a29c4e7",
+        "request_sha256": "b465572aeb109f24138d34e0a26d896d534998b0ca0d9ca7836f29872dd8bf27",
+        "receipt_sha256": "c4cbef29d98c4bb157b2a4d3ab6adb05a1aa7bbb0cd12330ab473c87be3be495",
+        "stream_sha256": "1fb67c8193f85644691ec1a3442be85e5b60e29951b94e253692a5acc8b4cdc9",
+        "transformation": "Returned skill_md written exactly with one final newline normalized; no content edits."
+      },
+      {
+        "arm": "branch-b",
+        "requested_model": "claude-opus-5-5",
+        "observed_models": [
+          "claude-opus-5-5"
+        ],
+        "observed_session_id": "3e4742ed-d895-4de2-8d9b-84d12e59dbde",
+        "effective_tools": [
+          "StructuredOutput"
+        ],
+        "medium_effort_requested": true,
+        "provider_delivery_valid": true,
+        "wall_seconds": 52.949186582998664,
+        "candidate_bytes": 7822,
+        "incumbent_bytes": 7074,
+        "registered_max_bytes": 7427.700000000001,
+        "size_gate_passed": false,
+        "promotion_eligible": false,
+        "links_valid": true,
+        "skill_validation": "Skill is valid!",
+        "skill_sha256": "cd0a3dff92a12203914063c19b5224699e3983ee0b488f3fe530ef7c88681210",
+        "raw_proposal_sha256": "b54cb7ffcc033badae910264f948c7cb0a03c37bccd06f4ddf65bea325113c51",
+        "request_sha256": "bd9f46f8f55534342674bb01cd1ddd0f0e655dab444f94b43be8631e4cbaabec",
+        "receipt_sha256": "72a8389747a8f1a98d6960e274b89afda93926cbf6072449529589f31d69bc50",
+        "stream_sha256": "e7fa6fcc9bfe6d54d0a55341802d2f42554891107c4a67e3a3cfbff84ce97471",
+        "transformation": "Returned skill_md written exactly with one final newline normalized; no content edits."
+      }
+    ]
+  },
+  "design_call_overhead": [
+    {
+      "arm": "branch-a",
+      "observed_models": [
+        "claude-opus-5-5"
+      ],
+      "reported_usage": {
+        "input_tokens": 2,
+        "cache_creation_input_tokens": 19037,
+        "cache_read_input_tokens": 0,
+        "output_tokens": 5706,
+        "output_tokens_details": {
+          "thinking_tokens": 1734
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 19037,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "inference_geo": "global",
+        "iterations": [
+          {
+            "input_tokens": 2,
+            "output_tokens": 5706,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 19037,
+            "cache_creation": {
+              "ephemeral_5m_input_tokens": 0,
+              "ephemeral_1h_input_tokens": 19037
+            },
+            "type": "message"
+          }
+        ],
+        "speed": "standard",
+        "fallback_credit": null
+      },
+      "reported_cost_usd": 0.266424,
+      "wall_seconds": 53.69443516699539,
+      "mcp_requests": 0,
+      "cost_scope": "Separate design-call overhead, excluded from selection MCP request proxy"
+    },
+    {
+      "arm": "branch-b",
+      "observed_models": [
+        "claude-opus-5-5"
+      ],
+      "reported_usage": {
+        "input_tokens": 2,
+        "cache_creation_input_tokens": 19037,
+        "cache_read_input_tokens": 0,
+        "output_tokens": 5731,
+        "output_tokens_details": {
+          "thinking_tokens": 1967
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 19037,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "inference_geo": "global",
+        "iterations": [
+          {
+            "input_tokens": 2,
+            "output_tokens": 5731,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 19037,
+            "cache_creation": {
+              "ephemeral_5m_input_tokens": 0,
+              "ephemeral_1h_input_tokens": 19037
+            },
+            "type": "message"
+          }
+        ],
+        "speed": "standard",
+        "fallback_credit": null
+      },
+      "reported_cost_usd": 0.266924,
+      "wall_seconds": 52.949186582998664,
+      "mcp_requests": 0,
+      "cost_scope": "Separate design-call overhead, excluded from selection MCP request proxy"
+    }
+  ],
+  "controller_fidelity": {
+    "registered_max_concurrent_task_calls": 2,
+    "observed_overlap": 3,
+    "overlap_seconds": 44.47650804200384,
+    "overlapped_calls": [
+      "tweed-pr26--branch-a/repair",
+      "tweed-pr45--branch-b/solve",
+      "tweed-pr45--incumbent/solve"
+    ],
+    "timing_basis": "Retained request mtimes plus stage wall durations; independently audited controller chronology",
+    "pause_after_repair_complete": true,
+    "pause_fixed_overlap": false,
+    "strict_comparative_inference_qualified": false
+  },
+  "promotion": {
+    "promoted": false,
+    "reason": "Both original candidates exceed the frozen105% entrypoint-size cap; neither is eligible regardless of task diagnostics. No correction or criterion amendment.",
+    "confirmation_run": false
+  },
+  "native_checker_model_identity": "unobserved",
+  "source_binding_scope": "Retained current-byte receipts/source/patch hashes; no absolute continuous-immutability claim",
+  "provider_thinking_exported": false,
+  "setup_handling": "Source-preserving restoration before task inference; proposed helper change archived unused",
+  "limitations": [
+    "One small historical task panel and one fresh-context design fan-out, not periodic fork-and-flush replication.",
+    "Only SKILL.md differs; common refs/toolkit and actual requested solver route are held fixed.",
+    "The shared475 toolkit already implements/documents run --json; actual modern reference/test reads differ across arms. Authorized common exposure is not private oracle leakage, but the PR45 slice is not blind to a related current solution recipe.",
+    "Installed0.8 and original0.6 are not these comparison controls.",
+    "Timeout is a retained stage deadline/missing-delivery observation; causal attribution is not assumed environmental or protocol failure.",
+    "Author complete/remaining preserved verbatim, separate from independent current software gates.",
+    "Reported usage/cost is provider metadata, not independently billed-account cost."
+  ]
+}

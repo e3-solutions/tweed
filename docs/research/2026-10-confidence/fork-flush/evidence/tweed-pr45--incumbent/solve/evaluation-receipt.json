@@ -1,0 +1,65 @@
+{
+  "process": {
+    "argv": [
+      "/opt/homebrew/opt/python@3.14/bin/python3.14",
+      "-B",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/evaluate.py",
+      "--workspace",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--incumbent/solve/after/source",
+      "--task-id",
+      "tweed-pr45"
+    ],
+    "exit_code": 0,
+    "timed_out": false,
+    "wall_seconds": 1.347678584003006,
+    "stdout": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--incumbent/solve/evaluation/grader.stdout",
+    "stderr": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--incumbent/solve/evaluation/grader.stderr",
+    "stdout_sha256": "c835138a16dba1387821750f92e73599c2ab8b7dabbd3bdc77f121995982682e",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "process_cleanup_scope": "original_process_group",
+    "detached_descendants_contained": false
+  },
+  "header": {
+    "task_id": "tweed-pr45",
+    "exit_code": 0,
+    "passed": true,
+    "oracle_passed": true,
+    "required_behavior_passed": true,
+    "negative_boundaries_passed": true,
+    "baseline_passed": true,
+    "baseline_receipts": [
+      {
+        "argv": [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "skills/confidence-protocol/tests",
+          "-p",
+          "test_confidence.py",
+          "-k",
+          "test_run_records_failure_and_returns_child_status"
+        ],
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout": "",
+        "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.141s\n\nOK\n",
+        "wall_seconds": 0.22286679200624349,
+        "process_cleanup_scope": "original_process_group",
+        "detached_descendants_contained": false
+      }
+    ],
+    "scope_violations": [],
+    "source_current": true,
+    "setup_status": "verified",
+    "failed_requirements": [],
+    "source_before_sha256": "21496aa35a1253107eafd70144d63cd77062aec69141db654d133e491aef2fbb",
+    "source_after_sha256": "21496aa35a1253107eafd70144d63cd77062aec69141db654d133e491aef2fbb",
+    "output_sha256": "1337a9617b82b441acd9e0868f2c2d14f751d8f6413f647bc9b58674a0fe8b08"
+  },
+  "source_sha256": "21496aa35a1253107eafd70144d63cd77062aec69141db654d133e491aef2fbb",
+  "source_unchanged": true,
+  "qualified_evaluation": true
+}

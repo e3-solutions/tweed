@@ -1,0 +1,1 @@
+{"id": "db07528df9da4cfe8df22568bbefa7e8", "argv": ["/bin/sh", "-c", "env -u CONFIDENCE_DISABLE_DIAGNOSTICS python3 -B -m unittest discover -s skills/confidence-protocol/tests -p test_diagnostics.py 2>&1 | grep -A25 '^FAIL:'"], "timeout": 39.3644380569458}

@@ -1,0 +1,34 @@
+{
+  "passed": true,
+  "offline": true,
+  "hosted_inference_calls": 0,
+  "provider": "opus",
+  "actor_cwd": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--incumbent/workspace",
+  "readonly": false,
+  "connected": true,
+  "effective_mcp_tools": [
+    "list_files",
+    "read_file",
+    "write_file",
+    "replace_text",
+    "run_tests",
+    "confidence",
+    "request_review"
+  ],
+  "expected_mcp_tools": [
+    "list_files",
+    "read_file",
+    "write_file",
+    "replace_text",
+    "run_tests",
+    "confidence",
+    "request_review"
+  ],
+  "list_files_succeeded": true,
+  "readonly_write_denied": null,
+  "exit_code": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_sha256": "b59016f5fd97089760be13ee253a6e3a81173289e4871509fa99eb5a66f6121f",
+  "config_argument": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--incumbent/solve/qualification/server-config.json",
+  "config_argument_is_absolute": true
+}

@@ -1,0 +1,1 @@
+{"id": "a26e988bb9e541a389b20ab4c37c098b", "argv": ["/bin/bash", "-c", "grep -n 'RECEIPT_MAX_BYTES\\|def emit\\|json.dumps\\|sys.stdout\\|def .*receipt' bonaparte; git status --short"], "timeout": 90.0}

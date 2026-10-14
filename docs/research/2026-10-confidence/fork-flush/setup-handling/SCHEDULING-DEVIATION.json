@@ -1,0 +1,14 @@
+{
+  "registered_max_concurrent_task_calls": 2,
+  "observed_overlap": 3,
+  "overlap_seconds": 44.47650804200384,
+  "overlapped_calls": [
+    "tweed-pr26--branch-a/repair",
+    "tweed-pr45--branch-b/solve",
+    "tweed-pr45--incumbent/solve"
+  ],
+  "timing_basis": "Retained request mtimes plus stage wall durations; independently audited controller chronology",
+  "pause_after_repair_complete": true,
+  "pause_fixed_overlap": false,
+  "strict_comparative_inference_qualified": false
+}

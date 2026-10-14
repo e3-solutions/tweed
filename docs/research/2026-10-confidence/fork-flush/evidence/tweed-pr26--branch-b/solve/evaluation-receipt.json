@@ -1,0 +1,59 @@
+{
+  "process": {
+    "argv": [
+      "/opt/homebrew/opt/python@3.14/bin/python3.14",
+      "-B",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/evaluate.py",
+      "--workspace",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-b/solve/after/source",
+      "--task-id",
+      "tweed-pr26"
+    ],
+    "exit_code": 0,
+    "timed_out": false,
+    "wall_seconds": 0.23157595800148556,
+    "stdout": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-b/solve/evaluation/grader.stdout",
+    "stderr": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-b/solve/evaluation/grader.stderr",
+    "stdout_sha256": "f68f93239b14a6be5bb77bcc2d76836362c5ad9ea06ae4a59d52cfa7b64db2f0",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "process_cleanup_scope": "original_process_group",
+    "detached_descendants_contained": false
+  },
+  "header": {
+    "task_id": "tweed-pr26",
+    "exit_code": 0,
+    "passed": true,
+    "oracle_passed": true,
+    "required_behavior_passed": true,
+    "negative_boundaries_passed": true,
+    "baseline_passed": true,
+    "baseline_receipts": [
+      {
+        "argv": [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex"
+        ],
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout": "",
+        "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n",
+        "wall_seconds": 0.08501320800132817,
+        "process_cleanup_scope": "original_process_group",
+        "detached_descendants_contained": false
+      }
+    ],
+    "scope_violations": [],
+    "source_current": true,
+    "setup_status": "verified",
+    "failed_requirements": [],
+    "source_before_sha256": "28a1d0f2c44bfdb332fe08db23dcb0248789eb7b7e5d6f5a484ee2460129203a",
+    "source_after_sha256": "28a1d0f2c44bfdb332fe08db23dcb0248789eb7b7e5d6f5a484ee2460129203a",
+    "output_sha256": "b8928ad9c6e78a3c32e5da5e243328e8a879ec7af9dada544c73c7520e4ecab0"
+  },
+  "source_sha256": "28a1d0f2c44bfdb332fe08db23dcb0248789eb7b7e5d6f5a484ee2460129203a",
+  "source_unchanged": true,
+  "qualified_evaluation": true
+}

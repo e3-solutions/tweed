@@ -1,0 +1,59 @@
+{
+  "eligible": true,
+  "failures": [],
+  "inventory": {
+    "passed": true,
+    "basis": "live_claude_init",
+    "connected": true,
+    "missing_tools": [],
+    "unexpected_tools": [],
+    "effective_tools": [
+      "StructuredOutput",
+      "mcp__cp_trial__confidence",
+      "mcp__cp_trial__list_files",
+      "mcp__cp_trial__read_file",
+      "mcp__cp_trial__replace_text",
+      "mcp__cp_trial__request_review",
+      "mcp__cp_trial__run_tests",
+      "mcp__cp_trial__write_file"
+    ],
+    "schema_output_tool": "StructuredOutput",
+    "strict_seven_tool_parity": false,
+    "local": {
+      "passed": true,
+      "offline": true,
+      "hosted_inference_calls": 0,
+      "provider": "opus",
+      "actor_cwd": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-b/workspace",
+      "readonly": false,
+      "connected": true,
+      "effective_mcp_tools": [
+        "list_files",
+        "read_file",
+        "write_file",
+        "replace_text",
+        "run_tests",
+        "confidence",
+        "request_review"
+      ],
+      "expected_mcp_tools": [
+        "list_files",
+        "read_file",
+        "write_file",
+        "replace_text",
+        "run_tests",
+        "confidence",
+        "request_review"
+      ],
+      "list_files_succeeded": true,
+      "readonly_write_denied": null,
+      "exit_code": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "4a38b8443f98eb7625d6dc89eea19addab5cdb6d4a03447327a905ff45fbdd2d",
+      "config_argument": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-b/solve/qualification/server-config.json",
+      "config_argument_is_absolute": true
+    }
+  },
+  "model_attribution": "assistant_event_observed",
+  "actual_model": "claude-opus-5-5"
+}

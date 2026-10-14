@@ -1,0 +1,171 @@
+{
+  "process_exit": 0,
+  "timed_out": false,
+  "wall_seconds": 125.15352491699741,
+  "process_cleanup_scope": "original_process_group",
+  "detached_descendants_contained": false,
+  "guarded_new_session_processes": 1,
+  "process_cleanup_seconds": 2.499999391147867e-05,
+  "stream_changed_during_cleanup": false,
+  "requested_effort": "high",
+  "observed_assistant_models": [
+    "claude-opus-5-5"
+  ],
+  "usage": {
+    "input_tokens": 24,
+    "cache_creation_input_tokens": 57681,
+    "cache_read_input_tokens": 384603,
+    "output_tokens": 9996,
+    "output_tokens_details": {
+      "thinking_tokens": 3175
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 57681,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 1270,
+        "cache_read_input_tokens": 57478,
+        "cache_creation_input_tokens": 2397,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 2397
+        },
+        "type": "message"
+      }
+    ],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 24,
+      "outputTokens": 9996,
+      "cacheReadInputTokens": 384603,
+      "cacheCreationInputTokens": 57681,
+      "webSearchRequests": 0,
+      "costUSD": 0.7383845999999998,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 3175,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "total_cost_usd": 0.7383845999999998,
+  "terminal": {
+    "duration_api_ms": 93197,
+    "stop_reason": "tool_use",
+    "session_id": "36bae5cd-b9e0-4618-889c-38d2bb652929",
+    "total_cost_usd": 0.7383845999999998,
+    "usage": {
+      "input_tokens": 24,
+      "cache_creation_input_tokens": 57681,
+      "cache_read_input_tokens": 384603,
+      "output_tokens": 9996,
+      "output_tokens_details": {
+        "thinking_tokens": 3175
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 57681,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "global",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 1270,
+          "cache_read_input_tokens": 57478,
+          "cache_creation_input_tokens": 2397,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 2397
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard",
+      "fallback_credit": null
+    },
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 24,
+        "outputTokens": 9996,
+        "cacheReadInputTokens": 384603,
+        "cacheCreationInputTokens": 57681,
+        "webSearchRequests": 0,
+        "costUSD": 0.7383845999999998,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 3175,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "permission_denials": [],
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "fast_mode_disabled_reason": "sdk_opt_in_required",
+    "subagent_stats": {
+      "spawned": 0,
+      "requested": {
+        "background": 0,
+        "foreground": 0,
+        "unset": 0
+      },
+      "started_in_background": 0,
+      "max_depth": 0,
+      "spawned_by_subagents": 0,
+      "completed": 0,
+      "failed": 0,
+      "killed": {
+        "parent": 0,
+        "user": 0,
+        "system": 0
+      },
+      "refused": {
+        "depth_limit": 0,
+        "concurrency_limit": 0,
+        "budget": 0
+      },
+      "by_type": {}
+    },
+    "is_error": false,
+    "num_turns": 22,
+    "subtype": "success",
+    "api_error_status": null,
+    "result": "{\"complete\":true,\"summary\":\"I added a public `--json` option to `run` in skills/confidence-protocol/scripts/confidence.py, which is the only file changed (+42/-2). With `--json`, captured output is no longer replayed to stdout. stdout gets one compact JSON line instead: `{\\\"id\\\",\\\"exit_code\\\",\\\"record\\\":\\\"runs/<id>.json\\\",\\\"log\\\":\\\"runs/<id>.log\\\",\\\"workspace_binding\\\"}`. Both paths are relative to the evidence directory. The full log is still captured and hashed, so `log_sha256` in the record covers every byte, including binary output.\\n\\n`workspace_binding` compares a Git workspace fingerprint taken before the child starts with one taken after it stops (the evidence directory is left out). It is \\\"unchanged\\\" only when both fingerprints exist and match, \\\"changed\\\" when both exist and differ, and \\\"unknown\\\" otherwise. That covers non-Git directories and Git not being installed. A new small helper turns a missing `git` binary into \\\"unknown\\\"; before this change it would have crashed the run. The same value is also saved in the run record as a new `workspace_binding` field.\\n\\nWithout `--json`, output is still replayed byte-for-byte. The CLI exit code works as before: a child's nonzero status comes through, and the signed status (for example -15 for SIGTERM) is kept in both the record and the receipt, while the CLI exits 143.\\n\\nChecks:\\n- The visible check `test_run_records_failure_and_returns_child_status` passed after the final edit.\\n- The full skills test suite ran 50 tests and 45 passed. The 5 errors were all telemetry tests in test_diagnostics.py, caused by the harness setting `CONFIDENCE_DISABLE_DIAGNOSTICS=1`. With that variable unset, all 15 test_diagnostics tests passed. I didn't rerun the other 35 tests that way, but this change doesn't touch telemetry.\\n- A temporary probe I wrote ran in a scratch Git repo, and all 22 assertions passed. It covered: binary output with exit 3 (exit code, a single compact receipt line, exactly the five keys, relative paths, the log matching byte-for-byte, the record's SHA256 and exit code); \\\"unchanged\\\" when only evidence files were written; \\\"changed\\\" after editing a tracked file, after creating an untracked file, and when a failing child (exit 5) edits a file; \\\"unknown\\\" for a non-Git directory and when Git is not on PATH; SIGTERM giving -15 in the receipt with CLI exit 143; and default mode replaying the exact binary output with child status 3.\\n\\nI deleted the probe afterwards; `git status` shows only confidence.py modified. All checks were my own as the author; no independent review was done in this stage.\\n\\nKnown limits: if a file changes during the run and is restored before it ends, it will still be reported as \\\"unchanged\\\". The record's `workspace` field remains the after-run fingerprint, so `validate` does not yet treat a \\\"changed\\\" run as stale. The other PR45 changes (recovery, recording, release, docs) were left out as specified.\",\"remaining\":[\"Accepted exclusion: other PR45 recovery/recording/release/documentation changes are out of scope as specified.\",\"Known limit: a file changed and then restored during the run is reported unchanged; validation does not yet consult workspace_binding (excluded as part of the recording/validation changes).\"]}",
+    "structured_output": {
+      "complete": true,
+      "summary": "I added a public `--json` option to `run` in skills/confidence-protocol/scripts/confidence.py, which is the only file changed (+42/-2). With `--json`, captured output is no longer replayed to stdout. stdout gets one compact JSON line instead: `{\"id\",\"exit_code\",\"record\":\"runs/<id>.json\",\"log\":\"runs/<id>.log\",\"workspace_binding\"}`. Both paths are relative to the evidence directory. The full log is still captured and hashed, so `log_sha256` in the record covers every byte, including binary output.\n\n`workspace_binding` compares a Git workspace fingerprint taken before the child starts with one taken after it stops (the evidence directory is left out). It is \"unchanged\" only when both fingerprints exist and match, \"changed\" when both exist and differ, and \"unknown\" otherwise. That covers non-Git directories and Git not being installed. A new small helper turns a missing `git` binary into \"unknown\"; before this change it would have crashed the run. The same value is also saved in the run record as a new `workspace_binding` field.\n\nWithout `--json`, output is still replayed byte-for-byte. The CLI exit code works as before: a child's nonzero status comes through, and the signed status (for example -15 for SIGTERM) is kept in both the record and the receipt, while the CLI exits 143.\n\nChecks:\n- The visible check `test_run_records_failure_and_returns_child_status` passed after the final edit.\n- The full skills test suite ran 50 tests and 45 passed. The 5 errors were all telemetry tests in test_diagnostics.py, caused by the harness setting `CONFIDENCE_DISABLE_DIAGNOSTICS=1`. With that variable unset, all 15 test_diagnostics tests passed. I didn't rerun the other 35 tests that way, but this change doesn't touch telemetry.\n- A temporary probe I wrote ran in a scratch Git repo, and all 22 assertions passed. It covered: binary output with exit 3 (exit code, a single compact receipt line, exactly the five keys, relative paths, the log matching byte-for-byte, the record's SHA256 and exit code); \"unchanged\" when only evidence files were written; \"changed\" after editing a tracked file, after creating an untracked file, and when a failing child (exit 5) edits a file; \"unknown\" for a non-Git directory and when Git is not on PATH; SIGTERM giving -15 in the receipt with CLI exit 143; and default mode replaying the exact binary output with child status 3.\n\nI deleted the probe afterwards; `git status` shows only confidence.py modified. All checks were my own as the author; no independent review was done in this stage.\n\nKnown limits: if a file changes during the run and is restored before it ends, it will still be reported as \"unchanged\". The record's `workspace` field remains the after-run fingerprint, so `validate` does not yet treat a \"changed\" run as stale. The other PR45 changes (recovery, recording, release, docs) were left out as specified.",
+      "remaining": [
+        "Accepted exclusion: other PR45 recovery/recording/release/documentation changes are out of scope as specified.",
+        "Known limit: a file changed and then restored during the run is reported unchanged; validation does not yet consult workspace_binding (excluded as part of the recording/validation changes)."
+      ]
+    },
+    "ttft_ms": 1558,
+    "type": "result",
+    "duration_ms": 124527,
+    "uuid": "c91f911c-ee17-4803-86c6-671b48920360",
+    "ttft_stream_ms": 1212,
+    "time_to_request_ms": 251,
+    "first_content_frame_ms": 1212,
+    "queued_turn_count": 0,
+    "result_index": 0
+  }
+}

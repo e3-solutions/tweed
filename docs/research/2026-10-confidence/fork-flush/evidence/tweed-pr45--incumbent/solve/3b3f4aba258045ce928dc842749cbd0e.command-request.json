@@ -1,0 +1,1 @@
+{"id": "3b3f4aba258045ce928dc842749cbd0e", "argv": ["/bin/bash", "-c", "grep -E '^(ERROR|FAIL):|Error:|Error\\b' $TMPDIR/u.txt | sort | uniq -c | head -30 > $TMPDIR/s; while IFS= read -r l; do echo \"$l\"; done < $TMPDIR/s"], "timeout": 36.258790254592896}

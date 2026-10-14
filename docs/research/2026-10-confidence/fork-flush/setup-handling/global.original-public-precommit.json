@@ -1,0 +1,220 @@
+{
+  "passed": true,
+  "scope": "Both selection tasks and prospective amended confirmation baseline; old failed confirmation prefix retained",
+  "hosted_model_calls": 0,
+  "driver_sha256": "6b5b3e17864a428a135d87c4c069a2d05132921f881a62c2fa6f9c2ae462db13",
+  "tasks_sha256": "8b77cd481fbc94172d7d8c5d103f55359bbb8986e603740367de929bc732613b",
+  "tasks": [
+    {
+      "task_id": "tweed-pr26",
+      "passed": true,
+      "hosted_model_calls": 0,
+      "effective_tools": [
+        "list_files",
+        "read_file",
+        "write_file",
+        "replace_text",
+        "run_tests",
+        "confidence",
+        "request_review"
+      ],
+      "expected_tools": [
+        "list_files",
+        "read_file",
+        "write_file",
+        "replace_text",
+        "run_tests",
+        "confidence",
+        "request_review"
+      ],
+      "outside_read_denied_api": true,
+      "outside_read_denied_executed_child": true,
+      "baseline_commands": [
+        [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex"
+        ]
+      ],
+      "baseline_results": [
+        {
+          "argv": [
+            "/usr/bin/sandbox-exec",
+            "-p",
+            "(version 1)\n(deny default)\n(allow process-fork)\n(allow process-exec)\n(allow signal (target same-sandbox))\n(allow file-read* (literal \"/\") (literal \"/Library\") (literal \"/Library/Developer\") (literal \"/Users\") (literal \"/Users/aryagm\") (literal \"/Users/aryagm/.codex\") (literal \"/Users/aryagm/.codex/worktrees\") (literal \"/Users/aryagm/.codex/worktrees/b6ce\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/tweed-pr26\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/tweed-pr26/controlled-prefix\") (literal \"/opt\") (literal \"/opt/homebrew\") (subpath \"/System\") (subpath \"/usr\") (subpath \"/bin\") (subpath \"/opt/homebrew/bin\") (subpath \"/opt/homebrew/lib\") (subpath \"/opt/homebrew/opt\") (subpath \"/opt/homebrew/Cellar\") (subpath \"/opt/homebrew/Frameworks\") (subpath \"/Library/Frameworks\") (subpath \"/Library/Developer/CommandLineTools\") (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/tweed-pr26/workspace\") (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/tweed-pr26/controlled-prefix/execution-scratch\") (literal \"/dev/null\") (literal \"/dev/urandom\") (literal \"/dev/random\"))\n(allow file-write* (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/tweed-pr26/workspace\") (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/tweed-pr26/controlled-prefix/execution-scratch\"))\n(allow file-write* (literal \"/dev/null\"))\n(deny file-write* (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/tweed-pr26/workspace/.protocol\"))\n(deny file-write* (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/tweed-pr26/workspace/.git\"))\n(deny file-write* (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/tweed-pr26/workspace/AGENTS.md\"))",
+            "/opt/homebrew/opt/python@3.14/bin/python3.14",
+            "-B",
+            "-m",
+            "unittest",
+            "tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex"
+          ],
+          "exit_code": 0,
+          "timed_out": false,
+          "wall_seconds": 0.13330037500418257,
+          "stdout": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/tweed-pr26/controlled-prefix/command-2d82576e7fb64e1a829dda1305a9cf96.stdout",
+          "stderr": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/tweed-pr26/controlled-prefix/command-2d82576e7fb64e1a829dda1305a9cf96.stderr",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "fb184ea57734512b1f088f9181209901b9cd46df3eb7eaa2500ea9e48dde20b5",
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false,
+          "output": "",
+          "error_output": ".\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n"
+        }
+      ],
+      "process_exit": 0,
+      "timed_out": false,
+      "stdout_sha256": "b1f16d63588f1f0b5a01ca50d2fbeaa666f8a8ebcb484bccb5def22c9555dff8",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command_path": "actual MCP run_tests -> WorkspaceTools.execute -> existing sandbox service_commands",
+      "control_scope": "workspace only; fresh outside execution scratch; no oracle/history/network",
+      "receipt_sha256": "6824342a20f44a133773c012d21fdbeaeac5b4ff368a84f405ab422a2f93ea45"
+    },
+    {
+      "task_id": "tweed-pr45",
+      "passed": true,
+      "hosted_model_calls": 0,
+      "effective_tools": [
+        "list_files",
+        "read_file",
+        "write_file",
+        "replace_text",
+        "run_tests",
+        "confidence",
+        "request_review"
+      ],
+      "expected_tools": [
+        "list_files",
+        "read_file",
+        "write_file",
+        "replace_text",
+        "run_tests",
+        "confidence",
+        "request_review"
+      ],
+      "outside_read_denied_api": true,
+      "outside_read_denied_executed_child": true,
+      "baseline_commands": [
+        [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "skills/confidence-protocol/tests",
+          "-p",
+          "test_confidence.py",
+          "-k",
+          "test_run_records_failure_and_returns_child_status"
+        ]
+      ],
+      "baseline_results": [
+        {
+          "argv": [
+            "/usr/bin/sandbox-exec",
+            "-p",
+            "(version 1)\n(deny default)\n(allow process-fork)\n(allow process-exec)\n(allow signal (target same-sandbox))\n(allow file-read* (literal \"/\") (literal \"/Library\") (literal \"/Library/Developer\") (literal \"/Users\") (literal \"/Users/aryagm\") (literal \"/Users/aryagm/.codex\") (literal \"/Users/aryagm/.codex/worktrees\") (literal \"/Users/aryagm/.codex/worktrees/b6ce\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/tweed-pr45\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/tweed-pr45/controlled-prefix\") (literal \"/opt\") (literal \"/opt/homebrew\") (subpath \"/System\") (subpath \"/usr\") (subpath \"/bin\") (subpath \"/opt/homebrew/bin\") (subpath \"/opt/homebrew/lib\") (subpath \"/opt/homebrew/opt\") (subpath \"/opt/homebrew/Cellar\") (subpath \"/opt/homebrew/Frameworks\") (subpath \"/Library/Frameworks\") (subpath \"/Library/Developer/CommandLineTools\") (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/tweed-pr45/workspace\") (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/tweed-pr45/controlled-prefix/execution-scratch\") (literal \"/dev/null\") (literal \"/dev/urandom\") (literal \"/dev/random\"))\n(allow file-write* (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/tweed-pr45/workspace\") (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/tweed-pr45/controlled-prefix/execution-scratch\"))\n(allow file-write* (literal \"/dev/null\"))\n(deny file-write* (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/tweed-pr45/workspace/.protocol\"))\n(deny file-write* (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/tweed-pr45/workspace/.git\"))\n(deny file-write* (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/tweed-pr45/workspace/AGENTS.md\"))",
+            "/opt/homebrew/opt/python@3.14/bin/python3.14",
+            "-B",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "skills/confidence-protocol/tests",
+            "-p",
+            "test_confidence.py",
+            "-k",
+            "test_run_records_failure_and_returns_child_status"
+          ],
+          "exit_code": 0,
+          "timed_out": false,
+          "wall_seconds": 0.7759802919972572,
+          "stdout": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/tweed-pr45/controlled-prefix/command-206df13a1ef44311affe59da161b0f57.stdout",
+          "stderr": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/tweed-pr45/controlled-prefix/command-206df13a1ef44311affe59da161b0f57.stderr",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "dbafe6f828f3c5388eab0e5878d75d966506986a44cdd7bc778d3fc11ff87a14",
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false,
+          "output": "",
+          "error_output": ".\n----------------------------------------------------------------------\nRan 1 test in 0.657s\n\nOK\n"
+        }
+      ],
+      "process_exit": 0,
+      "timed_out": false,
+      "stdout_sha256": "fdae02a07deacd897c5b80429c727c69ad25689b1650e7813986899440aff923",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command_path": "actual MCP run_tests -> WorkspaceTools.execute -> existing sandbox service_commands",
+      "control_scope": "workspace only; fresh outside execution scratch; no oracle/history/network",
+      "receipt_sha256": "9fbe43fd4e6726d1365b941cad6d231fc70d5adda7e243644df802f215eda51f"
+    }
+  ],
+  "confirmation_preflight": {
+    "task_id": "tweed-pr18",
+    "passed": true,
+    "hosted_model_calls": 0,
+    "effective_tools": [
+      "list_files",
+      "read_file",
+      "write_file",
+      "replace_text",
+      "run_tests",
+      "confidence",
+      "request_review"
+    ],
+    "expected_tools": [
+      "list_files",
+      "read_file",
+      "write_file",
+      "replace_text",
+      "run_tests",
+      "confidence",
+      "request_review"
+    ],
+    "outside_read_denied_api": true,
+    "outside_read_denied_executed_child": true,
+    "baseline_commands": [
+      [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "tests.test_bonaparte.BonaparteRunnerTests.test_coordinator_reasoning_is_medium"
+      ]
+    ],
+    "baseline_results": [
+      {
+        "argv": [
+          "/usr/bin/sandbox-exec",
+          "-p",
+          "(version 1)\n(deny default)\n(allow process-fork)\n(allow process-exec)\n(allow signal (target same-sandbox))\n(allow file-read* (literal \"/\") (literal \"/Library\") (literal \"/Library/Developer\") (literal \"/Users\") (literal \"/Users/aryagm\") (literal \"/Users/aryagm/.codex\") (literal \"/Users/aryagm/.codex/worktrees\") (literal \"/Users/aryagm/.codex/worktrees/b6ce\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/pr18-amended-baseline\") (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/pr18-amended-baseline/controlled-prefix\") (literal \"/opt\") (literal \"/opt/homebrew\") (subpath \"/System\") (subpath \"/usr\") (subpath \"/bin\") (subpath \"/opt/homebrew/bin\") (subpath \"/opt/homebrew/lib\") (subpath \"/opt/homebrew/opt\") (subpath \"/opt/homebrew/Cellar\") (subpath \"/opt/homebrew/Frameworks\") (subpath \"/Library/Frameworks\") (subpath \"/Library/Developer/CommandLineTools\") (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/pr18-amended-baseline/workspace\") (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/pr18-amended-baseline/controlled-prefix/execution-scratch\") (literal \"/dev/null\") (literal \"/dev/urandom\") (literal \"/dev/random\"))\n(allow file-write* (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/pr18-amended-baseline/workspace\") (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/pr18-amended-baseline/controlled-prefix/execution-scratch\"))\n(allow file-write* (literal \"/dev/null\"))\n(deny file-write* (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/pr18-amended-baseline/workspace/.protocol\"))\n(deny file-write* (subpath \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/pr18-amended-baseline/workspace/.git\"))\n(deny file-write* (literal \"/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/pr18-amended-baseline/workspace/AGENTS.md\"))",
+          "/opt/homebrew/opt/python@3.14/bin/python3.14",
+          "-B",
+          "-m",
+          "unittest",
+          "tests.test_bonaparte.BonaparteRunnerTests.test_coordinator_reasoning_is_medium"
+        ],
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 0.1324235830034013,
+        "stdout": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/pr18-amended-baseline/controlled-prefix/command-eff24a2429984a198fb2e072ab42cde7.stdout",
+        "stderr": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/runtime-preflight/pr18-amended-baseline/controlled-prefix/command-eff24a2429984a198fb2e072ab42cde7.stderr",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "fb184ea57734512b1f088f9181209901b9cd46df3eb7eaa2500ea9e48dde20b5",
+        "process_cleanup_scope": "original_process_group",
+        "detached_descendants_contained": false,
+        "output": "",
+        "error_output": ".\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n"
+      }
+    ],
+    "process_exit": 0,
+    "timed_out": false,
+    "stdout_sha256": "bdeac938a679da412707759ca66ca3b8cc84a5864b45fe94809c032c9882378a",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "command_path": "actual MCP run_tests -> WorkspaceTools.execute -> existing sandbox service_commands",
+    "control_scope": "workspace only; fresh outside execution scratch; no oracle/history/network",
+    "receipt_sha256": "abb96262aca36ca7950b684f319ab9cd28fe89222108d9650ca8a0534d5ac9d9",
+    "prospective_baseline_amendment": true
+  }
+}

@@ -1,0 +1,36 @@
+............F..........E...E.....................................
+======================================================================
+ERROR: test_progress_fd_is_scrubbed_and_never_sent_to_children (tests.test_bonaparte.BonaparteRunnerTests.test_progress_fd_is_scrubbed_and_never_sent_to_children)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--incumbent/workspace/tests/test_bonaparte.py", line 1235, in test_progress_fd_is_scrubbed_and_never_sent_to_children
+    os.fstat(2)
+    ~~~~~~~~^^^
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_receipt_size_boundary_is_review_only (tests.test_bonaparte.BonaparteRunnerTests.test_receipt_size_boundary_is_review_only)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--incumbent/workspace/tests/test_bonaparte.py", line 1473, in test_receipt_size_boundary_is_review_only
+    serialized = RUNNER.serialize_receipt(baseline_accepted)
+  File "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--incumbent/workspace/bonaparte", line 215, in serialize_receipt
+    raise RuntimeError("receipt exceeded 4 KiB")
+RuntimeError: receipt exceeded 4 KiB
+
+======================================================================
+FAIL: test_main_uses_review_serializer_only_after_review_is_selected (tests.test_bonaparte.BonaparteRunnerTests.test_main_uses_review_serializer_only_after_review_is_selected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--incumbent/workspace/tests/test_bonaparte.py", line 1555, in test_main_uses_review_serializer_only_after_review_is_selected
+    baseline_serializer.assert_not_called()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 947, in assert_not_called
+    raise AssertionError(msg)
+AssertionError: Expected 'serialize_receipt' to not have been called. Called 1 times.
+Calls: [call({'phase': None, 'state': 'failed', 'issue': None, 'linear_url': None, 'result': None, 'summary': 'failed', 'question': None, 'next_action': 'Fix the reported problem and rerun the same phase.', 'branch': None, 'commit': None, 'pull_request_url': None, 'remote_state_changed': None, 'resume_session_id': None})].
+
+----------------------------------------------------------------------
+Ran 65 tests in 36.316s
+
+FAILED (failures=1, errors=2)

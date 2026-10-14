@@ -1,0 +1,74 @@
+{
+  "process": {
+    "argv": [
+      "/opt/homebrew/opt/python@3.14/bin/python3.14",
+      "-B",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/evaluate.py",
+      "--workspace",
+      "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-b/solve/after/source",
+      "--task-id",
+      "tweed-pr45"
+    ],
+    "exit_code": 1,
+    "timed_out": false,
+    "wall_seconds": 1.3747542499986594,
+    "stdout": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-b/solve/evaluation/grader.stdout",
+    "stderr": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-b/solve/evaluation/grader.stderr",
+    "stdout_sha256": "9fbae3ee271bc076f76a4bcb84dc708822885fe9d4b73b288d298ab663752fb2",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "process_cleanup_scope": "original_process_group",
+    "detached_descendants_contained": false
+  },
+  "header": {
+    "task_id": "tweed-pr45",
+    "exit_code": 0,
+    "passed": false,
+    "oracle_passed": true,
+    "required_behavior_passed": true,
+    "negative_boundaries_passed": true,
+    "baseline_passed": true,
+    "baseline_receipts": [
+      {
+        "argv": [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "skills/confidence-protocol/tests",
+          "-p",
+          "test_confidence.py",
+          "-k",
+          "test_run_records_failure_and_returns_child_status"
+        ],
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout": "",
+        "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.144s\n\nOK\n",
+        "wall_seconds": 0.2237909999967087,
+        "process_cleanup_scope": "original_process_group",
+        "detached_descendants_contained": false
+      }
+    ],
+    "scope_violations": [
+      "skills/confidence-protocol/tests/test_run_receipt.py"
+    ],
+    "source_current": true,
+    "setup_status": "verified",
+    "failed_requirements": [
+      {
+        "requirement": "scope",
+        "paths": [
+          "skills/confidence-protocol/tests/test_run_receipt.py"
+        ]
+      }
+    ],
+    "source_before_sha256": "f1c7b424438ae0e107063a6fd83e117304a64111ef576bd8b27ac52be49e545f",
+    "source_after_sha256": "f1c7b424438ae0e107063a6fd83e117304a64111ef576bd8b27ac52be49e545f",
+    "output_sha256": "29229d6eeb65d7a789e4c6ec06c293318bd9610900c47d76a22318f54cec9069"
+  },
+  "source_sha256": "f1c7b424438ae0e107063a6fd83e117304a64111ef576bd8b27ac52be49e545f",
+  "source_unchanged": true,
+  "qualified_evaluation": true
+}

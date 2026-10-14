@@ -4,6 +4,11 @@ This file records user-visible changes to Tweed and Confidence Protocol.
 
 ## [0.8.1] - 2026-10-13 (experimental, source only)
 
+- Evaluated two fresh-context Opus entrypoint alternatives on two real historical
+  task slices with fixed independent Codex checks. Neither is promoted: both
+  exceeded the registered size limit; deadlines and a disclosed scheduling
+  deviation limit comparison. Current guidance and installation are unchanged.
+  See `docs/research/2026-10-confidence/fork-flush/REPORT.md`.
 - Intake readiness: stop asking when no required choice or necessary fact blocks
   the next authorized action; defer optional choices visibly; keep unknown
   necessary facts as required gaps; separate reading sources from settling choices.

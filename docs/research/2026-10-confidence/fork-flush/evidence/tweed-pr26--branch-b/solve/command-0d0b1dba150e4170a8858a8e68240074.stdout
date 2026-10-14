@@ -1,0 +1,101 @@
+2:"""Run one isolated Bonaparte phase and emit one bounded receipt."""
+34:PROGRESS_MAX_BYTES = 4096
+35:RECEIPT_MAX_BYTES = 4096
+36:MAX_EVENT_CHARACTERS = 4 * 1024 * 1024
+58:RECEIPT_SCHEMA = {
+102:    """Validate the JSON Schema constraints used by coordinator receipts."""
+118:        raise RuntimeError("Codex returned an invalid receipt")
+120:        raise RuntimeError("Codex returned an invalid receipt")
+122:        raise RuntimeError("Codex returned an invalid receipt")
+126:            raise RuntimeError("Codex returned an invalid receipt")
+128:            raise RuntimeError("Codex returned an invalid receipt")
+211:def serialize_receipt(receipt: dict) -> str:
+212:    output = json.dumps(receipt, ensure_ascii=False, separators=(",", ":"))
+213:    if len(output.encode("utf-8")) > RECEIPT_MAX_BYTES:
+214:        raise RuntimeError("receipt exceeded 4 KiB")
+218:def serialize_review_receipt(receipt: dict) -> str:
+219:    output = json.dumps(receipt, ensure_ascii=False, separators=(",", ":"))
+220:    if len((output + "\n").encode("utf-8")) > RECEIPT_MAX_BYTES:
+221:        raise RuntimeError("receipt exceeded 4 KiB")
+226:    sys.stdout.write(output + "\n")
+227:    sys.stdout.flush()
+230:def emit(receipt: dict) -> None:
+231:    emit_serialized(serialize_receipt(receipt))
+808:def require_pull_request(receipt: dict, phase: str) -> None:
+811:        and receipt["state"] == "completed"
+812:        and not receipt["pull_request_url"]
+857:            "Return only the requested JSON receipt."
+892:            "Return only the requested JSON receipt. Populate every schema field and "
+918:            "secrets, or unnecessary personal data into receipts, comments, commits, "
+930:        receipt_path = temporary_path / "receipt.json"
+931:        schema_path.write_text(json.dumps(RECEIPT_SCHEMA))
+950:                str(receipt_path),
+994:        receipt = json.loads(receipt_path.read_text())
+997:        validate_schema(receipt, RECEIPT_SCHEMA)
+998:    elif not isinstance(receipt, dict) or set(receipt) != set(
+999:        RECEIPT_SCHEMA["required"]
+1001:        raise RuntimeError("Codex returned an invalid receipt")
+1002:    if receipt["phase"] != phase:
+1004:    if receipt["state"] == "completed" and (
+1005:        not receipt["issue"] or not receipt["linear_url"]
+1008:    if receipt["state"] == "completed" and (
+1009:        receipt["result"] != COMPLETED_RESULTS[phase]
+1012:    if receipt["state"] == "needs-input" and not receipt["question"]:
+1014:    if receipt["state"] == "needs-input":
+1015:        receipt["resume_session_id"] = session_id
+1017:        receipt["resume_session_id"] = None
+1018:    if phase in {"implement", "review", "publish"} and receipt["state"] == "completed":
+1019:        if not receipt["branch"] or not receipt["commit"]:
+1023:        and receipt["state"] == "completed"
+1025:        and receipt["branch"] != expected_branch
+1028:    require_pull_request(receipt, phase)
+1029:    return receipt
+1032:def _coordinator_receipt(receipt: dict) -> dict:
+1033:    return {name: receipt.get(name) for name in RECEIPT_SCHEMA["required"]}
+1089:    receipt: dict,
+1110:        "question": receipt["question"],
+1112:        "receipt": _coordinator_receipt(receipt),
+1121:        "blocker": receipt["question"],
+1122:        "remote_state_changed": receipt.get("remote_state_changed"),
+1131:def _serialized_size(receipt: dict) -> int:
+1134:            json.dumps(receipt, ensure_ascii=False, separators=(",", ":")) + "\n"
+1139:def checkpoint_receipt(
+1145:    stored = checkpoint["receipt"]
+1146:    receipt = {
+1181:    if _serialized_size(receipt) <= RECEIPT_MAX_BYTES:
+1182:        return receipt
+1184:    receipt.update(
+1186:        files_changed_truncated=bool(receipt["files_changed_total_count"]),
+1188:        checks_completed_truncated=bool(receipt["checks_completed_total_count"]),
+1190:    if _serialized_size(receipt) <= RECEIPT_MAX_BYTES:
+1191:        return receipt
+1192:    receipt.update(
+1203:    if _serialized_size(receipt) > RECEIPT_MAX_BYTES:
+1204:        receipt["question"] = (
+1208:    return receipt
+1223:    receipt = checkpoint_receipt(checkpoint, state="failed", summary=summary)
+1224:    receipt["next_action"] = "Resume this token to continue the same Codex session."
+1225:    if _serialized_size(receipt) > RECEIPT_MAX_BYTES:
+1226:        receipt["next_action"] = None
+1227:    return receipt
+1291:        receipt = run_phase(
+1319:        receipt=_coordinator_receipt(receipt),
+1323:            receipt.get("remote_state_changed"),
+1327:    if receipt["state"] == "needs-input":
+1330:            question=receipt["question"],
+1332:            blocker=receipt["question"],
+1341:        return checkpoint_receipt(checkpoint), 0
+1344:        status="completed" if receipt["state"] == "completed" else "blocked",
+1346:        activity=receipt["state"],
+1347:        blocker=receipt["summary"] if receipt["state"] == "blocked" else None,
+1349:    receipt["remote_state_changed"] = checkpoint["remote_state_changed"]
+1352:    return receipt, 0
+1365:    receipt = run_phase(
+1374:    if receipt["state"] != "needs-input":
+1375:        return receipt
+1382:        receipt,
+1389:    return checkpoint_receipt(checkpoint)
+1527:                    result_receipt, exit_code = resume_checkpoint(
+1538:                result_receipt = run_and_checkpoint(
+1549:                result_receipt = run_and_checkpoint(
+    1601 bonaparte

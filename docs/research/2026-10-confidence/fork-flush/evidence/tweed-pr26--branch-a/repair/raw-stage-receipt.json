@@ -1,0 +1,751 @@
+{
+  "cell_id": "tweed-pr26--branch-a",
+  "task_id": "tweed-pr26",
+  "arm_id": "branch-a",
+  "role": "repair",
+  "status": "completed",
+  "registration_sha256": "fcc60b8e99732336fca0ccfb28adf7753e22a2cf2c27c7ec324475f7308e90b5",
+  "protocol_inventory_before": {
+    "SKILL.md": {
+      "sha256": "b5ce87bdd7d01ce190f3b46a7522fcbd3e5d4ae894d082f6d84f333e262f22ef",
+      "mode": 420
+    },
+    "assets/contract.example.json": {
+      "sha256": "85066dbfebe8310b5414a02f8d7cc73f925987cda69ffcb508975ee0fe738112",
+      "mode": 420
+    },
+    "assets/report.example.json": {
+      "sha256": "d76fa00db14f903c423133b3a84d763b95d9dfb5e3c3170f160708e66dc8ec47",
+      "mode": 420
+    },
+    "assets/runs/invitation-authorization.json": {
+      "sha256": "676de57ab147634eefa21c7251b1385500b375bb271dca0168de867b34e5283d",
+      "mode": 420
+    },
+    "assets/runs/invitation-authorization.log": {
+      "sha256": "ec5ce487789f0bf1b922299cf02b3e3633d037e37a94d17df2b3bbbe3ed5fcc6",
+      "mode": 420
+    },
+    "assets/runs/invitation-e2e.json": {
+      "sha256": "e1d88a4c7d16e31afc9caa23bdc5576c6d758c3fbc3435d81f198eacbf156802",
+      "mode": 420
+    },
+    "assets/runs/invitation-e2e.log": {
+      "sha256": "a92b7fdcb45e1d22fc2af4c80adc6e7fc1389ff8a694010cf5e6ff0b5ffbf1f6",
+      "mode": 420
+    },
+    "references/complex-tasks.md": {
+      "sha256": "8c0396928105db561147b65b8f95b6a838ed9429efcbffc2b168030a77ae08c2",
+      "mode": 420
+    },
+    "references/evidence.md": {
+      "sha256": "bd097c352130c5199ee907199bfab369927cf8ee6f990e8133cb79a87ca01d02",
+      "mode": 420
+    },
+    "references/harnesses.md": {
+      "sha256": "6d05e95838f2a50931c734002f7179cdb61a981549c5f22cc4f2aa73e80c6c71",
+      "mode": 420
+    },
+    "references/intent-flows.md": {
+      "sha256": "d7b4461527b613f9607805f4ff6e2380ee87b47b68d44fa88b06661d544acbec",
+      "mode": 420
+    },
+    "references/model-routing.md": {
+      "sha256": "016d305701972280250c3938d5db2399807df93cf55962baaea53f89ee13fa61",
+      "mode": 420
+    },
+    "references/modes.md": {
+      "sha256": "58bdefb0a2be2a6093bd4c599e139eaf39e41c009b07aa913a51274ae90708f6",
+      "mode": 420
+    },
+    "references/question-patterns.md": {
+      "sha256": "d4815150b8418b5f747f909f4e141f8f42e6ee2890c70cf220a1ac8cf6973295",
+      "mode": 420
+    },
+    "references/report-rules.md": {
+      "sha256": "cd71fbb00b82a7b0c4811a929d1ceac8338708c59788b3a6e8ae3268b94dd61f",
+      "mode": 420
+    },
+    "references/task-profiles.md": {
+      "sha256": "83e4c88178608ab83b88829000be95962c294e2baa3444b77715d9a620c7a2a6",
+      "mode": 420
+    },
+    "scripts/confidence.py": {
+      "sha256": "8c898d5bf416990e520a1bb9b113f06ffd573854346ef4512ea5798e38d684be",
+      "mode": 420
+    },
+    "scripts/diagnostics.py": {
+      "sha256": "49a3f33e230b3598f212caad5e21315b89702c1fecaa0ffc6129220f41d25258",
+      "mode": 420
+    },
+    "tests/check_release.py": {
+      "sha256": "591177dc406102e3b83386ae1aadf0bf91d40452ec85a207b71181d99585a256",
+      "mode": 420
+    },
+    "tests/support.py": {
+      "sha256": "2ff46f81cb02720fadc665d125d211cabeae8b771604c0888322fa00c304b5b7",
+      "mode": 420
+    },
+    "tests/test_autonomy_integration.py": {
+      "sha256": "cea21305a7d291804c48ebaeb57b9c514ed589c9f8b5aeea3d2ad9f2d3fd4400",
+      "mode": 420
+    },
+    "tests/test_cancellation.py": {
+      "sha256": "6aa8dcce7fc2f62029ed0144eb838d5f0213869c9123d3cfa23cd890970ac7ed",
+      "mode": 420
+    },
+    "tests/test_capture_io.py": {
+      "sha256": "2d24d630769553b8c8c31a8bac5566cb38cba9aa73d779ea935c78dd78a702df",
+      "mode": 420
+    },
+    "tests/test_capture_metadata.py": {
+      "sha256": "bf6984ddc3815de07a15650b5c3e70d8eae8fe7152de7d513680dab04ac91bd9",
+      "mode": 420
+    },
+    "tests/test_cli_recovery.py": {
+      "sha256": "18c5de2ead4e7675ad41a3acc93ed90b45f9bea0ad91ed259592e5d0a203cd42",
+      "mode": 420
+    },
+    "tests/test_confidence.py": {
+      "sha256": "cce4c1a13d4ec28538bf13fe225c23e78a9d07b3b9a65498667e98d832767528",
+      "mode": 420
+    },
+    "tests/test_content_binding.py": {
+      "sha256": "da7b19f7742156993e6d4dc7edefd0c7f0b81dbf7c8d4d31ec57c8fd0d10ad2b",
+      "mode": 420
+    },
+    "tests/test_dependency_frontier.py": {
+      "sha256": "835def8f39816402227db6a5b6125a47cd9b3ec16126ee0ab2c8d404ec9549b7",
+      "mode": 420
+    },
+    "tests/test_diagnostics.py": {
+      "sha256": "87109b26eb2deadc34a653c03e4a315ae58f39a618c9b55a488b0dcc4de5eea5",
+      "mode": 420
+    },
+    "tests/test_dirty_submodule.py": {
+      "sha256": "1e6ffdac6d4075552ae6139f58de593cb823122d61b9150dfdf82aab019e5e3b",
+      "mode": 420
+    },
+    "tests/test_evidence_root.py": {
+      "sha256": "63dfb21de5cc1949e6c1d06394dff02e1fd22595041d97f2244c57f56d551a26",
+      "mode": 420
+    },
+    "tests/test_evidence_subtree.py": {
+      "sha256": "9f5a5dcb0d4d8e5568ecf0ebfe87513ea5b2107106e3542738aa3a6397d347eb",
+      "mode": 420
+    },
+    "tests/test_fingerprint_staging_retry.py": {
+      "sha256": "e8a13589fbb90a5f0dfae72ed62bae68cd8cb3448557a0465667c76c07d8e104",
+      "mode": 420
+    },
+    "tests/test_git_availability.py": {
+      "sha256": "544ac46da0aa9130ff2cc1db467efc7df94c52a9b026fb1b9f1d1260cea67410",
+      "mode": 420
+    },
+    "tests/test_init_recovery.py": {
+      "sha256": "b925247ed89abdcce8b9f0ca6b6b24b6951195591cddfad27fb1b6126ab60f7b",
+      "mode": 420
+    },
+    "tests/test_integrity.py": {
+      "sha256": "fda7cbf536e3646d2570bb023bceb4a01992bd9d6aa8d4574676f9fec8bd54ee",
+      "mode": 420
+    },
+    "tests/test_launch_cancellation.py": {
+      "sha256": "147d49689fe3d0f4162589667eb4accf4232265ce79d74103d2d368abb168fc2",
+      "mode": 420
+    },
+    "tests/test_limits.py": {
+      "sha256": "959c99c96b6d4cab56d172dcfdcfe65f548f422205156ba40b2872521067ac9d",
+      "mode": 420
+    },
+    "tests/test_log_inputs.py": {
+      "sha256": "97b7750150c585b4698ca9b890cf93f3f0918f7b93a2182955a47f56bede5d57",
+      "mode": 420
+    },
+    "tests/test_parallel_capture.py": {
+      "sha256": "d2faa51758fec174caa59775b0b6c9199bfe11ca98256361278069832916f95d",
+      "mode": 420
+    },
+    "tests/test_record.py": {
+      "sha256": "58482fbbdab686af9aa20a5b7d6760d07ec000e6b8c17acb432ffe1507e5a8ba",
+      "mode": 420
+    },
+    "tests/test_release_archive.py": {
+      "sha256": "a93e5c1d3a5a6554c5d79cbfaf477a45cb1d61b2e90acc6c0f840c22cf901057",
+      "mode": 420
+    },
+    "tests/test_reporting_scope.py": {
+      "sha256": "d21cd893379b4c3da3a694f9c73052e4b027342cf4d8b81758ce6624bdb08b60",
+      "mode": 420
+    },
+    "tests/test_review_provenance.py": {
+      "sha256": "375b9a2ebb0a48abf6107882d439a5d780af661fdba818b0c7da78ea72db6ece",
+      "mode": 420
+    },
+    "tests/test_run_receipt.py": {
+      "sha256": "19bfc866454d48c22097d03cbb798354c3327c03f654802863d91c4e3c6053f3",
+      "mode": 420
+    },
+    "tests/test_source_scope_output.py": {
+      "sha256": "b90467106cf976d5a4c9ec5b94241adc68366371e2c512762b113557516e24a5",
+      "mode": 420
+    },
+    "tests/test_validation_cache.py": {
+      "sha256": "5aa413a27a8d715e1aadda8bcaa793ff10928c50f68fe79fc82237b5e67cb8c0",
+      "mode": 420
+    }
+  },
+  "before": {
+    "source_sha256": "000940c74e0ea7e67fd35942c47081d6f2537bfe95ba097286f9728b9b8cc855",
+    "production_patch_sha256": "830bb7965f5c1645159257c64628e8ecba2ab214d90931fdce6dc9871677e07b",
+    "production_paths": [
+      "bonaparte"
+    ],
+    "scope_violations": []
+  },
+  "protocol_inventory_after": {
+    "SKILL.md": {
+      "sha256": "b5ce87bdd7d01ce190f3b46a7522fcbd3e5d4ae894d082f6d84f333e262f22ef",
+      "mode": 420
+    },
+    "assets/contract.example.json": {
+      "sha256": "85066dbfebe8310b5414a02f8d7cc73f925987cda69ffcb508975ee0fe738112",
+      "mode": 420
+    },
+    "assets/report.example.json": {
+      "sha256": "d76fa00db14f903c423133b3a84d763b95d9dfb5e3c3170f160708e66dc8ec47",
+      "mode": 420
+    },
+    "assets/runs/invitation-authorization.json": {
+      "sha256": "676de57ab147634eefa21c7251b1385500b375bb271dca0168de867b34e5283d",
+      "mode": 420
+    },
+    "assets/runs/invitation-authorization.log": {
+      "sha256": "ec5ce487789f0bf1b922299cf02b3e3633d037e37a94d17df2b3bbbe3ed5fcc6",
+      "mode": 420
+    },
+    "assets/runs/invitation-e2e.json": {
+      "sha256": "e1d88a4c7d16e31afc9caa23bdc5576c6d758c3fbc3435d81f198eacbf156802",
+      "mode": 420
+    },
+    "assets/runs/invitation-e2e.log": {
+      "sha256": "a92b7fdcb45e1d22fc2af4c80adc6e7fc1389ff8a694010cf5e6ff0b5ffbf1f6",
+      "mode": 420
+    },
+    "references/complex-tasks.md": {
+      "sha256": "8c0396928105db561147b65b8f95b6a838ed9429efcbffc2b168030a77ae08c2",
+      "mode": 420
+    },
+    "references/evidence.md": {
+      "sha256": "bd097c352130c5199ee907199bfab369927cf8ee6f990e8133cb79a87ca01d02",
+      "mode": 420
+    },
+    "references/harnesses.md": {
+      "sha256": "6d05e95838f2a50931c734002f7179cdb61a981549c5f22cc4f2aa73e80c6c71",
+      "mode": 420
+    },
+    "references/intent-flows.md": {
+      "sha256": "d7b4461527b613f9607805f4ff6e2380ee87b47b68d44fa88b06661d544acbec",
+      "mode": 420
+    },
+    "references/model-routing.md": {
+      "sha256": "016d305701972280250c3938d5db2399807df93cf55962baaea53f89ee13fa61",
+      "mode": 420
+    },
+    "references/modes.md": {
+      "sha256": "58bdefb0a2be2a6093bd4c599e139eaf39e41c009b07aa913a51274ae90708f6",
+      "mode": 420
+    },
+    "references/question-patterns.md": {
+      "sha256": "d4815150b8418b5f747f909f4e141f8f42e6ee2890c70cf220a1ac8cf6973295",
+      "mode": 420
+    },
+    "references/report-rules.md": {
+      "sha256": "cd71fbb00b82a7b0c4811a929d1ceac8338708c59788b3a6e8ae3268b94dd61f",
+      "mode": 420
+    },
+    "references/task-profiles.md": {
+      "sha256": "83e4c88178608ab83b88829000be95962c294e2baa3444b77715d9a620c7a2a6",
+      "mode": 420
+    },
+    "scripts/confidence.py": {
+      "sha256": "8c898d5bf416990e520a1bb9b113f06ffd573854346ef4512ea5798e38d684be",
+      "mode": 420
+    },
+    "scripts/diagnostics.py": {
+      "sha256": "49a3f33e230b3598f212caad5e21315b89702c1fecaa0ffc6129220f41d25258",
+      "mode": 420
+    },
+    "tests/check_release.py": {
+      "sha256": "591177dc406102e3b83386ae1aadf0bf91d40452ec85a207b71181d99585a256",
+      "mode": 420
+    },
+    "tests/support.py": {
+      "sha256": "2ff46f81cb02720fadc665d125d211cabeae8b771604c0888322fa00c304b5b7",
+      "mode": 420
+    },
+    "tests/test_autonomy_integration.py": {
+      "sha256": "cea21305a7d291804c48ebaeb57b9c514ed589c9f8b5aeea3d2ad9f2d3fd4400",
+      "mode": 420
+    },
+    "tests/test_cancellation.py": {
+      "sha256": "6aa8dcce7fc2f62029ed0144eb838d5f0213869c9123d3cfa23cd890970ac7ed",
+      "mode": 420
+    },
+    "tests/test_capture_io.py": {
+      "sha256": "2d24d630769553b8c8c31a8bac5566cb38cba9aa73d779ea935c78dd78a702df",
+      "mode": 420
+    },
+    "tests/test_capture_metadata.py": {
+      "sha256": "bf6984ddc3815de07a15650b5c3e70d8eae8fe7152de7d513680dab04ac91bd9",
+      "mode": 420
+    },
+    "tests/test_cli_recovery.py": {
+      "sha256": "18c5de2ead4e7675ad41a3acc93ed90b45f9bea0ad91ed259592e5d0a203cd42",
+      "mode": 420
+    },
+    "tests/test_confidence.py": {
+      "sha256": "cce4c1a13d4ec28538bf13fe225c23e78a9d07b3b9a65498667e98d832767528",
+      "mode": 420
+    },
+    "tests/test_content_binding.py": {
+      "sha256": "da7b19f7742156993e6d4dc7edefd0c7f0b81dbf7c8d4d31ec57c8fd0d10ad2b",
+      "mode": 420
+    },
+    "tests/test_dependency_frontier.py": {
+      "sha256": "835def8f39816402227db6a5b6125a47cd9b3ec16126ee0ab2c8d404ec9549b7",
+      "mode": 420
+    },
+    "tests/test_diagnostics.py": {
+      "sha256": "87109b26eb2deadc34a653c03e4a315ae58f39a618c9b55a488b0dcc4de5eea5",
+      "mode": 420
+    },
+    "tests/test_dirty_submodule.py": {
+      "sha256": "1e6ffdac6d4075552ae6139f58de593cb823122d61b9150dfdf82aab019e5e3b",
+      "mode": 420
+    },
+    "tests/test_evidence_root.py": {
+      "sha256": "63dfb21de5cc1949e6c1d06394dff02e1fd22595041d97f2244c57f56d551a26",
+      "mode": 420
+    },
+    "tests/test_evidence_subtree.py": {
+      "sha256": "9f5a5dcb0d4d8e5568ecf0ebfe87513ea5b2107106e3542738aa3a6397d347eb",
+      "mode": 420
+    },
+    "tests/test_fingerprint_staging_retry.py": {
+      "sha256": "e8a13589fbb90a5f0dfae72ed62bae68cd8cb3448557a0465667c76c07d8e104",
+      "mode": 420
+    },
+    "tests/test_git_availability.py": {
+      "sha256": "544ac46da0aa9130ff2cc1db467efc7df94c52a9b026fb1b9f1d1260cea67410",
+      "mode": 420
+    },
+    "tests/test_init_recovery.py": {
+      "sha256": "b925247ed89abdcce8b9f0ca6b6b24b6951195591cddfad27fb1b6126ab60f7b",
+      "mode": 420
+    },
+    "tests/test_integrity.py": {
+      "sha256": "fda7cbf536e3646d2570bb023bceb4a01992bd9d6aa8d4574676f9fec8bd54ee",
+      "mode": 420
+    },
+    "tests/test_launch_cancellation.py": {
+      "sha256": "147d49689fe3d0f4162589667eb4accf4232265ce79d74103d2d368abb168fc2",
+      "mode": 420
+    },
+    "tests/test_limits.py": {
+      "sha256": "959c99c96b6d4cab56d172dcfdcfe65f548f422205156ba40b2872521067ac9d",
+      "mode": 420
+    },
+    "tests/test_log_inputs.py": {
+      "sha256": "97b7750150c585b4698ca9b890cf93f3f0918f7b93a2182955a47f56bede5d57",
+      "mode": 420
+    },
+    "tests/test_parallel_capture.py": {
+      "sha256": "d2faa51758fec174caa59775b0b6c9199bfe11ca98256361278069832916f95d",
+      "mode": 420
+    },
+    "tests/test_record.py": {
+      "sha256": "58482fbbdab686af9aa20a5b7d6760d07ec000e6b8c17acb432ffe1507e5a8ba",
+      "mode": 420
+    },
+    "tests/test_release_archive.py": {
+      "sha256": "a93e5c1d3a5a6554c5d79cbfaf477a45cb1d61b2e90acc6c0f840c22cf901057",
+      "mode": 420
+    },
+    "tests/test_reporting_scope.py": {
+      "sha256": "d21cd893379b4c3da3a694f9c73052e4b027342cf4d8b81758ce6624bdb08b60",
+      "mode": 420
+    },
+    "tests/test_review_provenance.py": {
+      "sha256": "375b9a2ebb0a48abf6107882d439a5d780af661fdba818b0c7da78ea72db6ece",
+      "mode": 420
+    },
+    "tests/test_run_receipt.py": {
+      "sha256": "19bfc866454d48c22097d03cbb798354c3327c03f654802863d91c4e3c6053f3",
+      "mode": 420
+    },
+    "tests/test_source_scope_output.py": {
+      "sha256": "b90467106cf976d5a4c9ec5b94241adc68366371e2c512762b113557516e24a5",
+      "mode": 420
+    },
+    "tests/test_validation_cache.py": {
+      "sha256": "5aa413a27a8d715e1aadda8bcaa793ff10928c50f68fe79fc82237b5e67cb8c0",
+      "mode": 420
+    }
+  },
+  "protocol_context_unchanged": true,
+  "stage": {
+    "process_exit": 0,
+    "timed_out": false,
+    "wall_seconds": 44.47650804200384,
+    "terminal": {
+      "duration_api_ms": 43179,
+      "stop_reason": "tool_use",
+      "session_id": "e8c9c5c5-5efe-47a2-86fa-22d4b5324d9b",
+      "total_cost_usd": 0.560445,
+      "usage": {
+        "input_tokens": 12,
+        "cache_creation_input_tokens": 52367,
+        "cache_read_input_tokens": 218405,
+        "output_tokens": 4889,
+        "output_tokens_details": {
+          "thinking_tokens": 881
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 52367,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "inference_geo": "global",
+        "iterations": [
+          {
+            "input_tokens": 2,
+            "output_tokens": 978,
+            "cache_read_input_tokens": 51112,
+            "cache_creation_input_tokens": 2623,
+            "cache_creation": {
+              "ephemeral_5m_input_tokens": 0,
+              "ephemeral_1h_input_tokens": 2623
+            },
+            "type": "message"
+          }
+        ],
+        "speed": "standard",
+        "fallback_credit": null
+      },
+      "modelUsage": {
+        "claude-opus-5-5": {
+          "inputTokens": 12,
+          "outputTokens": 4889,
+          "cacheReadInputTokens": 218405,
+          "cacheCreationInputTokens": 52367,
+          "webSearchRequests": 0,
+          "costUSD": 0.560445,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 881,
+          "canonicalModel": "claude-opus-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "permission_denials": [],
+      "terminal_reason": "completed",
+      "fast_mode_state": "off",
+      "fast_mode_disabled_reason": "sdk_opt_in_required",
+      "subagent_stats": {
+        "spawned": 0,
+        "requested": {
+          "background": 0,
+          "foreground": 0,
+          "unset": 0
+        },
+        "started_in_background": 0,
+        "max_depth": 0,
+        "spawned_by_subagents": 0,
+        "completed": 0,
+        "failed": 0,
+        "killed": {
+          "parent": 0,
+          "user": 0,
+          "system": 0
+        },
+        "refused": {
+          "depth_limit": 0,
+          "concurrency_limit": 0,
+          "budget": 0
+        },
+        "by_type": {}
+      },
+      "is_error": false,
+      "num_turns": 10,
+      "subtype": "success",
+      "api_error_status": null,
+      "result": "{\"complete\":true,\"summary\":\"I fixed the scope violation: `tests/test_bonaparte.py` is back to its original bytes, and I didn't change the production code in this repair. One existing test in that file now fails, because it asserts the old size rule this task replaces.\\n\\n**Changes:**\\n- **Restored test file:** I removed the test I had added to `tests/test_bonaparte.py`. `git diff -- tests/test_bonaparte.py` is now empty, so the file matches the protected version exactly.\\n- **Moved the test:** the same test now lives in a new file, `tests/test_receipt_line_limit.py`. It loads `bonaparte` the same way the existing tests do.\\n- **Production:** `bonaparte` is unchanged from the earlier attempt, which the independent checker already passed on behavior and negative cases.\\n\\n**Checks run (author checks only):**\\n- The visible check (`tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex`) passes.\\n- The moved test (`tests.test_receipt_line_limit`) passes. It covers four cases:\\n  - An exactly 4096-byte UTF-8 line containing a multi-byte character, newline included, is accepted.\\n  - A line one byte longer is rejected with \\\"receipt exceeded 4 KiB\\\".\\n  - Through `main()` on a non-review phase, an oversized receipt exits 1. Only a bounded `failed` receipt is printed and none of the oversized content appears.\\n  - Through `main()`, an exactly-4096-byte line is emitted byte-for-byte and exits 0.\\n\\n**Existing test that now fails:** `test_receipt_size_boundary_is_review_only` now errors with \\\"receipt exceeded 4 KiB\\\". It expects a non-review receipt whose JSON is exactly 4096 bytes to be accepted and printed as 4097 bytes with the newline. That is the old behavior this task removes, so the failure is expected. I left the test untouched because the file is protected, and you said test edits don't affect grading.\\n\\nNot done: I didn't re-run the full suite after this repair. Native progress streaming and the rest of PR26 were out of scope.\",\"remaining\":[\"Existing test test_receipt_size_boundary_is_review_only in the protected tests/test_bonaparte.py now fails. It asserts the old rule that a non-review receipt line may reach 4097 bytes. I left it unchanged because the file must stay byte-for-byte identical.\",\"I didn't re-run the full test suite after this repair. Only the visible check, the moved test and the one conflicting existing test were run.\"]}",
+      "structured_output": {
+        "complete": true,
+        "summary": "I fixed the scope violation: `tests/test_bonaparte.py` is back to its original bytes, and I didn't change the production code in this repair. One existing test in that file now fails, because it asserts the old size rule this task replaces.\n\n**Changes:**\n- **Restored test file:** I removed the test I had added to `tests/test_bonaparte.py`. `git diff -- tests/test_bonaparte.py` is now empty, so the file matches the protected version exactly.\n- **Moved the test:** the same test now lives in a new file, `tests/test_receipt_line_limit.py`. It loads `bonaparte` the same way the existing tests do.\n- **Production:** `bonaparte` is unchanged from the earlier attempt, which the independent checker already passed on behavior and negative cases.\n\n**Checks run (author checks only):**\n- The visible check (`tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex`) passes.\n- The moved test (`tests.test_receipt_line_limit`) passes. It covers four cases:\n  - An exactly 4096-byte UTF-8 line containing a multi-byte character, newline included, is accepted.\n  - A line one byte longer is rejected with \"receipt exceeded 4 KiB\".\n  - Through `main()` on a non-review phase, an oversized receipt exits 1. Only a bounded `failed` receipt is printed and none of the oversized content appears.\n  - Through `main()`, an exactly-4096-byte line is emitted byte-for-byte and exits 0.\n\n**Existing test that now fails:** `test_receipt_size_boundary_is_review_only` now errors with \"receipt exceeded 4 KiB\". It expects a non-review receipt whose JSON is exactly 4096 bytes to be accepted and printed as 4097 bytes with the newline. That is the old behavior this task removes, so the failure is expected. I left the test untouched because the file is protected, and you said test edits don't affect grading.\n\nNot done: I didn't re-run the full suite after this repair. Native progress streaming and the rest of PR26 were out of scope.",
+        "remaining": [
+          "Existing test test_receipt_size_boundary_is_review_only in the protected tests/test_bonaparte.py now fails. It asserts the old rule that a non-review receipt line may reach 4097 bytes. I left it unchanged because the file must stay byte-for-byte identical.",
+          "I didn't re-run the full test suite after this repair. Only the visible check, the moved test and the one conflicting existing test were run."
+        ]
+      },
+      "ttft_ms": 2411,
+      "type": "result",
+      "duration_ms": 43828,
+      "uuid": "c1236616-8a75-400c-a503-2ed2eadb8233",
+      "ttft_stream_ms": 1183,
+      "time_to_request_ms": 111,
+      "first_content_frame_ms": 1183,
+      "queued_turn_count": 0,
+      "result_index": 0
+    },
+    "declared_complete": true,
+    "total_cost_usd": 0.560445,
+    "usage": {
+      "input_tokens": 12,
+      "cache_creation_input_tokens": 52367,
+      "cache_read_input_tokens": 218405,
+      "output_tokens": 4889,
+      "output_tokens_details": {
+        "thinking_tokens": 881
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 52367,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "global",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 978,
+          "cache_read_input_tokens": 51112,
+          "cache_creation_input_tokens": 2623,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 2623
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard",
+      "fallback_credit": null
+    },
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 12,
+        "outputTokens": 4889,
+        "cacheReadInputTokens": 218405,
+        "cacheCreationInputTokens": 52367,
+        "webSearchRequests": 0,
+        "costUSD": 0.560445,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 881,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "permission_denials": [],
+    "request_sha256": "bc3390fb405b9a44a1109666fef59527d38228fa1439cbedccf559c9447aeaa6",
+    "invalid_stream_lines": 0,
+    "stream_sha256": "b681447a5d11852e0fb0539918c54098fc03242b95c49579135861b697c14eb5",
+    "observed_assistant_models": [
+      "claude-opus-5-5"
+    ],
+    "harness_initialization": {
+      "model": "claude-opus-5-5",
+      "tools": [
+        "StructuredOutput",
+        "mcp__cp_trial__confidence",
+        "mcp__cp_trial__list_files",
+        "mcp__cp_trial__read_file",
+        "mcp__cp_trial__replace_text",
+        "mcp__cp_trial__request_review",
+        "mcp__cp_trial__run_tests",
+        "mcp__cp_trial__write_file"
+      ],
+      "mcp_servers": [
+        {
+          "name": "cp_trial",
+          "status": "connected",
+          "source": "dynamic"
+        }
+      ],
+      "mcp_server_errors": null,
+      "claude_code_version": "2.1.285",
+      "permissionMode": "dontAsk"
+    },
+    "requested_effort": "high",
+    "process_cleanup_scope": "original_process_group",
+    "detached_descendants_contained": false,
+    "guarded_new_session_processes": 1,
+    "process_cleanup_seconds": 2.7125002816319466e-05,
+    "stream_changed_during_cleanup": false,
+    "backend": "claude",
+    "source_sha256_at_launch": "000940c74e0ea7e67fd35942c47081d6f2537bfe95ba097286f9728b9b8cc855",
+    "source_sha256_after": "906fc6a715b4f787de0a2f7b2cdd6362cf8063650ffc35a6aa4762dec2b9d737",
+    "qualification": {
+      "eligible": true,
+      "failures": [],
+      "inventory": {
+        "passed": true,
+        "basis": "live_claude_init",
+        "connected": true,
+        "missing_tools": [],
+        "unexpected_tools": [],
+        "effective_tools": [
+          "StructuredOutput",
+          "mcp__cp_trial__confidence",
+          "mcp__cp_trial__list_files",
+          "mcp__cp_trial__read_file",
+          "mcp__cp_trial__replace_text",
+          "mcp__cp_trial__request_review",
+          "mcp__cp_trial__run_tests",
+          "mcp__cp_trial__write_file"
+        ],
+        "schema_output_tool": "StructuredOutput",
+        "strict_seven_tool_parity": false,
+        "local": {
+          "passed": true,
+          "offline": true,
+          "hosted_inference_calls": 0,
+          "provider": "opus",
+          "actor_cwd": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-a/workspace",
+          "readonly": false,
+          "connected": true,
+          "effective_mcp_tools": [
+            "list_files",
+            "read_file",
+            "write_file",
+            "replace_text",
+            "run_tests",
+            "confidence",
+            "request_review"
+          ],
+          "expected_mcp_tools": [
+            "list_files",
+            "read_file",
+            "write_file",
+            "replace_text",
+            "run_tests",
+            "confidence",
+            "request_review"
+          ],
+          "list_files_succeeded": true,
+          "readonly_write_denied": null,
+          "exit_code": 0,
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout_sha256": "b59016f5fd97089760be13ee253a6e3a81173289e4871509fa99eb5a66f6121f",
+          "config_argument": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-a/repair/qualification/server-config.json",
+          "config_argument_is_absolute": true
+        }
+      },
+      "model_attribution": "assistant_event_observed",
+      "actual_model": "claude-opus-5-5"
+    },
+    "artifacts": {
+      "command-f54df17942ed411eb4cdf30adce9d8d2.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "request.json": "2fac3b9755c4f18a74b5c58b187c9e893811278a8c89247d43b96d242075bc3f",
+      "stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command-da0603e04c9f4860b6c5384e40322555.stderr": "0c0ea07f36e37922ad00b125997b77805c3047bccbd7bb5ac23c816136baafb1",
+      "stream.jsonl": "b681447a5d11852e0fb0539918c54098fc03242b95c49579135861b697c14eb5",
+      "command-c724f649d90f463cb08d793d53e8b9dc.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command-c724f649d90f463cb08d793d53e8b9dc.stderr": "564f6b6a03f7a165b3271afbb7fbf3baf7b0bc70dfa9c34b93fe577cf5ad71fa",
+      "f54df17942ed411eb4cdf30adce9d8d2.command-request.json": "a831d093fab57875a0eb5b677bdaaa18bb3b0f69489d03333b60962d98d70a16",
+      "command-da0603e04c9f4860b6c5384e40322555.stdout": "ba4725925d35847c036ebd0af82bb1d63c7d4218bc2f8491bf4131170ebeaabe",
+      "command-f54df17942ed411eb4cdf30adce9d8d2.stderr": "fe008aab760eb03ccac7578e2b84665b1b50b0d7f855b17a0c7a8d039435b658",
+      "server-config.json": "2790e734267dc1f6695b05c4d885495e53d344e9384bd25bdfae72e894c27560",
+      "command-6aef4134af6a4af3aa95ecc1cf72d9a2.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "6aef4134af6a4af3aa95ecc1cf72d9a2.command-request.json": "a89ed47d689a22fb25eecf1c54de6ba439a9faea39bc4f22f9fa824d4d130a6f",
+      "da0603e04c9f4860b6c5384e40322555.command-request.json": "2072df3d05eb367c9d1e3502568d400dc66fe4415f191b4f83e92f14e1f8669c",
+      "6aef4134af6a4af3aa95ecc1cf72d9a2.command-response.json": "2532bb0bc459f7d65dc2acf8245dd5d514e296745b58af6a8ed9b30a4064d4da",
+      "da0603e04c9f4860b6c5384e40322555.command-response.json": "86598859d5f1b1c626807364b29ae90faae9b48e1153fec956d0b2f78293ec9a",
+      "c724f649d90f463cb08d793d53e8b9dc.command-request.json": "1e4ef63a146b8f9a31471a48e37ae39785d40c6f1b683e378337644d30cca0c3",
+      "tool-events.jsonl": "abc154371d94c9a4176bbf9200b611290bb8292b706d4d6f078998f3d8cb9a6f",
+      "c724f649d90f463cb08d793d53e8b9dc.command-response.json": "3d50934e13d6ecf0f70b1e2137059e2c761d463ccdad3ba6306dd41711786869",
+      "command-6aef4134af6a4af3aa95ecc1cf72d9a2.stderr": "62ba9a15cea727e2a69b055264e379ab5ea8a91307e8f2e8a5aaab906773dc55",
+      "f54df17942ed411eb4cdf30adce9d8d2.command-response.json": "b2290cedc8366643c46d82a1150e6e7e8a40eb7400a0605ba8f7e87118dbb13d"
+    }
+  },
+  "after": {
+    "source_sha256": "906fc6a715b4f787de0a2f7b2cdd6362cf8063650ffc35a6aa4762dec2b9d737",
+    "production_patch_sha256": "830bb7965f5c1645159257c64628e8ecba2ab214d90931fdce6dc9871677e07b",
+    "production_paths": [
+      "bonaparte"
+    ],
+    "scope_violations": []
+  },
+  "evaluation": {
+    "process": {
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/evaluate.py",
+        "--workspace",
+        "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-a/repair/after/source",
+        "--task-id",
+        "tweed-pr26"
+      ],
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 0.23356100000091828,
+      "stdout": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-a/repair/evaluation/grader.stdout",
+      "stderr": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-a/repair/evaluation/grader.stderr",
+      "stdout_sha256": "ba81515c6dc09a7c53550bba58dd4da981b503c8461d936fba3719fe048559ec",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "process_cleanup_scope": "original_process_group",
+      "detached_descendants_contained": false
+    },
+    "header": {
+      "task_id": "tweed-pr26",
+      "exit_code": 0,
+      "passed": true,
+      "oracle_passed": true,
+      "required_behavior_passed": true,
+      "negative_boundaries_passed": true,
+      "baseline_passed": true,
+      "baseline_receipts": [
+        {
+          "argv": [
+            "python3",
+            "-B",
+            "-m",
+            "unittest",
+            "tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex"
+          ],
+          "exit_code": 0,
+          "timed_out": false,
+          "stdout": "",
+          "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n",
+          "wall_seconds": 0.09368958300183294,
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false
+        }
+      ],
+      "scope_violations": [],
+      "source_current": true,
+      "setup_status": "verified",
+      "failed_requirements": [],
+      "source_before_sha256": "906fc6a715b4f787de0a2f7b2cdd6362cf8063650ffc35a6aa4762dec2b9d737",
+      "source_after_sha256": "906fc6a715b4f787de0a2f7b2cdd6362cf8063650ffc35a6aa4762dec2b9d737",
+      "output_sha256": "b8928ad9c6e78a3c32e5da5e243328e8a879ec7af9dada544c73c7520e4ecab0"
+    },
+    "source_sha256": "906fc6a715b4f787de0a2f7b2cdd6362cf8063650ffc35a6aa4762dec2b9d737",
+    "source_unchanged": true,
+    "qualified_evaluation": true
+  },
+  "production_patch_changed_in_stage": false,
+  "full_source_changed_in_stage": true,
+  "ended_at_unix": 1791940574.974599
+}

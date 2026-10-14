@@ -1,0 +1,83 @@
+................refusing to overwrite render output: /Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-a/solve/call/execution-scratch/tmpgr3fyiqa/.confidence/REPORT.md
+diagnostic operation c113c070ed87347b683b183dc7765c10: INVALID_INPUT
+................warning: unable to access '/etc/gitattributes': Operation not permitted
+warning: unable to access '/etc/gitattributes': Operation not permitted
+...EE...E.EE......
+======================================================================
+ERROR: test_child_exit_125_is_not_misreported_as_a_runner_failure (test_diagnostics.DiagnosticsTest.test_child_exit_125_is_not_misreported_as_a_runner_failure)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-a/workspace/skills/confidence-protocol/tests/test_diagnostics.py", line 267, in test_child_exit_125_is_not_misreported_as_a_runner_failure
+    .read_text()
+     ~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 787, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 771, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-a/solve/call/execution-scratch/tmpucpynis1/.confidence/telemetry/events.jsonl'
+
+======================================================================
+ERROR: test_concurrent_event_writes_remain_valid_json_lines (test_diagnostics.DiagnosticsTest.test_concurrent_event_writes_remain_valid_json_lines)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-a/workspace/skills/confidence-protocol/tests/test_diagnostics.py", line 98, in test_concurrent_event_writes_remain_valid_json_lines
+    lines = (directory / "telemetry" / "events.jsonl").read_text().splitlines()
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 787, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 771, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-a/solve/call/execution-scratch/tmphu7igyac/.confidence/telemetry/events.jsonl'
+
+======================================================================
+ERROR: test_event_log_is_structured_and_contains_no_work_content (test_diagnostics.DiagnosticsTest.test_event_log_is_structured_and_contains_no_work_content)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-a/workspace/skills/confidence-protocol/tests/test_diagnostics.py", line 70, in test_event_log_is_structured_and_contains_no_work_content
+    (directory / "telemetry" / "events.jsonl").read_text().strip()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 787, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 771, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-a/solve/call/execution-scratch/tmpbq64azbd/.confidence/telemetry/events.jsonl'
+
+======================================================================
+ERROR: test_launch_failure_has_a_specific_persistent_error_code (test_diagnostics.DiagnosticsTest.test_launch_failure_has_a_specific_persistent_error_code)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-a/workspace/skills/confidence-protocol/tests/test_diagnostics.py", line 239, in test_launch_failure_has_a_specific_persistent_error_code
+    .read_text()
+     ~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 787, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 771, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-a/solve/call/execution-scratch/tmpz2ny7582/.confidence/telemetry/events.jsonl'
+
+======================================================================
+ERROR: test_real_run_events_and_support_bundle_never_capture_child_argv (test_diagnostics.DiagnosticsTest.test_real_run_events_and_support_bundle_never_capture_child_argv)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-a/workspace/skills/confidence-protocol/tests/test_diagnostics.py", line 299, in test_real_run_events_and_support_bundle_never_capture_child_argv
+    raw_events = (directory / "telemetry" / "events.jsonl").read_text()
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 787, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 771, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--branch-a/solve/call/execution-scratch/tmpqgk1dvpn/.confidence/telemetry/events.jsonl'
+
+----------------------------------------------------------------------
+Ran 50 tests in 16.323s
+
+FAILED (errors=5)

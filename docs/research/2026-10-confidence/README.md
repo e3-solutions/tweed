@@ -1,5 +1,10 @@
 # Confidence Protocol: current models, harnesses, and autonomous proof
 
+Latest experiment: [two fresh-context Opus designs and real-task checks](fork-flush/REPORT.md).
+Both proposals failed the frozen size limit. All six final focused artifact checks
+passed, but deadline gaps and a recorded scheduling deviation prevent a controlled
+gain claim. The incumbent source and installed 0.8.0 remain unchanged.
+
 Latest design refinement: [six task-quality heuristics and three test cards](task-quality/README.md).
 This refines the unreleased source guidance and calibrates evaluator decisions;
 it adds no task-solving comparison or measured gain. Prior studies retain their

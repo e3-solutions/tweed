@@ -11,3 +11,7 @@ docs/research/2026-10-confidence/claude-first-evaluation/results/patches/*.patch
 docs/research/2026-10-confidence/v08-spotcheck/patches/*.patch -text -whitespace
 docs/research/2026-10-confidence/lean-repair/patches/*/*.patch -text -whitespace
 docs/research/2026-10-confidence/lean-repair/repair-only-v2/patches/*.patch -text -whitespace
+# Frozen trial patches and captured command output retain their original bytes.
+docs/research/2026-10-confidence/fork-flush/evidence/*/*/*.patch -text -whitespace
+docs/research/2026-10-confidence/fork-flush/evidence/*/*/*.diff -text -whitespace
+docs/research/2026-10-confidence/fork-flush/evidence/*/*/*.stdout -text -whitespace

@@ -1,0 +1,13 @@
+rc=1
+rc2=0
+ skills/confidence-protocol/scripts/confidence.py | 36 +++++++++++++++++++++++-
+ 1 file changed, 35 insertions(+), 1 deletion(-)
+ M skills/confidence-protocol/scripts/confidence.py
+Ran 50 tests in 20.068s
+
+FAILED (failures=1, errors=5)
+.
+----------------------------------------------------------------------
+Ran 1 test in 1.149s
+
+OK

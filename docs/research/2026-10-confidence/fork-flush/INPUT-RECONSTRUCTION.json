@@ -1,0 +1,44 @@
+{
+  "source_controls": [
+    {
+      "task_id": "tweed-pr26",
+      "side": "base",
+      "commit": "9a8f1a2960b8ea5c9cefd88e05d19f6a5b39b694",
+      "tree_sha256": "34edfca821c900b9b6741293f3f3b0bafda637f8e50d1cdad57b4bb5c6b9c589"
+    },
+    {
+      "task_id": "tweed-pr26",
+      "side": "head",
+      "commit": "1936e624f8a64d920de390afffdbb444e3593305",
+      "tree_sha256": "cc7e4eaa0c6b9023b829bd2e2f5efcaa5a0f55a3dcf7c10a8dc2d1cc98cba446"
+    },
+    {
+      "task_id": "tweed-pr45",
+      "side": "base",
+      "commit": "190af227d3cb180263e7fbf9563055ffb06f20a0",
+      "tree_sha256": "9a4efa00c0ce114da707f756f5418492a3fab3db8376548994a9d10296f6061c"
+    },
+    {
+      "task_id": "tweed-pr45",
+      "side": "head",
+      "commit": "951ca774d1f5a6b4c37b027a7f982b1e0d5ebcea",
+      "tree_sha256": "015f508a4a71779c2c3c6dae9796e531ad4d9aeff2b779c16f2b6f47ceb1699f"
+    },
+    {
+      "task_id": "tweed-pr18",
+      "side": "base",
+      "commit": "77ff001ed7dbf42a756ddd4ac030b093ce5e0758",
+      "tree_sha256": "a6e54094eed57a0a34aaedd9d6b8976058b113ac67c094c72487eadfd0da2b26"
+    },
+    {
+      "task_id": "tweed-pr18",
+      "side": "head",
+      "commit": "1eb50570b1b635e8070bfd7cb5cfc45d048d208c",
+      "tree_sha256": "f6d792aaf987df4cca1703b96359aff09e22b5d0740e61b471892fbd39a9a75e"
+    }
+  ],
+  "common_protocol_commit": "4758787015f05a95ea38896f57a462316b3d9d80",
+  "all_expected_file_and_tree_hashes_match": true,
+  "model_calls": 0,
+  "scope": "Reconstructed input bytes only; host-specific frozen runtime/registrations remain separate"
+}

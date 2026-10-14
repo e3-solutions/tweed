@@ -1,0 +1,97 @@
+{
+  "role": "solve",
+  "status": "completed",
+  "provider_request_mtime_at_export": 1791940646.8109534,
+  "provider_interval_end_estimate": 1791940771.9644783,
+  "timing_basis": "Current retained request-file mtime plus recorded stage wall_seconds; metadata, not a content-hash-certified creation timestamp",
+  "observed_models": [
+    "claude-opus-5-5"
+  ],
+  "session_id": "36bae5cd-b9e0-4618-889c-38d2bb652929",
+  "stage_qualified": true,
+  "qualification_failures": [],
+  "software_complete": true,
+  "evidence_current": true,
+  "declared_completion": {
+    "complete": true,
+    "summary": "I added a public `--json` option to `run` in skills/confidence-protocol/scripts/confidence.py, which is the only file changed (+42/-2). With `--json`, captured output is no longer replayed to stdout. stdout gets one compact JSON line instead: `{\"id\",\"exit_code\",\"record\":\"runs/<id>.json\",\"log\":\"runs/<id>.log\",\"workspace_binding\"}`. Both paths are relative to the evidence directory. The full log is still captured and hashed, so `log_sha256` in the record covers every byte, including binary output.\n\n`workspace_binding` compares a Git workspace fingerprint taken before the child starts with one taken after it stops (the evidence directory is left out). It is \"unchanged\" only when both fingerprints exist and match, \"changed\" when both exist and differ, and \"unknown\" otherwise. That covers non-Git directories and Git not being installed. A new small helper turns a missing `git` binary into \"unknown\"; before this change it would have crashed the run. The same value is also saved in the run record as a new `workspace_binding` field.\n\nWithout `--json`, output is still replayed byte-for-byte. The CLI exit code works as before: a child's nonzero status comes through, and the signed status (for example -15 for SIGTERM) is kept in both the record and the receipt, while the CLI exits 143.\n\nChecks:\n- The visible check `test_run_records_failure_and_returns_child_status` passed after the final edit.\n- The full skills test suite ran 50 tests and 45 passed. The 5 errors were all telemetry tests in test_diagnostics.py, caused by the harness setting `CONFIDENCE_DISABLE_DIAGNOSTICS=1`. With that variable unset, all 15 test_diagnostics tests passed. I didn't rerun the other 35 tests that way, but this change doesn't touch telemetry.\n- A temporary probe I wrote ran in a scratch Git repo, and all 22 assertions passed. It covered: binary output with exit 3 (exit code, a single compact receipt line, exactly the five keys, relative paths, the log matching byte-for-byte, the record's SHA256 and exit code); \"unchanged\" when only evidence files were written; \"changed\" after editing a tracked file, after creating an untracked file, and when a failing child (exit 5) edits a file; \"unknown\" for a non-Git directory and when Git is not on PATH; SIGTERM giving -15 in the receipt with CLI exit 143; and default mode replaying the exact binary output with child status 3.\n\nI deleted the probe afterwards; `git status` shows only confidence.py modified. All checks were my own as the author; no independent review was done in this stage.\n\nKnown limits: if a file changes during the run and is restored before it ends, it will still be reported as \"unchanged\". The record's `workspace` field remains the after-run fingerprint, so `validate` does not yet treat a \"changed\" run as stale. The other PR45 changes (recovery, recording, release, docs) were left out as specified.",
+    "remaining": [
+      "Accepted exclusion: other PR45 recovery/recording/release/documentation changes are out of scope as specified.",
+      "Known limit: a file changed and then restored during the run is reported unchanged; validation does not yet consult workspace_binding (excluded as part of the recording/validation changes)."
+    ]
+  },
+  "required_behavior_passed": true,
+  "negative_boundaries_passed": true,
+  "baseline_passed": true,
+  "scope_violations": [],
+  "scope_source_facts": [],
+  "failed_requirements": [],
+  "evaluation_qualified": true,
+  "timed_out": false,
+  "wall_seconds": 125.15352491699741,
+  "mcp_request_count": 20,
+  "invalid_stream_or_tool_ids": 0,
+  "reported_usage": {
+    "input_tokens": 24,
+    "cache_creation_input_tokens": 57681,
+    "cache_read_input_tokens": 384603,
+    "output_tokens": 9996,
+    "output_tokens_details": {
+      "thinking_tokens": 3175
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 57681,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 1270,
+        "cache_read_input_tokens": 57478,
+        "cache_creation_input_tokens": 2397,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 2397
+        },
+        "type": "message"
+      }
+    ],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "reported_model_usage": {
+    "claude-opus-5-5": {
+      "inputTokens": 24,
+      "outputTokens": 9996,
+      "cacheReadInputTokens": 384603,
+      "cacheCreationInputTokens": 57681,
+      "webSearchRequests": 0,
+      "costUSD": 0.7383845999999998,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 3175,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "reported_cost_usd": 0.7383845999999998,
+  "before_source_sha256": "44e252515626508fa5ee0a606fc82872d5f28ca22d4deec049bd23d71a73c525",
+  "after_source_sha256": "25dc5aff6e3ec551ee46db5172d61c906c05678b7f5fb60e0b14f573c1bf9aeb",
+  "production_patch_sha256": "1aeff57cd27781e7da10a200ec28bb2f6f1a871a8e0493d385d7ffb80b37d099",
+  "production_patch_changed": true,
+  "declared_primary_production_paths_changed": [
+    "skills/confidence-protocol/scripts/confidence.py"
+  ],
+  "new_root_helpers": [],
+  "receipt_sha256": "77d51b28318b9e7193688fa035b03ae9099a85d0aa7991ffa1a2e33591507226",
+  "stream_sha256": "81107e4a4b872b7bb07803651796d1d74460e0815a816f3240e51fa9178b3839",
+  "request_file_sha256": "5a8ab29ce2ee3a9d7e811f1d576c0a1b22f0c89630fbbf92c426976fc3e1fbe3",
+  "evaluation_receipt_sha256": "b187a1f048353eae365a5aad45f615b2933f0703521da212d99dc17722587e3c"
+}

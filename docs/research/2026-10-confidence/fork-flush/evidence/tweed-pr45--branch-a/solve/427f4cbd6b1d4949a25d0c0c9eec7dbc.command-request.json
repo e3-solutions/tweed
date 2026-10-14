@@ -1,0 +1,1 @@
+{"id": "427f4cbd6b1d4949a25d0c0c9eec7dbc", "argv": ["/bin/sh", "-c", "grep -n 'def test_run_records_failure_and_returns_child_status' -A 40 skills/confidence-protocol/tests/test_confidence.py; grep -n 'def run_cli\\|def cli\\|json' skills/confidence-protocol/tests/test_confidence.py | head -40"], "timeout": 90.0}

@@ -1,0 +1,31 @@
+diff --git a/bonaparte b/bonaparte
+index 32509c7..fe2bb9d 100755
+--- a/bonaparte
++++ b/bonaparte
+@@ -208,18 +208,20 @@ def find_codex() -> str:
+     raise RuntimeError("no working local Codex CLI found")
+ 
+ 
+-def serialize_receipt(receipt: dict) -> str:
++def _serialize_bounded_receipt(receipt: dict) -> str:
++    """Serialize a receipt whose emitted UTF-8 line, newline included, fits 4 KiB."""
+     output = json.dumps(receipt, ensure_ascii=False, separators=(",", ":"))
+-    if len(output.encode("utf-8")) > RECEIPT_MAX_BYTES:
++    if len((output + "\n").encode("utf-8")) > RECEIPT_MAX_BYTES:
+         raise RuntimeError("receipt exceeded 4 KiB")
+     return output
+ 
+ 
++def serialize_receipt(receipt: dict) -> str:
++    return _serialize_bounded_receipt(receipt)
++
++
+ def serialize_review_receipt(receipt: dict) -> str:
+-    output = json.dumps(receipt, ensure_ascii=False, separators=(",", ":"))
+-    if len((output + "\n").encode("utf-8")) > RECEIPT_MAX_BYTES:
+-        raise RuntimeError("receipt exceeded 4 KiB")
+-    return output
++    return _serialize_bounded_receipt(receipt)
+ 
+ 
+ def emit_serialized(output: str) -> None:

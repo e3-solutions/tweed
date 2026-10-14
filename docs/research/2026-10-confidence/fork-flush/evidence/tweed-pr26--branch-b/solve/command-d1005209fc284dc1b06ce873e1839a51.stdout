@@ -1,0 +1,32 @@
+exit=0
+1493:def main() -> int:
+1494-    progress = ProgressReporter(None)
+1495-    exit_code = 0
+1496-    selected_phase = None
+1497-    try:
+1498-        try:
+1499-            if os.environ.get(PHASE_CHILD_ENV) == "1":
+1500-                raise RuntimeError("nested Bonaparte invocation blocked")
+1501-            (
+1502-                repo,
+1503-                selected_phase,
+1504-                supplied_input,
+1505-                session_id,
+1506-                selected_model,
+1507-                selected_reasoning,
+1508-            ) = parse()
+1509-            checkpoint_exists = session_id is not None and os.path.lexists(
+1510-                checkpoint_path(session_id, ensure_directory=False)
+1511-            )
+1512-            if session_id is not None and (
+1513-                selected_phase is None or checkpoint_exists
+1514-            ):
+1515-                with checkpoint_lease(session_id):
+1516-                    checkpoint = read_checkpoint(session_id, active_only=True)
+1517-                    if (
+1518-                        selected_phase is not None
+1519-                        and selected_phase != checkpoint["phase"]
+1520-                    ):
+1521-                        raise RuntimeError(
+1522-                            "legacy resume phase does not match its checkpoint"
+1523-                        )

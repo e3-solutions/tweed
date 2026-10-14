@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "amended_at_utc": "2026-10-14T01:05:55.886387+00:00",
+  "phase": "AFTER two policy design calls, BEFORE any task solve/repair inference",
+  "reason": "prepare redundantly overwrote root-pinned RUNTIME-PREFLIGHT after creating per-study receipt; remove only that global write and restore exact precommit global bytes",
+  "change": "One full redundant prepare global-write line deleted; standalone preflight API unchanged",
+  "no_task_calls_or_prepare_reruns": true,
+  "root_registration_untouched": true,
+  "study_registration_untouched": true,
+  "old_global_sha256": "15755164ef857576ddc435444b280b46b56add1deca4887b41ada3f4030f0a1d",
+  "overwritten_global_sha256": "0db14e5cddf8ed7ba7eee11c8ef8c39204aff93a7dffa45161d7748f24210b7d",
+  "driver_before_sha256": "6b5b3e17864a428a135d87c4c069a2d05132921f881a62c2fa6f9c2ae462db13",
+  "driver_after_sha256": "586f6df1494867fedec9d3195946cf0d08d1a60b9c4903737a593b53fc11abcf",
+  "diff_sha256": "dfd6ae650529690fe4711438c49f0cca2465696a509e3c7b8e9fbc30a785fe42",
+  "retained_artifacts": {
+    "driver.before.py": "6b5b3e17864a428a135d87c4c069a2d05132921f881a62c2fa6f9c2ae462db13",
+    "root.REGISTRATION.before.json": "977678d29bf487c356c8a257ca32eeedb69f413a7c6f576d6d5d4d6f0fbabce6",
+    "study.REGISTRATION.before.json": "fcc60b8e99732336fca0ccfb28adf7753e22a2cf2c27c7ec324475f7308e90b5",
+    "global.overwritten-by-prepare.json": "0db14e5cddf8ed7ba7eee11c8ef8c39204aff93a7dffa45161d7748f24210b7d",
+    "global.original-public-precommit.json": "15755164ef857576ddc435444b280b46b56add1deca4887b41ada3f4030f0a1d",
+    "per-study.RUNTIME-PREFLIGHT.json": "abd762db91480470b342051b852bd64e6230635bf761b2b2a82e8d8e767df283",
+    "driver.after.py": "586f6df1494867fedec9d3195946cf0d08d1a60b9c4903737a593b53fc11abcf",
+    "driver.diff": "dfd6ae650529690fe4711438c49f0cca2465696a509e3c7b8e9fbc30a785fe42"
+  },
+  "pending_root_action": "Explicitly amend root/study code pins and lineage; original public root registration remains retained unchanged"
+}

@@ -1,0 +1,295 @@
+    _update_checkpoint_observation(checkpoint, observation)
+    checkpoint["activity"] = "waiting-user"
+    write_checkpoint(checkpoint)
+    return checkpoint
+
+
+def _serialized_size(receipt: dict) -> int:
+    return len(
+        (
+            json.dumps(receipt, ensure_ascii=False, separators=(",", ":")) + "\n"
+        ).encode("utf-8")
+    )
+
+
+def checkpoint_receipt(
+    checkpoint: dict,
+    *,
+    state: str | None = None,
+    summary: str | None = None,
+) -> dict:
+    stored = checkpoint["receipt"]
+    receipt = {
+        "phase": checkpoint["phase"],
+        "state": state or "needs-input",
+        "issue": stored.get("issue"),
+        "linear_url": stored.get("linear_url"),
+        "result": None,
+        "summary": (summary or stored.get("summary") or "Checkpoint saved.")[:800],
+        "question": checkpoint.get("question"),
+        "next_action": "Resume this token to continue the same Codex session.",
+        "branch": checkpoint.get("branch") or stored.get("branch"),
+        "commit": stored.get("commit"),
+        "pull_request_url": stored.get("pull_request_url"),
+        "remote_state_changed": checkpoint.get("remote_state_changed"),
+        "resume_session_id": checkpoint["token"],
+        "resume_token": checkpoint["token"],
+        "worktree": checkpoint.get("worktree"),
+        "files_changed": list((checkpoint.get("files_changed") or [])[:3]),
+        "files_changed_total_count": checkpoint.get(
+            "files_changed_total_count", 0
+        ),
+        "files_changed_truncated": bool(
+            checkpoint.get("files_changed_truncated")
+            or len(checkpoint.get("files_changed") or []) > 3
+        ),
+        "checks_completed": list((checkpoint.get("checks_completed") or [])[:3]),
+        "checks_completed_total_count": checkpoint.get(
+            "checks_completed_total_count", 0
+        ),
+        "checks_completed_truncated": bool(
+            checkpoint.get("checks_completed_truncated")
+            or len(checkpoint.get("checks_completed") or []) > 3
+        ),
+        "activity": checkpoint.get("activity"),
+        "blocker": (checkpoint.get("blocker") or "")[:300] or None,
+    }
+    if _serialized_size(receipt) <= RECEIPT_MAX_BYTES:
+        return receipt
+
+    receipt.update(
+        files_changed=[],
+        files_changed_truncated=bool(receipt["files_changed_total_count"]),
+        checks_completed=[],
+        checks_completed_truncated=bool(receipt["checks_completed_total_count"]),
+    )
+    if _serialized_size(receipt) <= RECEIPT_MAX_BYTES:
+        return receipt
+    receipt.update(
+        issue=None,
+        linear_url=None,
+        summary="Checkpoint saved.",
+        branch=None,
+        commit=None,
+        pull_request_url=None,
+        worktree=None,
+        activity=None,
+        blocker=None,
+    )
+    if _serialized_size(receipt) > RECEIPT_MAX_BYTES:
+        receipt["question"] = (
+            "The saved question is too large to display; resume this token after "
+            "reviewing its durable checkpoint."
+        )
+    return receipt
+
+
+def _checkpoint_failure(checkpoint: dict, summary: str, *, remote_uncertain=False) -> dict:
+    checkpoint.update(
+        activity="waiting-user",
+        blocker=summary.replace("\n", " ")[:800],
+        updated_at=utc_now(),
+    )
+    if remote_uncertain:
+        checkpoint["remote_state_changed"] = _combine_remote(
+            checkpoint.get("remote_state_changed"), None
+        )
+    _refresh_checkpoint_git(checkpoint)
+    write_checkpoint(checkpoint)
+    receipt = checkpoint_receipt(checkpoint, state="failed", summary=summary)
+    receipt["next_action"] = "Resume this token to continue the same Codex session."
+    if _serialized_size(receipt) > RECEIPT_MAX_BYTES:
+        receipt["next_action"] = None
+    return receipt
+
+
+def _validate_checkpoint_worktree(checkpoint: dict) -> Path:
+    repository = Path(checkpoint["worktree"])
+    if not repository.is_dir():
+        raise RuntimeError("checkpoint worktree is unavailable")
+    current = capture_git_state(repository)
+    if checkpoint.get("git_dir") and current.get("git_dir") != checkpoint["git_dir"]:
+        raise RuntimeError("checkpoint worktree no longer identifies the same repository")
+    if current.get("branch") != checkpoint.get("branch"):
+        raise RuntimeError("checkpoint worktree is on a different branch")
+    if (
+        checkpoint.get("branch") is None
+======
+                        selected_model,
+                        selected_reasoning,
+                    )
+            elif session_id is not None:
+                selected_model = resolve_model(selected_model)
+                selected_reasoning = resolve_reasoning(selected_reasoning)
+                progress = acquire_progress_reporter(selected_phase == "review")
+                progress.start()
+                result_receipt = run_and_checkpoint(
+                    repo,
+                    selected_phase,
+                    supplied_input,
+                    session_id,
+                    selected_model,
+                    selected_reasoning,
+                )
+            else:
+                progress = acquire_progress_reporter(selected_phase == "review")
+                progress.start()
+                result_receipt = run_and_checkpoint(
+                    repo,
+                    selected_phase,
+                    supplied_input,
+                    None,
+                    selected_model,
+                    selected_reasoning,
+                )
+            progress.stop_heartbeat()
+            progress.report("finalizing")
+            terminal_state = result_receipt["state"]
+            if terminal_state not in PROGRESS_TERMINAL_STATES:
+                raise ValueError("invalid progress state")
+            serializer = (
+                serialize_review_receipt
+                if selected_phase == "review"
+                else serialize_receipt
+            )
+            serialized_receipt = serializer(result_receipt)
+        except KeyboardInterrupt:
+            progress.stop_heartbeat()
+            progress.report("finalizing")
+            serializer = (
+                serialize_review_receipt
+                if selected_phase == "review"
+                else serialize_receipt
+            )
+            serialized_receipt = serializer(fail("Bonaparte was interrupted."))
+            terminal_state = "failed"
+            exit_code = 130
+        except Exception as error:  # noqa: BLE001
+            progress.stop_heartbeat()
+            progress.report("finalizing")
+            serializer = (
+                serialize_review_receipt
+                if selected_phase == "review"
+                else serialize_receipt
+            )
+            serialized_receipt = serializer(
+                fail(str(error).replace("\n", " ")[:800])
+            )
+            terminal_state = "failed"
+            exit_code = 1
+
+        emit_serialized(serialized_receipt)
+        progress.report(terminal_state)
+        return exit_code
+    finally:
+        progress.close()
+
+
+if __name__ == "__main__":
+=====
+            os.close(read_descriptor)
+
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            self.assertEqual(completed.stderr, "")
+            expected_receipt = {**fake_receipt, "resume_session_id": None}
+            self.assertEqual(
+                completed.stdout.splitlines(),
+                [json.dumps(expected_receipt, separators=(",", ":"))],
+            )
+            self.assertEqual(coordinator_calls.read_text().splitlines(), ["called"])
+            self.assertEqual(heartbeat_joins.read_text().splitlines(), ["joined"])
+            self.assertEqual(
+                [json.loads(line)["state"] for line in progress_output.splitlines()],
+                ["started"],
+            )
+
+    def test_receipt_size_boundary_is_review_only(self):
+        baseline_accepted = {"x": "a" * 4088}
+        serialized = RUNNER.serialize_receipt(baseline_accepted)
+        stdout = io.StringIO()
+        with mock.patch.object(sys, "stdout", stdout):
+            RUNNER.emit_serialized(serialized)
+
+        raw_output = stdout.getvalue().encode("utf-8")
+        self.assertEqual(len(serialized.encode("utf-8")), RUNNER.RECEIPT_MAX_BYTES)
+        self.assertEqual(len(raw_output), RUNNER.RECEIPT_MAX_BYTES + 1)
+        self.assertTrue(raw_output.endswith(b"\n"))
+        self.assertEqual(json.loads(raw_output), baseline_accepted)
+
+        review_accepted = {"x": "a" * 4087}
+        review_serialized = RUNNER.serialize_review_receipt(review_accepted)
+        self.assertEqual(
+            len((review_serialized + "\n").encode("utf-8")),
+            RUNNER.RECEIPT_MAX_BYTES,
+        )
+        with self.assertRaisesRegex(RuntimeError, "receipt exceeded 4 KiB"):
+            RUNNER.serialize_review_receipt(baseline_accepted)
+
+    def test_main_uses_review_serializer_only_after_review_is_selected(self):
+        cases = (
+            (RuntimeError("parse failed"), 1),
+            (KeyboardInterrupt(), 130),
+        )
+        for parse_error, expected_exit in cases:
+            with self.subTest(error=type(parse_error).__name__):
+                stdout = io.StringIO()
+                with (
+                    mock.patch.dict(
+                        os.environ, {RUNNER.PHASE_CHILD_ENV: ""}, clear=False
+                    ),
+                    mock.patch.object(RUNNER, "parse", side_effect=parse_error),
+                    mock.patch.object(
+                        RUNNER,
+                        "serialize_receipt",
+                        wraps=RUNNER.serialize_receipt,
+                    ) as baseline_serializer,
+                    mock.patch.object(
+                        RUNNER,
+                        "serialize_review_receipt",
+                        wraps=RUNNER.serialize_review_receipt,
+                    ) as review_serializer,
+                    mock.patch.object(sys, "stdout", stdout),
+                ):
+                    exit_code = RUNNER.main()
+
+                self.assertEqual(exit_code, expected_exit)
+                baseline_serializer.assert_called_once()
+                review_serializer.assert_not_called()
+                self.assertEqual(json.loads(stdout.getvalue())["state"], "failed")
+
+        stdout = io.StringIO()
+        with (
+            mock.patch.dict(os.environ, {RUNNER.PHASE_CHILD_ENV: ""}, clear=False),
+            mock.patch.object(
+                RUNNER,
+                "parse",
+                return_value=(ROOT, "review", "Continue.", SESSION_ID, None, "medium"),
+            ),
+            mock.patch.object(
+                RUNNER,
+                "acquire_progress_reporter",
+                return_value=RUNNER.ProgressReporter(None),
+            ),
+            mock.patch.object(RUNNER, "run_phase", side_effect=RuntimeError("failed")),
+            mock.patch.object(
+                RUNNER,
+                "serialize_receipt",
+                wraps=RUNNER.serialize_receipt,
+            ) as baseline_serializer,
+            mock.patch.object(
+                RUNNER,
+                "serialize_review_receipt",
+                wraps=RUNNER.serialize_review_receipt,
+            ) as review_serializer,
+            mock.patch.object(sys, "stdout", stdout),
+        ):
+            exit_code = RUNNER.main()
+
+        self.assertEqual(exit_code, 1)
+        review_serializer.assert_called_once()
+        baseline_serializer.assert_not_called()
+
+    def test_review_coordinator_failure_receipt_never_exposes_stderr(self):
+        canary = "private-child-detail-canary"
+        final_line = "actionable final diagnostic"
+

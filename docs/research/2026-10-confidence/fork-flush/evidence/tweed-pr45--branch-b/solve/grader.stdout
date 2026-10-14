@@ -1,0 +1,26 @@
+{"task_id": "tweed-pr45", "exit_code": 0, "passed": false, "oracle_passed": true, "required_behavior_passed": true, "negative_boundaries_passed": true, "baseline_passed": true, "baseline_receipts": [{"argv": ["python3", "-B", "-m", "unittest", "discover", "-s", "skills/confidence-protocol/tests", "-p", "test_confidence.py", "-k", "test_run_records_failure_and_returns_child_status"], "exit_code": 0, "timed_out": false, "stdout": "", "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.144s\n\nOK\n", "wall_seconds": 0.2237909999967087, "process_cleanup_scope": "original_process_group", "detached_descendants_contained": false}], "scope_violations": ["skills/confidence-protocol/tests/test_run_receipt.py"], "source_current": true, "setup_status": "verified", "failed_requirements": [{"requirement": "scope", "paths": ["skills/confidence-protocol/tests/test_run_receipt.py"]}], "source_before_sha256": "f1c7b424438ae0e107063a6fd83e117304a64111ef576bd8b27ac52be49e545f", "source_after_sha256": "f1c7b424438ae0e107063a6fd83e117304a64111ef576bd8b27ac52be49e545f", "output_sha256": "29229d6eeb65d7a789e4c6ec06c293318bd9610900c47d76a22318f54cec9069"}
+{"failed": [], "skipped": 0, "run": 3}
+test_positive_compact_capture_and_default_output (tests.test_fork_owner.Owner.test_positive_compact_capture_and_default_output) ... warning: unable to access '/etc/gitattributes': Operation not permitted
+warning: unable to access '/etc/gitattributes': Operation not permitted
+warning: unable to access '/etc/gitattributes': Operation not permitted
+warning: unable to access '/etc/gitattributes': Operation not permitted
+ok
+test_negative_failed_child_stays_failed (tests.test_fork_owner.Owner.test_negative_failed_child_stays_failed) ... warning: unable to access '/etc/gitattributes': Operation not permitted
+warning: unable to access '/etc/gitattributes': Operation not permitted
+ok
+test_negative_mutated_source_is_not_unchanged (tests.test_fork_owner.Owner.test_negative_mutated_source_is_not_unchanged) ... warning: unable to access '/etc/gitattributes': Operation not permitted
+warning: unable to access '/etc/gitattributes': Operation not permitted
+ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.998s
+
+OK
+
+Focused baseline: ["python3", "-B", "-m", "unittest", "discover", "-s", "skills/confidence-protocol/tests", "-p", "test_confidence.py", "-k", "test_run_records_failure_and_returns_child_status"]
+.
+----------------------------------------------------------------------
+Ran 1 test in 0.144s
+
+OK
+

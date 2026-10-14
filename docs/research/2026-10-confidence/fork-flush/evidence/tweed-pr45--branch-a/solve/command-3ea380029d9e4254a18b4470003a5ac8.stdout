@@ -1,0 +1,23 @@
+PASS child failure returns child status
+PASS stdout is exactly one receipt line
+PASS receipt keys
+PASS receipt compact
+PASS receipt id/exit
+PASS receipt paths relative
+PASS evidence-only writes are unchanged
+PASS full binary log retained
+PASS record sha matches binary
+PASS record exit code
+PASS record binding
+PASS tracked mutation reported changed
+PASS mutation run exit 0
+PASS untracked creation reported changed
+PASS failing mutation: changed and status 5
+PASS non-git is unknown
+PASS missing git does not crash
+PASS missing git is unknown
+PASS signal: signed status in receipt, 143 CLI
+PASS default mode replays exact binary output
+PASS default mode returns child status
+PASS default mode record
+FAILURES: []

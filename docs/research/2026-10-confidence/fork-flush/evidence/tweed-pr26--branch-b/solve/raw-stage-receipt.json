@@ -1,0 +1,791 @@
+{
+  "cell_id": "tweed-pr26--branch-b",
+  "task_id": "tweed-pr26",
+  "arm_id": "branch-b",
+  "role": "solve",
+  "status": "completed",
+  "registration_sha256": "fcc60b8e99732336fca0ccfb28adf7753e22a2cf2c27c7ec324475f7308e90b5",
+  "protocol_inventory_before": {
+    "SKILL.md": {
+      "sha256": "cd0a3dff92a12203914063c19b5224699e3983ee0b488f3fe530ef7c88681210",
+      "mode": 420
+    },
+    "assets/contract.example.json": {
+      "sha256": "85066dbfebe8310b5414a02f8d7cc73f925987cda69ffcb508975ee0fe738112",
+      "mode": 420
+    },
+    "assets/report.example.json": {
+      "sha256": "d76fa00db14f903c423133b3a84d763b95d9dfb5e3c3170f160708e66dc8ec47",
+      "mode": 420
+    },
+    "assets/runs/invitation-authorization.json": {
+      "sha256": "676de57ab147634eefa21c7251b1385500b375bb271dca0168de867b34e5283d",
+      "mode": 420
+    },
+    "assets/runs/invitation-authorization.log": {
+      "sha256": "ec5ce487789f0bf1b922299cf02b3e3633d037e37a94d17df2b3bbbe3ed5fcc6",
+      "mode": 420
+    },
+    "assets/runs/invitation-e2e.json": {
+      "sha256": "e1d88a4c7d16e31afc9caa23bdc5576c6d758c3fbc3435d81f198eacbf156802",
+      "mode": 420
+    },
+    "assets/runs/invitation-e2e.log": {
+      "sha256": "a92b7fdcb45e1d22fc2af4c80adc6e7fc1389ff8a694010cf5e6ff0b5ffbf1f6",
+      "mode": 420
+    },
+    "references/complex-tasks.md": {
+      "sha256": "8c0396928105db561147b65b8f95b6a838ed9429efcbffc2b168030a77ae08c2",
+      "mode": 420
+    },
+    "references/evidence.md": {
+      "sha256": "bd097c352130c5199ee907199bfab369927cf8ee6f990e8133cb79a87ca01d02",
+      "mode": 420
+    },
+    "references/harnesses.md": {
+      "sha256": "6d05e95838f2a50931c734002f7179cdb61a981549c5f22cc4f2aa73e80c6c71",
+      "mode": 420
+    },
+    "references/intent-flows.md": {
+      "sha256": "d7b4461527b613f9607805f4ff6e2380ee87b47b68d44fa88b06661d544acbec",
+      "mode": 420
+    },
+    "references/model-routing.md": {
+      "sha256": "016d305701972280250c3938d5db2399807df93cf55962baaea53f89ee13fa61",
+      "mode": 420
+    },
+    "references/modes.md": {
+      "sha256": "58bdefb0a2be2a6093bd4c599e139eaf39e41c009b07aa913a51274ae90708f6",
+      "mode": 420
+    },
+    "references/question-patterns.md": {
+      "sha256": "d4815150b8418b5f747f909f4e141f8f42e6ee2890c70cf220a1ac8cf6973295",
+      "mode": 420
+    },
+    "references/report-rules.md": {
+      "sha256": "cd71fbb00b82a7b0c4811a929d1ceac8338708c59788b3a6e8ae3268b94dd61f",
+      "mode": 420
+    },
+    "references/task-profiles.md": {
+      "sha256": "83e4c88178608ab83b88829000be95962c294e2baa3444b77715d9a620c7a2a6",
+      "mode": 420
+    },
+    "scripts/confidence.py": {
+      "sha256": "8c898d5bf416990e520a1bb9b113f06ffd573854346ef4512ea5798e38d684be",
+      "mode": 420
+    },
+    "scripts/diagnostics.py": {
+      "sha256": "49a3f33e230b3598f212caad5e21315b89702c1fecaa0ffc6129220f41d25258",
+      "mode": 420
+    },
+    "tests/check_release.py": {
+      "sha256": "591177dc406102e3b83386ae1aadf0bf91d40452ec85a207b71181d99585a256",
+      "mode": 420
+    },
+    "tests/support.py": {
+      "sha256": "2ff46f81cb02720fadc665d125d211cabeae8b771604c0888322fa00c304b5b7",
+      "mode": 420
+    },
+    "tests/test_autonomy_integration.py": {
+      "sha256": "cea21305a7d291804c48ebaeb57b9c514ed589c9f8b5aeea3d2ad9f2d3fd4400",
+      "mode": 420
+    },
+    "tests/test_cancellation.py": {
+      "sha256": "6aa8dcce7fc2f62029ed0144eb838d5f0213869c9123d3cfa23cd890970ac7ed",
+      "mode": 420
+    },
+    "tests/test_capture_io.py": {
+      "sha256": "2d24d630769553b8c8c31a8bac5566cb38cba9aa73d779ea935c78dd78a702df",
+      "mode": 420
+    },
+    "tests/test_capture_metadata.py": {
+      "sha256": "bf6984ddc3815de07a15650b5c3e70d8eae8fe7152de7d513680dab04ac91bd9",
+      "mode": 420
+    },
+    "tests/test_cli_recovery.py": {
+      "sha256": "18c5de2ead4e7675ad41a3acc93ed90b45f9bea0ad91ed259592e5d0a203cd42",
+      "mode": 420
+    },
+    "tests/test_confidence.py": {
+      "sha256": "cce4c1a13d4ec28538bf13fe225c23e78a9d07b3b9a65498667e98d832767528",
+      "mode": 420
+    },
+    "tests/test_content_binding.py": {
+      "sha256": "da7b19f7742156993e6d4dc7edefd0c7f0b81dbf7c8d4d31ec57c8fd0d10ad2b",
+      "mode": 420
+    },
+    "tests/test_dependency_frontier.py": {
+      "sha256": "835def8f39816402227db6a5b6125a47cd9b3ec16126ee0ab2c8d404ec9549b7",
+      "mode": 420
+    },
+    "tests/test_diagnostics.py": {
+      "sha256": "87109b26eb2deadc34a653c03e4a315ae58f39a618c9b55a488b0dcc4de5eea5",
+      "mode": 420
+    },
+    "tests/test_dirty_submodule.py": {
+      "sha256": "1e6ffdac6d4075552ae6139f58de593cb823122d61b9150dfdf82aab019e5e3b",
+      "mode": 420
+    },
+    "tests/test_evidence_root.py": {
+      "sha256": "63dfb21de5cc1949e6c1d06394dff02e1fd22595041d97f2244c57f56d551a26",
+      "mode": 420
+    },
+    "tests/test_evidence_subtree.py": {
+      "sha256": "9f5a5dcb0d4d8e5568ecf0ebfe87513ea5b2107106e3542738aa3a6397d347eb",
+      "mode": 420
+    },
+    "tests/test_fingerprint_staging_retry.py": {
+      "sha256": "e8a13589fbb90a5f0dfae72ed62bae68cd8cb3448557a0465667c76c07d8e104",
+      "mode": 420
+    },
+    "tests/test_git_availability.py": {
+      "sha256": "544ac46da0aa9130ff2cc1db467efc7df94c52a9b026fb1b9f1d1260cea67410",
+      "mode": 420
+    },
+    "tests/test_init_recovery.py": {
+      "sha256": "b925247ed89abdcce8b9f0ca6b6b24b6951195591cddfad27fb1b6126ab60f7b",
+      "mode": 420
+    },
+    "tests/test_integrity.py": {
+      "sha256": "fda7cbf536e3646d2570bb023bceb4a01992bd9d6aa8d4574676f9fec8bd54ee",
+      "mode": 420
+    },
+    "tests/test_launch_cancellation.py": {
+      "sha256": "147d49689fe3d0f4162589667eb4accf4232265ce79d74103d2d368abb168fc2",
+      "mode": 420
+    },
+    "tests/test_limits.py": {
+      "sha256": "959c99c96b6d4cab56d172dcfdcfe65f548f422205156ba40b2872521067ac9d",
+      "mode": 420
+    },
+    "tests/test_log_inputs.py": {
+      "sha256": "97b7750150c585b4698ca9b890cf93f3f0918f7b93a2182955a47f56bede5d57",
+      "mode": 420
+    },
+    "tests/test_parallel_capture.py": {
+      "sha256": "d2faa51758fec174caa59775b0b6c9199bfe11ca98256361278069832916f95d",
+      "mode": 420
+    },
+    "tests/test_record.py": {
+      "sha256": "58482fbbdab686af9aa20a5b7d6760d07ec000e6b8c17acb432ffe1507e5a8ba",
+      "mode": 420
+    },
+    "tests/test_release_archive.py": {
+      "sha256": "a93e5c1d3a5a6554c5d79cbfaf477a45cb1d61b2e90acc6c0f840c22cf901057",
+      "mode": 420
+    },
+    "tests/test_reporting_scope.py": {
+      "sha256": "d21cd893379b4c3da3a694f9c73052e4b027342cf4d8b81758ce6624bdb08b60",
+      "mode": 420
+    },
+    "tests/test_review_provenance.py": {
+      "sha256": "375b9a2ebb0a48abf6107882d439a5d780af661fdba818b0c7da78ea72db6ece",
+      "mode": 420
+    },
+    "tests/test_run_receipt.py": {
+      "sha256": "19bfc866454d48c22097d03cbb798354c3327c03f654802863d91c4e3c6053f3",
+      "mode": 420
+    },
+    "tests/test_source_scope_output.py": {
+      "sha256": "b90467106cf976d5a4c9ec5b94241adc68366371e2c512762b113557516e24a5",
+      "mode": 420
+    },
+    "tests/test_validation_cache.py": {
+      "sha256": "5aa413a27a8d715e1aadda8bcaa793ff10928c50f68fe79fc82237b5e67cb8c0",
+      "mode": 420
+    }
+  },
+  "before": {
+    "source_sha256": "d9335282c8e40b1504d7ca3269f1fe60f08be7c279309f6eac8cd42c87375901",
+    "production_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "production_paths": [
+      "bonaparte"
+    ],
+    "scope_violations": []
+  },
+  "protocol_inventory_after": {
+    "SKILL.md": {
+      "sha256": "cd0a3dff92a12203914063c19b5224699e3983ee0b488f3fe530ef7c88681210",
+      "mode": 420
+    },
+    "assets/contract.example.json": {
+      "sha256": "85066dbfebe8310b5414a02f8d7cc73f925987cda69ffcb508975ee0fe738112",
+      "mode": 420
+    },
+    "assets/report.example.json": {
+      "sha256": "d76fa00db14f903c423133b3a84d763b95d9dfb5e3c3170f160708e66dc8ec47",
+      "mode": 420
+    },
+    "assets/runs/invitation-authorization.json": {
+      "sha256": "676de57ab147634eefa21c7251b1385500b375bb271dca0168de867b34e5283d",
+      "mode": 420
+    },
+    "assets/runs/invitation-authorization.log": {
+      "sha256": "ec5ce487789f0bf1b922299cf02b3e3633d037e37a94d17df2b3bbbe3ed5fcc6",
+      "mode": 420
+    },
+    "assets/runs/invitation-e2e.json": {
+      "sha256": "e1d88a4c7d16e31afc9caa23bdc5576c6d758c3fbc3435d81f198eacbf156802",
+      "mode": 420
+    },
+    "assets/runs/invitation-e2e.log": {
+      "sha256": "a92b7fdcb45e1d22fc2af4c80adc6e7fc1389ff8a694010cf5e6ff0b5ffbf1f6",
+      "mode": 420
+    },
+    "references/complex-tasks.md": {
+      "sha256": "8c0396928105db561147b65b8f95b6a838ed9429efcbffc2b168030a77ae08c2",
+      "mode": 420
+    },
+    "references/evidence.md": {
+      "sha256": "bd097c352130c5199ee907199bfab369927cf8ee6f990e8133cb79a87ca01d02",
+      "mode": 420
+    },
+    "references/harnesses.md": {
+      "sha256": "6d05e95838f2a50931c734002f7179cdb61a981549c5f22cc4f2aa73e80c6c71",
+      "mode": 420
+    },
+    "references/intent-flows.md": {
+      "sha256": "d7b4461527b613f9607805f4ff6e2380ee87b47b68d44fa88b06661d544acbec",
+      "mode": 420
+    },
+    "references/model-routing.md": {
+      "sha256": "016d305701972280250c3938d5db2399807df93cf55962baaea53f89ee13fa61",
+      "mode": 420
+    },
+    "references/modes.md": {
+      "sha256": "58bdefb0a2be2a6093bd4c599e139eaf39e41c009b07aa913a51274ae90708f6",
+      "mode": 420
+    },
+    "references/question-patterns.md": {
+      "sha256": "d4815150b8418b5f747f909f4e141f8f42e6ee2890c70cf220a1ac8cf6973295",
+      "mode": 420
+    },
+    "references/report-rules.md": {
+      "sha256": "cd71fbb00b82a7b0c4811a929d1ceac8338708c59788b3a6e8ae3268b94dd61f",
+      "mode": 420
+    },
+    "references/task-profiles.md": {
+      "sha256": "83e4c88178608ab83b88829000be95962c294e2baa3444b77715d9a620c7a2a6",
+      "mode": 420
+    },
+    "scripts/confidence.py": {
+      "sha256": "8c898d5bf416990e520a1bb9b113f06ffd573854346ef4512ea5798e38d684be",
+      "mode": 420
+    },
+    "scripts/diagnostics.py": {
+      "sha256": "49a3f33e230b3598f212caad5e21315b89702c1fecaa0ffc6129220f41d25258",
+      "mode": 420
+    },
+    "tests/check_release.py": {
+      "sha256": "591177dc406102e3b83386ae1aadf0bf91d40452ec85a207b71181d99585a256",
+      "mode": 420
+    },
+    "tests/support.py": {
+      "sha256": "2ff46f81cb02720fadc665d125d211cabeae8b771604c0888322fa00c304b5b7",
+      "mode": 420
+    },
+    "tests/test_autonomy_integration.py": {
+      "sha256": "cea21305a7d291804c48ebaeb57b9c514ed589c9f8b5aeea3d2ad9f2d3fd4400",
+      "mode": 420
+    },
+    "tests/test_cancellation.py": {
+      "sha256": "6aa8dcce7fc2f62029ed0144eb838d5f0213869c9123d3cfa23cd890970ac7ed",
+      "mode": 420
+    },
+    "tests/test_capture_io.py": {
+      "sha256": "2d24d630769553b8c8c31a8bac5566cb38cba9aa73d779ea935c78dd78a702df",
+      "mode": 420
+    },
+    "tests/test_capture_metadata.py": {
+      "sha256": "bf6984ddc3815de07a15650b5c3e70d8eae8fe7152de7d513680dab04ac91bd9",
+      "mode": 420
+    },
+    "tests/test_cli_recovery.py": {
+      "sha256": "18c5de2ead4e7675ad41a3acc93ed90b45f9bea0ad91ed259592e5d0a203cd42",
+      "mode": 420
+    },
+    "tests/test_confidence.py": {
+      "sha256": "cce4c1a13d4ec28538bf13fe225c23e78a9d07b3b9a65498667e98d832767528",
+      "mode": 420
+    },
+    "tests/test_content_binding.py": {
+      "sha256": "da7b19f7742156993e6d4dc7edefd0c7f0b81dbf7c8d4d31ec57c8fd0d10ad2b",
+      "mode": 420
+    },
+    "tests/test_dependency_frontier.py": {
+      "sha256": "835def8f39816402227db6a5b6125a47cd9b3ec16126ee0ab2c8d404ec9549b7",
+      "mode": 420
+    },
+    "tests/test_diagnostics.py": {
+      "sha256": "87109b26eb2deadc34a653c03e4a315ae58f39a618c9b55a488b0dcc4de5eea5",
+      "mode": 420
+    },
+    "tests/test_dirty_submodule.py": {
+      "sha256": "1e6ffdac6d4075552ae6139f58de593cb823122d61b9150dfdf82aab019e5e3b",
+      "mode": 420
+    },
+    "tests/test_evidence_root.py": {
+      "sha256": "63dfb21de5cc1949e6c1d06394dff02e1fd22595041d97f2244c57f56d551a26",
+      "mode": 420
+    },
+    "tests/test_evidence_subtree.py": {
+      "sha256": "9f5a5dcb0d4d8e5568ecf0ebfe87513ea5b2107106e3542738aa3a6397d347eb",
+      "mode": 420
+    },
+    "tests/test_fingerprint_staging_retry.py": {
+      "sha256": "e8a13589fbb90a5f0dfae72ed62bae68cd8cb3448557a0465667c76c07d8e104",
+      "mode": 420
+    },
+    "tests/test_git_availability.py": {
+      "sha256": "544ac46da0aa9130ff2cc1db467efc7df94c52a9b026fb1b9f1d1260cea67410",
+      "mode": 420
+    },
+    "tests/test_init_recovery.py": {
+      "sha256": "b925247ed89abdcce8b9f0ca6b6b24b6951195591cddfad27fb1b6126ab60f7b",
+      "mode": 420
+    },
+    "tests/test_integrity.py": {
+      "sha256": "fda7cbf536e3646d2570bb023bceb4a01992bd9d6aa8d4574676f9fec8bd54ee",
+      "mode": 420
+    },
+    "tests/test_launch_cancellation.py": {
+      "sha256": "147d49689fe3d0f4162589667eb4accf4232265ce79d74103d2d368abb168fc2",
+      "mode": 420
+    },
+    "tests/test_limits.py": {
+      "sha256": "959c99c96b6d4cab56d172dcfdcfe65f548f422205156ba40b2872521067ac9d",
+      "mode": 420
+    },
+    "tests/test_log_inputs.py": {
+      "sha256": "97b7750150c585b4698ca9b890cf93f3f0918f7b93a2182955a47f56bede5d57",
+      "mode": 420
+    },
+    "tests/test_parallel_capture.py": {
+      "sha256": "d2faa51758fec174caa59775b0b6c9199bfe11ca98256361278069832916f95d",
+      "mode": 420
+    },
+    "tests/test_record.py": {
+      "sha256": "58482fbbdab686af9aa20a5b7d6760d07ec000e6b8c17acb432ffe1507e5a8ba",
+      "mode": 420
+    },
+    "tests/test_release_archive.py": {
+      "sha256": "a93e5c1d3a5a6554c5d79cbfaf477a45cb1d61b2e90acc6c0f840c22cf901057",
+      "mode": 420
+    },
+    "tests/test_reporting_scope.py": {
+      "sha256": "d21cd893379b4c3da3a694f9c73052e4b027342cf4d8b81758ce6624bdb08b60",
+      "mode": 420
+    },
+    "tests/test_review_provenance.py": {
+      "sha256": "375b9a2ebb0a48abf6107882d439a5d780af661fdba818b0c7da78ea72db6ece",
+      "mode": 420
+    },
+    "tests/test_run_receipt.py": {
+      "sha256": "19bfc866454d48c22097d03cbb798354c3327c03f654802863d91c4e3c6053f3",
+      "mode": 420
+    },
+    "tests/test_source_scope_output.py": {
+      "sha256": "b90467106cf976d5a4c9ec5b94241adc68366371e2c512762b113557516e24a5",
+      "mode": 420
+    },
+    "tests/test_validation_cache.py": {
+      "sha256": "5aa413a27a8d715e1aadda8bcaa793ff10928c50f68fe79fc82237b5e67cb8c0",
+      "mode": 420
+    }
+  },
+  "protocol_context_unchanged": true,
+  "stage": {
+    "process_exit": 0,
+    "timed_out": false,
+    "wall_seconds": 126.88814437499968,
+    "terminal": {
+      "duration_api_ms": 75332,
+      "stop_reason": "tool_use",
+      "session_id": "6ef6efc7-3e92-4b52-8e5b-2bebb0f1726f",
+      "total_cost_usd": 0.6425152000000001,
+      "usage": {
+        "input_tokens": 36,
+        "cache_creation_input_tokens": 49092,
+        "cache_read_input_tokens": 438476,
+        "output_tokens": 8097,
+        "output_tokens_details": {
+          "thinking_tokens": 1671
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 49092,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "inference_geo": "global",
+        "iterations": [
+          {
+            "input_tokens": 2,
+            "output_tokens": 1138,
+            "cache_read_input_tokens": 46476,
+            "cache_creation_input_tokens": 4716,
+            "cache_creation": {
+              "ephemeral_5m_input_tokens": 0,
+              "ephemeral_1h_input_tokens": 4716
+            },
+            "type": "message"
+          }
+        ],
+        "speed": "standard",
+        "fallback_credit": null
+      },
+      "modelUsage": {
+        "claude-opus-5-5": {
+          "inputTokens": 36,
+          "outputTokens": 8097,
+          "cacheReadInputTokens": 438476,
+          "cacheCreationInputTokens": 49092,
+          "webSearchRequests": 0,
+          "costUSD": 0.6425152000000001,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 1671,
+          "canonicalModel": "claude-opus-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "permission_denials": [],
+      "terminal_reason": "completed",
+      "fast_mode_state": "off",
+      "fast_mode_disabled_reason": "sdk_opt_in_required",
+      "subagent_stats": {
+        "spawned": 0,
+        "requested": {
+          "background": 0,
+          "foreground": 0,
+          "unset": 0
+        },
+        "started_in_background": 0,
+        "max_depth": 0,
+        "spawned_by_subagents": 0,
+        "completed": 0,
+        "failed": 0,
+        "killed": {
+          "parent": 0,
+          "user": 0,
+          "system": 0
+        },
+        "refused": {
+          "depth_limit": 0,
+          "concurrency_limit": 0,
+          "budget": 0
+        },
+        "by_type": {}
+      },
+      "is_error": false,
+      "num_turns": 22,
+      "subtype": "success",
+      "api_error_status": null,
+      "result": "{\"complete\":true,\"summary\":\"The non-review receipt emitter now counts the whole output line, including the trailing newline, against the 4 KiB limit. The visible check passes, and so do 70 of the 71 tests in the full suite. The one failure, `tests.test_bonaparte.BonaparteRunnerTests.test_receipt_size_boundary_is_review_only`, is an existing test that asserts the old behaviour. It expects a 4096-byte receipt plus its newline (4097 bytes total) to be accepted outside review. I left that test unchanged as instructed, so it now fails as expected.\\n\\nWhat changed (only the `bonaparte` file): `serialize_receipt` now checks `len((output + \\\"\\\\n\\\").encode(\\\"utf-8\\\")) <= RECEIPT_MAX_BYTES` (4096), the same check the review path already used. Both public serializers now call one private helper, `_serialize_bounded_receipt`, so the rule lives in one place. They remain separate names because the existing tests check which one gets called. JSON output is unchanged (compact separators, non-ASCII written as UTF-8), and `emit_serialized` is untouched.\\n\\nProof map, all rows required:\\n1. **Line limit includes the newline.** A receipt that makes exactly a 4096-byte line, newline included, is written in full, ends in a newline and reads back as the same JSON. A receipt that makes a 4097-byte line is rejected with \\\"receipt exceeded 4 KiB\\\".\\n2. **Multi-byte characters are counted in bytes.** A line of exactly 4096 bytes built from 2-byte `\u00e9` characters is accepted and reads back correctly. The 4097-byte version is rejected.\\n3. **Nothing is written before rejection.** `emit()` with an oversized receipt raises an error and writes nothing to stdout. When `main()` gets an oversized non-review result, it outputs one failure receipt of at most 4096 bytes whose summary mentions 4 KiB, and returns exit code 1. The oversized receipt itself is never written.\\n4. **Normal emission and serializer selection still work.** The other 70 tests pass, including `test_main_uses_review_serializer_only_after_review_is_selected`.\\n\\nRows 1\u20133 come from a scratch probe I wrote and ran myself, stored outside the workspace at `solve/call/execution-scratch/probe.py`. Its result is in `out.txt` there (\\\"probe ok\\\", exit 0). This is my own check, not an independent review. I judged that adequate because this is a small, reversible fix that moves an existing check to the line boundary the review path already used.\\n\\nNot covered, by instruction: native progress streaming and the rest of PR26. No live providers were run, no Git history was fetched, no documentation was changed, and no tests were edited.\",\"remaining\":[\"Existing test tests.test_bonaparte.BonaparteRunnerTests.test_receipt_size_boundary_is_review_only still asserts the old rule (a 4096-byte receipt plus newline, 4097 bytes, accepted outside review), so it now fails. I left it unchanged as instructed; it would need updating to match the requested behaviour.\",\"Not covered, by instruction: native progress streaming and the rest of PR26.\"]}",
+      "structured_output": {
+        "complete": true,
+        "summary": "The non-review receipt emitter now counts the whole output line, including the trailing newline, against the 4 KiB limit. The visible check passes, and so do 70 of the 71 tests in the full suite. The one failure, `tests.test_bonaparte.BonaparteRunnerTests.test_receipt_size_boundary_is_review_only`, is an existing test that asserts the old behaviour. It expects a 4096-byte receipt plus its newline (4097 bytes total) to be accepted outside review. I left that test unchanged as instructed, so it now fails as expected.\n\nWhat changed (only the `bonaparte` file): `serialize_receipt` now checks `len((output + \"\\n\").encode(\"utf-8\")) <= RECEIPT_MAX_BYTES` (4096), the same check the review path already used. Both public serializers now call one private helper, `_serialize_bounded_receipt`, so the rule lives in one place. They remain separate names because the existing tests check which one gets called. JSON output is unchanged (compact separators, non-ASCII written as UTF-8), and `emit_serialized` is untouched.\n\nProof map, all rows required:\n1. **Line limit includes the newline.** A receipt that makes exactly a 4096-byte line, newline included, is written in full, ends in a newline and reads back as the same JSON. A receipt that makes a 4097-byte line is rejected with \"receipt exceeded 4 KiB\".\n2. **Multi-byte characters are counted in bytes.** A line of exactly 4096 bytes built from 2-byte `\u00e9` characters is accepted and reads back correctly. The 4097-byte version is rejected.\n3. **Nothing is written before rejection.** `emit()` with an oversized receipt raises an error and writes nothing to stdout. When `main()` gets an oversized non-review result, it outputs one failure receipt of at most 4096 bytes whose summary mentions 4 KiB, and returns exit code 1. The oversized receipt itself is never written.\n4. **Normal emission and serializer selection still work.** The other 70 tests pass, including `test_main_uses_review_serializer_only_after_review_is_selected`.\n\nRows 1\u20133 come from a scratch probe I wrote and ran myself, stored outside the workspace at `solve/call/execution-scratch/probe.py`. Its result is in `out.txt` there (\"probe ok\", exit 0). This is my own check, not an independent review. I judged that adequate because this is a small, reversible fix that moves an existing check to the line boundary the review path already used.\n\nNot covered, by instruction: native progress streaming and the rest of PR26. No live providers were run, no Git history was fetched, no documentation was changed, and no tests were edited.",
+        "remaining": [
+          "Existing test tests.test_bonaparte.BonaparteRunnerTests.test_receipt_size_boundary_is_review_only still asserts the old rule (a 4096-byte receipt plus newline, 4097 bytes, accepted outside review), so it now fails. I left it unchanged as instructed; it would need updating to match the requested behaviour.",
+          "Not covered, by instruction: native progress streaming and the rest of PR26."
+        ]
+      },
+      "ttft_ms": 1756,
+      "type": "result",
+      "duration_ms": 126268,
+      "uuid": "ed5a2444-ec59-43ab-abdc-7c71ddc5fe56",
+      "ttft_stream_ms": 782,
+      "time_to_request_ms": 145,
+      "first_content_frame_ms": 782,
+      "queued_turn_count": 0,
+      "result_index": 0
+    },
+    "declared_complete": true,
+    "total_cost_usd": 0.6425152000000001,
+    "usage": {
+      "input_tokens": 36,
+      "cache_creation_input_tokens": 49092,
+      "cache_read_input_tokens": 438476,
+      "output_tokens": 8097,
+      "output_tokens_details": {
+        "thinking_tokens": 1671
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 49092,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "global",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 1138,
+          "cache_read_input_tokens": 46476,
+          "cache_creation_input_tokens": 4716,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 4716
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard",
+      "fallback_credit": null
+    },
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 36,
+        "outputTokens": 8097,
+        "cacheReadInputTokens": 438476,
+        "cacheCreationInputTokens": 49092,
+        "webSearchRequests": 0,
+        "costUSD": 0.6425152000000001,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 1671,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "permission_denials": [],
+    "request_sha256": "12466c465dfa985b48e8a941b8ab9da0ddd9665da3b1892f2e0f97d8f07ee598",
+    "invalid_stream_lines": 0,
+    "stream_sha256": "0bef6d9e9add6d7e9a824991b91a7d1e7991797213e883ce4a4f3546271a592f",
+    "observed_assistant_models": [
+      "claude-opus-5-5"
+    ],
+    "harness_initialization": {
+      "model": "claude-opus-5-5",
+      "tools": [
+        "StructuredOutput",
+        "mcp__cp_trial__confidence",
+        "mcp__cp_trial__list_files",
+        "mcp__cp_trial__read_file",
+        "mcp__cp_trial__replace_text",
+        "mcp__cp_trial__request_review",
+        "mcp__cp_trial__run_tests",
+        "mcp__cp_trial__write_file"
+      ],
+      "mcp_servers": [
+        {
+          "name": "cp_trial",
+          "status": "connected",
+          "source": "dynamic"
+        }
+      ],
+      "mcp_server_errors": null,
+      "claude_code_version": "2.1.285",
+      "permissionMode": "dontAsk"
+    },
+    "requested_effort": "high",
+    "process_cleanup_scope": "original_process_group",
+    "detached_descendants_contained": false,
+    "guarded_new_session_processes": 1,
+    "process_cleanup_seconds": 4.262499714968726e-05,
+    "stream_changed_during_cleanup": false,
+    "backend": "claude",
+    "source_sha256_at_launch": "d9335282c8e40b1504d7ca3269f1fe60f08be7c279309f6eac8cd42c87375901",
+    "source_sha256_after": "28a1d0f2c44bfdb332fe08db23dcb0248789eb7b7e5d6f5a484ee2460129203a",
+    "qualification": {
+      "eligible": true,
+      "failures": [],
+      "inventory": {
+        "passed": true,
+        "basis": "live_claude_init",
+        "connected": true,
+        "missing_tools": [],
+        "unexpected_tools": [],
+        "effective_tools": [
+          "StructuredOutput",
+          "mcp__cp_trial__confidence",
+          "mcp__cp_trial__list_files",
+          "mcp__cp_trial__read_file",
+          "mcp__cp_trial__replace_text",
+          "mcp__cp_trial__request_review",
+          "mcp__cp_trial__run_tests",
+          "mcp__cp_trial__write_file"
+        ],
+        "schema_output_tool": "StructuredOutput",
+        "strict_seven_tool_parity": false,
+        "local": {
+          "passed": true,
+          "offline": true,
+          "hosted_inference_calls": 0,
+          "provider": "opus",
+          "actor_cwd": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-b/workspace",
+          "readonly": false,
+          "connected": true,
+          "effective_mcp_tools": [
+            "list_files",
+            "read_file",
+            "write_file",
+            "replace_text",
+            "run_tests",
+            "confidence",
+            "request_review"
+          ],
+          "expected_mcp_tools": [
+            "list_files",
+            "read_file",
+            "write_file",
+            "replace_text",
+            "run_tests",
+            "confidence",
+            "request_review"
+          ],
+          "list_files_succeeded": true,
+          "readonly_write_denied": null,
+          "exit_code": 0,
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout_sha256": "b59016f5fd97089760be13ee253a6e3a81173289e4871509fa99eb5a66f6121f",
+          "config_argument": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-b/solve/qualification/server-config.json",
+          "config_argument_is_absolute": true
+        }
+      },
+      "model_attribution": "assistant_event_observed",
+      "actual_model": "claude-opus-5-5"
+    },
+    "artifacts": {
+      "command-6c15fae2647d4279a211cc5b8f9e1ec1.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "request.json": "d4649c6bf19c28e957c341a2d71774a65c5a867e0105a6ff9adbbf55e4653542",
+      "0074eab1a1ae4bcdbd631cacf7155793.command-response.json": "e7c12f0d2221d0e9fd1090b297f056b82fe7f9bff2b436393712ae306e2ff729",
+      "command-ac488b87e7ec49b29f26d6584b160d13.stderr": "fb184ea57734512b1f088f9181209901b9cd46df3eb7eaa2500ea9e48dde20b5",
+      "command-5741bb03f97c490e88fe4dc9b33710e1.stdout": "d3e5e9880aaecbf02c9cb8349bfaeba1225c4dffd705412adc391840dba25bfe",
+      "21c3f336b4184ec69a0169e6f157632d.command-request.json": "9436abf83fb0288b1edd538f4fa5a49b9ebb2cb0c898ae49562b508607c8792d",
+      "command-d1005209fc284dc1b06ce873e1839a51.stdout": "e5787f56698dae61fe24ac8739d87d67878ee95bad13ab02e3707c9883615d34",
+      "4e59ab7d9a6641a9909c2b686573527a.command-response.json": "0ed122ddb9057e074c390eac7181bdb3ddc880729ad74f812a9021232dee267f",
+      "stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command-4e59ab7d9a6641a9909c2b686573527a.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "0d0b1dba150e4170a8858a8e68240074.command-request.json": "3f39bcc37db43a84c28e186a00466522e3d437a9c8fd9676dd6fdb4b0fe0efea",
+      "stream.jsonl": "0bef6d9e9add6d7e9a824991b91a7d1e7991797213e883ce4a4f3546271a592f",
+      "command-e3aa212b81ef4edebf44d95578f255fc.stdout": "42b4f60a0a2738dfc35baa82e994c7f9487e43cc3aa302e29d948b1de4042ffe",
+      "21c3f336b4184ec69a0169e6f157632d.command-response.json": "dacf7e0082b2a666e6eeef6636d8712e82e2bec92a7443974dcab8957c2cb5e2",
+      "command-e3aa212b81ef4edebf44d95578f255fc.stderr": "62ba9a15cea727e2a69b055264e379ab5ea8a91307e8f2e8a5aaab906773dc55",
+      "0074eab1a1ae4bcdbd631cacf7155793.command-request.json": "fb30e576da7ff5b400af3a5b9683d64a568938c8dd7bac4234aed9b1d0ffffd5",
+      "command-4e59ab7d9a6641a9909c2b686573527a.stdout": "11ca9aaa74c829d7bb12ae64513e27c65ffc7a53a043c3cd81a7e61cffcd1c08",
+      "d1005209fc284dc1b06ce873e1839a51.command-response.json": "d53e524370a65c40d8d301846836a60ae477420cd26a7ba18292f590bf0c1fc8",
+      "6c15fae2647d4279a211cc5b8f9e1ec1.command-request.json": "e2cc722bc3bdd17b24da1b8db7729e6d5a8f579bba25969bba3aa2323d597152",
+      "a75f7821a2a34b0dbfc3949f56e20af1.command-response.json": "5e36bd0264285f3a7b454b7a57b51f349207de54cc4781fcb090b5dd8a141eb1",
+      "b53c2417e3604e10914c0456eb66dd7e.command-response.json": "af15c1ee82afea3d8c84b0ba7b3f04d98aaf62b2c960207c1b6dc7ad8ce2ca7a",
+      "server-config.json": "019a21bf5361b25aa71a741be263c2d3d6d73738037e4d7440f3346b4a700578",
+      "command-6c15fae2647d4279a211cc5b8f9e1ec1.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command-5741bb03f97c490e88fe4dc9b33710e1.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command-d1005209fc284dc1b06ce873e1839a51.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command-ac488b87e7ec49b29f26d6584b160d13.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command-21c3f336b4184ec69a0169e6f157632d.stdout": "cf205dbb8cea84897b488abcc281bf96698d5e94b1096b16657b4caba9082a22",
+      "command-151597e0bcad41c8b8bcfd93fd862fe9.stdout": "24ccbee16eea8769cd365c86f7538506506e7246fcee44f4d60612df7b35c9c9",
+      "dd59464f1b584b2ea6ba65a21a1768ed.command-response.json": "4a9c4ea47d6565d2242ad29d08d7a4398b2fc21dd24dfb5e3b52553c6e5c6d22",
+      "command-a75f7821a2a34b0dbfc3949f56e20af1.stdout": "65372a883b93cee3042b4ac832dbcb20dd9e7d248b652102131c6c8f7278ce09",
+      "e3aa212b81ef4edebf44d95578f255fc.command-request.json": "834fbafd79ebe411285b908cefef2df792ee6207fe181cf35f4d98c2616a08f2",
+      "command-b53c2417e3604e10914c0456eb66dd7e.stdout": "cf205dbb8cea84897b488abcc281bf96698d5e94b1096b16657b4caba9082a22",
+      "command-4bde50b3f1a24a8ea8744d8b62a3467d.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "b53c2417e3604e10914c0456eb66dd7e.command-request.json": "78b6a8b4729d052b4193ac83d924ab618d9512d1d412d5c9ea09bd1570cb3b37",
+      "command-0d0b1dba150e4170a8858a8e68240074.stdout": "2b09f9422fef6d77b95decae89d17cdc798f0d20c090b0b3ef7bb71786f01672",
+      "6c15fae2647d4279a211cc5b8f9e1ec1.command-response.json": "17eec64e3886ac54b48032a8c97ec55bd56c73bfc6b037a79cb9118d545e6b92",
+      "dd59464f1b584b2ea6ba65a21a1768ed.command-request.json": "306ed1b0eb9a911b5aa7f34b49adc8d604303924a0332db9605d35c6a6d41752",
+      "command-dd59464f1b584b2ea6ba65a21a1768ed.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command-0074eab1a1ae4bcdbd631cacf7155793.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "4bde50b3f1a24a8ea8744d8b62a3467d.command-request.json": "868762dfa47d2201eb53d80597b4b9b1d8be5f27a0129aa1f14401007f9138aa",
+      "command-dd59464f1b584b2ea6ba65a21a1768ed.stdout": "0ffb3e3f004680abc1389eb5eb59c8018f6ca2b69416f6a2195342d82bb9eba0",
+      "command-0074eab1a1ae4bcdbd631cacf7155793.stdout": "9e3f7d0797d68c9fb047f6c7685fa193188132f993dff1a4f2a36b5ca07d3ec4",
+      "ac488b87e7ec49b29f26d6584b160d13.command-response.json": "098a63d26109ad2bf8f1565973a39c6da1b1dc663ed4d9ab03c4f4441930cb43",
+      "5741bb03f97c490e88fe4dc9b33710e1.command-request.json": "e0476bdf8df271796ac4c866faae42f2f6ea088d142cabe16b21bbe1b37a2214",
+      "d1005209fc284dc1b06ce873e1839a51.command-request.json": "c2e4a4463968d93a5d5b4907de917fecc805b3f052017456ddeea8930ea2745e",
+      "tool-events.jsonl": "50fbffd71780a5b7330513403e97e3b7ef9fbac8b56cd0ed6c39948eb68b49e1",
+      "command-4bde50b3f1a24a8ea8744d8b62a3467d.stdout": "ec653bfc160cdf2e43e72a9bbc9bf3f29df2fb6a94c3e6a78655cc7fc1b0ee3f",
+      "5741bb03f97c490e88fe4dc9b33710e1.command-response.json": "70168bd85509cbf1414eeeda27dd75644ba00db48c7b1ea1062807666242daa0",
+      "command-0d0b1dba150e4170a8858a8e68240074.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "a75f7821a2a34b0dbfc3949f56e20af1.command-request.json": "365e2ba00eabc058f73c44adf4836e4a539eeccc66745d3c3df38783cc6f54f6",
+      "4e59ab7d9a6641a9909c2b686573527a.command-request.json": "961f7191677bc5e0c07329b3ae2c03d06ec58e465ed9836f5f7878fcf36738c0",
+      "e3aa212b81ef4edebf44d95578f255fc.command-response.json": "473f8503732a8333f9d7e27df57f4281bb74870a064f2848569ac32d3b60c565",
+      "command-b53c2417e3604e10914c0456eb66dd7e.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "151597e0bcad41c8b8bcfd93fd862fe9.command-request.json": "f6925e65371c0764a032d673189bd55d5994a3e62f1d5d80b0b3774d7c7836c6",
+      "0d0b1dba150e4170a8858a8e68240074.command-response.json": "39a8691f0e3b1b65d8a245acd42d88f3a11e7e36d7386ce3ac166bbf87908613",
+      "151597e0bcad41c8b8bcfd93fd862fe9.command-response.json": "546d310a65d33e32773564f14d4d012416e075206979696b0392bfd54b5f4ed3",
+      "ac488b87e7ec49b29f26d6584b160d13.command-request.json": "5a9723dca7557affadfb6982ad94c463db1b5e26c1d7cf5967d53185e86d908b",
+      "command-21c3f336b4184ec69a0169e6f157632d.stderr": "a02aaad4a8a56dcfbff56a8b00d5650a641851521d6071428286602a2fea216a",
+      "command-a75f7821a2a34b0dbfc3949f56e20af1.stderr": "0c0ea07f36e37922ad00b125997b77805c3047bccbd7bb5ac23c816136baafb1",
+      "4bde50b3f1a24a8ea8744d8b62a3467d.command-response.json": "5eb9e89813dfb52b0eaf73d5e5a37de7060fe1c2365ff92520ed985a6537ed79",
+      "command-151597e0bcad41c8b8bcfd93fd862fe9.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "after": {
+    "source_sha256": "28a1d0f2c44bfdb332fe08db23dcb0248789eb7b7e5d6f5a484ee2460129203a",
+    "production_patch_sha256": "65372a883b93cee3042b4ac832dbcb20dd9e7d248b652102131c6c8f7278ce09",
+    "production_paths": [
+      "bonaparte"
+    ],
+    "scope_violations": []
+  },
+  "evaluation": {
+    "process": {
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/evaluate.py",
+        "--workspace",
+        "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-b/solve/after/source",
+        "--task-id",
+        "tweed-pr26"
+      ],
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 0.23157595800148556,
+      "stdout": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-b/solve/evaluation/grader.stdout",
+      "stderr": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr26--branch-b/solve/evaluation/grader.stderr",
+      "stdout_sha256": "f68f93239b14a6be5bb77bcc2d76836362c5ad9ea06ae4a59d52cfa7b64db2f0",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "process_cleanup_scope": "original_process_group",
+      "detached_descendants_contained": false
+    },
+    "header": {
+      "task_id": "tweed-pr26",
+      "exit_code": 0,
+      "passed": true,
+      "oracle_passed": true,
+      "required_behavior_passed": true,
+      "negative_boundaries_passed": true,
+      "baseline_passed": true,
+      "baseline_receipts": [
+        {
+          "argv": [
+            "python3",
+            "-B",
+            "-m",
+            "unittest",
+            "tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex"
+          ],
+          "exit_code": 0,
+          "timed_out": false,
+          "stdout": "",
+          "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n",
+          "wall_seconds": 0.08501320800132817,
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false
+        }
+      ],
+      "scope_violations": [],
+      "source_current": true,
+      "setup_status": "verified",
+      "failed_requirements": [],
+      "source_before_sha256": "28a1d0f2c44bfdb332fe08db23dcb0248789eb7b7e5d6f5a484ee2460129203a",
+      "source_after_sha256": "28a1d0f2c44bfdb332fe08db23dcb0248789eb7b7e5d6f5a484ee2460129203a",
+      "output_sha256": "b8928ad9c6e78a3c32e5da5e243328e8a879ec7af9dada544c73c7520e4ecab0"
+    },
+    "source_sha256": "28a1d0f2c44bfdb332fe08db23dcb0248789eb7b7e5d6f5a484ee2460129203a",
+    "source_unchanged": true,
+    "qualified_evaluation": true
+  },
+  "production_patch_changed_in_stage": true,
+  "full_source_changed_in_stage": true,
+  "ended_at_unix": 1791940498.950062
+}

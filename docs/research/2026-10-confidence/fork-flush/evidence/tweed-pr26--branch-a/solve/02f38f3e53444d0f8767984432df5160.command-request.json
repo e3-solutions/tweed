@@ -1,0 +1,1 @@
+{"id": "02f38f3e53444d0f8767984432df5160", "argv": ["/bin/bash", "-c", "python3 -B _probe_receipt_tmp.py; echo probe_exit=$?; git stash -q -- bonaparte 2>/dev/null && { python3 -B _probe_receipt_tmp.py; echo baseline_probe_exit=$?; git stash pop -q; } ; rm -f _probe_receipt_tmp.py; git diff --stat; git status --short"], "timeout": 90.0}

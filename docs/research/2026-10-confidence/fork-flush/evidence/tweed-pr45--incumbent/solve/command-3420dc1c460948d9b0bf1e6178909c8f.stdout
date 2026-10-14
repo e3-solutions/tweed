@@ -1,0 +1,14 @@
+rc=0
+Ran 35 tests in 13.533s
+
+OK
+TMPDIR=/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--incumbent/solve/call/execution-scratch
+PWD=/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--incumbent/workspace
+CONFIDENCE_DISABLE_DIAGNOSTICS=1
+HOME=/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fork-flush/selection/cells/tweed-pr45--incumbent/solve/call/execution-scratch/home
+282:        if os.environ.get("CONFIDENCE_DISABLE_DIAGNOSTICS") == "1":
+319:        endpoint = os.environ.get("CONFIDENCE_TELEMETRY_ENDPOINT")
+323:            event, endpoint, os.environ.get("CONFIDENCE_TELEMETRY_TOKEN")
+462:    endpoint = os.environ.get("CONFIDENCE_TELEMETRY_ENDPOINT")
+508:                probe, endpoint, os.environ.get("CONFIDENCE_TELEMETRY_TOKEN")
+613:                "Redacted Confidence Protocol diagnostics. No command arguments, command output, source, prompts, file paths, environment values, usernames, or hostnames are included.\n",

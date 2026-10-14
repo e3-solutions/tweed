@@ -1,0 +1,97 @@
+{
+  "role": "solve",
+  "status": "completed",
+  "provider_request_mtime_at_export": 1791940371.5727632,
+  "provider_interval_end_estimate": 1791940498.4609077,
+  "timing_basis": "Current retained request-file mtime plus recorded stage wall_seconds; metadata, not a content-hash-certified creation timestamp",
+  "observed_models": [
+    "claude-opus-5-5"
+  ],
+  "session_id": "6ef6efc7-3e92-4b52-8e5b-2bebb0f1726f",
+  "stage_qualified": true,
+  "qualification_failures": [],
+  "software_complete": true,
+  "evidence_current": true,
+  "declared_completion": {
+    "complete": true,
+    "summary": "The non-review receipt emitter now counts the whole output line, including the trailing newline, against the 4 KiB limit. The visible check passes, and so do 70 of the 71 tests in the full suite. The one failure, `tests.test_bonaparte.BonaparteRunnerTests.test_receipt_size_boundary_is_review_only`, is an existing test that asserts the old behaviour. It expects a 4096-byte receipt plus its newline (4097 bytes total) to be accepted outside review. I left that test unchanged as instructed, so it now fails as expected.\n\nWhat changed (only the `bonaparte` file): `serialize_receipt` now checks `len((output + \"\\n\").encode(\"utf-8\")) <= RECEIPT_MAX_BYTES` (4096), the same check the review path already used. Both public serializers now call one private helper, `_serialize_bounded_receipt`, so the rule lives in one place. They remain separate names because the existing tests check which one gets called. JSON output is unchanged (compact separators, non-ASCII written as UTF-8), and `emit_serialized` is untouched.\n\nProof map, all rows required:\n1. **Line limit includes the newline.** A receipt that makes exactly a 4096-byte line, newline included, is written in full, ends in a newline and reads back as the same JSON. A receipt that makes a 4097-byte line is rejected with \"receipt exceeded 4 KiB\".\n2. **Multi-byte characters are counted in bytes.** A line of exactly 4096 bytes built from 2-byte `\u00e9` characters is accepted and reads back correctly. The 4097-byte version is rejected.\n3. **Nothing is written before rejection.** `emit()` with an oversized receipt raises an error and writes nothing to stdout. When `main()` gets an oversized non-review result, it outputs one failure receipt of at most 4096 bytes whose summary mentions 4 KiB, and returns exit code 1. The oversized receipt itself is never written.\n4. **Normal emission and serializer selection still work.** The other 70 tests pass, including `test_main_uses_review_serializer_only_after_review_is_selected`.\n\nRows 1\u20133 come from a scratch probe I wrote and ran myself, stored outside the workspace at `solve/call/execution-scratch/probe.py`. Its result is in `out.txt` there (\"probe ok\", exit 0). This is my own check, not an independent review. I judged that adequate because this is a small, reversible fix that moves an existing check to the line boundary the review path already used.\n\nNot covered, by instruction: native progress streaming and the rest of PR26. No live providers were run, no Git history was fetched, no documentation was changed, and no tests were edited.",
+    "remaining": [
+      "Existing test tests.test_bonaparte.BonaparteRunnerTests.test_receipt_size_boundary_is_review_only still asserts the old rule (a 4096-byte receipt plus newline, 4097 bytes, accepted outside review), so it now fails. I left it unchanged as instructed; it would need updating to match the requested behaviour.",
+      "Not covered, by instruction: native progress streaming and the rest of PR26."
+    ]
+  },
+  "required_behavior_passed": true,
+  "negative_boundaries_passed": true,
+  "baseline_passed": true,
+  "scope_violations": [],
+  "scope_source_facts": [],
+  "failed_requirements": [],
+  "evaluation_qualified": true,
+  "timed_out": false,
+  "wall_seconds": 126.88814437499968,
+  "mcp_request_count": 20,
+  "invalid_stream_or_tool_ids": 0,
+  "reported_usage": {
+    "input_tokens": 36,
+    "cache_creation_input_tokens": 49092,
+    "cache_read_input_tokens": 438476,
+    "output_tokens": 8097,
+    "output_tokens_details": {
+      "thinking_tokens": 1671
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 49092,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 1138,
+        "cache_read_input_tokens": 46476,
+        "cache_creation_input_tokens": 4716,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 4716
+        },
+        "type": "message"
+      }
+    ],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "reported_model_usage": {
+    "claude-opus-5-5": {
+      "inputTokens": 36,
+      "outputTokens": 8097,
+      "cacheReadInputTokens": 438476,
+      "cacheCreationInputTokens": 49092,
+      "webSearchRequests": 0,
+      "costUSD": 0.6425152000000001,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 1671,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "reported_cost_usd": 0.6425152000000001,
+  "before_source_sha256": "d9335282c8e40b1504d7ca3269f1fe60f08be7c279309f6eac8cd42c87375901",
+  "after_source_sha256": "28a1d0f2c44bfdb332fe08db23dcb0248789eb7b7e5d6f5a484ee2460129203a",
+  "production_patch_sha256": "65372a883b93cee3042b4ac832dbcb20dd9e7d248b652102131c6c8f7278ce09",
+  "production_patch_changed": true,
+  "declared_primary_production_paths_changed": [
+    "bonaparte"
+  ],
+  "new_root_helpers": [],
+  "receipt_sha256": "45aed3f34a837671faebbf325a9aa2eeabe56dd2068998714dbd6033f45ea1aa",
+  "stream_sha256": "0bef6d9e9add6d7e9a824991b91a7d1e7991797213e883ce4a4f3546271a592f",
+  "request_file_sha256": "d4649c6bf19c28e957c341a2d71774a65c5a867e0105a6ff9adbbf55e4653542",
+  "evaluation_receipt_sha256": "3dcd844c25c521dbf0d7412cb585fd30c86786a0292d574d44fc9c3a3ce6b1c6"
+}

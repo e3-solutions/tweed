@@ -1,0 +1,1 @@
+{"id": "2b07650ad50845a4a295624f8d83d9d7", "argv": ["/bin/bash", "-c", "ls -la ../solve/call/execution-scratch/ 2>&1; python3 -B ../solve/call/execution-scratch/probe.py 2>&1; echo rc=$?"], "timeout": 90.0}

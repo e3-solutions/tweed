@@ -1,0 +1,160 @@
+            return candidate
+        except (OSError, subprocess.SubprocessError):
+            pass
+    raise RuntimeError("no working local Codex CLI found")
+
+
+def serialize_receipt(receipt: dict) -> str:
+    output = json.dumps(receipt, ensure_ascii=False, separators=(",", ":"))
+    if len(output.encode("utf-8")) > RECEIPT_MAX_BYTES:
+        raise RuntimeError("receipt exceeded 4 KiB")
+    return output
+
+
+def serialize_review_receipt(receipt: dict) -> str:
+    output = json.dumps(receipt, ensure_ascii=False, separators=(",", ":"))
+    if len((output + "\n").encode("utf-8")) > RECEIPT_MAX_BYTES:
+        raise RuntimeError("receipt exceeded 4 KiB")
+    return output
+
+
+def emit_serialized(output: str) -> None:
+    sys.stdout.write(output + "\n")
+    sys.stdout.flush()
+
+
+def emit(receipt: dict) -> None:
+    emit_serialized(serialize_receipt(receipt))
+
+
+class ProgressReporter:
+    """Emit privacy-bounded review lifecycle events to an isolated descriptor."""
+----
+                repo,
+                selected_phase,
+                supplied_input,
+                session_id,
+                selected_model,
+                selected_reasoning,
+            ) = parse()
+            checkpoint_exists = session_id is not None and os.path.lexists(
+                checkpoint_path(session_id, ensure_directory=False)
+            )
+            if session_id is not None and (
+                selected_phase is None or checkpoint_exists
+            ):
+                with checkpoint_lease(session_id):
+                    checkpoint = read_checkpoint(session_id, active_only=True)
+                    if (
+                        selected_phase is not None
+                        and selected_phase != checkpoint["phase"]
+                    ):
+                        raise RuntimeError(
+                            "legacy resume phase does not match its checkpoint"
+                        )
+                    selected_phase = checkpoint["phase"]
+                    progress = acquire_progress_reporter(
+                        selected_phase == "review"
+                    )
+                    progress.start()
+                    result_receipt, exit_code = resume_checkpoint(
+                        checkpoint,
+                        supplied_input,
+                        selected_model,
+                        selected_reasoning,
+                    )
+            elif session_id is not None:
+                selected_model = resolve_model(selected_model)
+                selected_reasoning = resolve_reasoning(selected_reasoning)
+                progress = acquire_progress_reporter(selected_phase == "review")
+                progress.start()
+                result_receipt = run_and_checkpoint(
+                    repo,
+                    selected_phase,
+                    supplied_input,
+                    session_id,
+                    selected_model,
+                    selected_reasoning,
+                )
+            else:
+                progress = acquire_progress_reporter(selected_phase == "review")
+                progress.start()
+                result_receipt = run_and_checkpoint(
+                    repo,
+                    selected_phase,
+                    supplied_input,
+                    None,
+                    selected_model,
+                    selected_reasoning,
+                )
+            progress.stop_heartbeat()
+            progress.report("finalizing")
+            terminal_state = result_receipt["state"]
+            if terminal_state not in PROGRESS_TERMINAL_STATES:
+                raise ValueError("invalid progress state")
+            serializer = (
+                serialize_review_receipt
+                if selected_phase == "review"
+                else serialize_receipt
+            )
+            serialized_receipt = serializer(result_receipt)
+        except KeyboardInterrupt:
+            progress.stop_heartbeat()
+            progress.report("finalizing")
+            serializer = (
+                serialize_review_receipt
+                if selected_phase == "review"
+                else serialize_receipt
+            )
+            serialized_receipt = serializer(fail("Bonaparte was interrupted."))
+            terminal_state = "failed"
+            exit_code = 130
+        except Exception as error:  # noqa: BLE001
+            progress.stop_heartbeat()
+            progress.report("finalizing")
+            serializer = (
+                serialize_review_receipt
+                if selected_phase == "review"
+                else serialize_receipt
+            )
+            serialized_receipt = serializer(
+                fail(str(error).replace("\n", " ")[:800])
+            )
+            terminal_state = "failed"
+            exit_code = 1
+
+        emit_serialized(serialized_receipt)
+        progress.report(terminal_state)
+        return exit_code
+    finally:
+        progress.close()
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+---
+bonaparte:211:def serialize_receipt(receipt: dict) -> str:
+bonaparte:218:def serialize_review_receipt(receipt: dict) -> str:
+bonaparte:225:def emit_serialized(output: str) -> None:
+bonaparte:230:def emit(receipt: dict) -> None:
+bonaparte:231:    emit_serialized(serialize_receipt(receipt))
+bonaparte:1563:                serialize_review_receipt
+bonaparte:1565:                else serialize_receipt
+bonaparte:1572:                serialize_review_receipt
+bonaparte:1574:                else serialize_receipt
+bonaparte:1583:                serialize_review_receipt
+bonaparte:1585:                else serialize_receipt
+bonaparte:1593:        emit_serialized(serialized_receipt)
+tests/test_bonaparte.py:1025:                serialized = RUNNER.serialize_receipt(projected) + "\n"
+tests/test_bonaparte.py:1473:        serialized = RUNNER.serialize_receipt(baseline_accepted)
+tests/test_bonaparte.py:1476:            RUNNER.emit_serialized(serialized)
+tests/test_bonaparte.py:1485:        review_serialized = RUNNER.serialize_review_receipt(review_accepted)
+tests/test_bonaparte.py:1491:            RUNNER.serialize_review_receipt(baseline_accepted)
+tests/test_bonaparte.py:1508:                        "serialize_receipt",
+tests/test_bonaparte.py:1509:                        wraps=RUNNER.serialize_receipt,
+tests/test_bonaparte.py:1513:                        "serialize_review_receipt",
+tests/test_bonaparte.py:1514:                        wraps=RUNNER.serialize_review_receipt,
+tests/test_bonaparte.py:1541:                "serialize_receipt",
+tests/test_bonaparte.py:1542:                wraps=RUNNER.serialize_receipt,
+tests/test_bonaparte.py:1546:                "serialize_review_receipt",
+tests/test_bonaparte.py:1547:                wraps=RUNNER.serialize_review_receipt,

@@ -1,0 +1,171 @@
+{
+  "process_exit": 0,
+  "timed_out": false,
+  "wall_seconds": 44.47650804200384,
+  "process_cleanup_scope": "original_process_group",
+  "detached_descendants_contained": false,
+  "guarded_new_session_processes": 1,
+  "process_cleanup_seconds": 2.7125002816319466e-05,
+  "stream_changed_during_cleanup": false,
+  "requested_effort": "high",
+  "observed_assistant_models": [
+    "claude-opus-5-5"
+  ],
+  "usage": {
+    "input_tokens": 12,
+    "cache_creation_input_tokens": 52367,
+    "cache_read_input_tokens": 218405,
+    "output_tokens": 4889,
+    "output_tokens_details": {
+      "thinking_tokens": 881
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 52367,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 978,
+        "cache_read_input_tokens": 51112,
+        "cache_creation_input_tokens": 2623,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 2623
+        },
+        "type": "message"
+      }
+    ],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 12,
+      "outputTokens": 4889,
+      "cacheReadInputTokens": 218405,
+      "cacheCreationInputTokens": 52367,
+      "webSearchRequests": 0,
+      "costUSD": 0.560445,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 881,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "total_cost_usd": 0.560445,
+  "terminal": {
+    "duration_api_ms": 43179,
+    "stop_reason": "tool_use",
+    "session_id": "e8c9c5c5-5efe-47a2-86fa-22d4b5324d9b",
+    "total_cost_usd": 0.560445,
+    "usage": {
+      "input_tokens": 12,
+      "cache_creation_input_tokens": 52367,
+      "cache_read_input_tokens": 218405,
+      "output_tokens": 4889,
+      "output_tokens_details": {
+        "thinking_tokens": 881
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 52367,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "global",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 978,
+          "cache_read_input_tokens": 51112,
+          "cache_creation_input_tokens": 2623,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 2623
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard",
+      "fallback_credit": null
+    },
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 12,
+        "outputTokens": 4889,
+        "cacheReadInputTokens": 218405,
+        "cacheCreationInputTokens": 52367,
+        "webSearchRequests": 0,
+        "costUSD": 0.560445,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 881,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "permission_denials": [],
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "fast_mode_disabled_reason": "sdk_opt_in_required",
+    "subagent_stats": {
+      "spawned": 0,
+      "requested": {
+        "background": 0,
+        "foreground": 0,
+        "unset": 0
+      },
+      "started_in_background": 0,
+      "max_depth": 0,
+      "spawned_by_subagents": 0,
+      "completed": 0,
+      "failed": 0,
+      "killed": {
+        "parent": 0,
+        "user": 0,
+        "system": 0
+      },
+      "refused": {
+        "depth_limit": 0,
+        "concurrency_limit": 0,
+        "budget": 0
+      },
+      "by_type": {}
+    },
+    "is_error": false,
+    "num_turns": 10,
+    "subtype": "success",
+    "api_error_status": null,
+    "result": "{\"complete\":true,\"summary\":\"I fixed the scope violation: `tests/test_bonaparte.py` is back to its original bytes, and I didn't change the production code in this repair. One existing test in that file now fails, because it asserts the old size rule this task replaces.\\n\\n**Changes:**\\n- **Restored test file:** I removed the test I had added to `tests/test_bonaparte.py`. `git diff -- tests/test_bonaparte.py` is now empty, so the file matches the protected version exactly.\\n- **Moved the test:** the same test now lives in a new file, `tests/test_receipt_line_limit.py`. It loads `bonaparte` the same way the existing tests do.\\n- **Production:** `bonaparte` is unchanged from the earlier attempt, which the independent checker already passed on behavior and negative cases.\\n\\n**Checks run (author checks only):**\\n- The visible check (`tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex`) passes.\\n- The moved test (`tests.test_receipt_line_limit`) passes. It covers four cases:\\n  - An exactly 4096-byte UTF-8 line containing a multi-byte character, newline included, is accepted.\\n  - A line one byte longer is rejected with \\\"receipt exceeded 4 KiB\\\".\\n  - Through `main()` on a non-review phase, an oversized receipt exits 1. Only a bounded `failed` receipt is printed and none of the oversized content appears.\\n  - Through `main()`, an exactly-4096-byte line is emitted byte-for-byte and exits 0.\\n\\n**Existing test that now fails:** `test_receipt_size_boundary_is_review_only` now errors with \\\"receipt exceeded 4 KiB\\\". It expects a non-review receipt whose JSON is exactly 4096 bytes to be accepted and printed as 4097 bytes with the newline. That is the old behavior this task removes, so the failure is expected. I left the test untouched because the file is protected, and you said test edits don't affect grading.\\n\\nNot done: I didn't re-run the full suite after this repair. Native progress streaming and the rest of PR26 were out of scope.\",\"remaining\":[\"Existing test test_receipt_size_boundary_is_review_only in the protected tests/test_bonaparte.py now fails. It asserts the old rule that a non-review receipt line may reach 4097 bytes. I left it unchanged because the file must stay byte-for-byte identical.\",\"I didn't re-run the full test suite after this repair. Only the visible check, the moved test and the one conflicting existing test were run.\"]}",
+    "structured_output": {
+      "complete": true,
+      "summary": "I fixed the scope violation: `tests/test_bonaparte.py` is back to its original bytes, and I didn't change the production code in this repair. One existing test in that file now fails, because it asserts the old size rule this task replaces.\n\n**Changes:**\n- **Restored test file:** I removed the test I had added to `tests/test_bonaparte.py`. `git diff -- tests/test_bonaparte.py` is now empty, so the file matches the protected version exactly.\n- **Moved the test:** the same test now lives in a new file, `tests/test_receipt_line_limit.py`. It loads `bonaparte` the same way the existing tests do.\n- **Production:** `bonaparte` is unchanged from the earlier attempt, which the independent checker already passed on behavior and negative cases.\n\n**Checks run (author checks only):**\n- The visible check (`tests.test_bonaparte.BonaparteRunnerTests.test_model_precedence_is_command_then_global_then_codex`) passes.\n- The moved test (`tests.test_receipt_line_limit`) passes. It covers four cases:\n  - An exactly 4096-byte UTF-8 line containing a multi-byte character, newline included, is accepted.\n  - A line one byte longer is rejected with \"receipt exceeded 4 KiB\".\n  - Through `main()` on a non-review phase, an oversized receipt exits 1. Only a bounded `failed` receipt is printed and none of the oversized content appears.\n  - Through `main()`, an exactly-4096-byte line is emitted byte-for-byte and exits 0.\n\n**Existing test that now fails:** `test_receipt_size_boundary_is_review_only` now errors with \"receipt exceeded 4 KiB\". It expects a non-review receipt whose JSON is exactly 4096 bytes to be accepted and printed as 4097 bytes with the newline. That is the old behavior this task removes, so the failure is expected. I left the test untouched because the file is protected, and you said test edits don't affect grading.\n\nNot done: I didn't re-run the full suite after this repair. Native progress streaming and the rest of PR26 were out of scope.",
+      "remaining": [
+        "Existing test test_receipt_size_boundary_is_review_only in the protected tests/test_bonaparte.py now fails. It asserts the old rule that a non-review receipt line may reach 4097 bytes. I left it unchanged because the file must stay byte-for-byte identical.",
+        "I didn't re-run the full test suite after this repair. Only the visible check, the moved test and the one conflicting existing test were run."
+      ]
+    },
+    "ttft_ms": 2411,
+    "type": "result",
+    "duration_ms": 43828,
+    "uuid": "c1236616-8a75-400c-a503-2ed2eadb8233",
+    "ttft_stream_ms": 1183,
+    "time_to_request_ms": 111,
+    "first_content_frame_ms": 1183,
+    "queued_turn_count": 0,
+    "result_index": 0
+  }
+}
