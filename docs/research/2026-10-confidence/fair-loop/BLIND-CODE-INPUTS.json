@@ -1,0 +1,21 @@
+{
+  "purpose": "Descriptive code review only; no scored criteria change",
+  "patches": [
+    {
+      "opaque_label": "parser-X",
+      "sha256": "197f68954988f9958789c0ba5b7b37f1373cad56523989ba8a047021a95d5c7e"
+    },
+    {
+      "opaque_label": "parser-Y",
+      "sha256": "3541d9c919e3ca5f670b8553f9842c4c15201b7b4a95e68217943ec344f14470"
+    },
+    {
+      "opaque_label": "csv-X",
+      "sha256": "a557d135a56e706f95a162d6f7b4bc1276f33f717fa5bae2c59d7a3db07b18e5"
+    },
+    {
+      "opaque_label": "csv-Y",
+      "sha256": "a557d135a56e706f95a162d6f7b4bc1276f33f717fa5bae2c59d7a3db07b18e5"
+    }
+  ]
+}

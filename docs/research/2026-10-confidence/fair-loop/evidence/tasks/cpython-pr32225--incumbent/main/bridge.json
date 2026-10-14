@@ -1,0 +1,59 @@
+{
+  "effective_tools": [
+    "list_files",
+    "read_file",
+    "write_file",
+    "replace_text",
+    "run_tests"
+  ],
+  "interpreter": "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+  "runtime_read_paths": [
+    "/Applications/Xcode.app/Contents/Developer"
+  ],
+  "forbidden_runtime_read_paths": [
+    "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/__pycache__/csv.cpython-39.opt-1.pyc",
+    "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/__pycache__/csv.cpython-39.opt-2.pyc",
+    "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/__pycache__/csv.cpython-39.pyc",
+    "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/csv.py",
+    "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/csv.pyc",
+    "/opt/homebrew/Cellar/python@3.13/3.13.9_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/__pycache__/csv.cpython-313.opt-1.pyc",
+    "/opt/homebrew/Cellar/python@3.13/3.13.9_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/__pycache__/csv.cpython-313.opt-2.pyc",
+    "/opt/homebrew/Cellar/python@3.13/3.13.9_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/__pycache__/csv.cpython-313.pyc",
+    "/opt/homebrew/Cellar/python@3.13/3.13.9_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/csv.py",
+    "/opt/homebrew/Cellar/python@3.13/3.13.9_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/csv.pyc",
+    "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/__pycache__/csv.cpython-314.opt-1.pyc",
+    "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/__pycache__/csv.cpython-314.opt-2.pyc",
+    "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/__pycache__/csv.cpython-314.pyc",
+    "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/csv.py",
+    "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/csv.pyc",
+    "/opt/homebrew/opt/python@3.13/Frameworks/Python.framework/Versions/3.13/lib/python3.13/__pycache__/csv.cpython-313.opt-1.pyc",
+    "/opt/homebrew/opt/python@3.13/Frameworks/Python.framework/Versions/3.13/lib/python3.13/__pycache__/csv.cpython-313.opt-2.pyc",
+    "/opt/homebrew/opt/python@3.13/Frameworks/Python.framework/Versions/3.13/lib/python3.13/__pycache__/csv.cpython-313.pyc",
+    "/opt/homebrew/opt/python@3.13/Frameworks/Python.framework/Versions/3.13/lib/python3.13/csv.py",
+    "/opt/homebrew/opt/python@3.13/Frameworks/Python.framework/Versions/3.13/lib/python3.13/csv.pyc",
+    "/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib/python3.14/__pycache__/csv.cpython-314.opt-1.pyc",
+    "/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib/python3.14/__pycache__/csv.cpython-314.opt-2.pyc",
+    "/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib/python3.14/__pycache__/csv.cpython-314.pyc",
+    "/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib/python3.14/csv.py",
+    "/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib/python3.14/csv.pyc"
+  ],
+  "policy_before": {
+    "SKILL.md": "26b8c7ce5dcf06f8f3129c7e7794f77dee5b0c2ba5b50e882c6939b558064950",
+    "references/complex-tasks.md": "8c0396928105db561147b65b8f95b6a838ed9429efcbffc2b168030a77ae08c2",
+    "references/evidence.md": "bd097c352130c5199ee907199bfab369927cf8ee6f990e8133cb79a87ca01d02",
+    "references/harnesses.md": "6d05e95838f2a50931c734002f7179cdb61a981549c5f22cc4f2aa73e80c6c71",
+    "references/intent-flows.md": "d7b4461527b613f9607805f4ff6e2380ee87b47b68d44fa88b06661d544acbec",
+    "references/model-routing.md": "016d305701972280250c3938d5db2399807df93cf55962baaea53f89ee13fa61",
+    "references/modes.md": "58bdefb0a2be2a6093bd4c599e139eaf39e41c009b07aa913a51274ae90708f6",
+    "references/question-patterns.md": "d4815150b8418b5f747f909f4e141f8f42e6ee2890c70cf220a1ac8cf6973295",
+    "references/report-rules.md": "cd71fbb00b82a7b0c4811a929d1ceac8338708c59788b3a6e8ae3268b94dd61f",
+    "references/task-profiles.md": "83e4c88178608ab83b88829000be95962c294e2baa3444b77715d9a620c7a2a6"
+  },
+  "command_profile_sha256": "11cecfa27a904f25b83b6062cff36377daf93960652ae658163f525b1c550c29",
+  "server_profile_sha256": "8705062478430ca000651497388b7cb930c4362acc58d6435b5028055ac769c8",
+  "server_config": "/Users/aryagm/.codex/worktrees/b6ce/tweed/.confidence/fair-loop/study-v2/cells/cpython-pr32225--incumbent/main/call/server-config.json",
+  "borrowed_runner_sha256": "1f5e9ab2e5f0823a34c8f637ae08b4b3e7e1d1ac7bbbf5aab64ab79c95288fb8",
+  "adapter_sha256": "99024867cec32e7acf5771f882337aa58db6f20b836ccee2ef8a9da99c228fbb",
+  "scratch_outside_source": true,
+  "stdio_metadata_only": "Exact per-command stdout/stderr literals; no contents permission"
+}

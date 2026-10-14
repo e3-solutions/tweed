@@ -1,0 +1,63 @@
+{
+  "all_registered_cells_closed": true,
+  "cells": [
+    {
+      "cell_id": "cpython-pr156382--incumbent",
+      "final_product_passed": true,
+      "delivery_and_custody_qualified": true,
+      "main_seconds": 71.62981395899988,
+      "all_unique_tool_requests": 12,
+      "mcp_unique_requests": 11,
+      "reported_cost_usd": 0.5896434,
+      "continuation_decision": {
+        "admit": false,
+        "reason": "no observed gap or qualified deadline"
+      }
+    },
+    {
+      "cell_id": "cpython-pr156382--candidate",
+      "final_product_passed": true,
+      "delivery_and_custody_qualified": true,
+      "main_seconds": 66.78709966699535,
+      "all_unique_tool_requests": 13,
+      "mcp_unique_requests": 12,
+      "reported_cost_usd": 0.5261796,
+      "continuation_decision": {
+        "admit": false,
+        "reason": "no observed gap or qualified deadline"
+      }
+    },
+    {
+      "cell_id": "cpython-pr32225--candidate",
+      "final_product_passed": true,
+      "delivery_and_custody_qualified": true,
+      "main_seconds": 48.18160674999672,
+      "all_unique_tool_requests": 10,
+      "mcp_unique_requests": 9,
+      "reported_cost_usd": 0.27762000000000003,
+      "continuation_decision": {
+        "admit": false,
+        "reason": "no observed gap or qualified deadline"
+      }
+    },
+    {
+      "cell_id": "cpython-pr32225--incumbent",
+      "final_product_passed": true,
+      "delivery_and_custody_qualified": true,
+      "main_seconds": 41.20222712500254,
+      "all_unique_tool_requests": 10,
+      "mcp_unique_requests": 9,
+      "reported_cost_usd": 0.257438,
+      "continuation_decision": {
+        "admit": false,
+        "reason": "no observed gap or qualified deadline"
+      }
+    }
+  ],
+  "task_model_calls": 4,
+  "task_continuations": 0,
+  "candidate_promoted": false,
+  "decision": "Tie: retain incumbent under frozen promotion rule",
+  "frozen_registration_sha256": "46a74c49b458afcca84ff85bf07c656869126629c7ff5c93da21b73aa8e9ae71",
+  "prospective_commit": "32960cc9c6e230c73c018af3b1902d5d1e62d89f"
+}

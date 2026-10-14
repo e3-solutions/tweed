@@ -1,0 +1,37 @@
+18              delimiters=('=', ':'), comment_prefixes=('#', ';'),
+31         When `delimiters` is given, it will be used as the set of substrings
+140     write(fp, space_around_delimiters=True)
+142         `space_around_delimiters` is True (the default), delimiters
+576 class _Line(str):
+618     _OPT_TMPL = r"""
+622         \s*(?P<vi>{delim})\s*              # any number of space/tab,
+624                                            # allowed delimiters,
+628     _OPT_NV_TMPL = r"""
+633         (?P<vi>{delim})\s*                 # optionally followed by
+635                                            # delimiters, followed by any
+644     OPTCRE = re.compile(_OPT_TMPL.format(delim="=|:"), re.VERBOSE)
+647     OPTCRE_NV = re.compile(_OPT_NV_TMPL.format(delim="=|:"), re.VERBOSE)
+655                  allow_no_value=False, *, delimiters=('=', ':'),
+668         self._delimiters = tuple(delimiters)
+669         if delimiters == ('=', ':'):
+670             self._optcre = self.OPTCRE_NV if allow_no_value else self.OPTCRE
+672             d = "|".join(re.escape(d) for d in delimiters)
+674                 self._optcre = re.compile(self._OPT_NV_TMPL.format(delim=d),
+677                 self._optcre = re.compile(self._OPT_TMPL.format(delim=d),
+961     def write(self, fp, space_around_delimiters=True):
+964         If `space_around_delimiters` is True (the default), delimiters
+970         if space_around_delimiters:
+971             d = " {} ".format(self._delimiters[0])
+973             d = self._delimiters[0]
+1061     def _read(self, fp, fpname):
+1083     def _read_inner(self, fp, fpname):
+1111     def _handle_continuation_line(self, st, line, fpname):
+1121     def _handle_rest(self, st, line, fpname):
+1135     def _handle_header(self, st, sectname, fpname):
+1153     def _handle_option(self, st, line, fpname):
+1157         mo = self._optcre.match(line.clean)
+1166         st.optname, vi, optval = mo.group('option', 'vi', 'value')
+1196     def _read_defaults(self, defaults):
+1231         delimiters or that begins with the section header pattern"""
+1235         for delim in self._delimiters:
+1284     def _read_defaults(self, defaults):

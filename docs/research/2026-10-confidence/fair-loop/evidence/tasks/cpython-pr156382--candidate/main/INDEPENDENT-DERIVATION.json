@@ -1,0 +1,101 @@
+{
+  "role": "main",
+  "artifact_complete": true,
+  "artifact_evaluation_status": "observed",
+  "delivery_valid": true,
+  "known_deadline": false,
+  "custody_qualified": true,
+  "custody_failures": [],
+  "controller_settled": true,
+  "after_source_sha256": "898c936bd2789ed487ac44e01723fe173c07a58b7597207464c783278cf50810",
+  "before_source_sha256": "59821593819e396e6881c1de78af40e3ed1a1876ab9e904eddc808dc2809bd83",
+  "primary_runtime_changed": true,
+  "required_gaps": [],
+  "safe_declared_completion": {
+    "complete": true,
+    "remaining": [],
+    "summary": "Fixed ConfigParser handling of explicitly configured whitespace delimiters. Cause: in both _OPT_TMPL and _OPT_NV_TMPL in configparser.py, words in an option name could be joined by any whitespace (\\s+), and the longest name was tried first. With a space delimiter, 'colour dark blue' therefore parsed as {'colour dark': 'blue'}; this was reproduced before the fix, along with the matching tab case. Fix: the whitespace between words in a name must not be a configured delimiter ((?:(?!{delim})\\s)+). The default '=' and ':' delimiters behave as before. Added tests/test_whitespace_delimiters.py with 11 tests: space, tab and mixed space/tab delimiters; spaces kept in option names with default and custom ('->') delimiters; allow_no_value; strict duplicate and malformed-line rejection; typed getters and interpolation; write/read round trips; and a long line with no delimiter parsing in under 2 seconds. The visible test and the 11 new tests ran together in one unittest run (12 tests, all OK); the exact non-verbose visible command was not run separately. tests/test_visible.py is unchanged. Changed paths: configparser.py and tests/test_whitespace_delimiters.py. Not done: the CPython test suite, independent review, and rerunning the new tests against the old code (the bug was confirmed only by the manual reproduction). The speed test is a single timing check, not a performance audit."
+  },
+  "original_evaluation_corrected": false,
+  "facts": {
+    "phase": "main",
+    "status": "settled",
+    "source_receipt_sha256": "27a89ae26da3943bf2370c8af31a824e11a970146edd3cb4708a61c114dd2a29",
+    "observed_models": [
+      "claude-opus-5-5"
+    ],
+    "session_ids": [
+      "3cec00de-91f0-41b8-8afb-d2cfe1accf4d"
+    ],
+    "typed_terminal_observed": true,
+    "terminal_count": 1,
+    "actual_unique_tool_requests": 13,
+    "actual_unique_mcp_requests": 12,
+    "tools_by_name": {
+      "mcp__cp_trial__read_file": 3,
+      "mcp__cp_trial__list_files": 1,
+      "mcp__cp_trial__run_tests": 5,
+      "mcp__cp_trial__write_file": 1,
+      "mcp__cp_trial__replace_text": 2,
+      "StructuredOutput": 1
+    },
+    "invalid_stream_or_ids": [],
+    "provider_delivery_qualified_recorded": null,
+    "timed_out": false,
+    "wall_seconds": 66.78709966699535,
+    "reported_cost_usd": 0.5261796,
+    "reported_usage": {
+      "input_tokens": 16,
+      "cache_creation_input_tokens": 44283,
+      "cache_read_input_tokens": 154058,
+      "output_tokens": 7052,
+      "output_tokens_details": {
+        "thinking_tokens": 1977
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 44283,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "global",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 1422,
+          "cache_read_input_tokens": 39865,
+          "cache_creation_input_tokens": 6293,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 6293
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard",
+      "fallback_credit": null
+    },
+    "reported_model_usage": {
+      "claude-opus-5-5": {
+        "inputTokens": 16,
+        "outputTokens": 7052,
+        "cacheReadInputTokens": 154058,
+        "cacheCreationInputTokens": 44283,
+        "webSearchRequests": 0,
+        "costUSD": 0.5261796,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 1977,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "source_authorship": null,
+    "model_thinking_exported": false
+  },
+  "evaluation_receipt_sha256": "5267fe26c7ba945278d0fa962a359f7611dfdafd7d8004b157db087872680125"
+}

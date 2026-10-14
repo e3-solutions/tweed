@@ -1,0 +1,10 @@
+{
+  "correction": "Pass the absolute retained source path to unchanged grader; original relative --study incorrectly resolved under grader cwd",
+  "fixed_inputs_changed": false,
+  "additional_model_call": false,
+  "original_unknown_receipt_sha256": "86693c749dca6206ab80170c53c326248e25b67d5ab3bdb0994d78f9e2dcc80b",
+  "current_grade_receipt_sha256": "161be20a2041f0f418b966c7d5fbf821a16adabd22d051b10cb9102692a8096f",
+  "original_provider_receipt_sha256": "0e9a04e03427bffacd8d6341dbb01678a3d324dd2dfbb8bfe85253226d9f1694",
+  "captured_source_sha256": "29313ab1352993ab7a22176cdd7943070c99f11867814376f82eb470195a6a1c",
+  "source_matches_live_and_provider_snapshot": true
+}

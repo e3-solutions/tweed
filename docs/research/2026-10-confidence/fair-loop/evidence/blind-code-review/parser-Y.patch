@@ -1,0 +1,24 @@
+diff --git a/configparser.py b/configparser.py
+index 3c452af..ed656d0 100644
+--- a/configparser.py
++++ b/configparser.py
+@@ -618,7 +618,8 @@ class RawConfigParser(MutableMapping):
+     _OPT_TMPL = r"""
+         (?P<option>                        # very permissive!
+             (?:(?!{delim})\S)*             # non-delimiter non-whitespace
+-            (?:\s+(?:(?!{delim})\S)+)*)    # optionally more words
++            (?:(?:(?!{delim})\s)+           # optionally more words, joined
++               (?:(?!{delim})\S)+)*)       # by non-delimiter whitespace
+         \s*(?P<vi>{delim})\s*              # any number of space/tab,
+                                            # followed by any of the
+                                            # allowed delimiters,
+@@ -628,7 +629,8 @@ class RawConfigParser(MutableMapping):
+     _OPT_NV_TMPL = r"""
+         (?P<option>                        # very permissive!
+             (?:(?!{delim})\S)*             # non-delimiter non-whitespace
+-            (?:\s+(?:(?!{delim})\S)+)*)    # optionally more words
++            (?:(?:(?!{delim})\s)+           # optionally more words, joined
++               (?:(?!{delim})\S)+)*)       # by non-delimiter whitespace
+         \s*(?:                             # any number of space/tab,
+         (?P<vi>{delim})\s*                 # optionally followed by
+                                            # any of the allowed

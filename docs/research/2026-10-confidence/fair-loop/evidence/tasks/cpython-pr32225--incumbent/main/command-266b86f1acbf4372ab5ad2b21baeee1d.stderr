@@ -1,0 +1,15 @@
+test_existing_sequence_fields (tests.test_visible.Visible) ... ok
+test_default_header_and_sequence (tests.test_dict_fieldnames.DictReaderFieldnamesTests) ... ok
+test_iterator_fieldnames_multiple_rows (tests.test_dict_fieldnames.DictReaderFieldnamesTests) ... ok
+test_iterator_restkey_restval (tests.test_dict_fieldnames.DictReaderFieldnamesTests) ... ok
+test_noniterable_fieldnames_rejected (tests.test_dict_fieldnames.DictReaderFieldnamesTests) ... ok
+test_generator_fieldnames_quoting_unicode_newlines (tests.test_dict_fieldnames.DictWriterFieldnamesTests) ... ok
+test_iterator_extrasaction (tests.test_dict_fieldnames.DictWriterFieldnamesTests) ... ok
+test_iterator_fieldnames_header_and_rows (tests.test_dict_fieldnames.DictWriterFieldnamesTests) ... ok
+test_noniterable_fieldnames_rejected (tests.test_dict_fieldnames.DictWriterFieldnamesTests) ... ok
+test_sequence_fieldnames_not_copied (tests.test_dict_fieldnames.DictWriterFieldnamesTests) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.000s
+
+OK

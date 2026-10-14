@@ -1,0 +1,14 @@
+{
+  "exit_code": 2,
+  "wall_seconds": 0.04489295800158288,
+  "header": {
+    "product_passed": false,
+    "evaluation_status": "unknown",
+    "infrastructure_error": "Material root must be a real directory"
+  },
+  "evaluator_sha256": "060fcad2bd5fccdb3ed31e3cf350b6154aa7e065202f12b2146b6c591052ab3e",
+  "stdout_sha256": "1902ebed8b51cf24dada1243f9fefa1e2e9a6ae64c16667d7f771aba542e4160",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "captured_grade_source_bound": false,
+  "expected_captured_source_sha256": "29313ab1352993ab7a22176cdd7943070c99f11867814376f82eb470195a6a1c"
+}

@@ -1,0 +1,9 @@
+{
+  "registration_sha256": "46a74c49b458afcca84ff85bf07c656869126629c7ff5c93da21b73aa8e9ae71",
+  "prospective_public_commit": "32960cc9c6e230c73c018af3b1902d5d1e62d89f",
+  "pre_inference_manifest_sha256": "643924e497c24e17ca4a6897e4e3d03a568566d496c085e014fd2a2182c2ceb4",
+  "independent_readiness_sha256": "dbab60e8a1727ee69f32748d4f79c150313cc933fb3ac6fd86f5c1377475787a",
+  "authorized_by": "Root under explicit user request",
+  "global_model_limit": 1,
+  "limits": "Exactly four registered mains, at most one qualified continuation per cell; no input/route/budget changes"
+}

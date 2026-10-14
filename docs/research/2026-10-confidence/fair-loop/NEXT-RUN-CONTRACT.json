@@ -1,0 +1,17 @@
+{
+  "phase": "prospective future contract; not executed new solver comparison",
+  "current_frozen_inputs_changed": false,
+  "additional_model_calls": 0,
+  "additional_owner_reruns": 0,
+  "csv_constructor_contract": {
+    "invalid_non_none_noniterables": "TypeError at construction",
+    "DictReader_None": "Preserve header inference",
+    "DictWriter_None": "Preserve historical constructor acceptance"
+  },
+  "future_owner_cases_to_add": [
+    "Reader None infers header",
+    "Writer None construction preserves historical behavior"
+  ],
+  "future_invocation": "Absolute --study and grading-source paths required",
+  "no_retrospective_rescore": true
+}

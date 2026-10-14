@@ -1,0 +1,60 @@
+{
+  "exit_code": 0,
+  "wall_seconds": 0.17720191700209398,
+  "header": {
+    "task_id": "cpython-pr156382",
+    "product_passed": true,
+    "positive_passed": true,
+    "negative_passed": true,
+    "regression_passed": true,
+    "scope_valid": true,
+    "scope_violations": [],
+    "source_current": true,
+    "evaluation_status": "observed",
+    "local_module_binding": {
+      "local_module": "/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-qfbqpj_2/source/configparser.py",
+      "local_module_sha256": "8aafff3440476df25962a9126911945ec9b6971cc62ce65e5928352afa07c428",
+      "binding_errors": [],
+      "source_load_error": null
+    },
+    "failed_requirements": [],
+    "execution_receipts": {
+      "owner": {
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout": "{\"local_module\": \"/private/var/folders/rs/x9dz0y214xz45k43cj_15hdm0000gq/T/fair-owner-qfbqpj_2/source/configparser.py\", \"local_module_sha256\": \"8aafff3440476df25962a9126911945ec9b6971cc62ce65e5928352afa07c428\", \"binding_errors\": [], \"source_load_error\": null}\n{\"failed\": [], \"run\": 5, \"skipped\": 0}\n",
+        "stderr": "test_positive_configured_whitespace_delimiters (tests.test_owner.Owner.test_positive_configured_whitespace_delimiters) ... ok\ntest_positive_values_and_no_value_options (tests.test_owner.Owner.test_positive_values_and_no_value_options) ... ok\ntest_negative_non_delimiter_whitespace_keeps_key_meaning (tests.test_owner.Owner.test_negative_non_delimiter_whitespace_keeps_key_meaning) ... ok\ntest_negative_malformed_and_duplicate_still_rejected (tests.test_owner.Owner.test_negative_malformed_and_duplicate_still_rejected) ... ok\ntest_regression_default_interpolation_comments_and_roundtrip (tests.test_owner.Owner.test_regression_default_interpolation_comments_and_roundtrip) ... ok\n\n----------------------------------------------------------------------\nRan 5 tests in 0.001s\n\nOK\n",
+        "wall_seconds": 0.059323707995645236,
+        "process_cleanup_scope": "original_process_group",
+        "detached_descendants_contained": false
+      },
+      "baseline": [
+        {
+          "argv": [
+            "/opt/homebrew/opt/python@3.14/bin/python3.14",
+            "-B",
+            "-m",
+            "unittest",
+            "tests.test_visible"
+          ],
+          "exit_code": 0,
+          "timed_out": false,
+          "stdout": "ACTOR_LOCAL_SOURCE configparser.py 8aafff3440476df25962a9126911945ec9b6971cc62ce65e5928352afa07c428\n",
+          "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n",
+          "wall_seconds": 0.05618987500201911,
+          "process_cleanup_scope": "original_process_group",
+          "detached_descendants_contained": false
+        }
+      ]
+    },
+    "source_before_sha256": "29313ab1352993ab7a22176cdd7943070c99f11867814376f82eb470195a6a1c",
+    "source_after_sha256": "29313ab1352993ab7a22176cdd7943070c99f11867814376f82eb470195a6a1c",
+    "owner_stdout_sha256": "d8afe243e585bd7d87ff5c6ebe814a881f4429f1feae4d6daf4f4999909e5f2b",
+    "owner_stderr_sha256": "86700953eb321e9f672ad4de31b6260d900f9bf3af619d823255feb9b417f85a"
+  },
+  "evaluator_sha256": "060fcad2bd5fccdb3ed31e3cf350b6154aa7e065202f12b2146b6c591052ab3e",
+  "stdout_sha256": "1eae6a4ac3fc71926a461f99d82de621587c7a2ea7bf269a0b2ab0c7d2292d17",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "captured_grade_source_bound": true,
+  "expected_captured_source_sha256": "29313ab1352993ab7a22176cdd7943070c99f11867814376f82eb470195a6a1c"
+}

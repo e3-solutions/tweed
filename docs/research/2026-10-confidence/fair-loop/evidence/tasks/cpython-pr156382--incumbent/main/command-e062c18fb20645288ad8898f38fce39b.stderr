@@ -1,0 +1,17 @@
+test_existing_default_delimiters (tests.test_visible.Visible.test_existing_default_delimiters) ... ok
+test_allow_no_value_with_space_delimiter (tests.test_whitespace_delimiters.WhitespaceDelimiterTests.test_allow_no_value_with_space_delimiter) ... ok
+test_default_delimiters_keep_whitespace_in_names (tests.test_whitespace_delimiters.WhitespaceDelimiterTests.test_default_delimiters_keep_whitespace_in_names) ... ok
+test_default_delimiters_reject_line_without_delimiter (tests.test_whitespace_delimiters.WhitespaceDelimiterTests.test_default_delimiters_reject_line_without_delimiter) ... ok
+test_long_malformed_line_is_rejected (tests.test_whitespace_delimiters.WhitespaceDelimiterTests.test_long_malformed_line_is_rejected) ... ok
+test_round_trip (tests.test_whitespace_delimiters.WhitespaceDelimiterTests.test_round_trip) ... ok
+test_space_delimiter_rejects_single_word_without_no_value (tests.test_whitespace_delimiters.WhitespaceDelimiterTests.test_space_delimiter_rejects_single_word_without_no_value) ... ok
+test_space_delimiter_splits_at_first_space (tests.test_whitespace_delimiters.WhitespaceDelimiterTests.test_space_delimiter_splits_at_first_space) ... ok
+test_space_delimiter_with_tab_inside_name_is_name (tests.test_whitespace_delimiters.WhitespaceDelimiterTests.test_space_delimiter_with_tab_inside_name_is_name) ... ok
+test_strict_duplicate_with_space_delimiter (tests.test_whitespace_delimiters.WhitespaceDelimiterTests.test_strict_duplicate_with_space_delimiter) ... ok
+test_tab_delimiter (tests.test_whitespace_delimiters.WhitespaceDelimiterTests.test_tab_delimiter) ... ok
+test_typed_and_interpolation_with_space_delimiter (tests.test_whitespace_delimiters.WhitespaceDelimiterTests.test_typed_and_interpolation_with_space_delimiter) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.009s
+
+OK

@@ -1,0 +1,57 @@
+{
+  "purpose": "Descriptive blinded code-quality review; no scored criteria or primary results changed",
+  "reviewer": {
+    "kind": "native Codex",
+    "model_attribution": "unobserved",
+    "observed_model": null,
+    "requested_model": null
+  },
+  "created_at_utc": "2026-10-14T03:47:36.765822+00:00",
+  "read_scope": [
+    "INPUTS.json",
+    "parser-X.patch",
+    "parser-Y.patch",
+    "csv-X.patch",
+    "csv-Y.patch"
+  ],
+  "input_sha256": {
+    "INPUTS.json": "75a72ca67770961348c57f5781203c3bb713686314aaac9956c464063ea2ee30",
+    "parser-X.patch": "197f68954988f9958789c0ba5b7b37f1373cad56523989ba8a047021a95d5c7e",
+    "parser-Y.patch": "3541d9c919e3ca5f670b8553f9842c4c15201b7b4a95e68217943ec344f14470",
+    "csv-X.patch": "a557d135a56e706f95a162d6f7b4bc1276f33f717fa5bae2c59d7a3db07b18e5",
+    "csv-Y.patch": "a557d135a56e706f95a162d6f7b4bc1276f33f717fa5bae2c59d7a3db07b18e5"
+  },
+  "manifest_patch_pins_match": true,
+  "tests_run": 0,
+  "hosted_provider_calls": 0,
+  "blocking_findings": [],
+  "parser_pair": {
+    "members": [
+      "parser-X",
+      "parser-Y"
+    ],
+    "assessment": "Both are direct causal fixes with equivalent regex expressions; only comments and formatting differ.",
+    "mechanism": "The added negative delimiter lookahead is applied to each whitespace character in the option-name separator. It prevents configured space/tab delimiters from being swallowed by the greedy whitespace run. The change is applied to both ordinary and optional-no-value templates.",
+    "preserved_surface": "Non-delimiter whitespace remains usable inside an option name; surrounding value parsing, strict behavior and interpolation code are not changed in these hunks.",
+    "quality": "Fits the existing regex-template style. No new helper, abstraction, fixture-dependent constant or unrelated production edit appears.",
+    "comparison": "Functional tie. parser-Y uses a slightly shorter explanatory comment; this is a minor readability difference, not a correctness or promotion finding."
+  },
+  "csv_pair": {
+    "members": [
+      "csv-X",
+      "csv-Y"
+    ],
+    "byte_identical": true,
+    "assessment": "Identical direct constructor fixes for DictReader and DictWriter.",
+    "mechanism": "iter(fieldnames) is fieldnames identifies ordinary one-shot iterators and list(fieldnames) consumes them into a reusable schema. Reusable lists do not satisfy that identity check, so their original object/reference is preserved for external updates. The None guard leaves DictReader header discovery unchanged.",
+    "preserved_surface": "The shown changes leave restkey/restval, extrasaction, dialect and quoting logic untouched; materializing the schema supplies the repeated iteration/length operations these implementations need.",
+    "quality": "Two small matching constructor guards fit the current code. No fixture-specific values, unrelated production changes or extra abstraction appear.",
+    "comparison": "Exact tie: both projected patches have the same SHA256."
+  },
+  "limitations": [
+    "Only INPUTS.json and the four opaque projected production patches were read; no mapping, arm/policy labels, study artifacts, model streams, task oracle or reference source was read.",
+    "This is patch-level reasoning, not an independent rerun of behavior or an audit of the entire final workspace. Changes outside these projected patches are not assessed.",
+    "The parent reports all fixed owner checks passed. This review does not add tests, acceptance criteria, scores, or a full release certification.",
+    "The CSV changes normalize constructor-supplied fieldnames. Broader behavior outside the supplied constructor hunks is not established by this patch-only review."
+  ]
+}
