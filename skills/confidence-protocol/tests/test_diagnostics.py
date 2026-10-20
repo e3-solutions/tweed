@@ -126,7 +126,7 @@ class DiagnosticsTest(unittest.TestCase):
             "prompt": CANARIES["prompt"],
             "hostname": CANARIES["host"],
         }
-        with mock.patch("urllib.request.urlopen", side_effect=open_request):
+        with mock.patch("urllib.request.OpenerDirector.open", side_effect=open_request):
             result = diagnostics.send_remote_event(
                 event, "https://telemetry.example.test/events", CANARIES["secret"]
             )
@@ -142,7 +142,7 @@ class DiagnosticsTest(unittest.TestCase):
     def test_remote_telemetry_is_disabled_without_an_endpoint(self) -> None:
         with tempfile.TemporaryDirectory() as name:
             with mock.patch.dict(os.environ, {}, clear=True), mock.patch(
-                "urllib.request.urlopen"
+                "urllib.request.OpenerDirector.open"
             ) as sender:
                 diagnostics.record_event(
                     Path(name) / ".confidence",
@@ -443,7 +443,7 @@ class DiagnosticsTest(unittest.TestCase):
                 {"CONFIDENCE_TELEMETRY_ENDPOINT": "https://telemetry.example.test/events"},
                 clear=False,
             ), mock.patch(
-                "urllib.request.urlopen", side_effect=KeyboardInterrupt
+                "urllib.request.OpenerDirector.open", side_effect=KeyboardInterrupt
             ):
                 result = confidence.main()
             self.assertEqual(result, 0)

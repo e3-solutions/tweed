@@ -239,6 +239,13 @@ def _remote_payload(event: dict[str, Any]) -> dict[str, Any]:
     return safe_event(event)
 
 
+class NoTelemetryRedirects(urllib.request.HTTPRedirectHandler):
+    """Keep collector credentials and payloads on the configured endpoint."""
+
+    def redirect_request(self, request, response, code, message, headers, new_url):
+        return None
+
+
 def send_remote_event(event: dict[str, Any], endpoint: str, token: str | None) -> str | None:
     invalid = endpoint_error(endpoint)
     if invalid:
@@ -252,7 +259,9 @@ def send_remote_event(event: dict[str, Any], endpoint: str, token: str | None) -
         headers["Authorization"] = f"Bearer {token}"
     request = urllib.request.Request(endpoint, data=body, headers=headers, method="POST")
     try:
-        with urllib.request.urlopen(request, timeout=REMOTE_TIMEOUT_SECONDS) as response:
+        with urllib.request.build_opener(NoTelemetryRedirects()).open(
+            request, timeout=REMOTE_TIMEOUT_SECONDS
+        ) as response:
             if not 200 <= response.status < 300:
                 return f"TELEMETRY_HTTP_{response.status}"
     except urllib.error.HTTPError as error:
