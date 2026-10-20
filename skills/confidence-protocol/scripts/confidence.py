@@ -352,7 +352,7 @@ def validate_contract(contract: dict[str, Any]) -> list[str]:
     intent = contract.get("intent")
     obligations = contract.get("proof_obligations")
 
-    if contract.get("version") != 1:
+    if type(contract.get("version")) is not int or contract.get("version") != 1:
         errors.append("contract.version must be 1")
     if not isinstance(task, dict):
         return errors + ["contract.task must be an object"]
@@ -536,7 +536,7 @@ def validate_report(
         if isinstance(item, dict) and nonempty_text(item.get("id"))
     }
 
-    if report.get("version") != 3:
+    if type(report.get("version")) is not int or report.get("version") != 3:
         errors.append("report.version must be 3")
     if report.get("task_title") != task.get("title"):
         errors.append("report.task_title must match contract.task.title")
