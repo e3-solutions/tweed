@@ -408,6 +408,88 @@ class DiagnosticsTest(unittest.TestCase):
                 <= codes
             )
 
+    def test_doctor_probe_sends_one_safe_request(self) -> None:
+        captured = []
+
+        def open_request(request, timeout):
+            captured.append((request, timeout))
+            return FakeResponse()
+
+        endpoint = "https://telemetry.example.test/events"
+        with tempfile.TemporaryDirectory() as name, mock.patch.dict(
+            os.environ,
+            {"CONFIDENCE_TELEMETRY_ENDPOINT": endpoint,
+             "CONFIDENCE_TELEMETRY_TOKEN": CANARIES["secret"]},
+            clear=True,
+        ), mock.patch("urllib.request.urlopen", side_effect=open_request), contextlib.redirect_stdout(
+            io.StringIO()
+        ) as output:
+            args = confidence.parser().parse_args(
+                ["doctor", "--probe-telemetry", "--json", "--directory", name]
+            )
+            result = args.handler(args)
+        report = json.loads(output.getvalue())
+        probe = next(item for item in report["checks"] if item["code"] == "TELEMETRY_PROBE")
+        self.assertEqual(result, 0)
+        self.assertEqual(probe["status"], "pass")
+        self.assertEqual(len(captured), 1)
+        request, timeout = captured[0]
+        self.assertEqual(request.full_url, endpoint)
+        self.assertEqual(request.get_method(), "POST")
+        self.assertEqual(request.get_header("Authorization"), f"Bearer {CANARIES['secret']}")
+        self.assertEqual(timeout, diagnostics.REMOTE_TIMEOUT_SECONDS)
+        body = json.loads(request.data)
+        self.assertEqual(body["event"], "telemetry.probe")
+        self.assertEqual(body["command"], "doctor")
+        self.assertEqual(body["status"], "ok")
+        self.assertLessEqual(set(body), diagnostics.SAFE_REMOTE_KEYS)
+        for canary in CANARIES.values():
+            self.assertNotIn(canary, request.data.decode())
+
+    def test_doctor_probe_reports_delivery_failure(self) -> None:
+        endpoint = "https://telemetry.example.test/events"
+        failures = (
+            (urllib.error.URLError("offline"), "TELEMETRY_UNREACHABLE"),
+            (urllib.error.HTTPError(endpoint, 503, "unavailable", {}, None), "TELEMETRY_HTTP_503"),
+        )
+        for failure, code in failures:
+            with self.subTest(code=code), tempfile.TemporaryDirectory() as name, mock.patch.dict(
+                os.environ, {"CONFIDENCE_TELEMETRY_ENDPOINT": endpoint}, clear=True
+            ), mock.patch("urllib.request.urlopen", side_effect=failure) as sender, contextlib.redirect_stdout(
+                io.StringIO()
+            ) as output:
+                args = confidence.parser().parse_args(
+                    ["doctor", "--probe-telemetry", "--json", "--directory", name]
+                )
+                result = args.handler(args)
+            report = json.loads(output.getvalue())
+            probe = next(item for item in report["checks"] if item["code"] == "TELEMETRY_PROBE")
+            self.assertEqual(result, 1)
+            self.assertEqual(report["status"], "fail")
+            self.assertEqual(probe["status"], "fail")
+            self.assertIn(code, probe["summary"])
+            sender.assert_called_once()
+
+    def test_doctor_probe_refuses_missing_or_unsafe_endpoint(self) -> None:
+        for endpoint in (None, "http://collector.example.test/events"):
+            environment = {} if endpoint is None else {"CONFIDENCE_TELEMETRY_ENDPOINT": endpoint}
+            with self.subTest(endpoint=endpoint), tempfile.TemporaryDirectory() as name, mock.patch.dict(
+                os.environ, environment, clear=True
+            ), mock.patch("urllib.request.urlopen") as sender, contextlib.redirect_stdout(
+                io.StringIO()
+            ) as output:
+                args = confidence.parser().parse_args(
+                    ["doctor", "--probe-telemetry", "--json", "--directory", name]
+                )
+                result = args.handler(args)
+            report = json.loads(output.getvalue())
+            probe = next(item for item in report["checks"] if item["code"] == "TELEMETRY_PROBE")
+            self.assertEqual(result, 1)
+            self.assertEqual(report["status"], "fail")
+            self.assertEqual(probe["status"], "fail")
+            self.assertTrue(probe["remediation"])
+            sender.assert_not_called()
+
     def test_internal_exception_is_logged_and_returns_125(self) -> None:
         events = []
 
