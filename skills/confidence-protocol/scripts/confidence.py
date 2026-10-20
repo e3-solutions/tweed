@@ -181,7 +181,7 @@ GIT_ROUTING_VARIABLES = {"GIT_INDEX_FILE", "GIT_DIR", "GIT_WORK_TREE", "GIT_COMM
                          "GIT_OBJECT_DIRECTORY", "GIT_ALTERNATE_OBJECT_DIRECTORIES"}
 
 
-def git_workspace_fingerprint(cwd: Path, evidence_directory: Path, *, _retry_missing: bool = True) -> dict[str, str] | None:
+def git_workspace_fingerprint(cwd: Path, evidence_directory: Path, *, _missing_retries: int = 8) -> dict[str, str] | None:
     """Bind enumerated working-tree bytes; ignored/external inputs are outside scope."""
     generated_names = {"contract.json", "report.json", "REPORT.md", "telemetry/events.jsonl", "telemetry/installation-id"}
     # Do not silently bind a different index/repository than the executed command.
@@ -227,9 +227,14 @@ def git_workspace_fingerprint(cwd: Path, evidence_directory: Path, *, _retry_mis
             except FileNotFoundError:
                 if name not in tracked:
                     # A publisher can remove staging after Git enumerates it.
-                    # Re-observe once; never assume an unseen entry was regular.
-                    if _retry_missing:
-                        return git_workspace_fingerprint(original_cwd, evidence_directory, _retry_missing=False)
+                    # Several parallel publishers can each remove staging after
+                    # enumeration. Let the burst settle, then rebuild the entire
+                    # inventory; never assume an unseen entry was regular or
+                    # reuse a digest from before a source change. Persistent
+                    # instability still fails closed after a bounded retry budget.
+                    if _missing_retries:
+                        time.sleep(0.01)
+                        return git_workspace_fingerprint(original_cwd, evidence_directory, _missing_retries=_missing_retries - 1)
                     return None
                 payload = b'missing'
             else:

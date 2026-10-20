@@ -97,6 +97,31 @@ raise SystemExit(c.main())
         self.assertIsNotNone(after)
         self.assertNotEqual(before, after)
 
+    def test_multiple_vanished_publishers_retry_a_complete_inventory(self):
+        before = core.git_workspace_fingerprint(self.root, self.directory)
+        original_run = core.subprocess.run
+        original_lstat = Path.lstat
+        publications = []
+        def publishing(argv, *args, **kwargs):
+            if '--others' in argv and len(publications) < 2:
+                path = self.directory / 'runs' / f'.publisher-{len(publications)}.json.tmp-abcd012_'
+                path.write_text('staging')
+                publications.append(path)
+            return original_run(argv, *args, **kwargs)
+        def published(path, *args, **kwargs):
+            if path in publications and path.exists():
+                path.unlink()
+                # Retrying must observe changed source, not return a prior digest.
+                (self.root / 'source').write_text('changed')
+                raise FileNotFoundError(str(path))
+            return original_lstat(path, *args, **kwargs)
+        with patch.object(core.subprocess, 'run', publishing), patch.object(Path, 'lstat', published):
+            after = core.git_workspace_fingerprint(self.root, self.directory)
+        self.assertEqual(len(publications), 2)
+        self.assertIsNotNone(after)
+        self.assertNotEqual(before, after)
+        self.assertEqual(after, core.git_workspace_fingerprint(self.root, self.directory))
+
     def test_repeated_untracked_instability_remains_unknown(self):
         original = core.subprocess.run
         enumerations = []
@@ -108,7 +133,7 @@ raise SystemExit(c.main())
             return result
         with patch.object(core.subprocess, 'run', unstable):
             self.assertIsNone(core.git_workspace_fingerprint(self.root, self.directory))
-        self.assertEqual(len(enumerations), 2)
+        self.assertEqual(len(enumerations), 9)
 
     def test_only_known_untracked_regular_temporary_names_are_excluded(self):
         fingerprint = lambda: core.git_workspace_fingerprint(self.root, self.directory)
