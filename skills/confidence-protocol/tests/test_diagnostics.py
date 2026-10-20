@@ -427,11 +427,12 @@ class DiagnosticsTest(unittest.TestCase):
             args = confidence.parser().parse_args(
                 ["doctor", "--probe-telemetry", "--json", "--directory", name]
             )
-            result = args.handler(args)
+            args.handler(args)
         report = json.loads(output.getvalue())
         probe = next(item for item in report["checks"] if item["code"] == "TELEMETRY_PROBE")
-        self.assertEqual(result, 0)
         self.assertEqual(probe["status"], "pass")
+        self.assertEqual(probe["summary"], "Telemetry endpoint accepted the probe.")
+        self.assertEqual(probe["remediation"], "")
         self.assertEqual(len(captured), 1)
         request, timeout = captured[0]
         self.assertEqual(request.full_url, endpoint)
@@ -445,6 +446,7 @@ class DiagnosticsTest(unittest.TestCase):
         self.assertLessEqual(set(body), diagnostics.SAFE_REMOTE_KEYS)
         for canary in CANARIES.values():
             self.assertNotIn(canary, request.data.decode())
+            self.assertNotIn(canary, output.getvalue())
 
     def test_doctor_probe_reports_delivery_failure(self) -> None:
         endpoint = "https://telemetry.example.test/events"
