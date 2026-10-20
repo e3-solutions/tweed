@@ -74,3 +74,7 @@ raise SystemExit(status)
             self.assertEqual(p.returncode,143,p.stderr)
             self.assertEqual(p.stdout,'')
             self.assertFalse((ev/'runs/signal.json').exists())
+
+
+if __name__ == "__main__":
+    unittest.main()

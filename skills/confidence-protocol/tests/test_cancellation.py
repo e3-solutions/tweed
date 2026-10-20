@@ -52,3 +52,7 @@ class CancellationTest(unittest.TestCase):
 
     def test_repeated_signals_do_not_interrupt_cleanup(self):
         self.check_cancellation(signal.SIGTERM, repeated=True)
+
+
+if __name__ == "__main__":
+    unittest.main()

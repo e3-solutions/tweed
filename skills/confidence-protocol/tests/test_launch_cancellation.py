@@ -99,3 +99,7 @@ raise SystemExit(status)
     def test_pending_signal_takes_precedence_over_log_open_error(self):
         for sig in (signal.SIGINT,signal.SIGTERM):
             with self.subTest(signal=sig):self.check_boundary('log_error',sig)
+
+
+if __name__ == "__main__":
+    unittest.main()

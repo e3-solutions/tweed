@@ -76,9 +76,11 @@ python3 "$CP" record --directory .confidence --obligation P1 --status partial --
 python3 "$CP" validate --directory .confidence && python3 "$CP" render --directory .confidence --force
 ```
 
-Ordinary validation checks document/reference consistency. Successful validation and rendered reports identify recorded working directories, source roots, binding kinds, run IDs, and start/end observations. These are the captured locations, not the caller’s current checkout: copying evidence does not certify another checkout. Verify the displayed scope matches the claim; recapture in the intended checkout when it does not. A valid partial report is useful and does not establish completion. Once all required proof, report fields, simplicity gates, and required review are satisfied:
+Ordinary validation checks document/reference consistency. Successful validation and rendered reports identify recorded working directories, source roots, binding kinds, run IDs, and start/end observations. These are the captured locations, not the caller’s current checkout: copying evidence does not certify another checkout. Verify the displayed scope matches the claim; recapture in the intended checkout when it does not. A valid partial report is useful and does not establish completion.
 
 Before claiming completion, apply [report rules](report-rules.md), including that no open risk violates a must-not-happen condition.
+
+Once all required proof, report fields, simplicity gates, and required review are satisfied:
 
 ```sh
 python3 "$CP" validate --directory .confidence --require-complete && python3 "$CP" render --directory .confidence --force
