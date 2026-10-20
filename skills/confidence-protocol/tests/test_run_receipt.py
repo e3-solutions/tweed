@@ -102,6 +102,7 @@ class RunReceiptTest(unittest.TestCase):
 
     def test_non_git_workspace_binding_is_explicitly_unknown(self):
         with tempfile.TemporaryDirectory(prefix='confidence-unbound-') as location:
+            self.directory = Path(location) / '.confidence'
             result = self.capture("print('diagnostic')", cwd=Path(location))
         self.assertEqual(result.returncode, 0)
         self.assertEqual(json.loads(result.stdout)['workspace_binding'], 'unknown')

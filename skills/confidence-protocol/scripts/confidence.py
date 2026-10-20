@@ -982,6 +982,26 @@ def command_run(args: argparse.Namespace) -> int:
         return 125
 
     workspace_start = git_workspace_fingerprint(cwd, directory)
+    # Evidence kept inside a repository must describe commands in that same
+    # repository. Evidence outside Git remains usable for external captures.
+    try:
+        evidence_git = subprocess.run(
+            ['git', '-C', str(directory), 'rev-parse', '--show-toplevel'],
+            capture_output=True, timeout=5,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        evidence_root = None
+    else:
+        evidence_root = (Path(os.fsdecode(evidence_git.stdout[:-1])).resolve()
+                         if evidence_git.returncode == 0 else None)
+    if evidence_root is not None and (
+        not cwd.is_relative_to(evidence_root)
+        or (workspace_start is not None
+            and Path(workspace_start['root']).resolve() != evidence_root)
+    ):
+        args.diagnostic_error_code = "RUN_EVIDENCE_DIRECTORY_INVALID"
+        print("run cwd and evidence directory must belong to the same Git repository", file=sys.stderr)
+        return 125
     if workspace_start is not None and directory.resolve() == Path(workspace_start["root"]).resolve():
         args.diagnostic_error_code = "RUN_EVIDENCE_DIRECTORY_INVALID"
         print("evidence directory must not be the Git root; use --directory .confidence", file=sys.stderr)
