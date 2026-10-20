@@ -177,13 +177,15 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+GIT_ROUTING_VARIABLES = {"GIT_INDEX_FILE", "GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR",
+                         "GIT_OBJECT_DIRECTORY", "GIT_ALTERNATE_OBJECT_DIRECTORIES"}
+
+
 def git_workspace_fingerprint(cwd: Path, evidence_directory: Path, *, _retry_missing: bool = True) -> dict[str, str] | None:
     """Bind enumerated working-tree bytes; ignored/external inputs are outside scope."""
     generated_names = {"contract.json", "report.json", "REPORT.md", "telemetry/events.jsonl", "telemetry/installation-id"}
     # Do not silently bind a different index/repository than the executed command.
-    routing_variables = {"GIT_INDEX_FILE", "GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR",
-                         "GIT_OBJECT_DIRECTORY", "GIT_ALTERNATE_OBJECT_DIRECTORIES"}
-    if any(name in os.environ for name in routing_variables):
+    if any(name in os.environ for name in GIT_ROUTING_VARIABLES):
         return None
     original_cwd = Path(cwd).resolve()
     def git(*args, allow_missing=False):
@@ -988,9 +990,14 @@ def command_run(args: argparse.Namespace) -> int:
         evidence_git = subprocess.run(
             ['git', '-C', str(directory), 'rev-parse', '--show-toplevel'],
             capture_output=True, timeout=5,
+            # Discover the evidence directory's physical repository, regardless
+            # of routing inherited by the command (whose binding stays unknown).
+            env={key: value for key, value in os.environ.items() if key not in GIT_ROUTING_VARIABLES},
         )
     except (OSError, subprocess.TimeoutExpired):
-        evidence_root = None
+        args.diagnostic_error_code = "RUN_EVIDENCE_DIRECTORY_INVALID"
+        print("could not determine evidence directory Git repository", file=sys.stderr)
+        return 125
     else:
         evidence_root = (Path(os.fsdecode(evidence_git.stdout[:-1])).resolve()
                          if evidence_git.returncode == 0 else None)

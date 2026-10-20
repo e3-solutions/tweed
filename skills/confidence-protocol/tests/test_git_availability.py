@@ -1,5 +1,4 @@
-"""Optional Git must not prevent an otherwise runnable command from being captured."""
-import json
+"""Fingerprint failures stay unknown; capture requires a successful evidence-root probe."""
 import os
 from pathlib import Path
 import subprocess
@@ -14,7 +13,7 @@ confidence = load_confidence('confidence_git_availability')
 
 
 class GitAvailabilityTest(unittest.TestCase):
-    def test_missing_git_preserves_actual_command_result_and_unknown_binding(self):
+    def test_missing_git_rejects_capture_before_launch(self):
         with tempfile.TemporaryDirectory() as name:
             root = Path(name)
             directory = root / '.confidence'
@@ -28,15 +27,11 @@ class GitAvailabilityTest(unittest.TestCase):
                         env={**os.environ, 'PATH': '', 'CONFIDENCE_DISABLE_DIAGNOSTICS': '1'},
                         capture_output=True, text=True, timeout=10,
                     )
-                    self.assertEqual(result.returncode, code, result.stderr)
-                    self.assertEqual(result.stdout, 'actual command\n')
-                    record = json.loads((directory / 'runs' / f'{run_id}.json').read_text())
-                    self.assertEqual(record['exit_code'], code)
-                    self.assertEqual(record['version'], 2)
-                    self.assertIsNone(record['workspace_start'])
-                    self.assertIsNone(record['workspace'])
-                    self.assertEqual(confidence.validate_run_record(directory, run_id)[1], [])
-                    self.assertTrue(any('unknown' in e for e in confidence.validate_supporting_workspace(record, directory)))
+                    self.assertEqual(result.returncode, 125, result.stderr)
+                    self.assertEqual(result.stdout, '')
+                    self.assertIn('could not determine evidence directory Git repository', result.stderr)
+                    self.assertFalse((directory / 'runs' / f'{run_id}.json').exists())
+                    self.assertFalse((directory / 'runs' / f'{run_id}.log').exists())
 
     def test_each_git_command_failure_or_timeout_becomes_unknown(self):
         with tempfile.TemporaryDirectory() as name:
